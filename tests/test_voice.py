@@ -1,7 +1,10 @@
 """Voice loop orchestration with fake STT/TTS/brain (no audio, no model)."""
+import base64
 from pathlib import Path
 import subprocess
 import tempfile
+import threading
+import time
 import unittest
 
 from rightware import runtime, voice
@@ -74,6 +77,7 @@ class VoiceLoopTests(unittest.TestCase):
                          stt=FakeSTT("Quem és tu?"))
         loop.run()
         self.assertEqual(brain.asked, ["Quem és tu?"])
+        self.assertEqual(brain.memory, [("Quem és tu?", "**Sou** o Jarvis do Issa.")])
         self.assertEqual(tts.spoken[0], "Sou o Jarvis do Issa.")   # markdown stripped
         self.assertEqual(tts.spoken[-1], "Até logo, Issa.")
 
@@ -109,6 +113,7 @@ class VoiceLoopTests(unittest.TestCase):
         loop = self.loop(["pergunta longa", "", "sair"], brain=brain,
                          stt=FakeSTT(KeyboardInterrupt()))
         self.assertTrue(loop.turn())       # model call cancelled
+        self.assertEqual(brain.memory, [])  # a cancelled answer is not remembered
         self.assertTrue(loop.turn())       # recording cancelled
         self.assertIn("Cancelado.", self.out)
         self.assertIn("Gravação cancelada.", self.out)
@@ -133,23 +138,56 @@ class VoiceLoopTests(unittest.TestCase):
         self.assertTrue(any("escreve o pedido" in line for line in self.out))
 
 
+class InterruptibleTests(unittest.TestCase):
+    def test_result_and_errors_cross_the_thread(self):
+        self.assertEqual(voice.interruptible(lambda x: x * 2, 21), 42)
+        with self.assertRaises(ValueError):
+            voice.interruptible(lambda: (_ for _ in ()).throw(ValueError("x")))
+
+    def test_ctrl_c_is_not_blocked_by_a_long_native_call(self):
+        """A KeyboardInterrupt raised in the main thread while the worker is
+        still blocked must surface within the poll interval."""
+        release = threading.Event()
+        timer = threading.Timer(0.2, lambda: __import__("_thread").interrupt_main())
+        timer.start()
+        started = time.monotonic()
+        with self.assertRaises(KeyboardInterrupt):
+            voice.interruptible(release.wait, 30)
+        release.set()
+        self.assertLess(time.monotonic() - started, 5)
+
+
 class SapiTests(unittest.TestCase):
-    def test_text_goes_through_stdin_not_command_line(self):
+    def run_capture(self, code=0, stdout=b""):
         calls = []
         def run(argv, **kw):
             calls.append((argv, kw))
-            return subprocess.CompletedProcess(argv, 0, b"", b"")
-        text = "Olá Issa; $(Remove-Item C:\\) \"aspas\""
+            return subprocess.CompletedProcess(argv, code, stdout, b"NO_PT_VOICE" if code == 3 else b"")
+        return calls, run
+
+    def test_text_goes_through_environment_not_command_line(self):
+        calls, run = self.run_capture()
+        text = "Olá Issa; $(Remove-Item C:\\) \"aspas\" ção"
         voice.SapiTTS(runner=run).speak(text)
         argv, kw = calls[0]
         self.assertNotIn(text, " ".join(argv))
-        self.assertEqual(kw["input"], text.encode("utf-8"))
+        self.assertEqual(kw["env"]["JARVIS_TTS_TEXT"], text)
+        self.assertEqual(argv[-2], "-EncodedCommand")
+        self.assertEqual(base64.b64decode(argv[-1]).decode("utf-16-le"), voice.SAPI_SCRIPT)
         self.assertIn("pt-PT", voice.SAPI_SCRIPT)
 
     def test_missing_portuguese_voice_is_reported(self):
-        run = lambda argv, **kw: subprocess.CompletedProcess(argv, 3, b"", b"NO_PT_VOICE")
+        _, run = self.run_capture(code=3)
         with self.assertRaisesRegex(voice.VoiceUnavailable, "voz portuguesa"):
             voice.SapiTTS(runner=run).speak("olá")
+
+    def test_voice_listing_and_wav_mode(self):
+        calls, run = self.run_capture(stdout="pt-PT|Microsoft Helia\r\nen-US|Microsoft Zira\r\n".encode())
+        tts = voice.SapiTTS(runner=run, wav_path="out.wav", any_voice=True)
+        self.assertEqual(tts.voices(), [("pt-PT", "Microsoft Helia"), ("en-US", "Microsoft Zira")])
+        env = calls[0][1]["env"]
+        self.assertEqual((env["JARVIS_TTS_LIST"], env["JARVIS_TTS_WAV"], env["JARVIS_TTS_ANY_VOICE"]),
+                         ("1", "out.wav", "1"))
 
 
 class LauncherTests(unittest.TestCase):
@@ -164,6 +202,11 @@ class LauncherTests(unittest.TestCase):
         cmd = runtime.voice_command(["--allow-actions"])
         self.assertIn(".venv", cmd[0])
         self.assertEqual(cmd[1:], ["-m", "rightware.voice", "--allow-actions"])
+
+    def test_voice_process_forces_utf8_stdio(self):
+        env = runtime.voice_environment()
+        self.assertEqual((env["PYTHONUTF8"], env["PYTHONIOENCODING"]), ("1", "utf-8"))
+        self.assertEqual(env["OLLAMA_HOST"], "http://127.0.0.1:11434")
 
     def test_unknown_flags_rejected_outside_voice(self):
         with self.assertRaises(SystemExit):

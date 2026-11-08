@@ -13,7 +13,7 @@ class CompareModelsTests(unittest.TestCase):
     def test_corpus_is_six_fixed_synthetic_turns(self):
         self.assertEqual(len(bench.QUESTIONS), 6)
         self.assertEqual(len({q["id"] for q in bench.QUESTIONS}), 6)
-        self.assertIn("Issa", bench.QUESTIONS[0]["question"] + bench.runtime.ROOT.joinpath("configs/local.toml").read_text())
+        self.assertIn("Issa", bench.QUESTIONS[0]["question"] + bench.runtime.ROOT.joinpath("configs/local.toml").read_text(encoding="utf-8"))
         self.assertIn("fictício", bench.QUESTIONS[1]["question"])
         self.assertIn("orçamento", bench.QUESTIONS[4]["question"])
 
@@ -21,7 +21,7 @@ class CompareModelsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "evidence" / "report.json"
             bench.atomic_json(path, {"result": "REVIEW", "name": "Issa"})
-            self.assertEqual(json.loads(path.read_text())["name"], "Issa")
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["name"], "Issa")
             self.assertFalse(path.with_suffix(".json.tmp").exists())
 
     def test_cloud_model_argument_fails_before_inference(self):
@@ -53,11 +53,11 @@ class CompareModelsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             out = Path(d) / "report.json"
             self.assertIsNone(bench.preserve_previous(out))
-            out.write_text('{"run_status": "IN_PROGRESS"}')
+            out.write_text('{"run_status": "IN_PROGRESS"}', encoding="utf-8")
             kept = bench.preserve_previous(out)
             self.assertFalse(out.exists())
             self.assertIn(".previous-", kept.name)
-            self.assertEqual(json.loads(kept.read_text())["run_status"], "IN_PROGRESS")
+            self.assertEqual(json.loads(kept.read_text(encoding="utf-8"))["run_status"], "IN_PROGRESS")
 
     def test_gpu_offload_classification(self):
         cases = [({"size": 10, "size_vram": 10}, "full_gpu"),

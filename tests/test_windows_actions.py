@@ -88,7 +88,7 @@ class ExecutionTests(unittest.TestCase):
 
     def audit_records(self):
         return [json.loads(line) for f in self.audit.glob("*.jsonl")
-                for line in f.read_text().splitlines()]
+                for line in f.read_text(encoding="utf-8").splitlines()]
 
     def test_unauthorized_session_never_asks_or_launches(self):
         acts, popen = self.make(authorized=False)

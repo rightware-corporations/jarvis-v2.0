@@ -8,9 +8,12 @@ SimpleAgent + OllamaEngine (conversation), KokoroTTSBackend + play_wav
 from __future__ import annotations
 
 import argparse
+import base64
+import os
 import re
 import subprocess
 import sys
+import threading
 
 from rightware import runtime
 from rightware.windows_actions import WindowsActions, describe, detect_actions
@@ -22,6 +25,31 @@ _CLAIMS_EFFECT = re.compile(
 
 class VoiceUnavailable(RuntimeError):
     """A speech component is missing or failed; the loop keeps working in text."""
+
+
+def interruptible(fn, *args, poll=0.1):
+    """Run a blocking call in a worker so Ctrl+C reaches the main thread.
+
+    On Windows a KeyboardInterrupt is not delivered while the main thread is
+    inside a blocking C call (httpx socket read, CTranslate2 decode); it would
+    only arrive after the model answered. Polling join() keeps cancellation
+    within ``poll`` seconds; an abandoned worker's result is discarded.
+    """
+    box = {}
+
+    def work():
+        try:
+            box["value"] = fn(*args)
+        except BaseException as exc:  # re-raised in the caller's thread
+            box["error"] = exc
+
+    worker = threading.Thread(target=work, daemon=True)
+    worker.start()
+    while worker.is_alive():
+        worker.join(poll)
+    if "error" in box:
+        raise box["error"]
+    return box.get("value")
 
 
 # ---------------------------------------------------------------- STT ----
@@ -49,31 +77,42 @@ class WhisperSTT:
             raise
         except Exception as exc:
             raise VoiceUnavailable(f"Erro do microfone: {exc}") from exc
-        return self.transcribe(audio)
+        return interruptible(self.transcribe, audio)
 
     def transcribe(self, wav: bytes) -> str:
         return self._backend.transcribe(wav, format="wav", language=self.language).text.strip()
 
 
 # ---------------------------------------------------------------- TTS ----
-# Text arrives on stdin (UTF-8), never on the command line: no quoting or
-# injection issues. Exit 3 = no enabled Portuguese voice installed.
+# The script travels as -EncodedCommand (no quoting issues) and the text in
+# an environment variable (Unicode-safe, never on the command line).
+# Exit 3 = no enabled Portuguese voice installed.
 SAPI_SCRIPT = r"""
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Speech
 $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$voices = $s.GetInstalledVoices() | Where-Object { $_.Enabled }
+$voices = @($s.GetInstalledVoices() | Where-Object { $_.Enabled })
+if ($env:JARVIS_TTS_LIST -eq '1') {
+  foreach ($v in $voices) { [Console]::Out.WriteLine($v.VoiceInfo.Culture.Name + '|' + $v.VoiceInfo.Name) }
+  exit 0
+}
 $pick = $null
 foreach ($c in @('pt-PT', 'pt-BR')) {
   $pick = $voices | Where-Object { $_.VoiceInfo.Culture.Name -eq $c } | Select-Object -First 1
   if ($pick) { break }
 }
+if (-not $pick -and $env:JARVIS_TTS_ANY_VOICE -eq '1' -and $voices.Count -gt 0) { $pick = $voices[0] }
 if (-not $pick) { [Console]::Error.WriteLine('NO_PT_VOICE'); exit 3 }
 $s.SelectVoice($pick.VoiceInfo.Name)
-$ms = New-Object IO.MemoryStream
-[Console]::OpenStandardInput().CopyTo($ms)
-$s.Speak([Text.Encoding]::UTF8.GetString($ms.ToArray()))
+if ($env:JARVIS_TTS_WAV) { $s.SetOutputToWaveFile($env:JARVIS_TTS_WAV) }
+$s.Speak([string]$env:JARVIS_TTS_TEXT)
+$s.Dispose()
 """
+
+
+def _powershell(script: str) -> list[str]:
+    encoded = base64.b64encode(script.encode("utf-16-le")).decode("ascii")
+    return ["powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded]
 
 
 class SapiTTS:
@@ -81,20 +120,36 @@ class SapiTTS:
 
     name = "sapi"
 
-    def __init__(self, runner=subprocess.run):
-        self._runner = runner
+    def __init__(self, runner=subprocess.run, wav_path: str | None = None,
+                 any_voice: bool = False):
+        self._runner, self._wav, self._any = runner, wav_path, any_voice
 
-    def speak(self, text: str) -> None:
+    def _call(self, **extra_env):
+        env = dict(os.environ, **extra_env)
+        if self._wav:
+            env["JARVIS_TTS_WAV"] = str(self._wav)
+        if self._any:
+            env["JARVIS_TTS_ANY_VOICE"] = "1"
         try:
-            proc = self._runner(
-                ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", SAPI_SCRIPT],
-                input=text.encode("utf-8"), capture_output=True, timeout=180, check=False)
+            return self._runner(_powershell(SAPI_SCRIPT), env=env, capture_output=True,
+                                timeout=180, check=False)
         except FileNotFoundError as exc:
             raise VoiceUnavailable("PowerShell não encontrado: a voz SAPI só existe no Windows.") from exc
+
+    def voices(self) -> list[tuple[str, str]]:
+        """Installed, enabled SAPI voices as (culture, name)."""
+        proc = self._call(JARVIS_TTS_LIST="1")
+        if proc.returncode:
+            raise VoiceUnavailable("SAPI falhou: " + proc.stderr.decode("utf-8", "replace")[-200:])
+        lines = proc.stdout.decode("utf-8", "replace").splitlines()
+        return [tuple(line.split("|", 1)) for line in lines if "|" in line]
+
+    def speak(self, text: str) -> None:
+        proc = self._call(JARVIS_TTS_TEXT=text)
         if proc.returncode == 3:
             raise VoiceUnavailable(
-                "Nenhuma voz portuguesa do Windows instalada. Definições → Hora e idioma → "
-                "Idioma → adicionar Português (Portugal) com voz, ou usar --tts kokoro.")
+                "Nenhuma voz portuguesa do Windows instalada. Definições > Hora e idioma > "
+                "Idioma > adicionar Português (Portugal) com voz, ou usar --tts kokoro.")
         if proc.returncode:
             raise VoiceUnavailable("SAPI falhou: " + proc.stderr.decode("utf-8", "replace")[-200:])
 
@@ -115,7 +170,8 @@ class KokoroTTS:
     def speak(self, text: str) -> None:
         from openjarvis.speech.voice_io import play_wav
         try:
-            result = self._backend.synthesize(text, voice_id=self.voice_id, output_format="wav")
+            result = interruptible(lambda: self._backend.synthesize(
+                text, voice_id=self.voice_id, output_format="wav"))
         except KeyboardInterrupt:
             raise
         except Exception as exc:
@@ -158,9 +214,8 @@ class OpenJarvisBrain:
         self._ctx.conversation.add(self._Message(role=self._Role.ASSISTANT, content=assistant))
 
     def reply(self, text: str) -> str:
-        answer = self._agent.run(text, context=self._ctx).content or ""
-        self.remember(text, answer)
-        return answer
+        """Answer only; the loop records the exchange once it was not cancelled."""
+        return self._agent.run(text, context=self._ctx).content or ""
 
     def close(self) -> None:
         self._engine._client.close()
@@ -214,9 +269,10 @@ class VoiceLoop:
             reply = describe(result)
             self.brain.remember(text, reply)   # later turns know the real outcome
             return reply
-        reply = self.brain.reply(text)
+        reply = interruptible(self.brain.reply, text)
         if _CLAIMS_EFFECT.search(reply):
             reply += " (Nota: nenhuma acção foi executada neste pedido.)"
+        self.brain.remember(text, reply)
         return reply
 
     def turn(self) -> bool:

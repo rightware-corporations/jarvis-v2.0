@@ -28,11 +28,11 @@ class LocalRuntimeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d, patch.object(r, "STATE", Path(d)):
             r.prepare_config()
             path = Path(d) / "openjarvis/config.toml"
-            s = path.read_text().replace('default = "ollama"', 'default = "cloud"')
-            path.write_text(s)
+            s = path.read_text(encoding="utf-8").replace('default = "ollama"', 'default = "cloud"')
+            path.write_text(s, encoding="utf-8")
             with self.assertRaises(RuntimeError):
                 r.prepare_config()
-            self.assertEqual(path.read_text(), s)
+            self.assertEqual(path.read_text(encoding="utf-8"), s)
 
     def test_cloud_model_rejected(self):
         with self.assertRaises(RuntimeError):

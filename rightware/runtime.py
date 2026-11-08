@@ -136,6 +136,14 @@ def voice_command(extra):
     return [str(python_executable()), "-m", "rightware.voice", *extra]
 
 
+def voice_environment():
+    """child_environment() plus UTF-8 stdio: on Windows a redirected/logged
+    console would otherwise use cp1252 and fail on Portuguese text."""
+    env = child_environment()
+    env.update(PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
+    return env
+
+
 def chat_command(model):
     if not model or any(x in model.lower() for x in ("cloud", "://")):
         raise RuntimeError("Choose a downloaded local model, not a cloud model")
@@ -145,14 +153,14 @@ def chat_command(model):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="RIGHTWARE Jarvis v2 — local text baseline")
-    parser.add_argument("command", choices=("setup", "doctor", "chat", "voice"))
+    parser.add_argument("command", choices=("setup", "doctor", "chat", "voice", "diagnose"))
     parser.add_argument("--model", help="Installed local Ollama model (chat/voice)")
     parser.add_argument("--voice", action="store_true",
                         help="setup: also install local speech-to-text (upstream 'speech' extra)")
     parser.add_argument("--kokoro", action="store_true",
                         help="setup: also install Kokoro TTS (upstream 'voice' extra; large, needs espeak-ng)")
     args, extra = parser.parse_known_args(argv)
-    if extra and args.command != "voice":
+    if extra and args.command not in ("voice", "diagnose"):
         parser.error("unrecognized arguments: " + " ".join(extra))
     try:
         if args.command == "setup":
@@ -164,7 +172,16 @@ def main(argv=None):
                 raise RuntimeError("Run python jarvis.py setup --voice first")
             if args.model:
                 extra = ["--model", args.model, *extra]
-            return subprocess.call(voice_command(extra), cwd=ROOT, env=child_environment())
+            return subprocess.call(voice_command(extra), cwd=ROOT, env=voice_environment())
+        elif args.command == "diagnose":
+            # Read-only. Prefer the upstream venv so speech libraries are checked.
+            if args.model:
+                extra = ["--model", args.model, *extra]
+            if python_executable().is_file():
+                return subprocess.call([str(python_executable()), "-m", "rightware.diagnose", *extra],
+                                       cwd=ROOT, env=voice_environment())
+            from rightware import diagnose
+            return diagnose.main(extra)
         elif args.command == "doctor":
             doctor()
         else:
