@@ -1,6 +1,6 @@
 # RIGHTWARE Jarvis v2.0
 
-Assistente próprio da RIGHTWARE baseado no OpenJarvis, com inferência local via Ollama. Estado: **fundação em desenvolvimento**, não release nem assistente Windows validado.
+Jarvis do Issa: assistente pessoal destinado ao Issa, desenvolvido pela RIGHTWARE com base no OpenJarvis e inferência local via Ollama. Estado: **fundação em desenvolvimento**, não release nem assistente Windows validado.
 
 ## Estrutura
 
