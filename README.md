@@ -50,23 +50,15 @@ python jarvis.py chat --model NOME_DO_MODELO_LOCAL
 
 A escolha definitiva do modelo está pendente. O Qwen3.5 2B é apenas a referência inicial. Kaggle serve de laboratório temporário, não de disponibilidade permanente do produto.
 
-## Laboratório GPU sem token — recomendado
+## Laboratório GPU — teste COMPLETO da v2.0, sem token
 
-**O teste inicial para escolher o motor não exige token GitHub nem upload do repositório privado.** Utiliza [qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb](qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb), com **uma única célula Python**. O notebook clona apenas o OpenJarvis público na revisão fixada, configura a identidade de Jarvis do Issa, obtém Ollama v0.40.15 (SHA-256 verificado), descarrega os modelos Qwen3.5 2B/4B e testa seis perguntas com contexto e uma calculadora real num agente independente. Exporta um ZIP de evidências.
+**Notebook canónico:** [qa/JARVIS_ISSA_KAGGLE.ipynb](qa/JARVIS_ISSA_KAGGLE.ipynb). Esta versão testa o **launcher RIGHTWARE real** e não apenas o OpenJarvis público. O notebook clona `develop` com submódulos, verifica a revisão instalada, configura Ollama local 0.40.15 com SHA-256 fixado, executa Qwen3.5 2B e 4B com seis perguntas e uma prova separada de `CalculatorTool`, e exporta JSON/ZIP.
 
-**Execução:** descarregar o notebook do repositório usando a sessão autenticada do browser, importar no Kaggle, activar Internet + GPU T4 e executar a única célula. Não configurar GITHUB_TOKEN, não inserir credenciais e manter o notebook privado. Os prompts Orion são sintéticos e não contêm dados pessoais reais.
+**Acesso:** o repo `jarvis-v2.0` deve ser **público** para clone sem credenciais. Antes de alterar a visibilidade, verificar ficheiros **e histórico Git** à procura de chaves, dados pessoais, artefactos e licenças. O proprietário deve aprovar e efectuar a alteração de visibilidade na interface GitHub; nenhum token deve ser publicado ou fornecido ao Kaggle. Se o repositório continuar privado, transportar um ZIP completo e sanitizado de código + submódulo para um notebook Kaggle privado; não usar tokens em células.
 
-**Limite crucial:** este é um ensaio do **upstream público OpenJarvis**, não da integração privada RIGHTWARE. Selecciona o modelo a partir de evidência e depois valida o launcher RIGHTWARE num ambiente autorizado. Sem executar GPU real, o estado permanece NOT RUN.
+**Procedimento Kaggle:** importar `qa/JARVIS_ISSA_KAGGLE.ipynb` para um notebook privado, activar GPU e Internet, executar as três células. Se o checkout já existir, o notebook não o actualiza automaticamente: verificar SHA impresso antes de comparar. Guardar o ZIP e submeter as evidências para revisão.
 
-## Laboratório privado com autenticação (alternativa, não recomendada neste momento)
-
-
-
-A alternativa de comparação integrada no wrapper privado está preparada em [qa/JARVIS_ISSA_KAGGLE.ipynb](qa/JARVIS_ISSA_KAGGLE.ipynb). O notebook clona `develop` com submódulos, instala as dependências fixadas, inicia Ollama **v0.40.15** em loopback, obtém os modelos e executa [qa/compare_models.py](qa/compare_models.py). A sessão utiliza seis perguntas sintéticas e uma prova separada de ferramenta; os resultados são gravados em JSON e ZIP.
-
-Para executar: abrir/importar o notebook no Kaggle, activar **Internet** e **GPU**, definir em Kaggle Secrets um `GITHUB_TOKEN` com acesso somente de leitura ao repositório privado, e executar as três células por ordem. O token não deve ser partilhado nem incluído em comandos ou outputs. Se a pasta `/kaggle/working/jarvis-v2.0` já existir, o notebook **não** faz actualização silenciosa. Confirmar que o SHA mostrado é a revisão que se pretende testar.
-
-**Ainda não executado na GPU após esta publicação.** CI aprova a sintaxe do notebook e os testes locais de preflight, não a inferência com Qwen. A comparação apenas é concluída quando o ZIP contém transcrições, SHA, ambiente, tempos e `tool_results` auditáveis. O Kaggle não testa microfone, altifalantes ou aplicações Windows.
+**Importante:** [qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb](qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb) é um **ensaio upstream-only**, útil como diagnóstico de modelos mas insuficiente para aceitação da integração RIGHTWARE. Scripts e CI estáticos aprovados não são prova de inferência, GPU, voz ou Windows. Estes gates continuam pendentes até execução real.
 
 ## Desenvolvimento
 
