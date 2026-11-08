@@ -19,12 +19,20 @@ STATE = ROOT / ".runtime"
 
 def child_environment(source=None):
     env = dict(os.environ if source is None else source)
+    # httpx/urllib can inherit HTTP(S)_PROXY and ALL_PROXY even when the
+    # Ollama address is loopback. Do not route local inference to a proxy.
+    proxy_names = {"http_proxy", "https_proxy", "all_proxy", "ftp_proxy",
+                   "no_proxy"}
     for key in list(env):
-        if key.endswith(("API_KEY", "AUTH_TOKEN")) or key.startswith("ANTHROPIC_"):
+        if (key.upper().endswith(("API_KEY", "AUTH_TOKEN"))
+                or key.upper().startswith("ANTHROPIC_")
+                or key.lower() in proxy_names):
             env.pop(key, None)
     env.update(OPENJARVIS_HOME=str(STATE / "openjarvis"),
                OLLAMA_HOST="http://127.0.0.1:11434", OLLAMA_NO_CLOUD="1",
-               JARVIS_NUM_CTX="4096")
+               JARVIS_NUM_CTX="4096",
+               NO_PROXY="127.0.0.1,localhost,::1",
+               no_proxy="127.0.0.1,localhost,::1")
     return env
 
 
