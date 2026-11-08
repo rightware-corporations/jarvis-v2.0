@@ -87,14 +87,27 @@ def run_logged(command, env=None):
         raise RuntimeError(f"Command failed with exit {code}; see {logs}")
 
 
-def setup():
+def sync_command(voice=False, kokoro=False):
+    """Frozen upstream lockfile only; voice uses upstream extras (no new deps)."""
+    cmd = ["uv", "sync", "--project", str(UPSTREAM), "--frozen", "--no-dev",
+           "--python", sys.executable]
+    if voice:
+        cmd += ["--extra", "speech"]
+    if kokoro:
+        cmd += ["--extra", "voice"]
+    return cmd
+
+
+def setup(voice=False, kokoro=False):
     if not shutil.which("git") or not shutil.which("uv"):
         raise RuntimeError("Install Git and uv first. See README.md.")
     run_logged(["git", "submodule", "update", "--init", "--recursive"])
     verify_source()
-    run_logged(["uv", "sync", "--project", str(UPSTREAM), "--frozen", "--no-dev", "--python", sys.executable])
+    run_logged(sync_command(voice, kokoro))
     prepare_config()
     print("Core installed. Start Ollama, run 'ollama pull qwen3.5:2b', then python jarvis.py doctor")
+    if voice:
+        print("Voice extras installed (faster-whisper). Next: python jarvis.py voice")
 
 
 def doctor():
@@ -113,6 +126,16 @@ def doctor():
     print(f"READY: pinned upstream, CLI, local Ollama, model {wanted}. Inference/voice not validated by doctor.")
 
 
+def python_executable():
+    folder = UPSTREAM / ".venv" / ("Scripts" if os.name == "nt" else "bin")
+    return folder / ("python.exe" if os.name == "nt" else "python")
+
+
+def voice_command(extra):
+    """Voice loop runs in the upstream venv; flags are passed through."""
+    return [str(python_executable()), "-m", "rightware.voice", *extra]
+
+
 def chat_command(model):
     if not model or any(x in model.lower() for x in ("cloud", "://")):
         raise RuntimeError("Choose a downloaded local model, not a cloud model")
@@ -122,12 +145,26 @@ def chat_command(model):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="RIGHTWARE Jarvis v2 — local text baseline")
-    parser.add_argument("command", choices=("setup", "doctor", "chat"))
-    parser.add_argument("--model", help="Installed local Ollama model (chat only)")
-    args = parser.parse_args(argv)
+    parser.add_argument("command", choices=("setup", "doctor", "chat", "voice"))
+    parser.add_argument("--model", help="Installed local Ollama model (chat/voice)")
+    parser.add_argument("--voice", action="store_true",
+                        help="setup: also install local speech-to-text (upstream 'speech' extra)")
+    parser.add_argument("--kokoro", action="store_true",
+                        help="setup: also install Kokoro TTS (upstream 'voice' extra; large, needs espeak-ng)")
+    args, extra = parser.parse_known_args(argv)
+    if extra and args.command != "voice":
+        parser.error("unrecognized arguments: " + " ".join(extra))
     try:
         if args.command == "setup":
-            setup()
+            setup(voice=args.voice or args.kokoro, kokoro=args.kokoro)
+        elif args.command == "voice":
+            verify_source()
+            prepare_config()
+            if not python_executable().is_file():
+                raise RuntimeError("Run python jarvis.py setup --voice first")
+            if args.model:
+                extra = ["--model", args.model, *extra]
+            return subprocess.call(voice_command(extra), cwd=ROOT, env=child_environment())
         elif args.command == "doctor":
             doctor()
         else:

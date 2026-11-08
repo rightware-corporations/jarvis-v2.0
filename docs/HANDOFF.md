@@ -257,3 +257,46 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - **Limites:** o checkout anónimo não pôde ser reproduzido no terminal deste ChatGPT devido a erro DNS local (`Could not resolve host: github.com`). Isto não invalida o estado público confirmado pela API GitHub, mas a clonagem efectiva do Kaggle permanece **NOT RUN**.
 - **Próxima acção:** importar o notebook canónico num Kaggle privado, activar Internet e GPU, executar células 1→2→3, verificar `REPO SHA` e `loaded.offload`, obter ZIP `JARVIS_ISSA_QWEN_EVIDENCE_*.zip`, analisar as respostas e `tool_results` antes de decidir 2B/4B. Não afirmar inferência PASS antecipadamente.
 - **Segurança:** a visibilidade pública revela o código e histórico; manter secret scanning e revisões de direitos. Não publicar credenciais nem dados do Issa.
+
+## ADENDA — 08/11/2026: H20 voz portuguesa e duas acções Windows (Claude Code, engenharia)
+
+[08/11/2026 ~17:10 UTC] [H20] base `3f903ea` → commit desta adenda [cloud Linux x86_64, Python 3.13, sem GPU, **sem microfone/colunas, sem Windows, sem PowerShell**; Hugging Face e registo Ollama bloqueados pelo proxy]
+
+**Objectivo:** primeira experiência funcional em Windows: voz → texto → OpenJarvis/Ollama → resposta → voz, mais abrir o Bloco de Notas e a Calculadora com autorização, confirmação, cancelamento e tratamento de erros. Não foram tocados o notebook Kaggle, `qa/compare_models.py`, `configs/local.toml` nem o upstream (a avaliação GPU continua a decorrer).
+
+### Auditoria do upstream fixado `f21d902` (speech)
+
+- STT local: `speech/faster_whisper.py` (`FasterWhisperBackend`, CTranslate2) e `speech/voice_io.py` (`record_until_silence`, `play_wav`). Extra `speech` no `uv.lock`: faster-whisper 1.2.1, ctranslate2 4.7.1 (wheels win_amd64 cp310–cp312+), sounddevice 0.5.6, soundfile 0.14.0, av 16.1.0. **Escolhido.**
+- STT cloud (OpenAI, Deepgram): rejeitados. A descoberta `auto` do upstream pode recorrer a eles se houver chaves, por isso o backend local é instanciado directamente.
+- TTS: Kokoro 0.9.4 (local, mas só pt-BR `pf_dora`/`pm_*`; torch 2.13 + espeak-ng); OpenAI/ElevenLabs/Cartesia são pagos/cloud e foram rejeitados. **Escolha:** SAPI do Windows por omissão (incluído no sistema, offline, voz pt-PT), Kokoro opcional (`--tts kokoro`).
+- `jarvis chat --voice` do upstream existe, mas não tem barreira de acções nem SAPI. O ciclo RIGHTWARE reutiliza as mesmas peças em vez de criar outro motor.
+
+### Implementado
+
+| Ficheiro | Conteúdo |
+|---|---|
+| `rightware/windows_actions.py` | Allow-list `notepad`/`calculator` com caminhos fixos `%SystemRoot%\System32`, `shell=False`; intenção por regras PT (verbo de pedido, sem negação; perguntas não disparam); autorização de sessão `--allow-actions` + confirmação «sim»/«confirmo»; verificação de **novo** PID via `tasklist` (inclui `CalculatorApp.exe`); resultados VERIFIED/NOT_VERIFIED/FAILED/BLOCKED/CANCELLED/REFUSED; auditoria JSONL sem texto |
+| `rightware/voice.py` | `VoiceLoop`: Enter → gravar → Whisper `small` CPU int8 `pt`; acção → barreira acima (o modelo nunca decide efeitos); senão `SimpleAgent`+`OllamaEngine` com o histórico; o resultado real da acção entra no histórico; aviso se o modelo alegar uma acção; Ctrl+C cancela o passo; erros do microfone, do Whisper, da voz e do Ollama degradam para texto |
+| `rightware/runtime.py` | `setup --voice` (`--extra speech`, `--frozen`), `setup --kokoro`, comando `voice` no venv do upstream com `child_environment()` |
+| `docs/WINDOWS_VOICE.md` | Instalação, arranque, regras de segurança e checklist V1–V12 de validação real |
+| `tests/test_windows_actions.py`, `tests/test_voice.py` | 26 testes novos |
+
+### Evidência
+
+| Verificação | Resultado |
+|---|---|
+| `uv sync --frozen --no-dev --extra speech` | PASS (Linux; o lockfile tem wheels Windows; Windows NOT RUN) |
+| `python -m unittest discover -s tests` (python do sistema e venv do upstream) | PASS 40/40 |
+| `python jarvis.py voice --allow-actions --tts none` com input por teclado, contra o **stub** de Ollama | PASS de cablagem: lançador → venv → `SimpleAgent` real com o prompt do Issa; «Abre o Bloco de Notas» → confirmação → `BLOCKED` (não Windows), sem chamar o modelo; histórico 2→6 mensagens com o resultado real; auditoria `{"action":"notepad","confirmed":true,"outcome":"BLOCKED"}` |
+| Whisper real (transcrição PT) | **NOT RUN**: o download do modelo falhou (Hugging Face bloqueado); o código degradou para modo texto como previsto |
+| Script SAPI PowerShell | **NOT RUN**: sem Windows/PowerShell. Testado só o contrato (texto via stdin, código 3 para «sem voz PT») |
+| Microfone, colunas, abertura real do Bloco de Notas/Calculadora | **NOT RUN / BLOCKED**: exige o host Windows autorizado |
+
+### Limites e riscos conhecidos
+
+- O limiar de silêncio do upstream (RMS 500) pode ser alto ou baixo para o microfone do Issa (V3/V10 dirão).
+- Whisper `small` em CPU: latência estimada de alguns segundos por frase, **não medida**.
+- Atrás de um proxy, o primeiro download do Whisper falha (o processo remove os proxies para proteger o Ollama local); é preciso descarregá-lo antes.
+- Kokoro: só pt-BR e instalação pesada; não recomendado para o MVP.
+
+**Próxima acção exacta:** o operador, num Windows autorizado pelo Issa, segue `docs/WINDOWS_VOICE.md` (instalar → V1–V12) e regista aqui os resultados e as linhas `actions-*.jsonl`. Só depois se declara voz e acções PASS. Em paralelo continua a avaliação GPU 2B/4B (modelo PENDENTE); o comando `voice --model` aceita o modelo escolhido sem alterações.

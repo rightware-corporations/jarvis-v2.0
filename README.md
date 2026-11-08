@@ -42,6 +42,16 @@ A configuração inicial é copiada para `.runtime/openjarvis/config.toml`, sem 
 
 `doctor` verifica revisão, CLI, serviço local e presença do modelo; **não faz inferência**. `chat` termina com `/quit`; Ctrl+C interrompe a sessão. Os logs de instalação ficam em `.runtime/logs/`; o wrapper não grava transcrições de conversa. O armazenamento efectuado pelo próprio upstream deve ser revisto antes de uso com dados pessoais.
 
+## Voz e acções Windows (H20 — em validação)
+
+```powershell
+python jarvis.py setup --voice
+python jarvis.py voice                   # microfone → Whisper local → Ollama → voz SAPI pt
+python jarvis.py voice --allow-actions   # + abrir Bloco de Notas/Calculadora, sempre com confirmação
+```
+
+STT e conversa reutilizam o OpenJarvis fixado (faster-whisper, SimpleAgent/Ollama). A voz por omissão é a do Windows (pt-PT/pt-BR instalada). As acções estão desligadas por omissão e só são anunciadas como feitas depois de confirmado o processo. Instalação, segurança e checklist de validação real: [docs/WINDOWS_VOICE.md](docs/WINDOWS_VOICE.md). **Ainda não validado em Windows real.**
+
 Para comparar outro modelo **já descarregado**:
 
 ```sh
