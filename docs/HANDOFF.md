@@ -153,3 +153,34 @@ PRÓXIMA ACÇÃO E CRITÉRIO DE ACEITAÇÃO:
 Prioridade A: reproduzir o preflight do commit df772f0, validar em profundidade qa/JARVIS_ISSA_KAGGLE.ipynb e qa/compare_models.py (token seguro, clone privado, Ollama 0.40.15/digest, modelos, import do upstream, sessão/contexto, calculadora native_react, tempos/VRAM/JSON, reinício do notebook), corrigir P0 sem refactor. Handoff e CI no mesmo ciclo. Depois o operador executa o Kaggle GPU; ChatGPT analisa o ZIP antes de aprovar modelo.
 
 **Estado desta adenda:** coordenação documentada, sem alteração funcional nesta acção. Respeitar a revisão live de develop no momento de cada novo trabalho.
+
+## ADENDA — 08/11/2026: Kaggle sem token / uma célula (DECISÃO DE SEGURANÇA)
+
+**Pedido explícito da RIGHTWARE:** não fornecer um token GitHub ao Kaggle por razões de segurança; executar a comparação de modelos numa sessão com script único. A alternativa com GITHUB_TOKEN em Kaggle Secrets deixa de ser o caminho recomendado. Mantém-se documentada apenas como experiência opcional, não autorizada por omissão.
+
+### Escolha para o próximo ensaio
+
+- **Novo notebook:** `qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb`, com uma única célula Python, acesso **só** a `open-jarvis/OpenJarvis` público fixado no SHA `f21d902f4d3bd7f0f3f138f1a4613019a394b549`.
+- Não clona o repositório privado `rightware-corporations/jarvis-v2.0` e não necessita de `GITHUB_TOKEN`, segredo Kaggle nem upload de código privado.
+- Obtém a distribuição Linux Ollama v0.40.15 com SHA-256 oficial `628c018404a4206493efd38e46251c154ede5141b8b8dc85c659b3b027c47379`, activa `OLLAMA_NO_CLOUD=1` ao iniciar serviço novo, usa loopback e uma GPU se disponível.
+- Carrega Qwen3.5 2B/4B; seis perguntas sintéticas, contexto de sessão, identidade do Issa e teste separado `NativeReActAgent` com `CalculatorTool`. Outputs JSON progressivos e ZIP sem pesos, tokens ou conversas pessoais.
+- **Fronteira de evidência:** compara modelos no upstream público com uma cópia do perfil RIGHTWARE; **não é prova do launcher privado**. A validação da versão RIGHTWARE permanece depois da escolha do motor, num ambiente autorizado.
+
+### Publicação e QA estática
+
+| Item | SHA / evidência | Estado |
+|---|---|---|
+| Notebook de uma célula, sem credenciais | `18ab40bb` | Publicado, Kaggle GPU NOT RUN |
+| Correcção do log de comandos excessivo | `0b81bacf` | Publicado, CI PASS |
+| Teste de sintaxe de célula e código interno / ausência de token | `8f986ef3` | CI runs 42500339491 e 42500342970 PASS |
+| README alterado para recomendar caminho sem token | `52244c87` | CI runs 42500395444 e 42500401684 PASS |
+
+### Próxima execução
+
+1. No browser autenticado do GitHub, descarregar `qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb`; importar para Kaggle Notebook **privado**.
+2. Activar GPU e Internet no Kaggle; executar a **única célula**, sem preencher token GitHub nem carregar código privado.
+3. Guardar `JARVIS_ISSA_NO_TOKEN_*.zip` e trazer evidência sanitizada ao chat para avaliação 2B/4B.
+4. Após receber evidência, actualizar este handoff com SHA upstream, versão Ollama, GPU/VRAM, respostas e tempo por turno, `tool_results`, erros e decisão de modelo. Sem teste real, manter status NOT RUN.
+5. Para validar o launcher da RIGHTWARE depois, executar testes no checkout privado local/Windows, não usar a avaliação do upstream como aceitação final da v2.0.
+
+**Estado desta adenda:** notebook pronto e testes estáticos PASS. Nenhuma inferência GPU, voz ou acção Windows foi executada nesta sessão.
