@@ -181,8 +181,11 @@ def main() -> int:
     for model in args.models:
         if not re.fullmatch(r"[A-Za-z0-9_.:/-]+", model) or "cloud" in model.lower():
             parser.error("Only installed local Ollama model names are allowed.")
-    # Ensure inference uses only local endpoint, without inherited proxies.
-    os.environ.update(runtime.child_environment())
+    # A plain os.environ.update would *retain* proxy/secret keys that were
+    # removed from the copied environment. Replace the process environment.
+    clean_environment = runtime.child_environment()
+    os.environ.clear()
+    os.environ.update(clean_environment)
     config = runtime.prepare_config()
     if "Issa" not in config["agent"]["default_system_prompt"]:
         raise RuntimeError("Stale local Jarvis identity. Update the runtime profile first.")
