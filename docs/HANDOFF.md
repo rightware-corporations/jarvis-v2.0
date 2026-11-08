@@ -302,3 +302,11 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 **Próxima acção exacta:** o operador, num Windows autorizado pelo Issa, segue `docs/WINDOWS_VOICE.md` (instalar → V1–V12) e regista aqui os resultados e as linhas `actions-*.jsonl`. Só depois se declara voz e acções PASS. Em paralelo continua a avaliação GPU 2B/4B (modelo PENDENTE); o comando `voice --model` aceita o modelo escolhido sem alterações.
 
 **CI da série H20:** commit `79dee1e9` em `develop`; *RIGHTWARE foundation* run `42503448304` (push, job `launcher`, 40 testes) **PASS**; run `42503450156` (PR #1) iniciado. São testes unitários em Linux: voz e acções Windows continuam NOT RUN.
+
+
+## ADENDA — 08/11/2026: KAGGLE UI — primeira execução sem acelerador (captura do operador)
+
+- **Evidência visual:** operador abriu `https://www.kaggle.com/code/rightware/jarvis-issa-kaggle`; separador Logs mostrava «Running for 16.1s», «Accelerator None», «Output 0 B» e «Traceback (most recent call last)», com referência a papermill. As últimas linhas da excepção **não estavam visíveis**, pelo que não atribuir uma causa específica ao traceback.
+- **Resultado:** GPU **NOT CONFIGURED**; inferência 2B/4B **NOT RUN/NOT VERIFIED**; nenhuma resposta/modelo ou ZIP foi comprovado pela captura. A ocorrência não reprova a implementação do Jarvis: configuração de ambiente e erro ainda por diagnosticar.
+- **Orientação entregue:** entrar em Edit, configurar Accelerator=GPU T4×2 (ou alternativa GPU) e Internet ON, interromper sessão anterior se necessário, executar apenas a célula 1 e verificar GPU/REPO SHA; avançar às células seguintes apenas após confirmação. Se o erro persistir, recolher o final do traceback.
+- **Próxima acção:** screenshot ou saída da célula 1 com GPU e SHA, ou traceback completo para diagnóstico. Não declarar PASS de GPU ou inferência antes da evidência.
