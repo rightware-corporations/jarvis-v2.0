@@ -125,3 +125,31 @@ PRÓXIMA ACÇÃO E CRITÉRIO DE ACEITAÇÃO:
 5. Passar para voz e acções Windows até ao limite H20 para avaliação do motor, salvo falha crítica documentada.
 
 **Bloqueio:** sem acesso à sessão privada Kaggle a partir deste chat, os testes GPU e a comparação real continuam NOT RUN. Ferramentas Windows e áudio continuam NOT RUN.
+
+## ADENDA — 08/11/2026: coordenação ChatGPT + Claude Code + operador (PLANO OPERACIONAL)
+
+**Origem:** o operador confirmou que Claude Code está activo em desktop no mesmo repositório e pediu divisão das tarefas. Captura indica Claude com checkout em develop, submódulo inicializado no pin e sincronizado com a HEAD df772f0; o Claude ainda não apresentou resultados de código adicional. Este plano distingue **atribuição recomendada** de **resultado executado**.
+
+### Responsabilidades exclusivas para evitar conflitos
+
+| Interveniente | Responsável | Ficheiros / fronteira | Entregável |
+|---|---|---|---|
+| Claude Code — engenheiro de implementação | Inspeccionar e corrigir launcher, comparador e Kaggle notebook; executar testes e CI; avançar para integração STT/TTS e acções Windows autorizadas | Código em rightware/, qa/, tests/, configs/; guardar resultados, actualizar handoff no mesmo commit/série curta | Código testado, SHA, comandos, provas, NEXT |
+| ChatGPT — arquitectura, auditoria e QA independente | Rever diffs, detectar riscos/bugs, formular corpus e critérios de aceitação, analisar resultados JSON/ZIP, priorizar P0, avaliar GO/NO-GO | Revisão read-only enquanto Claude escreve; não fazer commits concorrentes nos mesmos ficheiros | Diagnóstico técnico e recomendações verificáveis; pedir ao Claude que registe a revisão no handoff |
+| Operador RIGHTWARE — execução/aceitação | Iniciar notebook Kaggle na conta com GPU e secret privado; controlar consentimento no Windows; verificar voz/acções reais | Kaggle e PC Windows autorizado; nenhuma credencial no chat/repo | ZIP de evidências sanitizadas, resultados Windows e aceitação |
+
+### Protocolo obrigatório
+
+1. **Uma única pessoa/agente escreve em develop por vez.** Antes de qualquer commit/push, executar git fetch e sincronizar, validar HEAD. Não executar resets/force push nem abrir branches extra; main intocada, PR #1 Draft.
+2. Claude é o **owner de implementação** durante H4–H36; ChatGPT mantém revisão read-only enquanto ele escreve. Se for necessária alteração directa por ChatGPT, o Claude deve terminar a sua transacção e confirmar que deixou o repo sincronizado.
+3. **Após cada output material, actualizar este handoff e registar comando, ambiente, commit SHA, PASS/FAIL/REVIEW/BLOCKED, evidência e próxima acção.** Não acumular resultados sem registo. CI PASS não implica inferência PASS.
+4. H4–H12: revisão crítica do notebook/harness e **prova GPU real 2B vs 4B**, só com modelos locais; não instalar Claude no runtime, não substituir upstream ou modelo por opinião.
+5. H12–H20: escolher o motor e corrigir até dois bloqueadores reais. H20–H36: voz PT e duas acções Windows com confirmação/cancelamento e consentimento. H36–H48: smoke end-to-end, arranque e entrega com GO/NO-GO.
+6. Critério de identidade: Jarvis **do Issa**, desenvolvido pela RIGHTWARE; Orion é cenário **sintético**, não um projecto real declarado.
+7. Manter actividade já em curso do Claude: a captura relatou fetch/pull e submódulo inicializado, mas **sem evidência de execução de GPU ou voz**. Não atribuir resultados não comprovados.
+
+### Pedido de implementação imediato ao Claude
+
+Prioridade A: reproduzir o preflight do commit df772f0, validar em profundidade qa/JARVIS_ISSA_KAGGLE.ipynb e qa/compare_models.py (token seguro, clone privado, Ollama 0.40.15/digest, modelos, import do upstream, sessão/contexto, calculadora native_react, tempos/VRAM/JSON, reinício do notebook), corrigir P0 sem refactor. Handoff e CI no mesmo ciclo. Depois o operador executa o Kaggle GPU; ChatGPT analisa o ZIP antes de aprovar modelo.
+
+**Estado desta adenda:** coordenação documentada, sem alteração funcional nesta acção. Respeitar a revisão live de develop no momento de cada novo trabalho.
