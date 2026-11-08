@@ -30,3 +30,50 @@ Sem migração da camada Wyzer. Sem voz, GUI, wake word, acções Windows ou mem
 4. Só depois integrar voz e tarefas no Windows autorizado.
 
 Consultar docs/VALIDATION.md para o que foi efectivamente validado nesta entrega. Actualizar este ficheiro após cada resultado material.
+
+
+## ADENDA — 08/11/2026: execução em 48 horas e disciplina obrigatória de handoff
+
+### Direcção explícita da RIGHTWARE (CONFIRMADA)
+- **Prazo e prioridade:** dispor de um Jarvis v2 utilizável dentro de dois dias de trabalho/48 horas de execução. Parar ciclos intermináveis de QA; corrigir bloqueadores do percurso real. O prazo é meta de execução, não declarar sucesso antes do aceite.
+- **Handoff contínuo:** após **cada output material** (ensaio, alteração, CI, erro, decisão), actualizar este handoff **no mesmo ciclo de trabalho**, com SHA, ambiente, comando/cenário, resultado observado, PASS/FAIL/REVIEW/NOT RUN, evidência sanitizada, bloqueio, responsável e próxima acção. Não substituir histórico, não inventar resultados; manter PR Draft até critérios cumpridos.
+- **Motor em operação:** independente de Claude/serviços pagos obrigatórios. Kaggle é laboratório transitório, não runtime do produto.
+- **Repositórios:** desenvolver apenas neste `rightware-corporations/jarvis-v2.0` na `develop`; preservar `rightware-corporations/jarvis` como referência histórica. Apenas `main` e `develop`.
+
+### Estado verificado antes desta adenda
+- Base `develop@8d92705c30f965e4e344427604a8500bab45d388`; PR #1 Draft; duas execuções do workflow de fundação em 08/11 PASS (runs `42492070438` e `42492070280`), cada uma contendo apenas testes unitários do launcher no Linux. Não são validação de inferência.
+- Upstream fixado em `f21d902f4d3bd7f0f3f138f1a4613019a394b549`; launcher português com `agent=simple` e modelo inicial `qwen3.5:2b`. O agente `simple` do upstream **não aceita ferramentas**, embora aceite histórico de mensagens: a prova da calculadora exige um caminho de agente distinto, com resultados de ferramenta auditados.
+- O relato final do Work confirma Ollama 2B descarregado/carregado e conversa real iniciada, mas **não inclui transcrição completa das seis perguntas, resultado da ferramenta na nova base, avaliação do 4B ou ZIP Kaggle**. Esses resultados continuam NOT RUN/NOT VERIFIED para a v2.0.
+- `child_environment()` continua a herdar variáveis proxy para o subprocesso da CLI; `doctor()` ignora proxies nas suas próprias consultas. Rever bloqueio proxy na CLI antes da prova de inferência. Não atribuir ao modelo falhas de transporte.
+- Consola desta sessão: Linux x86_64/Python 3.13.5, RAM total ~5.8 GiB, sem nvidia-smi nem Ollama instalado. Não tem acesso garantido ao Kaggle do utilizador ou Windows físico.
+
+### Plano de entrega (RECOMENDAÇÃO DE IMPLEMENTAÇÃO; nenhuma fase abaixo foi validada por esta adenda)
+| Janela de trabalho | Entrega exigida | Gate e regra de paragem |
+|---|---|---|
+| H0–H4 | Baseline reprodutível: revisão de SHA, transporte sem proxy indevido, setup/doctor, corpus curto, script/notebook de ensaio e artefactos de prova sanitizados | CI unitário PASS; nenhuma credencial ou transcript pessoal no git. Não apresentar o doctor como prova de inferência. |
+| H4–H12 | Teste GPU Kaggle ou host equivalente: 2B vs 4B, **mesmas seis perguntas**, contexto Orion conhecido/desconhecido, identidade e aritmética. Ferramentas **num cenário separado** com agente habilitado | Respostas completas e métricas (modelo, SHA, GPU, tempos, RAM/VRAM); proibir invenção de dados críticos, falsas afirmações de execução ou ferramenta sem autorização. |
+| H12–H20 | Escolher modelo e corrigir até **dois bloqueadores de maior impacto** identificados na prova real, com reteste focalizado | Decisão documentada com evidência; não iniciar treino, refactor ou memória vectorial por rotina. |
+| H20–H36 | Integrar STT/TTS PT básicos e **duas acções Windows permitidas** (ex.: abrir Bloco de Notas e Calculadora), confirmação e cancelamento, em host autorizado | Provas com microfone/áudio e efeitos Windows reais; sem autorização explícita, reportar BLOQUEADO, nunca PASS. |
+| H36–H48 | Integração, regressão limitada, arranque/reinício e empacotamento de instruções; demonstração de ponta a ponta | Entregar comando de arranque, evidência reproduzível, falhas residuais, aceite ou NO-GO. |
+
+### Critérios mínimos de aceitação do MVP (objectivo)
+1. Iniciar Jarvis com procedimento documentado, sem API paga; responde em português e identifica-se como Jarvis da RIGHTWARE.
+2. Mantém contexto básico durante seis turnos de uma sessão, incluindo mudança de tópico e retorno. Sobre Orion, só afirma factos fornecidos e assume desconhecer orçamento/equipamentos.
+3. Executa uma ferramenta **real** com resultado auditável, distingue resposta calculada pelo modelo de `tool_results`.
+4. Numa máquina Windows autorizada, STT reconhece um pedido PT, TTS reproduz resposta; duas acções permitidas só ocorrem com pedido/autorização, confirmação e possibilidade de cancelamento; execução observável.
+5. Segurança P0: zero operações não solicitadas, zero segredos publicados; rejeita execução não autorizada e nunca diz que executou algo sem `tool_result` verificado.
+6. Repetir arranque após reinício e guardar instruções de uso. UI/HUD cinematográfico, wake word, memória durável, treino de pesos, instalação comercial e arquitectura distribuída **fora do escopo** inicial, salvo funcionalidade pronta comprovada.
+
+**Ponto de corte dos testes:** parar depois de uma comparação controlada e de um reteste dirigido por falha, seguido de smoke final. Não repetir baterias completas sem alteração material. Se P0 continuar, reduzir âmbito e registar NO-GO explícito, sem fingir MVP aceite.
+
+### Protocolo de registo para as próximas saídas
+```text
+[DATA/HORA UTC+02] [WORK-PACKAGE] [SHA] [AMBIENTE]
+OBJECTIVO / COMANDO OU CENÁRIO:
+RESULTADO OBSERVADO (PASS | FAIL | REVIEW | BLOCKED | NOT RUN):
+EVIDÊNCIA (link, run ID, ficheiro sanitizado):
+CAUSA/INCERTEZA:
+PRÓXIMA ACÇÃO E CRITÉRIO DE ACEITAÇÃO:
+```
+
+**Próxima acção:** corrigir/validar transporte e preparar o harness de comparação versionado no repositório. Executar Kaggle somente com artefactos de execução suficientes; usar GPU para teste, não treino de pesos. Priorizar funcionalidade real, não número de testes.
