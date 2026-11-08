@@ -310,3 +310,18 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - **Resultado:** GPU **NOT CONFIGURED**; inferência 2B/4B **NOT RUN/NOT VERIFIED**; nenhuma resposta/modelo ou ZIP foi comprovado pela captura. A ocorrência não reprova a implementação do Jarvis: configuração de ambiente e erro ainda por diagnosticar.
 - **Orientação entregue:** entrar em Edit, configurar Accelerator=GPU T4×2 (ou alternativa GPU) e Internet ON, interromper sessão anterior se necessário, executar apenas a célula 1 e verificar GPU/REPO SHA; avançar às células seguintes apenas após confirmação. Se o erro persistir, recolher o final do traceback.
 - **Próxima acção:** screenshot ou saída da célula 1 com GPU e SHA, ou traceback completo para diagnóstico. Não declarar PASS de GPU ou inferência antes da evidência.
+
+
+## ADENDA — 08/11/2026: KAGGLE K01 — célula 1 (GPU + checkout + setup)
+
+**Fonte da evidência:** output literal apresentado pelo operador a partir do notebook Kaggle `JARVIS_ISSA_KAGGLE` após execução da **célula 1**. Não executado directamente pelo ChatGPT.
+
+- **Resultado:** PASS para a **CÉLULA 1**; NÃO é um PASS de inferência nem uma prova de uso efectivo de GPU pelo modelo.
+- **Ambiente:** 2 × Tesla T4, cada uma com 15360 MiB; Python CPython 3.13.16, interpretador `/usr/bin/python3`.
+- **Checkout completo:** `REPO SHA: 980d0d30df66dfba548a18da1bdfc87b8e3588e2` na `develop`; submódulo `vendor/openjarvis` pin `f21d902f4d3bd7f0f3f138f1a4613019a394b549`.
+- **Instalação:** `uv sync --frozen` preparou 59 pacotes e instalou 59, incluindo `openjarvis==1.0.5.dev168+gf21d902f`. Concluiu com `CHECKOUT + FROZEN DEPENDENCIES: ready`.
+- **Aviso não bloqueador:** hardlinks indisponíveis entre sistemas de ficheiros; `uv` usou cópia de ficheiros e terminou normalmente.
+- **Ainda NÃO EXECUTADO/VALIDADO:** Ollama v0.40.15, download 2B/4B, carregamento real na GPU, seis turnos, `tool_results`, evidências finais ZIP, voz e Windows.
+- **Próxima acção exacta:** o operador executa **apenas a célula 2**, confirma versão de Ollama e os dois `ollama pull`; partilha output/erro antes da célula 3. Não modificar notebook nem reexecutar a célula 1 sem necessidade.
+
+**Estado:** `K01_SETUP_PASS; K02_OLLAMA_MODELS_NOT_RUN; K03_INFERENCE_NOT_RUN`.
