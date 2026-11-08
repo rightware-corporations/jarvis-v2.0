@@ -77,3 +77,14 @@ PRÓXIMA ACÇÃO E CRITÉRIO DE ACEITAÇÃO:
 ```
 
 **Próxima acção:** corrigir/validar transporte e preparar o harness de comparação versionado no repositório. Executar Kaggle somente com artefactos de execução suficientes; usar GPU para teste, não treino de pesos. Priorizar funcionalidade real, não número de testes.
+
+
+## ADENDA — 08/11/2026: identidade do destinatário (DECISÃO EXPLÍCITA)
+
+**Correcção confirmada pela RIGHTWARE:** o produto é **JARVIS DO ISSA** (Jarvis — Issa Edition), assistente pessoal **destinado ao Issa**. **RIGHTWARE é a organização desenvolvedora**, não a pessoa a quem o assistente se destina. Esta decisão prevalece sobre a frase histórica «Jarvis da RIGHTWARE» presente nos critérios de aceitação anteriores. Não confundir Issa com o operador da RIGHTWARE nem com a entidade empresarial.
+
+- Identidade esperada em todos os ensaios e no produto: «Sou o Jarvis, assistente pessoal do Issa, desenvolvido pela RIGHTWARE», em português natural; outras formulações correctas são permitidas.
+- O prompt inicial em `configs/local.toml` foi alinhado nesta mudança. **Limite:** `prepare_config()` só copia a configuração para `.runtime/openjarvis/config.toml` caso ela ainda não exista. Sessões previamente configuradas **não recebem automaticamente o prompt novo**: actualizar o arquivo runtime com preservação de preferências e sem apagar dados do utilizador.
+- Actualizar o corpus do benchmark 2B/4B para avaliar especificamente a identidade do Issa. A referência Orion continua sendo **dado sintético de teste**; não afirmar que é um projecto real do Issa.
+- Estado: **DECISÃO REGISTADA / CONFIGURAÇÃO DE REPOSITÓRIO ALTERADA / INFERÊNCIA REAL NÃO REEXECUTADA**. Os testes anteriores não provam que o modelo respeitará a identidade.
+- Próxima acção: validar o prompt pela sessão real; em seguida prosseguir a comparação de modelos, voz e ferramentas Windows no prazo do MVP.
