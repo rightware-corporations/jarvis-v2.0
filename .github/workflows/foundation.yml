@@ -21,6 +21,8 @@ jobs:
   # recipient's PC (docs/WINDOWS_VOICE.md, V1-V12).
   windows-compat:
     runs-on: windows-latest
+    env:
+      PYTHONUTF8: '1'   # same as rightware.runtime.voice_environment()
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

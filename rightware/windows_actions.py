@@ -169,11 +169,20 @@ class WindowsActions:
                         close_fds=True)
         except (OSError, subprocess.SubprocessError) as exc:
             return ActionResult(action.action_id, "FAILED", detail=type(exc).__name__ + ": " + str(exc))
+        # A new PID must still be running on a second observation: calc.exe is
+        # a launcher that exits at once and hands over to CalculatorApp.exe /
+        # win32calc.exe (seen on the Windows CI runner), so a transient PID is
+        # not proof that the application opened.
         deadline = self._verify_seconds
         while deadline > 0:
             new = _running_pids(action.images, self._runner) - before
             if new:
-                return ActionResult(action.action_id, "VERIFIED", pid=min(new))
+                self._sleep(0.5)
+                deadline -= 0.5
+                stable = new & _running_pids(action.images, self._runner)
+                if stable:
+                    return ActionResult(action.action_id, "VERIFIED", pid=min(stable))
+                continue
             self._sleep(0.5)
             deadline -= 0.5
         return ActionResult(action.action_id, "NOT_VERIFIED",

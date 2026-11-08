@@ -31,7 +31,25 @@ microfone ──record_until_silence (upstream)──► WAV 16 kHz
 5. Se o modelo afirmar ter executado algo sem acção real, é acrescentado «nenhuma acção foi executada neste pedido».
 6. A auditoria fica em `.runtime/logs/actions-AAAAMMDD.jsonl`, com acção, autorização, confirmação, resultado e PID. **Não guarda texto da conversa.**
 
-## Instalação no Windows (só com autorização do dono do PC)
+## Script Windows (recomendado)
+
+`rightware\windows\Jarvis-Issa.ps1` (Windows PowerShell 5.1 ou 7) faz o percurso inteiro, com logs sanitizados em `.runtime\logs\windows-<modo>-<UTC>.log`:
+
+| Modo | O que faz | Autorização |
+|---|---|---|
+| `check` (omissão) | Git, Python 3.10–3.13 x64, uv, Ollama (binário e serviço), dispositivos de áudio, vozes SAPI pt, `jarvis.py diagnose`, testes unitários | Nenhuma: **só leitura** |
+| `install` | `python jarvis.py setup --voice` (não instala Git/Python/uv/Ollama) | Escrever `INSTALAR` |
+| `text` | Jarvis por teclado, sem voz nem acções | — |
+| `voice` | Microfone + voz SAPI, sem acções | — |
+| `actions` | Voz + Bloco de Notas/Calculadora | Escrever `AUTORIZO`; cada acção pede «sim» |
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File rightware\windows\Jarvis-Issa.ps1 -Mode check
+```
+
+`python jarvis.py diagnose` pode ser corrido sozinho: é só de leitura e escreve `diagnostic-<UTC>.json`. A conversa nunca é registada. A demonstração guiada está em [DEMO_WINDOWS.md](DEMO_WINDOWS.md).
+
+## Instalação manual no Windows (só com autorização do dono do PC)
 
 Requisitos: Windows 10/11 x64, Git, Python 3.11–3.13 x64, [uv](https://docs.astral.sh/uv/), [Ollama](https://ollama.com/download), microfone e colunas. Espaço: cerca de 1 GB de dependências de voz mais o modelo Whisper `small` (cerca de 460 MB, descarregado do Hugging Face no primeiro arranque). Os modelos Ollama são à parte.
 
@@ -71,7 +89,9 @@ python jarvis.py voice --allow-actions      # autoriza Bloco de Notas/Calculador
 
 Outras opções: `--model qwen3.5:4b`, `--stt-model base|small|medium`, `--tts sapi|kokoro|none`, `--text-only` (sem microfone).
 
-Uso: **Enter numa linha vazia → falar**; escrever texto também funciona. «sair» termina. **Ctrl+C** cancela o passo em curso (gravação, resposta do modelo, fala); na linha de entrada termina a sessão.
+Uso: **Enter numa linha vazia → falar**; escrever texto também funciona. «sair» termina. **Ctrl+C** cancela o passo em curso (gravação, transcrição, resposta do modelo, fala) em ≤0,1 s; a resposta cancelada não entra no histórico. Na linha de entrada, Ctrl+C termina a sessão.
+
+Notas Windows: o processo de voz força UTF-8 (`PYTHONUTF8`), para os logs não falharem com acentos. O Bloco de Notas do Windows 11 abre separadores num processo já existente; com ele aberto, o resultado é «não consegui confirmar» (fechar antes de testar V6).
 
 ## Validação real (operador, Windows autorizado)
 

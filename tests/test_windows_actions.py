@@ -125,6 +125,17 @@ class ExecutionTests(unittest.TestCase):
         acts, _ = self.make(snapshots=([], [("CalculatorApp.exe", 77)]))
         self.assertEqual(acts.run("calculator", lambda q: "sim").outcome, "VERIFIED")
 
+    def test_transient_launcher_pid_is_not_proof_but_handover_is(self):
+        # Observed on windows-latest: calc.exe (our child) exits, win32calc.exe stays.
+        acts, _ = self.make(snapshots=([], [("calc.exe", 7788)], [("win32calc.exe", 7860)],
+                                       [("win32calc.exe", 7860)]))
+        result = acts.run("calculator", lambda q: "sim")
+        self.assertEqual((result.outcome, result.pid), ("VERIFIED", 7860))
+
+    def test_process_that_vanishes_is_not_verified(self):
+        acts, _ = self.make(snapshots=([], [("calc.exe", 7788)], []))
+        self.assertEqual(acts.run("calculator", lambda q: "sim").outcome, "NOT_VERIFIED")
+
     def test_no_new_process_is_not_reported_as_opened(self):
         acts, popen = self.make(snapshots=([("notepad.exe", 100)], [("notepad.exe", 100)]))
         result = acts.run("notepad", lambda q: "sim")

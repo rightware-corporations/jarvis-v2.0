@@ -372,3 +372,40 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - **K03_GPU_OFFLOAD_REVIEW:** presença de GPUs T4 confirmada em K01, mas utilização real do modelo não demonstrada pelo texto partilhado. Ler `loaded.offload` e `model_digests` no JSON. Não inferir consumo de VRAM a partir do tempo.
 - **WINDOWS_VOICE_NOT_RUN:** o código de voz/acções e os 40 testes unitários anteriores não equivalem a áudio real nem processo aberto num Windows autorizado.
 - **Próxima acção exacta:** operador descarrega e anexa ao chat o ZIP `JARVIS_ISSA_QWEN_EVIDENCE_20261108_175506Z.zip` (ou JSON higienizado). ChatGPT analisa offload/digests, estado completo e eventuais avisos. Claude Code pode começar a preparar a validação Windows com 4B como candidato, sem reinstalar o laboratório Kaggle. Actualizar esta secção com o veredicto após leitura do ZIP.
+
+## ADENDA — 08/11/2026: H20-B bloqueadores Windows, script de validação, CI Windows e demonstração (Claude Code)
+
+[08/11/2026 ~18:10 UTC] [H20-B] base `771e5c7` → `6861e9c` → commit desta adenda [cloud Linux + GitHub runner `windows-latest` (Windows Server 2025 10.0.26100, Python 3.12.10)]. Não foram tocados o notebook Kaggle, `qa/compare_models.py`, `configs/local.toml` nem o upstream. O K03 (adenda acima) recomenda `qwen3.5:4b` como candidato; a demonstração usa `-Model qwen3.5:4b` explicitamente, sem mudar o perfil por omissão.
+
+### Bloqueadores Windows encontrados e corrigidos
+
+1. **P0 — Ctrl+C não cancelava a resposta do modelo nem a transcrição em Windows.** O `KeyboardInterrupt` não é entregue durante chamadas C bloqueantes (socket httpx, CTranslate2), por isso só chegava depois da resposta (até 180 s). Agora corre numa thread com `join(0.1)`; uma resposta cancelada **não** entra no histórico. Teste com `interrupt_main`.
+2. **P1 — codificação.** Com a saída redireccionada para um log, o Python usa cp1252 e falha ou corrompe o português. **Confirmado no runner:** «est� em execu��o» no passo sem UTF-8. O processo de voz força agora `PYTHONUTF8=1`/`PYTHONIOENCODING=utf-8` (`voice_environment()`); os testes lêem e escrevem UTF-8 explícito.
+3. **P1 — SAPI.** O texto passava por stdin com `-Command`, um comportamento incerto no PowerShell 5.1. Passa a usar `-EncodedCommand` (script) e uma variável de ambiente (texto), com modo de listar vozes e saída WAV.
+4. **P1 — falso VERIFIED da Calculadora (descoberto no CI Windows).** `calc.exe` é um lançador que termina e passa a `win32calc.exe`/`CalculatorApp.exe`. A verificação aceitava o PID transitório do próprio lançador (7788, que já não existia no `taskkill`), enquanto a app real era o PID 7860. O PID tem agora de continuar vivo numa segunda observação; dois testes novos reproduzem o caso e falhavam com o código anterior.
+5. **Documentado, não corrigido:** o Bloco de Notas do Windows 11 abre separadores num processo existente → `NOT_VERIFIED` honesto se já estiver aberto. A demonstração manda fechá-lo antes.
+
+### Artefactos novos
+
+| Ficheiro | Função |
+|---|---|
+| `rightware/diagnose.py`, `python jarvis.py diagnose` | Só leitura: Python 3.10–3.13 x64, pin, venv, perfil (Ollama loopback, analytics off, identidade Issa/RIGHTWARE, prompt igual ao `configs/local.toml`), Ollama e modelo, faster-whisper/ctranslate2 (aviso de DLL/VC++), cache Whisper, microfone por omissão, voz SAPI pt, executáveis das acções. JSON sanitizado. Não cria o perfil, não instala, não grava |
+| `rightware/windows/Jarvis-Issa.ps1` | PS 5.1/7, UTF-8 com BOM. `check` (omissão, só leitura) · `install` (escrever `INSTALAR`) · `text` · `voice` · `actions` (escrever `AUTORIZO`; o «sim» por acção mantém-se). Logs sanitizados `windows-<modo>-<UTC>.log`; a conversa não é registada; no fim mostra as linhas `AUDIT:` |
+| `.github/workflows/foundation.yml` job `windows-compat` | Testes em Windows, parse PS 5.1/7, modo `check` em PS 5.1, diagnose, SAPI real para WAV, smoke de acções **só no runner** |
+| `docs/DEMO_WINDOWS.md` | Demonstração de ~15 min: identidade, contexto, recusa sem autorização, Ctrl+C, acções com sim/não, auditoria, reinício |
+| `docs/WINDOWS_VOICE.md` | Secção do script; notas Ctrl+C/UTF-8/Notepad do Windows 11 |
+
+### Evidência
+
+| Verificação | Resultado |
+|---|---|
+| Testes locais | PASS 56/56 (python do sistema e venv do upstream) |
+| `voice --text-only --allow-actions` contra o stub (Linux) | PASS de cablagem: «Abre a calculadora» → «não» → `CANCELLED`, entra no histórico; auditoria correcta |
+| CI `6861e9c` run `42507808945`: `launcher` + `windows-compat` | **PASS** (todos os passos) |
+| Windows runner: testes | 54/54 OK em Windows Server 2025 |
+| Windows runner: `Jarvis-Issa.ps1 -Mode check` (PS 5.1) | Exit 0; git PASS, Python 3.12 x64 PASS; uv/ollama FAIL (ausentes no runner, detectado correctamente); sem áudio → WARN; sem voz pt (só David/Zira en-US) → WARN; log sanitizado (`<REPO>`); «Nenhuma instalação, aplicação ou gravação foi feita» |
+| Windows runner: SAPI real | `voices: en-US David, en-US Zira`; WAV de 210 360 bytes sintetizado a partir de «Olá Issa, sou o Jarvis. Ação concluída.» |
+| Windows runner: smoke de acções (não é aceitação) | Bloco de Notas `VERIFIED` com PID 2964 (terminado pelo passo); Calculadora `VERIFIED` com PID transitório → corrigido em (4) |
+| Voz pt real, microfone, colunas, Whisper, acções no PC do Issa | **NOT RUN** |
+
+**Próxima acção exacta:** o operador, num Windows autorizado, executa `docs/DEMO_WINDOWS.md` (passo 0 `check` → `install` com `INSTALAR` → `voice` → `actions` com `AUTORIZO`) e entrega os `windows-*.log`/`diagnostic-*.json` sanitizados e a tabela V1–V12. Só então se declara voz e acções PASS. Pendente em paralelo: leitura do ZIP K03 (offload/digests) para fechar a escolha do 4B.
