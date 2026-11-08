@@ -50,9 +50,19 @@ python jarvis.py chat --model NOME_DO_MODELO_LOCAL
 
 A escolha definitiva do modelo está pendente. O Qwen3.5 2B é apenas a referência inicial. Kaggle serve de laboratório temporário, não de disponibilidade permanente do produto.
 
-## Laboratório GPU: Qwen3.5 2B vs 4B (Kaggle)
+## Laboratório GPU sem token — recomendado
 
-A primeira comparação real da **v2.0** está preparada em [qa/JARVIS_ISSA_KAGGLE.ipynb](qa/JARVIS_ISSA_KAGGLE.ipynb). O notebook clona `develop` com submódulos, instala as dependências fixadas, inicia Ollama **v0.40.15** em loopback, obtém os modelos e executa [qa/compare_models.py](qa/compare_models.py). A sessão utiliza seis perguntas sintéticas e uma prova separada de ferramenta; os resultados são gravados em JSON e ZIP.
+**O teste inicial para escolher o motor não exige token GitHub nem upload do repositório privado.** Utiliza [qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb](qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb), com **uma única célula Python**. O notebook clona apenas o OpenJarvis público na revisão fixada, configura a identidade de Jarvis do Issa, obtém Ollama v0.40.15 (SHA-256 verificado), descarrega os modelos Qwen3.5 2B/4B e testa seis perguntas com contexto e uma calculadora real num agente independente. Exporta um ZIP de evidências.
+
+**Execução:** descarregar o notebook do repositório usando a sessão autenticada do browser, importar no Kaggle, activar Internet + GPU T4 e executar a única célula. Não configurar GITHUB_TOKEN, não inserir credenciais e manter o notebook privado. Os prompts Orion são sintéticos e não contêm dados pessoais reais.
+
+**Limite crucial:** este é um ensaio do **upstream público OpenJarvis**, não da integração privada RIGHTWARE. Selecciona o modelo a partir de evidência e depois valida o launcher RIGHTWARE num ambiente autorizado. Sem executar GPU real, o estado permanece NOT RUN.
+
+## Laboratório privado com autenticação (alternativa, não recomendada neste momento)
+
+
+
+A alternativa de comparação integrada no wrapper privado está preparada em [qa/JARVIS_ISSA_KAGGLE.ipynb](qa/JARVIS_ISSA_KAGGLE.ipynb). O notebook clona `develop` com submódulos, instala as dependências fixadas, inicia Ollama **v0.40.15** em loopback, obtém os modelos e executa [qa/compare_models.py](qa/compare_models.py). A sessão utiliza seis perguntas sintéticas e uma prova separada de ferramenta; os resultados são gravados em JSON e ZIP.
 
 Para executar: abrir/importar o notebook no Kaggle, activar **Internet** e **GPU**, definir em Kaggle Secrets um `GITHUB_TOKEN` com acesso somente de leitura ao repositório privado, e executar as três células por ordem. O token não deve ser partilhado nem incluído em comandos ou outputs. Se a pasta `/kaggle/working/jarvis-v2.0` já existir, o notebook **não** faz actualização silenciosa. Confirmar que o SHA mostrado é a revisão que se pretende testar.
 
