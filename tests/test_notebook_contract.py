@@ -16,7 +16,10 @@ class KaggleNotebookContracts(unittest.TestCase):
         for i, cell in enumerate(cells, 1):
             with self.subTest(cell=i):
                 ast.parse("".join(cell["source"]))
-        self.assertIn('UserSecretsClient().get_secret("GITHUB_TOKEN")', code)
+        self.assertIn("rightware-corporations/jarvis-v2.0.git", code)
+        self.assertIn("--recurse-submodules", code)
+        self.assertNotIn("GITHUB_TOKEN", code)
+        self.assertNotIn("kaggle_secrets", code)
         self.assertIn("git", code)
         self.assertIn("qa.compare_models", code)
         self.assertIn("qwen3.5:2b", code)
