@@ -50,6 +50,14 @@ python jarvis.py chat --model NOME_DO_MODELO_LOCAL
 
 A escolha definitiva do modelo está pendente. O Qwen3.5 2B é apenas a referência inicial. Kaggle serve de laboratório temporário, não de disponibilidade permanente do produto.
 
+## Laboratório GPU: Qwen3.5 2B vs 4B (Kaggle)
+
+A primeira comparação real da **v2.0** está preparada em [qa/JARVIS_ISSA_KAGGLE.ipynb](qa/JARVIS_ISSA_KAGGLE.ipynb). O notebook clona `develop` com submódulos, instala as dependências fixadas, inicia Ollama **v0.40.15** em loopback, obtém os modelos e executa [qa/compare_models.py](qa/compare_models.py). A sessão utiliza seis perguntas sintéticas e uma prova separada de ferramenta; os resultados são gravados em JSON e ZIP.
+
+Para executar: abrir/importar o notebook no Kaggle, activar **Internet** e **GPU**, definir em Kaggle Secrets um `GITHUB_TOKEN` com acesso somente de leitura ao repositório privado, e executar as três células por ordem. O token não deve ser partilhado nem incluído em comandos ou outputs. Se a pasta `/kaggle/working/jarvis-v2.0` já existir, o notebook **não** faz actualização silenciosa. Confirmar que o SHA mostrado é a revisão que se pretende testar.
+
+**Ainda não executado na GPU após esta publicação.** CI aprova a sintaxe do notebook e os testes locais de preflight, não a inferência com Qwen. A comparação apenas é concluída quando o ZIP contém transcrições, SHA, ambiente, tempos e `tool_results` auditáveis. O Kaggle não testa microfone, altifalantes ou aplicações Windows.
+
 ## Desenvolvimento
 
 Apenas `main` e `develop`; alterações em `develop`, revisão por PR para `main`. O submódulo permite preservar o upstream e actualizar com rastreabilidade. Um download ZIP do repositório não inclui automaticamente o submódulo: utilizar a clonagem acima.
