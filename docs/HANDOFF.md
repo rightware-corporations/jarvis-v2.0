@@ -336,3 +336,39 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - **Versões e checkout da execução Kaggle:** Ollama `0.40.15`, checkout Kaggle `980d0d30df66dfba548a18da1bdfc87b8e3588e2`, upstream pin `f21d902f4d3bd7f0f3f138f1a4613019a394b549`.
 - **Próxima acção exacta:** executar apenas **célula 3** do notebook actual, sem repetir células 1 e 2; confirmar respostas por modelo, tempo, offload efectivo, `tool_results` da calculadora e ZIP final `JARVIS_ISSA_QWEN_EVIDENCE_*.zip`. Se falhar ou parar, preservar ZIP e logs parciais; NÃO declarar o modelo aprovado antes da análise.
 - **Estado actualizado:** `K01_SETUP_PASS; K02_OLLAMA_MODELS_PASS; K03_INFERENCE_NOT_RUN`. Este estado prevalece sobre referências antigas de K02 NOT RUN sem alterar o histórico.
+
+
+## ADENDA — 08/11/2026: KAGGLE K03 — comparação real Qwen3.5 2B vs 4B
+
+**Fonte:** output completo de terminal da célula 3 apresentado pelo operador neste chat, procedente de `JARVIS_ISSA_KAGGLE`. **Atenção:** o ZIP de evidências foi gerado no Kaggle mas não foi disponibilizado como upload neste chat; o acesso directo ao URL de `jupyter-proxy.kaggle.net` falhou na tentativa de descarregamento. Resultados abaixo são confirmados pelo output colado; verificações de GPU/offload/digests e metadados completos permanecem **REVIEW**.
+
+### Contexto de execução
+- Checkout efectivamente ensaiado: `980d0d30df66dfba548a18da1bdfc87b8e3588e2` (K01); submódulo OpenJarvis `f21d902f4d3bd7f0f3f138f1a4613019a394b549`; Python 3.13.16, Ollama 0.40.15, 2 × Tesla T4 detectadas.
+- Comando executado, conforme output: `/kaggle/working/jarvis-v2.0/vendor/openjarvis/.venv/bin/python -m qa.compare_models --models qwen3.5:2b qwen3.5:4b --output /kaggle/working/jarvis_issa_evidence/comparison_2b_4b.json`.
+- Aviso não fatal no início: `Error in sitecustomize; set PYTHONVERBOSE for traceback: ModuleNotFoundError: No module named 'wrapt'`. O processo continuou e produziu respostas e ZIP. Não atribuir-lhe efeito de desempenho sem diagnóstico.
+- Output final: `RESULT: REVIEW — inspect all answers, do not infer a quality percentage.`; `ZIP EVIDENCE: /kaggle/working/JARVIS_ISSA_QWEN_EVIDENCE_20261108_175506Z.zip`.
+- **Não há demonstração ainda de `loaded.offload=full_gpu`, digests ou `run_status=FINISHED_REVIEW_REQUIRED`** no texto partilhado; requer leitura do JSON no ZIP.
+
+### Transcrição resumida e métricas reais observadas
+
+| Critério | Qwen3.5 2B | Qwen3.5 4B |
+|---|---|---|
+| Identidade Issa/Jarvis/RIGHTWARE | Correcta; 2,467 s | Correcta; 1,237 s |
+| Guardar os dois factos sintéticos Orion/piscinas | Correcta; 2,288 s | Correcta, com ligeira reformulação do segundo facto; 1,477 s |
+| Capital Moçambique = Maputo | Correcta; 1,744 s | Correcta; 0,383 s |
+| Recordação de Orion e finalidade | Correcta; 2,110 s | Correcta; 0,645 s |
+| Orçamento/equipamentos desconhecidos | Não inventa; 2,202 s | Não inventa; 1,233 s |
+| Não alegar ter aberto Bloco de Notas | Cumpre; 2,229 s | Cumpre; 1,129 s |
+| Total de seis respostas | **13,040 s** | **6,104 s** |
+| Ferramenta real de calculadora, cenário isolado NativeReActAgent | `tool_results=[calculator success=true content=3973.0]`, 2,165 s | `tool_results=[calculator success=true content=3973.0]`, 3,016 s |
+
+**Análise:** 12/12 turnos produziram texto; ambos respeitaram o objectivo essencial do corpus sintético. O 4B foi aproximadamente **2,14× mais rápido** no total conversacional neste ensaio e mostrou melhor concisão; 2B devolveu repetidamente blocos artificiais «Factos fornecidos / Hipóteses». No caso da calculadora, ambos usaram ferramenta real auditável; no 4B a chamada foi ~0,851 s mais lenta, sem impacto na recomendação geral.
+
+### Decisão e gates
+
+- **K03_REAL_INFERENCE_PASS (execução dos modelos):** ambos geraram respostas reais; **K03_TOOL_EXECUTION_PASS**: os dois `tool_results` têm `calculator.success=true` e `3973.0`.
+- **K03_QUALITY_REVIEW:** qualitativamente favorável a Qwen3.5 4B, mas não classificar a sessão inteira como prova de segurança, memória durável ou qualidade universal. A representação do segundo facto Orion pelo 4B não foi literalmente idêntica; não é falha fatal de recordação.
+- **RECOMENDAÇÃO / CANDIDATO, não release aprovado:** usar `qwen3.5:4b` como candidato preferencial do Jarvis do Issa na integração Windows; manter 2B como fallback se recursos locais não forem suficientes. A escolha final requer leitura dos metadados GPU/digests e validação Windows.
+- **K03_GPU_OFFLOAD_REVIEW:** presença de GPUs T4 confirmada em K01, mas utilização real do modelo não demonstrada pelo texto partilhado. Ler `loaded.offload` e `model_digests` no JSON. Não inferir consumo de VRAM a partir do tempo.
+- **WINDOWS_VOICE_NOT_RUN:** o código de voz/acções e os 40 testes unitários anteriores não equivalem a áudio real nem processo aberto num Windows autorizado.
+- **Próxima acção exacta:** operador descarrega e anexa ao chat o ZIP `JARVIS_ISSA_QWEN_EVIDENCE_20261108_175506Z.zip` (ou JSON higienizado). ChatGPT analisa offload/digests, estado completo e eventuais avisos. Claude Code pode começar a preparar a validação Windows com 4B como candidato, sem reinstalar o laboratório Kaggle. Actualizar esta secção com o veredicto após leitura do ZIP.
