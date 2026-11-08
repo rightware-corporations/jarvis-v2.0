@@ -184,3 +184,14 @@ Prioridade A: reproduzir o preflight do commit df772f0, validar em profundidade 
 5. Para validar o launcher da RIGHTWARE depois, executar testes no checkout privado local/Windows, não usar a avaliação do upstream como aceitação final da v2.0.
 
 **Estado desta adenda:** notebook pronto e testes estáticos PASS. Nenhuma inferência GPU, voz ou acção Windows foi executada nesta sessão.
+
+
+## ADENDA — 08/11/2026: correcção de rumo — teste COMPLETO da v2.0 sem token
+
+**Decisão do operador:** aceita tornar o repositório público caso necessário para teste GPU sem token. **NUNCA partilhar token GitHub no chat/Kaggle.** O notebook anterior `qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb` só compara o upstream público, portanto não valida a integração RIGHTWARE: mantém-se como ensaio preliminar e NÃO como aceite da v2.0.
+
+**Implementação:** o notebook canónico `qa/JARVIS_ISSA_KAGGLE.ipynb` foi ajustado para `git clone --branch develop --recurse-submodules https://github.com/rightware-corporations/jarvis-v2.0.git` sem credenciais, verificando o SHA real antes de executar `qa.compare_models`. Os testes estáticos foram ajustados para exigir ausência de token e inclusão do wrapper. Commits `40afa387` (notebook) e `178e9ad2` (teste).
+
+**BLOQUEIO:** o repositório **ainda está privado**; o proprietário deve concluir revisão de segredos incluindo **todo histórico Git** e, se aprovar, mudar para público em GitHub Settings. A mudança de visibilidade não foi efectuada nesta sessão. Caso deseje manter privado, usar um ZIP local completo de código + submódulo, carregado manualmente num notebook Kaggle privado, sem autenticação GitHub.
+
+**Gate:** só após código real instalado e modelo GPU executado, obter evidência JSON/ZIP, verificar respostas, `tool_results`, identidade do Issa, recursos, falhas e actualizar handoff. CI estático não equivale a teste real.
