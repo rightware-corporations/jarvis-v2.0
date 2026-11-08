@@ -88,3 +88,40 @@ PRÓXIMA ACÇÃO E CRITÉRIO DE ACEITAÇÃO:
 - Actualizar o corpus do benchmark 2B/4B para avaliar especificamente a identidade do Issa. A referência Orion continua sendo **dado sintético de teste**; não afirmar que é um projecto real do Issa.
 - Estado: **DECISÃO REGISTADA / CONFIGURAÇÃO DE REPOSITÓRIO ALTERADA / INFERÊNCIA REAL NÃO REEXECUTADA**. Os testes anteriores não provam que o modelo respeitará a identidade.
 - Próxima acção: validar o prompt pela sessão real; em seguida prosseguir a comparação de modelos, voz e ferramentas Windows no prazo do MVP.
+
+## ADENDA — 08/11/2026: H0–H4 transporte, comparador e laboratório Kaggle
+
+**Produto:** JARVIS DO ISSA, desenvolvido pela RIGHTWARE.
+**Estado:** preparação e testes unitários no GitHub concluídos; execução de modelos na GPU Kaggle AINDA NÃO EFECTUADA.
+
+### Evidências de cada output material (branch develop)
+
+| Marco | Commit | Evidência / status |
+|---|---|---|
+| H0-01 Transporte loopback sem proxies herdados | 2ef812ff | Código de rightware/runtime.py alterado; CI PASS |
+| H0-02 Regressão de proxies | 4218f416 | tests/test_runtime.py com asserts novos; CI PASS |
+| H0-03 Corpus + comparador real OpenJarvis | 6929f0b6 | qa/compare_models.py publicado; execução real NOT RUN |
+| H0-04 Testes de preflight | af29fe72 | Casos sintéticos, modelo cloud rejeitado, evidências JSON; CI PASS |
+| H0-05 Notebook para GPU | 40617014 | qa/JARVIS_ISSA_KAGGLE.ipynb publicado; Kaggle NOT RUN |
+| H0-06 Sintaxe e contrato do notebook | bfbfa841 | CI runs 42498924112 e 42498930402 PASS |
+| H0-07 Instruções no README | 1aae7109 | Guia de utilização e limitações publicado |
+| H0-08 Ambiente realmente saneado no benchmark | 2d3fcd73 | Usar os.environ.clear() + update(), pois só update preservava proxies; CI run 42499026517 PASS |
+
+### Decisões técnicas aplicadas
+
+- Seis perguntas idênticas em sessões separadas por modelo Qwen3.5 2B e 4B. As respostas completas, latência por turno, SHA, ambiente e utilização de GPU entram num JSON escrito progressivamente.
+- Os dados Orion são inteiramente fictícios; o orçamento e os equipamentos não são fornecidos. O modelo não pode inventá-los.
+- A identidade correcta é Jarvis pessoal do Issa, desenvolvido pela RIGHTWARE. A configuração existente de uma sessão antiga não é sobrescrita sem revisão.
+- O agente simple mantém histórico mas não tem ferramentas. A prova da calculadora é feita separadamente por native_react com CalculatorTool original; só se considera execução se tool_results mostrar success=true e 3973.
+- O notebook utiliza o upstream fixado, Ollama 0.40.15 com hash oficial do artefacto Linux, GPU do Kaggle, repositório privado via Kaggle Secret GITHUB_TOKEN e ZIP de evidências. Não faz actualização silenciosa de um checkout já existente.
+- Não interpretar testes de CI como demonstração com LLM, voz, microfone, Windows ou produto pronto.
+
+### Próximo gate imediato — H4–H12
+
+1. Abrir qa/JARVIS_ISSA_KAGGLE.ipynb no Kaggle com Internet e GPU, definir GITHUB_TOKEN com acesso read-only ao repositório privado em Kaggle Secrets.
+2. Executar as três células por ordem; confirmar o SHA impresso antes de comparar.
+3. Guardar o ZIP JARVIS_ISSA_QWEN_EVIDENCE_*.zip e analisar separadamente cada resposta e tool_results, sem atribuir percentagem automática.
+4. Actualizar este handoff com tempos, recursos, SHA, respostas, falhas e veredicto, imediatamente após receber o output. Modelo definitivo continua PENDENTE.
+5. Passar para voz e acções Windows até ao limite H20 para avaliação do motor, salvo falha crítica documentada.
+
+**Bloqueio:** sem acesso à sessão privada Kaggle a partir deste chat, os testes GPU e a comparação real continuam NOT RUN. Ferramentas Windows e áudio continuam NOT RUN.
