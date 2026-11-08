@@ -245,3 +245,5 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 **Critério para aceitar a evidência (os dois caminhos):** `run_status=FINISHED_REVIEW_REQUIRED`; `loaded.offload=full_gpu` nos dois modelos; 6 turnos com resposta e sem `empty_answer`; `tool_results` com calculator `success=true` e `3973`. Depois, revisão humana de identidade (Issa/RIGHTWARE), recordação de Orion, recusa de inventar orçamento/equipamentos e não afirmar ter aberto o Bloco de Notas.
 
 **Próxima acção exacta:** o dono decide a visibilidade; com repositório público, o operador executa o notebook canónico (senão, o ensaio preliminar) e entrega o ZIP; a análise regista aqui SHA, tempos, VRAM/offload e respostas. A escolha do modelo continua PENDENTE até essa revisão.
+
+**CI da série H4-A:** commit `f0c4a308` publicado em `develop`; workflow *RIGHTWARE foundation* run `42500888243` (push) **PASS**; run `42500892428` (PR #1) iniciado. Só testes unitários/estáticos: não é inferência nem GPU.
