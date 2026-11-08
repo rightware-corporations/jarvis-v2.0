@@ -300,3 +300,5 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - Kokoro: só pt-BR e instalação pesada; não recomendado para o MVP.
 
 **Próxima acção exacta:** o operador, num Windows autorizado pelo Issa, segue `docs/WINDOWS_VOICE.md` (instalar → V1–V12) e regista aqui os resultados e as linhas `actions-*.jsonl`. Só depois se declara voz e acções PASS. Em paralelo continua a avaliação GPU 2B/4B (modelo PENDENTE); o comando `voice --model` aceita o modelo escolhido sem alterações.
+
+**CI da série H20:** commit `79dee1e9` em `develop`; *RIGHTWARE foundation* run `42503448304` (push, job `launcher`, 40 testes) **PASS**; run `42503450156` (PR #1) iniciado. São testes unitários em Linux: voz e acções Windows continuam NOT RUN.
