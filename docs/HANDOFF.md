@@ -411,3 +411,11 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 **Próxima acção exacta:** o operador, num Windows autorizado, executa `docs/DEMO_WINDOWS.md` (passo 0 `check` → `install` com `INSTALAR` → `voice` → `actions` com `AUTORIZO`) e entrega os `windows-*.log`/`diagnostic-*.json` sanitizados e a tabela V1–V12. Só então se declara voz e acções PASS. Pendente em paralelo: leitura do ZIP K03 (offload/digests) para fechar a escolha do 4B.
 
 **CI após a correcção (`47ab383`), run `42507995064`:** `launcher` PASS; `windows-compat` PASS. Smoke só no runner: Bloco de Notas `VERIFIED` com PID 7732 e Calculadora `VERIFIED` com PID 7100; os dois PIDs estavam vivos (`taskkill` SUCCESS em ambos) e não ficou nenhum processo órfão, ao contrário do run anterior, que deixou `win32calc` órfão. Saída UTF-8 correcta («está em execução»). Continua a não ser aceitação: voz pt, microfone e acções no PC do Issa NOT RUN.
+
+
+### KAGGLE K03 — recuperação do ZIP após 404 no link temporário
+
+- **Relato do operador:** o URL temporário `kkb-production.jupyter-proxy.kaggle.net/kaggle/working/JARVIS_ISSA_QWEN_EVIDENCE_20261108_175506Z.zip` abriu com `404 page not found` no browser, após o notebook indicar a criação do ZIP.
+- **Estado da inferência:** o erro é de recuperação de artefacto pelo browser; não altera os resultados já observados e registados de 2B/4B. **ZIP AINDA NÃO DESCARREGADO/INSPECIONADO**; offload e digests continuam em REVIEW.
+- **Alternativa recomendada:** regressar ao editor do mesmo notebook e procurar o ficheiro em `Output` → `/kaggle/working/`, usando a opção Download no explorador de outputs; sem reiniciar a sessão nem rerun do benchmark. Se o ficheiro não constar, usar uma célula de diagnóstico read-only para confirmar a sua existência e os metadados do JSON.
+- **Próxima acção:** receber ZIP local anexado ou conteúdo do JSON de evidências; fechar verificação de `loaded.offload`, digests e estado global. Não inventar que o download funcionou.
