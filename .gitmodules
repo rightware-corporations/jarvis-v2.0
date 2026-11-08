@@ -1,0 +1,3 @@
+[submodule "vendor/openjarvis"]
+	path = vendor/openjarvis
+	url = https://github.com/open-jarvis/OpenJarvis.git
