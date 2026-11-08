@@ -77,8 +77,34 @@ def git_sha() -> str:
     ).strip()
 
 
-def installed_models() -> set[str]:
-    return {m["name"] for m in request_ollama("/api/tags").get("models", [])}
+def installed_models() -> dict[str, str | None]:
+    """Installed model names mapped to their Ollama digest (reproducibility)."""
+    return {m["name"]: m.get("digest")
+            for m in request_ollama("/api/tags").get("models", [])}
+
+
+def loaded_model_state(model: str) -> dict:
+    """GPU offload evidence from /api/ps: full, partial or cpu."""
+    try:
+        for item in request_ollama("/api/ps", timeout=10).get("models", []):
+            if item.get("name") == model or item.get("model") == model:
+                size, vram = item.get("size") or 0, item.get("size_vram") or 0
+                offload = ("full_gpu" if size and vram >= size
+                           else "partial_gpu" if vram else "cpu_only")
+                return {"size": size, "size_vram": vram, "offload": offload}
+        return {"offload": "not_loaded"}
+    except Exception as exc:
+        return {"offload": "unknown", "error": type(exc).__name__}
+
+
+def preserve_previous(out: Path) -> Path | None:
+    """Never overwrite evidence of an earlier (possibly interrupted) run."""
+    if not out.exists():
+        return None
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    kept = out.with_name(f"{out.stem}.previous-{stamp}{out.suffix}")
+    out.replace(kept)
+    return kept
 
 
 def run_conversation(model: str, report: dict, out: Path) -> None:
@@ -89,6 +115,7 @@ def run_conversation(model: str, report: dict, out: Path) -> None:
 
     entry = {"model": model, "agent": "simple", "status": "IN_PROGRESS",
              "warmup_seconds": None, "turns": [], "tool": None,
+             "warnings": [],
              "hardware_before": snapshot_hardware()}
     report["results"].append(entry)
     atomic_json(out, report)
@@ -103,6 +130,10 @@ def run_conversation(model: str, report: dict, out: Path) -> None:
             "think": False,
         })
         entry["warmup_seconds"] = round(time.monotonic() - started, 3)
+        entry["loaded"] = loaded_model_state(model)
+        if entry["loaded"].get("offload") != "full_gpu":
+            entry["warnings"].append("model_not_fully_on_gpu: "
+                                     + str(entry["loaded"].get("offload")))
         agent = SimpleAgent(engine, model, temperature=0.2, max_tokens=256,
                             engine_options={"num_ctx": 4096})
         ctx = AgentContext()
@@ -113,6 +144,8 @@ def run_conversation(model: str, report: dict, out: Path) -> None:
             try:
                 answer = agent.run(item["question"], context=ctx).content
                 record["answer"] = answer
+                if not (answer or "").strip():
+                    entry["warnings"].append("empty_answer: " + item["id"])
                 ctx.conversation.add(Message(role=Role.USER, content=item["question"]))
                 ctx.conversation.add(Message(role=Role.ASSISTANT, content=answer))
             except Exception as exc:
@@ -162,6 +195,8 @@ def run_conversation(model: str, report: dict, out: Path) -> None:
         entry["fatal_error"] = type(exc).__name__ + ": " + str(exc)[:300]
         print(f"[{model}] ERROR: {entry['fatal_error']}", flush=True)
     finally:
+        if entry["status"] == "IN_PROGRESS":
+            entry["status"] = "REVIEW_INTERRUPTED"
         engine._client.close()
         try:
             request_ollama("/api/generate", {"model": model,
@@ -191,6 +226,7 @@ def main() -> int:
         raise RuntimeError("Stale local Jarvis identity. Update the runtime profile first.")
     runtime.verify_source()
     tags = installed_models()
+    out = Path(args.output).resolve()
     missing = [model for model in args.models if model not in tags]
     if missing:
         raise RuntimeError("Models not installed in Ollama: " + ", ".join(missing))
@@ -202,13 +238,26 @@ def main() -> int:
         "openjarvis_pin": runtime.PIN,
         "ollama_version": request_ollama("/api/version").get("version"),
         "environment": snapshot_hardware(),
+        "model_digests": {model: tags[model] for model in args.models},
+        "run_status": "IN_PROGRESS",
         "criteria": "Six synthetic contextual turns. Scores require human review; calculator only passes if tool_results verifies it.",
         "results": [],
     }
-    out = Path(args.output).resolve()
+    kept = preserve_previous(out)
+    if kept:
+        report["previous_report"] = kept.name
+        print(f"PREVIOUS EVIDENCE KEPT: {kept}", flush=True)
     atomic_json(out, report)
-    for model in args.models:
-        run_conversation(model, report, out)
+    try:
+        for model in args.models:
+            run_conversation(model, report, out)
+    except KeyboardInterrupt:
+        report["run_status"] = "INTERRUPTED"
+        atomic_json(out, report)
+        print(f"\nINTERRUPTED; partial evidence: {out}", flush=True)
+        return 130
+    report["run_status"] = "FINISHED_REVIEW_REQUIRED"
+    atomic_json(out, report)
     print(f"\nEVIDENCE: {out}\nRESULT: REVIEW — inspect all answers, do not infer a quality percentage.")
     return 0
 

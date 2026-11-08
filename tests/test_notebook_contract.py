@@ -18,8 +18,11 @@ class KaggleNotebookContracts(unittest.TestCase):
                 ast.parse("".join(cell["source"]))
         self.assertIn("rightware-corporations/jarvis-v2.0.git", code)
         self.assertIn("--recurse-submodules", code)
-        self.assertNotIn("GITHUB_TOKEN", code)
-        self.assertNotIn("kaggle_secrets", code)
+        # RIGHTWARE decision 08/11: no GitHub token in Kaggle; public clone only.
+        for forbidden in ("GITHUB_TOKEN", "kaggle_secrets", "UserSecretsClient",
+                          "x-access-token", "GIT_ASKPASS"):
+            self.assertNotIn(forbidden, code)
+        self.assertIn('GIT_TERMINAL_PROMPT="0"', code)
         self.assertIn("git", code)
         self.assertIn("qa.compare_models", code)
         self.assertIn("qwen3.5:2b", code)
@@ -28,6 +31,18 @@ class KaggleNotebookContracts(unittest.TestCase):
         self.assertIn("EXPECTED_SHA256", code)
         self.assertNotIn("git pull", code)
         self.assertNotIn("git reset", code)
+        self.assertIn("nvidia-smi", "".join(cells[0]["source"]))
+        # Each cell survives a kernel restart (no NameError on ROOT/REPO).
+        for i, cell in enumerate(cells, 1):
+            with self.subTest(cell=i):
+                self.assertIn('ROOT = Path("/kaggle/working")', "".join(cell["source"]))
+        # The evidence ZIP is written in a finally block, even if the run fails.
+        last = ast.parse("".join(cells[2]["source"]))
+        tries = [n for n in ast.walk(last) if isinstance(n, ast.Try) and n.finalbody]
+        self.assertTrue(any("ZipFile" in ast.unparse(t.finalbody[-1]) or
+                            any("ZipFile" in ast.unparse(x) for x in t.finalbody)
+                            for t in tries))
+        self.assertNotIn("check=True, env=os.environ)", "".join(cells[2]["source"]))
 
 
 if __name__ == "__main__":

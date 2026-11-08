@@ -49,5 +49,28 @@ class CompareModelsTests(unittest.TestCase):
                 bench.main()
 
 
+    def test_previous_report_is_preserved_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "report.json"
+            self.assertIsNone(bench.preserve_previous(out))
+            out.write_text('{"run_status": "IN_PROGRESS"}')
+            kept = bench.preserve_previous(out)
+            self.assertFalse(out.exists())
+            self.assertIn(".previous-", kept.name)
+            self.assertEqual(json.loads(kept.read_text())["run_status"], "IN_PROGRESS")
+
+    def test_gpu_offload_classification(self):
+        cases = [({"size": 10, "size_vram": 10}, "full_gpu"),
+                 ({"size": 10, "size_vram": 4}, "partial_gpu"),
+                 ({"size": 10, "size_vram": 0}, "cpu_only")]
+        for loaded, expected in cases:
+            with self.subTest(expected=expected), patch.object(
+                    bench, "request_ollama",
+                    return_value={"models": [dict(name="qwen3.5:2b", **loaded)]}):
+                self.assertEqual(bench.loaded_model_state("qwen3.5:2b")["offload"], expected)
+        with patch.object(bench, "request_ollama", return_value={"models": []}):
+            self.assertEqual(bench.loaded_model_state("qwen3.5:4b")["offload"], "not_loaded")
+
+
 if __name__ == "__main__":
     unittest.main()

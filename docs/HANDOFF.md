@@ -195,3 +195,53 @@ Prioridade A: reproduzir o preflight do commit df772f0, validar em profundidade 
 **BLOQUEIO:** o repositório **ainda está privado**; o proprietário deve concluir revisão de segredos incluindo **todo histórico Git** e, se aprovar, mudar para público em GitHub Settings. A mudança de visibilidade não foi efectuada nesta sessão. Caso deseje manter privado, usar um ZIP local completo de código + submódulo, carregado manualmente num notebook Kaggle privado, sem autenticação GitHub.
 
 **Gate:** só após código real instalado e modelo GPU executado, obter evidência JSON/ZIP, verificar respostas, `tool_results`, identidade do Issa, recursos, falhas e actualizar handoff. CI estático não equivale a teste real.
+## ADENDA — 08/11/2026: H4-A auditoria e preparação da prova GPU (Claude Code, engenharia)
+
+[08/11/2026 ~16:50 UTC] [H4-A] base `80cc0b5` → commit desta adenda [cloud Linux x86_64, Python 3.13.18, 4 vCPU, ~15 GiB RAM, **sem GPU**, proxy de saída; `registry.ollama.ai` bloqueado (403)]
+
+**Objectivo:** auditar runtime, comparador, os dois notebooks Kaggle, configuração e testes; corrigir só problemas identificados; deixar o operador pronto para a comparação real 2B × 4B. Respeita a decisão de segurança acima: **nenhum token GitHub no Kaggle**.
+
+### Evidência executada nesta sessão
+
+| Verificação | Comando / cenário | Resultado |
+|---|---|---|
+| Sincronização | `git fetch` + `git pull --ff-only` (c0fbbb2 → 80cc0b5; 8 commits do operador chegaram durante a auditoria e foram integrados) | PASS, submódulo no pin `f21d902` |
+| Dependências reproduzíveis | `python jarvis.py setup` → `uv sync --frozen --no-dev` | PASS (77 s, Python 3.13; upstream aceita >=3.10,<3.14) |
+| Artefacto Ollama | download `v0.40.15/ollama-linux-amd64.tar.zst` + `sha256sum` | PASS: 1 543 547 172 bytes, SHA256 igual ao fixado nos **dois** notebooks |
+| Arranque do binário Ollama | extracção + `ollama serve` | **NOT RUN**: execução do binário descarregado recusada pela política de permissões desta sessão |
+| Tags Qwen3.5 2b/4b no registo | manifesto `registry.ollama.ai` | **BLOCKED** (proxy 403); confirmar no `ollama pull` do Kaggle |
+| Cablagem real ao upstream (sem modelo) | `qa.compare_models` e a string `evaluator` do notebook sem token, contra um **stub HTTP de Ollama** (scratchpad, não versionado), com `HTTPS_PROXY` inválido | PASS de cablagem: prompt do Issa no system; histórico 2→12 mensagens nos 6 turnos; `think=false`, `num_ctx=4096`, `num_predict` 256/320; `CalculatorTool` **real** executou `137 * 29` → `3973.0`; modelos descarregados com `keep_alive=0`. **Não é inferência.** |
+| Interrupção / reinício | SIGINT a meio da execução, depois relançamento, nos dois caminhos | PASS: `compare_models` exit 130 e `run_status=INTERRUPTED`; modelo parcial `REVIEW_INTERRUPTED` com os turnos já feitos; relançamento preserva `*.previous-*.json` e termina `FINISHED_REVIEW_REQUIRED` |
+| Varredura de segredos (pré-requisito para repo público) | `git log --all -p` com padrões de tokens GitHub/OpenAI/Anthropic/AWS/Google/HF/Slack/chaves privadas + nomes `.env`/`.pem`/pesos/`.runtime` | Nenhuma ocorrência nos 22 commits. **Varredura limitada**, não substitui revisão do dono nem o secret scanning do GitHub |
+| Testes unitários | `python -m unittest discover -s tests` | PASS 14/14; os testes novos **falham** contra o código anterior (verificado) |
+
+### Problemas identificados e corrigidos
+
+1. **P0 — contrato do notebook quebrado em `40afa38`** (o teste exigia `GITHUB_TOKEN`; falha reproduzida localmente). O operador corrigiu-o em paralelo em `178e9ad`; esta série junta as duas versões e acrescenta a proibição de `UserSecretsClient`, `GIT_ASKPASS` e `x-access-token`, e a exigência de `GIT_TERMINAL_PROMPT="0"`.
+2. **P1 — ZIP perdido em falha** (`JARVIS_ISSA_KAGGLE.ipynb` célula 3): `check=True` lançava excepção antes de criar o ZIP, e um OOM/timeout/interrupção do 4B apagava a prova do 2B. O ZIP passa a ser gerado em `finally`, inclui `ollama_server.log` e o código de saída, e a célula só falha depois. (O notebook sem token já tinha `finally`.)
+3. **P1 — evidência sobrescrita após reinício** (nos dois caminhos): o JSON anterior é movido para `*.previous-<UTC>.json`; `run_status` global e `REVIEW_INTERRUPTED` por modelo.
+4. **P1 — prompt do notebook sem token divergente** de `configs/local.toml`: faltava «Distingue factos fornecidos de hipóteses. Quando não sabes um detalhe, diz que não sabes.». Alinhado byte a byte; um teste novo compara o prompt e as 6 perguntas com `configs/local.toml` e `QUESTIONS`.
+5. **P2 — sem prova de GPU efectiva** (nos dois caminhos): `nvidia-smi` não mostra se o modelo correu em parte na CPU. Passa a registar `/api/ps` após o warm-up (`loaded.offload` = full_gpu / partial_gpu / cpu_only, com aviso), `model_digests` do Ollama e o aviso `empty_answer`.
+6. **P2 — reinício do kernel** (notebook do repositório): cada célula redefine `ROOT`/`REPO` (sem NameError); verificação de GPU antes do clone; impressão de `REPO SHA:`; o handle do digest passa a ser fechado.
+
+Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream: a auditoria não encontrou defeitos nesses ficheiros (o transporte sem proxy foi confirmado pelo ensaio com proxy inválido).
+
+### Limitações (não interpretar como PASS)
+
+- **Inferência real, GPU, identidade e contexto: NOT RUN.** O stub só prova a cablagem do harness ao upstream.
+- O corpus está duplicado (o notebook sem token embute-o numa string); a coerência é agora garantida por teste, não por fonte única.
+- `JARVIS_ISSA_KAGGLE.ipynb` (wrapper RIGHTWARE completo) **só funciona depois de o dono tornar o repositório público**. Essa decisão é do dono e não foi tomada por esta sessão.
+
+### Procedimento para o operador (Kaggle, sem token)
+
+**Canónico (decisão do operador acima): `qa/JARVIS_ISSA_KAGGLE.ipynb`**, depois de o dono rever o histórico e tornar o repositório público: células 1→2→3; confirmar `GPU:` e `REPO SHA:` igual à `develop`; ZIP `JARVIS_ISSA_QWEN_EVIDENCE_*.zip`. Valida o wrapper RIGHTWARE. Após reinício/queda, executar de novo 1→2→3 (checkout, Ollama e modelos reutilizados; relatório anterior em `comparison_2b_4b.previous-*.json`).
+
+**Ensaio preliminar enquanto o repositório for privado (não é aceite da v2.0):** `qa/JARVIS_ISSA_KAGGLE_NO_TOKEN.ipynb` (upstream público + perfil do Issa idêntico ao `configs/local.toml`).
+1. Descarregar o `.ipynb` no browser autenticado; Kaggle → *File → Import Notebook*; notebook **privado**; *Session options*: GPU T4, Internet ON. Não configurar Secrets.
+2. Executar a única célula. Confirmar `GPU:` com T4, `[PASS] Ollama 0.40.15` e os dois `ollama pull`.
+3. Se a sessão cair: executar de novo a célula; o upstream, o Ollama e os modelos são reutilizados, e o relatório anterior fica em `QWEN3_2B_VS_4B.previous-*.json`.
+4. Descarregar `JARVIS_ISSA_NO_TOKEN_*.zip`.
+
+**Critério para aceitar a evidência (os dois caminhos):** `run_status=FINISHED_REVIEW_REQUIRED`; `loaded.offload=full_gpu` nos dois modelos; 6 turnos com resposta e sem `empty_answer`; `tool_results` com calculator `success=true` e `3973`. Depois, revisão humana de identidade (Issa/RIGHTWARE), recordação de Orion, recusa de inventar orçamento/equipamentos e não afirmar ter aberto o Bloco de Notas.
+
+**Próxima acção exacta:** o dono decide a visibilidade; com repositório público, o operador executa o notebook canónico (senão, o ensaio preliminar) e entrega o ZIP; a análise regista aqui SHA, tempos, VRAM/offload e respostas. A escolha do modelo continua PENDENTE até essa revisão.
