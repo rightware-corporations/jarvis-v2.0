@@ -419,3 +419,29 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - **Estado da inferência:** o erro é de recuperação de artefacto pelo browser; não altera os resultados já observados e registados de 2B/4B. **ZIP AINDA NÃO DESCARREGADO/INSPECIONADO**; offload e digests continuam em REVIEW.
 - **Alternativa recomendada:** regressar ao editor do mesmo notebook e procurar o ficheiro em `Output` → `/kaggle/working/`, usando a opção Download no explorador de outputs; sem reiniciar a sessão nem rerun do benchmark. Se o ficheiro não constar, usar uma célula de diagnóstico read-only para confirmar a sua existência e os metadados do JSON.
 - **Próxima acção:** receber ZIP local anexado ou conteúdo do JSON de evidências; fechar verificação de `loaded.offload`, digests e estado global. Não inventar que o download funcionou.
+
+
+## ADENDA — 08/11/2026: KAGGLE K03B — metadados reais GPU/offload confirmados
+
+**Origem:** saída literal da célula Python de inspecção do ficheiro `/kaggle/working/jarvis_issa_evidence/comparison_2b_4b.json`, fornecida pelo operador. **Estado:** resultado real no Kaggle, sem upload integral do ZIP.
+
+| Campo | Valor observado |
+|---|---|
+| JSON existe | `True` |
+| `run_status` | `FINISHED_REVIEW_REQUIRED` |
+| Ollama | `0.40.15` |
+| GPU detectada | 2 × Tesla T4 (15 360 MiB cada); `ram_total_kib=32869292` |
+| Qwen3.5 2B | `status=REVIEW_MANUAL_JUDGEMENT_REQUIRED`; `loaded.size=2364475963` bytes; `loaded.size_vram=2364475963` bytes; `loaded.offload=full_gpu` |
+| Qwen3.5 4B | `status=REVIEW_MANUAL_JUDGEMENT_REQUIRED`; `loaded.size=3140495604` bytes; `loaded.size_vram=3140495604` bytes; `loaded.offload=full_gpu` |
+| Calculadora 2B | `native_react`, `calculator success=true`, `3973.0`, 2,165 s |
+| Calculadora 4B | `native_react`, `calculator success=true`, `3973.0`, 3,016 s |
+| `model_digest` consultado | `None` em ambos; campo não presente ou chave não coincidente na inspecção realizada. **Digest exacto ainda não verificado**; não inventar valor. |
+
+### Resultado e recomendação
+
+- **K03 EXECUÇÃO REAL PASS:** 6 turnos completos por modelo e chamada de ferramenta real em ambos, conforme saída já registada na adenda K03.
+- **K03 GPU OFFLOAD PASS:** `full_gpu` confirmado nos dois modelos pelo JSON; ambos os valores `size_vram=size`, provando que os pesos carregados reportados estavam em VRAM. Isto não significa que as duas T4 tenham sido simultaneamente usadas.
+- **QUALIDADE REVIEW CONCLUÍDA PARA O CORPUS CURTO:** 2B e 4B mantêm identidade e contexto, respondem Maputo, não inventam orçamento/equipamentos e não alegam abrir Bloco de Notas. 4B foi mais conciso e 6,104 s nos seis turnos vs 13,040 s do 2B, **aprox. 2,14× mais rápido neste ensaio**.
+- **RECOMENDAÇÃO — NÃO CONFUNDIR COM DECISÃO OFICIAL:** tomar **Qwen3.5 4B como candidato principal** para testes Windows reais; 2B como fallback em máquinas com recursos insuficientes. A latência e consumo em Windows podem diferir significativamente; a selecção definitiva depende do host autorizado.
+- **Não confundir:** `run_status=FINISHED_REVIEW_REQUIRED` é conclusão técnica do runner, não aceitação automática de um produto pronto. O erro de download ZIP via URL temporário continua apenas um problema de obtenção de artefactos; o JSON já confirmou o offload.
+- **Próxima acção:** não repetir benchmark. Avançar para validação de Windows/voz no ambiente autorizado, usando 4B como candidato. Se o operador desejar arquivo integral, recuperar ZIP por painel Files/Output no Kaggle, sem interromper sessão; registar digest apenas quando verificado.
