@@ -247,3 +247,13 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 **Próxima acção exacta:** o dono decide a visibilidade; com repositório público, o operador executa o notebook canónico (senão, o ensaio preliminar) e entrega o ZIP; a análise regista aqui SHA, tempos, VRAM/offload e respostas. A escolha do modelo continua PENDENTE até essa revisão.
 
 **CI da série H4-A:** commit `f0c4a308` publicado em `develop`; workflow *RIGHTWARE foundation* run `42500888243` (push) **PASS**; run `42500892428` (PR #1) iniciado. Só testes unitários/estáticos: não é inferência nem GPU.
+
+
+## ADENDA — 08/11/2026: visibilidade pública confirmada — desbloqueio Kaggle
+
+- **Evento informado pelo operador:** o repositório `rightware-corporations/jarvis-v2.0` foi tornado público.
+- **Verificação efectiva pelo GitHub conectado:** `visibility=public`; `develop@e924ccefa6cef476eebb3b0131a77060ce38fa72`; CI desta HEAD 2/2 PASS (runs 42500924100 e 42500918078).
+- **Notebook canónico:** `qa/JARVIS_ISSA_KAGGLE.ipynb` contém três células de código e clona `develop` com submódulo, sem token. Pode avançar para a prova integrada de Qwen3.5 2B/4B no Kaggle.
+- **Limites:** o checkout anónimo não pôde ser reproduzido no terminal deste ChatGPT devido a erro DNS local (`Could not resolve host: github.com`). Isto não invalida o estado público confirmado pela API GitHub, mas a clonagem efectiva do Kaggle permanece **NOT RUN**.
+- **Próxima acção:** importar o notebook canónico num Kaggle privado, activar Internet e GPU, executar células 1→2→3, verificar `REPO SHA` e `loaded.offload`, obter ZIP `JARVIS_ISSA_QWEN_EVIDENCE_*.zip`, analisar as respostas e `tool_results` antes de decidir 2B/4B. Não afirmar inferência PASS antecipadamente.
+- **Segurança:** a visibilidade pública revela o código e histórico; manter secret scanning e revisões de direitos. Não publicar credenciais nem dados do Issa.
