@@ -325,3 +325,14 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - **Próxima acção exacta:** o operador executa **apenas a célula 2**, confirma versão de Ollama e os dois `ollama pull`; partilha output/erro antes da célula 3. Não modificar notebook nem reexecutar a célula 1 sem necessidade.
 
 **Estado:** `K01_SETUP_PASS; K02_OLLAMA_MODELS_NOT_RUN; K03_INFERENCE_NOT_RUN`.
+
+
+## ADENDA — 08/11/2026: KAGGLE K02 — Ollama e modelos READY (evidência por capturas)
+
+**Origem:** capturas fornecidas pelo operador da célula 2 em `JARVIS_ISSA_KAGGLE` no Kaggle; não executado directamente por ChatGPT.
+
+- **Observações:** durante a célula foram mostrados `pulling manifest`, progresso das camadas de modelos, `verifying sha256 digest`, `writing manifest` e `success`. O output final apresentado mostra **`OLLAMA + MODELS READY {'version': '0.40.15'}`**.
+- **Resultado:** **PASS para K02 — serviço Ollama e fase de downloads/preparação de modelos** conforme evidência do notebook; não implica execução de inferência. Há duas Tesla T4 disponíveis da K01. Não foram apresentados `/api/ps` ou resultados de execução real com Qwen.
+- **Versões e checkout da execução Kaggle:** Ollama `0.40.15`, checkout Kaggle `980d0d30df66dfba548a18da1bdfc87b8e3588e2`, upstream pin `f21d902f4d3bd7f0f3f138f1a4613019a394b549`.
+- **Próxima acção exacta:** executar apenas **célula 3** do notebook actual, sem repetir células 1 e 2; confirmar respostas por modelo, tempo, offload efectivo, `tool_results` da calculadora e ZIP final `JARVIS_ISSA_QWEN_EVIDENCE_*.zip`. Se falhar ou parar, preservar ZIP e logs parciais; NÃO declarar o modelo aprovado antes da análise.
+- **Estado actualizado:** `K01_SETUP_PASS; K02_OLLAMA_MODELS_PASS; K03_INFERENCE_NOT_RUN`. Este estado prevalece sobre referências antigas de K02 NOT RUN sem alterar o histórico.
