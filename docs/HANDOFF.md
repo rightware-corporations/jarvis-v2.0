@@ -472,3 +472,65 @@ O modelo propõe *o que* fazer; componentes autorizados da RIGHTWARE validam e e
 **Regra de escopo:** concluir primeiro aceitação do Jarvis do Issa no Windows (fala PT real, contexto da sessão, duas acções explicitamente autorizadas e resultados observáveis); só depois seleccionar **uma** automação útil adicional para demonstrar valor além de abrir apps, com provas reais, limites de segurança e resultados quantificáveis. Não atrasar o prazo de 48 horas com uma interface 3D, motor autónomo irrestrito ou mercado antes do MVP.
 
 **Próxima acção comercial:** definir um problema real e recorrente do Issa e medir tempo e qualidade antes/depois de uma automação demonstrável; posicionamento premium e novo nome ficam como hipóteses por validar.
+
+
+## ADENDA — 09/11/2026: REORIENTAÇÃO DE PRODUTO — assistente activo, não demo de duas aplicações
+
+### Origem e estatuto da decisão
+
+**Requisito de produto explicitamente corrigido pelo operador RIGHTWARE:** Jarvis do Issa deve demonstrar um **assistente pessoal activo**, capaz de compreender objectivos, investigar, utilizar ferramentas e executar trabalhos reais no computador do destinatário. Abrir Bloco de Notas e Calculadora **é apenas um smoke test de permissões/integração Windows e não pode ser apresentado como produto funcional suficiente**. O operador solicitou rever a visão original, consultar README, documentação e comentários da comunidade OpenJarvis, pesquisar arquitectura Windows, acesso a Internet/APIs e opções PC local/servidor, com investigação complementar via Perplexity. **Registar integralmente decisões, descobertas, hipóteses e resultados a cada output material**.
+
+**Decisões/requisitos explícitos:**
+1. Destinatário do piloto: **Issa**. Desenvolvedor: **RIGHTWARE**. Pretende-se comportamento activo e útil, não apenas conversação, aparência futurista ou abertura de apps.
+2. Meta operacional continua um MVP demonstrável; a prova de aceitação precisa de **uma tarefa real com várias etapas e artefacto verificável**, para além de voz/contexto e dos dois comandos de demonstração; não declarar um produto premium pronto com base num benchmark da calculadora.
+3. Não usar Claude como motor obrigatório de runtime; preservar via local sempre que viável. Continuar disciplina de handoff e resultados PASS/REVIEW/FAIL reais.
+4. **Não foi decidido** novo nome, preço, modelo de licenciamento, serviço cloud obrigatório, venda premium, nem o conjunto completo de automações. São hipóteses a validar.
+
+### Descobertas de fonte — upstream OpenJarvis realmente fixado no submódulo
+
+**Revisão verificada:** `open-jarvis/OpenJarvis@f21d902f4d3bd7f0f3f138f1a4613019a394b549` (não inferir funcionalidades de versões futuras não fixadas).
+
+- O README da revisão fixada descreve **personal AI, on personal devices**, com `orchestrator`, `native_react`, `operative`, `monitor_operative`, `deep_research`, `morning_digest`, `native_openhands`, `simple`, ferramentas/skills, agenda, memória e interface GUI. Isto prova **existência de código e documentação**, não funcionamento de ponta a ponta no Windows do Issa. Origem: `https://github.com/open-jarvis/OpenJarvis/blob/f21d902f4d3bd7f0f3f138f1a4613019a394b549/README.md`.
+- O upstream contém `src/openjarvis/agents/orchestrator.py`, `src/openjarvis/tools/browser.py`, `file_read.py`, `file_write.py`, `web_search.py`, `mcp_adapter.py`, `shell_exec.py`, `code_interpreter.py`, `retrieval.py`, módulos scheduler/memory e `frontend/` React/Tauri. O preset `configs/openjarvis/examples/code-assistant.toml` liga `default_agent=orchestrator` a ferramentas, enquanto `scheduled-monitor.toml` usa `operative` e memória. **Reutilizar e validar antes de reimplementar.**
+- O `OrchestratorAgent` fixado oferece loops de tool-calling e ganchos `before_tool_call`, `confirm_callback` e `capability_policy`. Cada operação real requer teste de autorização e verificação. O preset `full-system-access.toml` assinala **shell arbitrária e ficheiros sem restrição**: explicitamente **não usar** esse preset como base de produção.
+- Limite da camada RIGHTWARE actual: `rightware/voice.py` usa `SimpleAgent` para conversa; `rightware/windows_actions.py` tem apenas detecção determinística de comandos Notepad/Calculator. A prova Kaggle de `NativeReActAgent` + `CalculatorTool` foi num percurso SEPARADO. **Ainda não temos um Jarvis agente autónomo com ferramentas integradas na experiência de voz.**
+- Documentação oficial Windows: UI Automation (UIA) expõe árvores de elementos/controlos no desktop. `pywinauto` suporta Win32 e UIA. `Playwright` é candidato para aplicações web, e APIs/SDKs específicos devem ser preferidos para operações estruturadas. Referências:
+  `https://learn.microsoft.com/en-us/windows/win32/winauto/ui-automation-specification`;
+  `https://github.com/pywinauto/pywinauto`;
+  `https://playwright.dev/python/docs/intro`.
+- Existência de alternativas de mercado: Open Interpreter descreve automação de aplicações e ficheiros com modelo local; **não sustentar alegações de ineditismo global ou exclusividade**. Referência: `https://www.openinterpreter.com/docs/desktop`.
+
+### Arquitectura RECOMENDADA para investigar e validar (não implementada)
+
+**PC Windows local-first** (processo/interface + Ollama/LLM local + armazenamento local + scheduler + catálogo de ferramentas tipadas) com ligações de Internet opcionais **saindo do próprio PC** mediante permissão (web, email, agenda e serviços via OAuth/APIs). **Não é necessário contratar servidor externo** para pesquisar na Internet, fazer chamadas de API, processar ficheiros locais ou executar tarefas com o PC ligado. Servidor privado pode ser opção FUTURA para multi-dispositivo, hardware fraco ou execução enquanto o PC está desligado; não remover controlo/visibilidade do utilizador.
+
+Fluxo proposto: pedido por voz/texto → agente `orchestrator` ou `native_react` cria plano → catálogo de ferramentas com schemas e limites → política allow-list/capability, confirmação por risco, preview/dry-run → executor Python/API/UIA/browser realiza passos em workspace autorizado → confirma resultado com dados/artefactos, logs e compensação/rollback quando aplicável → resposta ao Issa e memória factual opt-in.
+
+**Regras P0:** sem shell Python arbitrária concedida directamente ao LLM; sem acesso irrestrito a pasta pessoal; ferramentas de leitura limitadas a directórios escolhidos; escritas em área de trabalho separada; envios, apagamentos, alteração de configurações, pagamentos ou publicação exigem consentimento granular; nunca declarar que realizou uma acção sem evidência; conteúdos externos não concedem permissões. Auditoria sanitizada com resultados, sem transcrever dados pessoais.
+
+### Categorias de capacidades a estudar (HIPÓTESES, não PASS)
+
+1. **Ficheiros/documentos locais:** localizar, ler PDFs/Word, classificar, resumir, preparar relatório e guardar em pasta de resultados com referências; primeira candidata a demonstração de valor sem OAuth nem app externa.
+2. **Navegação e pesquisa:** procurar informações actuais e cruzar fontes por ferramentas web, respeitando privacidade/rede; navegador automatizado com Playwright e limites de domínios.
+3. **Windows/Office:** interagir com janelas via UI Automation/pywinauto; Excel/Word preferivelmente por formatos de ficheiro ou APIs/COM quando disponíveis e autorizados; UI fallback frágil requer verificações.
+4. **Conectores:** email, calendário, ficheiros em nuvem e ferramentas de negócio somente com OAuth/contas consentidas. Estar «ligado a tudo» não significa acesso universal nem sem permissões.
+5. **Memória e tarefas recorrentes:** perfil consentido, factos/projetos e histórico limitado, pesquisa local, scheduler que opera apenas com PC activo e sem enviar/alterar dados sem revisão.
+6. **Experiência premium futura:** app desktop com voz e texto, indicador de escuta, vista de plano e execução, centro de consentimento, fontes, artefactos, histórico e opções de privacidade. O upstream já inclui uma UI, mas **nenhuma UI premium RIGHTWARE está validada**.
+
+### Novo gate de aceitação do MVP — PROPOSTA PARA APROVAÇÃO
+
+**Não fechar o MVP só com Notepad/Calculator.** Além de identidade, conversa PT, confirmação/voz e logs no Windows real, comprovar um cenário completo:
+«Issa, analisa os documentos desta pasta autorizada, extrai os pontos essenciais e cria um resumo em nova pasta». Critério: (a) plano explícito, (b) leitura restrita sem alterar originais, (c) duas ou mais operações/etapas concretas, (d) documento final com referências aos ficheiros, (e) autorização antes de gravar/publicar, (f) verificação física do ficheiro e relatório verdadeiro da execução. Escolher esta demonstração porque é útil, offline e não requer serviço externo; **validar o problema real do Issa** antes de tratar a demonstração como valor comercial.
+
+**Plano curto sugerido:** (i) rever a base OpenJarvis já fixada e expor um agente com ferramentas em teste isolado; (ii) provar sequência de leitura→síntese→ficheiro com duas tools e autorização; (iii) ligar ao fluxo de voz/UI local e fazer demonstração real; (iv) só então expandir para browser, Windows UI e conectores. Avaliar robustez de 4B em tool-calling multi-etapas: êxito na calculadora não comprova essa capacidade.
+
+### Questões para investigação Perplexity + Claude + revisão ChatGPT
+
+- Comparar viabilidade **no pin fixado** de `orchestrator`, `native_react`, `operative`, `native_openhands`: capacidades anunciadas vs código realmente funcional, requisitos, dependências Windows, segurança e custo.
+- Testar o que existe de `frontend/`, GUI Tauri, memory, scheduler, `web_search`, MCP, browser e ferramentas file_* antes de desenvolver novos módulos.
+- Propor Windows adapter local baseado em UI Automation/pywinauto + Playwright para web + API/COM para Office; listar limitações (sessão desbloqueada, acessibilidade, UAC, headless).
+- Comparar local-only PC, local+Internet por OAuth e eventual servidor privado; licenças OpenJarvis/modelos, riscos de publicar código, disponibilidade/hardware do computador do Issa.
+- Fazer comparação de mercado independente com fontes, datas e evidência de produto funcional, sem prometer exclusividade; avaliar aplicação premium em Moçambique como hipótese, não facto.
+- Resultados da investigação devem actualizar este handoff como hipótese, prova de código, prova executada, risco e acção, com origem e SHA. **Não iniciar refactor grande nem activar `full-system-access` sem discussão explícita.**
+
+**Estado desta adenda:** investigação de documentação e código; não é implementação de ferramentas nem aprovação de arquitectura comercial.
