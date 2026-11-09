@@ -665,3 +665,38 @@ Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `
 **Condições de engenharia antes de executar:** avaliar espaço disco disponível, cache/bibliotecas, download verificável do Ollama/4B, iniciar servidor em loopback, venv OpenJarvis pin, executar `run_real.py --allow-cpu --n 10 --security-n 3 --expect-sha <SHA> ` em revisão fixada; manter limites de job e fazer upload de `real-*.zip` e logs sanitizados como Actions artifacts mesmo quando falhar. **O ensaio CPU é prova de tool-calling real se correr e for validado, mas não mede desempenho GPU nem Windows**. Não reduzir `n` ou `security-n` para artificialmente passar o gate; classificar timeouts/capacidade como AMBIENTE. Workflow só `workflow_dispatch`, sem disparo automático por push e sem exposição de credenciais/segredos a scripts externos. Em 4 vCPU/16 GB a latência pode ser alta e o teste talvez não termine; medir primeiro preflight e um smoke não-aceitável sem alterar critério final.
 
 **Autorizações:** ainda não foi aprovado criar/activar workflow de inferência nem instalar runtimes em runner. Não houve execução K04 QWEN REAL nem alterações ao código na presente adenda. Próxima acção: engenharia Claude auditar viabilidade de K04 em GitHub Actions CPU e apresentar workflow para revisão ou teste aprovado.
+
+
+## ADENDA — 09/11/2026: WORK-03 — GitHub Actions CPU preparado; activação BLOQUEADA (decisão necessária)
+
+[09/11/2026] [WORK-03] base `85b0a8e` → `e66479a` (GATE 4 + timeouts de ambiente), `879ec66` (workflow manual + testes), + o commit desta adenda. Pin `f21d902…` inalterado; `main` intacta (`9198e1a`). Relatório: [`docs/research/WORK03_GITHUB_ACTIONS_CPU_FEASIBILITY.md`](research/WORK03_GITHUB_ACTIONS_CPU_FEASIBILITY.md).
+
+- **Bloqueio (FACTO):** o `workflow_dispatch` só funciona se o ficheiro existir na branch default `main`, e a `main` só tem `README.md`. O novo `.github/workflows/work03-cpu-agent.yml` está na `develop` e é **inerte**: não corre em push, PR nem schedule, e não é disparável. Não alterei a `main` nem criei outro trigger.
+- **Opções para o CEO:**
+  - **A (recomendada):** um commit na `main` só com este ficheiro, e depois *Run workflow* na `develop`.
+  - B: mudar a branch default para `develop`.
+  - C: trigger por tag `work03-run-*` (exige aprovação).
+  - D: trigger temporário por push (não recomendado).
+- **Viabilidade (INFERÊNCIA, não medida):**
+  - RAM do 4B com ctx 8192: ~3,5–4,5 GB, folgado em 16 GB;
+  - disco no pico: ~8–11 GB (o gate exige ≥15 GiB livres);
+  - CPU: ~3–8 min por execução, ~40–105 min para as 13, dentro do limite de 345 min do job.
+  - Os timeouts anteriores (180 s por pedido, 300 s por execução) causariam falhas AMBIENTE espúrias em CPU. Acrescentei `--engine-timeout`; o workflow usa 600 s e 1 200 s. **Os critérios de aceitação não mudaram.**
+  - Rust não é necessário (FACTO: os testes do laboratório correm sem `openjarvis_rust`).
+- **Workflow:**
+  - `contents: read`, sem segredos, actions fixadas por SHA, inputs só via `env`;
+  - gates 0a→5; o GATE 5 exige `AUTORIZO-WORK03-GATE5` e corre `--n 10 --security-n 3 --allow-cpu`;
+  - classificação e upload de evidência correm sempre;
+  - rótulos FAKE PASS / QWEN REAL PASS / QWEN REAL FAIL / ENVIRONMENT BLOCKED / NOT RUN;
+  - um CI verde ou o Ollama a funcionar ≠ sucesso do agente.
+- **Testes nesta sessão:**
+  - laboratório: 59 PASS (FAKE/estático) — 43 do WORK-02 + 16 do WORK-03;
+  - RIGHTWARE: 56 OK;
+  - `actionlint`: 0 achados;
+  - ensaio local dos scripts reais dos GATES 0a/0/1: PASS, com recusa correcta de SHA inválido e de GATE 5 sem autorização;
+  - GATES 2–5: **NOT RUN**.
+- **Correcções feitas na preparação:**
+  - a verificação de loopback com `!` era ineficaz sob `set -e`;
+  - a classificação escondia uma falha do modelo no GATE 4;
+  - o teste de âmbito do WORK-02 foi fixado ao intervalo imutável `7079e18..fa9faa9`.
+- **Estado:** `WORK03_PREPARED — ACTIVATION BLOCKED`. **QWEN REAL NOT RUN**. **Próxima acção:** decisão do CEO sobre A/B/C/D; depois, três disparos (`up_to_gate=3`, `4` e `5` com autorização) e registo aqui de cada artefacto `work03-evidence-<run_id>`.
