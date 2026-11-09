@@ -445,3 +445,30 @@ Sem alterações em `rightware/runtime.py`, `configs/local.toml` nem no upstream
 - **RECOMENDAÇÃO — NÃO CONFUNDIR COM DECISÃO OFICIAL:** tomar **Qwen3.5 4B como candidato principal** para testes Windows reais; 2B como fallback em máquinas com recursos insuficientes. A latência e consumo em Windows podem diferir significativamente; a selecção definitiva depende do host autorizado.
 - **Não confundir:** `run_status=FINISHED_REVIEW_REQUIRED` é conclusão técnica do runner, não aceitação automática de um produto pronto. O erro de download ZIP via URL temporário continua apenas um problema de obtenção de artefactos; o JSON já confirmou o offload.
 - **Próxima acção:** não repetir benchmark. Avançar para validação de Windows/voz no ambiente autorizado, usando 4B como candidato. Se o operador desejar arquivo integral, recuperar ZIP por painel Files/Output no Kaggle, sem interromper sessão; registar digest apenas quando verificado.
+
+
+## NOTA ESTRATÉGICA — evolução de Jarvis do Issa para assistente executivo premium (DISCUSSÃO / NÃO APROVADO)
+
+**Origem:** reflexão do operador RIGHTWARE, 09/11/2026. Esta secção documenta uma visão e **hipóteses**, não instrução para aumentar o âmbito do MVP nem aprovação de lançamento, rebranding ou política comercial.
+
+**Visão em estudo:** Jarvis do Issa como primeiro piloto personalizado de um assistente de IA premium, posteriormente extensível a outros clientes da RIGHTWARE. Valor pretendido: assistência conversacional em português, automação auditável de tarefas digitais, privacidade e personalização, ao invés de simples demonstração de abertura de aplicações. O nome comercial poderá ser diferente de «Jarvis»; não há decisão de marca, preço nem mercado validado.
+
+**Limite técnico ACTUAL, verificado em código:**
+- `rightware/voice.py`: entrada por voz local via FasterWhisper, `SimpleAgent` com Ollama para conversa, saída por SAPI/Kokoro conforme suporte; mantém histórico **durante** a sessão, sem prova de memória durável.
+- `rightware/windows_actions.py`: detecção determinística PT e allow-list **apenas** `notepad.exe`/`calc.exe`, autorização de sessão + confirmação por acção, execução e auditoria; o agente `simple` **não selecciona automaticamente ferramentas com efeitos no sistema**.
+- OpenJarvis `NativeReActAgent` com `CalculatorTool` foi testado **separadamente** no Kaggle, confirmando uso real de ferramenta matemática em 2B e 4B. Isso **não comprova** planeamento autónomo de processos nem execução de acções Windows pelo modelo.
+- Interface actual é sobretudo CLI; não existe produto desktop premium validado. UI proposta abaixo é apenas conceito.
+
+**Arquitectura de evolução proposta (RECOMENDAÇÃO, não implementação):**
+voz/texto → transcrição → entendimento de intenção/planificação via modelo → catálogo tipado de ferramentas RIGHTWARE → política de permissões + confirmação, *dry-run* e limites → execução determinística (Python, PowerShell, APIs, automação de UI controlada) → verificação de resultados → auditoria → resposta por voz e interface.
+O modelo propõe *o que* fazer; componentes autorizados da RIGHTWARE validam e executam *como*. Não conceder shell arbitrária, credenciais ilimitadas ou acesso irrestrito a ficheiros ao modelo.
+
+**Categorias de automação CANDIDATAS para depois do MVP:** pesquisar e resumir documentos autorizados; organizar ficheiros com pré-visualização; preparar relatórios com dados locais; criar rascunhos de correio e agendar calendário mediante ligação/consentimento; fluxos repetitivos em aplicações específicas via APIs; rotinas de negócio. Todas requerem conectores, testes, política de dados e mecanismos de autorização próprios; **nenhuma está implementada como capacidade comercial**. Envio, eliminação, pagamentos e alterações irreversíveis exigem confirmação explícita, com registo de resultado.
+
+**Interface candidata:** aplicação desktop com centro de conversação e orb/indicador de microfone, histórico e contexto, catálogo de automações, vista de plano/execução/passos, centro de permissões/confirmações, auditoria e controlo de privacidade. Não confundir imagens ou mockups com funcionalidades reais. No MVP continua a ser CLI e testes Windows.
+
+**Hipótese comercial:** produto personalizado premium para clientes que valorizam privacidade, assistência em português e tempo poupado; receita possível por implementação + manutenção, e eventual licenciamento recorrente. **Não existem estudos de procura, preços, CAC/LTV ou exclusividade que validem uma oportunidade lucrativa em Moçambique ou no exterior**. Diferenciação terá de ser demonstrada por produtividade, fiabilidade, segurança e experiência; o uso de um modelo open source por si só não é vantagem defensável. Rever licenças upstream/modelo e direitos de nome antes de distribuição.
+
+**Regra de escopo:** concluir primeiro aceitação do Jarvis do Issa no Windows (fala PT real, contexto da sessão, duas acções explicitamente autorizadas e resultados observáveis); só depois seleccionar **uma** automação útil adicional para demonstrar valor além de abrir apps, com provas reais, limites de segurança e resultados quantificáveis. Não atrasar o prazo de 48 horas com uma interface 3D, motor autónomo irrestrito ou mercado antes do MVP.
+
+**Próxima acção comercial:** definir um problema real e recorrente do Issa e medir tempo e qualidade antes/depois de uma automação demonstrável; posicionamento premium e novo nome ficam como hipóteses por validar.
