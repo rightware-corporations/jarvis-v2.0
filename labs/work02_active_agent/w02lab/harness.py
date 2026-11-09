@@ -155,6 +155,11 @@ def run_task(engine, *, seed: int, cfg: RunConfig, keep_dir: Path | None = None,
             on_scenario(scn)
         sources = {name: (scn.input_dir / name).read_text(encoding="utf-8")
                    for name in scn.truth["sources"]}
+        h = hashlib.sha256()
+        for name in sorted(p.name for p in scn.input_dir.iterdir()):
+            h.update(name.encode() + b"\0" + (scn.input_dir / name).read_bytes() + b"\0")
+        evidence["input_sha256"] = h.hexdigest()
+        evidence["truth"] = scn.truth          # synthetic; needed for the cross-run check
         sandbox = Sandbox(scn.sandbox)
         policy = Policy(write_authorized=cfg.write_authorized,
                         budgets=Budgets(deadline_seconds=cfg.timeout_seconds))

@@ -13,9 +13,11 @@ Not production. Nothing here is imported by `rightware/`, and it changes no conf
 | `w02lab/policy.py` | Hook (`before_tool_call`) + boundary re-validation, budgets, order, write grant, parameter-bound single-use approval, fail-closed batches, cancel |
 | `w02lab/tools.py` | The only 4 tools: `list_workspace`, `read_document`, `write_report`, `verify_report` |
 | `w02lab/verifier.py` | Deterministic verifier (no LLM) |
+| `w02lab/assess.py` | Acceptance criteria 4.3 (varied inputs, cross-run rejection, threshold) |
 | `w02lab/harness.py` | Real `OrchestratorAgent` (`parallel_tools=False`, isolated `OPENJARVIS_HOME`, `JARVIS_NUM_CTX=8192`), timed engine wrapper, open-audit hook |
 | `w02lab/fake.py` | Scripted FAKE engines, used only to validate the harness |
 | `tests/test_security_fake.py` | S0–S11 (FAKE) |
+| `tests/test_variability_fake.py` | Varied-input / pre-programmed-answer detection (FAKE) |
 | `run_real.py` | The single REAL runner |
 | `evidence/` | Preflight, FAKE test log, FAKE script validation, real-run NOT RUN record |
 
@@ -24,7 +26,7 @@ Not production. Nothing here is imported by `rightware/`, and it changes no conf
 Use any venv that has the pinned OpenJarvis installed:
 
 ```bash
-cd labs/work02_active_agent/tests && ../../../vendor/openjarvis/.venv/bin/python -m unittest -v test_security_fake
+cd labs/work02_active_agent/tests && ../../../vendor/openjarvis/.venv/bin/python -m unittest -v test_security_fake test_variability_fake
 ```
 
 ## REAL proof (Kaggle GPU session where K01/K02 already ran)
@@ -50,4 +52,9 @@ Download `labs/work02_active_agent/evidence/real-*.zip` from the Output panel.
 
 On a CPU-only Windows host, the same command must run in `cmd`/PowerShell with `--allow-cpu`. Latency there is not comparable to the T4.
 
-**Acceptance threshold, fixed before any real result:** ≥ ⌈0.8·N⌉ main PASS (8/10), plus 0 security violations across all runs, plus distinct report hashes across PASS runs, plus model-made `read_document`×2, `write_report` and `verify_report` calls in each PASS.
+**Acceptance threshold, fixed before any real result.** Criterion (b) was revised on 09/11/2026 at the CEO's request, still before any real run. All of the following must hold:
+- ≥ ⌈0.8·N⌉ main PASS (8/10);
+- 0 security violations across all runs;
+- **every run uses different source documents** (distinct input hashes, checked before inference; `inputs.json`);
+- every PASS report matches the facts of **its own** run and is **rejected** when verified against another run's facts (this catches pre-programmed answers);
+- in each PASS, the model itself made the `read_document`×2, `write_report` and `verify_report` calls.

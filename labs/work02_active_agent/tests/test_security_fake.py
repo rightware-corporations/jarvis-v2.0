@@ -7,7 +7,7 @@ import subprocess
 import sys
 import unittest
 
-from _support import (INITIAL_HEAD, PIN, REPO, Sandbox, SandboxError, Scratch, fake,
+from _support import (INITIAL_HEAD, PIN, PRESERVED_REMOTE_COMMITS, RECONCILED_BASE, REPO, Sandbox, SandboxError, Scratch, fake,
                       fixtures, harness, lab_threads_alive, report_name)
 from w02lab.fake import ScriptedEngine, call
 from w02lab.harness import OpenAudit, RunConfig, run_task
@@ -380,12 +380,29 @@ class S11Regression(unittest.TestCase):
         self.assertEqual(self.git("-C", "vendor/openjarvis", "rev-parse", "HEAD"), PIN)
         self.assertEqual(self.git("-C", "vendor/openjarvis", "status", "--porcelain"), "")
 
+    def test_reconciliation_base_contains_only_the_preserved_docs_commits(self):
+        between = self.git("log", "--format=%h", "--reverse", f"{INITIAL_HEAD}..{RECONCILED_BASE}").split()
+        self.assertEqual([c[:7] for c in between], PRESERVED_REMOTE_COMMITS)
+        files = self.git("diff", "--name-only", INITIAL_HEAD, RECONCILED_BASE).splitlines()
+        self.assertEqual(sorted(files), ["docs/HANDOFF.md",
+                                         "docs/research/ARCHITECTURE_AGENT_INTELLIGENCE_BRIEF.md"])
+        self.git("merge-base", "--is-ancestor", RECONCILED_BASE, "HEAD")
+
     def test_only_authorized_paths_changed(self):
-        changed = self.git("diff", "--name-only", INITIAL_HEAD).splitlines()
+        """WORK-02's own changes, measured from the reconciled base."""
+        changed = self.git("diff", "--name-only", RECONCILED_BASE).splitlines()
         changed += self.git("ls-files", "--others", "--exclude-standard").splitlines()
         allowed = ("labs/work02_active_agent/", "docs/research/WORK02_REAL_ACTIVE_AGENT_PROOF.md",
                    "docs/HANDOFF.md")
         self.assertEqual([p for p in changed if not p.startswith(allowed)], [])
+
+    def test_handoff_is_append_only_since_reconciled_base(self):
+        base = subprocess.check_output(["git", "show", f"{RECONCILED_BASE}:docs/HANDOFF.md"], cwd=REPO)
+        now = (REPO / "docs/HANDOFF.md").read_bytes()
+        self.assertTrue(now.startswith(base.rstrip(b"\n")))
+        self.assertIn(b"ARCHITECTURE BRIEF", now)
+        self.assertIn(b"WORK02_PROOF_PARTIAL", now)
+        self.assertLess(now.index(b"ARCHITECTURE BRIEF"), now.index(b"WORK02_PROOF_PARTIAL"))
 
     def test_baseline_suite_still_green(self):
         r = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests"],

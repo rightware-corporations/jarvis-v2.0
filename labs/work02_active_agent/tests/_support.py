@@ -14,6 +14,10 @@ from w02lab.policy import Policy  # noqa: E402,F401
 from w02lab.sandbox import Sandbox, SandboxError  # noqa: E402,F401
 
 INITIAL_HEAD = "6bac396a5c9db65879feccfb064fdb502d814c7e"
+# CEO-authorized reconciliation (09/11/2026): WORK-02 rebased onto this remote
+# develop, which added two docs-only commits by another author.
+RECONCILED_BASE = "7079e188ca69ff609923a03078758bf0f03185ec"
+PRESERVED_REMOTE_COMMITS = ["62ee5ee", "7079e18"]
 PIN = "f21d902f4d3bd7f0f3f138f1a4613019a394b549"
 
 
