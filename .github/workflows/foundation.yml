@@ -61,3 +61,19 @@ jobs:
         continue-on-error: true
         run: |
           python -c "import subprocess, tempfile; from rightware.windows_actions import WindowsActions, describe; a = WindowsActions(authorized=True, audit_dir=tempfile.mkdtemp()); rs = [a.run(x, lambda q: 'sim') for x in ('notepad', 'calculator')]; [print(r.action_id, r.outcome, r.pid, r.detail, '|', describe(r)) for r in rs]; [subprocess.run(['taskkill', '/PID', str(r.pid), '/F']) for r in rs if r.pid]"
+
+  # WORK-03: read-only capacity probe of the same runner image the manual
+  # inference workflow uses. Downloads nothing, installs nothing, no model.
+  runner-capacity:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Measure disk, RAM, CPU and tools (read-only)
+        run: |
+          echo "## filesystems used by work03 (RUNNER_TEMP, workspace, HOME cache)"
+          df -BG --output=target,size,used,avail / "$RUNNER_TEMP" "$GITHUB_WORKSPACE" "$HOME"
+          findmnt -no SOURCE,TARGET -T "$RUNNER_TEMP"; findmnt -no SOURCE,TARGET -T "$HOME"
+          echo "## memory"; free -b; grep MemTotal /proc/meminfo
+          echo "## cpu"; nproc; lscpu | grep -E 'Model name|Flags' | cut -c1-160
+          echo "## tools"; command -v zstd && zstd --version || echo "zstd: absent"
+          python3 --version; lsb_release -ds
+

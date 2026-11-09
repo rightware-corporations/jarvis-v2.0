@@ -80,6 +80,22 @@ class WorkflowContract(unittest.TestCase):
                 with self.subTest(uses=s["uses"]):
                     self.assertRegex(s["uses"], r"^actions/[a-z-]+@[0-9a-f]{40}$")
 
+    def test_disk_budget_is_derived_and_fits_documented_runner(self):
+        env = load()["env"]
+        # steady peak ~5.8 GiB measured/bounded (+50 % margin) and <= 14 GB documented SSD
+        self.assertEqual(int(env["MIN_FREE_DISK_GIB"]), 9)
+        self.assertLessEqual(int(env["MIN_FREE_DISK_GIB"]), 14)
+        self.assertIn("MODEL_DISK_BOUND_GIB", step("GATE 3")["run"])
+        self.assertIn("ENVIRONMENT BLOCKED", step("GATE 3")["run"])
+        self.assertIn("zstd absent", step("GATE 2")["run"])
+
+    def test_capacity_probe_is_read_only(self):
+        probe = yaml.safe_load((REPO / ".github/workflows/foundation.yml").read_text(encoding="utf-8"))["jobs"]["runner-capacity"]
+        run = probe["steps"][0]["run"]
+        self.assertEqual(probe["runs-on"], "ubuntu-24.04")
+        for forbidden in ("curl", "wget", "apt", "pip", "ollama", "sudo"):
+            self.assertNotIn(forbidden, run)
+
     def test_limits_and_evidence_always_uploaded(self):
         job = load()["jobs"]["work03"]
         self.assertLessEqual(job["timeout-minutes"], 350)

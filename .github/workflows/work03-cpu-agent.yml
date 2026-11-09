@@ -43,7 +43,12 @@ env:
   UV_VERSION: "0.11.32"
   JARVIS_NUM_CTX: "8192"
   MIN_RAM_GIB: "14"
-  MIN_FREE_DISK_GIB: "15"
+  # Disk budget (docs/research/WORK03_*, §3.1): measured Ollama 0.40.15 archive
+  # 1.44 GiB + extracted 2.36 GiB (2.28 GiB GPU libs removed, 0.074 GiB kept);
+  # model <= 4.0 GiB (upper bound), venv <= 0.75, uv cache <= 0.75, checkout
+  # 0.15, evidence 0.1 => steady peak ~5.8 GiB; +50 % safety margin => 9 GiB.
+  MIN_FREE_DISK_GIB: "9"
+  MODEL_DISK_BOUND_GIB: "5"
 
 jobs:
   work03:
@@ -130,6 +135,7 @@ jobs:
       - name: GATE 2 — official Ollama (SHA-256 verified), loopback only
         run: |
           set -euo pipefail
+          command -v zstd >/dev/null || { printf '{"gate":"2","status":"ENVIRONMENT BLOCKED","reason":"zstd absent"}\n' >> "$EVID/gates.jsonl"; exit 1; }
           ARCHIVE="$RUNNER_TEMP/ollama.tar.zst"
           curl -fsSL --retry 3 -o "$ARCHIVE" \
             "https://github.com/ollama/ollama/releases/download/v${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst"
@@ -148,13 +154,21 @@ jobs:
           test "$V" = "$OLLAMA_VERSION"
           ss -ltn | grep ':11434' | tee "$EVID/ollama-listen.txt"
           if ss -ltn | grep ':11434' | grep -vq '127.0.0.1:11434'; then echo "Ollama listens beyond loopback"; exit 1; fi
+          { echo "## after Ollama install"; du -sh "$OLLAMA_DIR"; df -h "$RUNNER_TEMP"; } | tee -a "$EVID/environment.txt"
           printf '{"gate":"2","status":"PASS","ollama":"%s","listen":"127.0.0.1:11434"}\n' "$V" >> "$EVID/gates.jsonl"
 
       - name: GATE 3 — real model present and generating
         if: fromJSON(inputs.up_to_gate) >= 3
         run: |
           set -euo pipefail
+          FREE=$(df -BG --output=avail "$OLLAMA_MODELS" | tail -1 | tr -dc 0-9)
+          if [ "$FREE" -lt "$MODEL_DISK_BOUND_GIB" ]; then
+            printf '{"gate":"3","status":"ENVIRONMENT BLOCKED","reason":"free disk %sG < %sG before model pull"}\n' \
+              "$FREE" "$MODEL_DISK_BOUND_GIB" >> "$EVID/gates.jsonl"; exit 1
+          fi
           "$OLLAMA_DIR/bin/ollama" pull "$MODEL" 2>&1 | tail -3
+          { echo "## after model pull"; du -sh "$OLLAMA_MODELS" "$OLLAMA_DIR"; df -h "$RUNNER_TEMP"; free -h; } \
+            | tee -a "$EVID/environment.txt"
           curl -fs --noproxy '*' http://127.0.0.1:11434/api/tags > "$EVID/ollama-tags.json"
           DIGEST=$(python3 -c 'import json,sys,os;m=[x for x in json.load(open(sys.argv[1]))["models"] if x["name"]==os.environ["MODEL"]];print(m[0]["digest"] if m else "")' "$EVID/ollama-tags.json")
           test -n "$DIGEST"
