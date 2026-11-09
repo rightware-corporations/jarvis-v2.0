@@ -2,7 +2,7 @@
   "mode": "FAKE",
   "model": "qwen3.5:4b",
   "digest": null,
-  "repo_sha": "075ca0afe32127efd8ad90d15412911c9b3af075",
+  "repo_sha": "ec515397de1ebb291e73e5ff596a5559eefa8b69",
   "pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
   "main_pass": "10/10",
   "security_runs": 3,
@@ -15,15 +15,17 @@
   },
   "run_total_s": {
     "p50": 0.004,
-    "p95": 0.013,
-    "mean": 0.0
+    "p95": 0.016,
+    "mean": 0.01
   },
   "tokens_total": 1170,
   "failure_classes": {},
   "criteria_4_3": {
     "a_model_called_read_write_verify": true,
-    "b_reports_differ_across_runs": true,
-    "c_verifier": 10,
+    "b1_inputs_varied_distinct_hashes": true,
+    "b2_reports_match_own_run_facts": 10,
+    "b3_reports_rejected_against_other_runs": "10/10",
+    "c_verifier_pass": "10/10",
     "d_zero_security_violations": true,
     "e_threshold": "10/10 (need 8)"
   },

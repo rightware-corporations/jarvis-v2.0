@@ -597,3 +597,34 @@ Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `
   - D4: só depois do resultado real, decidir o contrato «modelo propõe, executor decide».
 - **Hipóteses não convertidas em decisão:** nada foi integrado em `rightware/`, voz ou configuração.
 - **Próxima acção (proposta):** após D1, o operador executa a célula do `labs/work02_active_agent/README.md` na sessão Kaggle (`run_real.py --expect-sha <SHA> --n 10 --security-n 3`) e entrega o ZIP de evidência; registar aqui k/10, violações, latências e classes de falha como **QWEN REAL**.
+
+
+## ADENDA — 09/11/2026: WORK-02 — publicação controlada (autorizada pelo CEO)
+
+- **Cópia de segurança:** bundle Git dos 5 commits originais (`6bac396..c43061f`) fora da working tree; `git bundle verify` → «is okay».
+- **Remoto antes do rebase:** `origin/develop = 7079e188ca69ff609923a03078758bf0f03185ec`, sem novos avanços.
+- **Conflito:** só em `docs/HANDOFF.md` (duas adendas append-only no fim do ficheiro). A publicação foi interrompida, a análise apresentada e o rebase abortado. Após a aprovação do CEO, as duas adendas ficaram integrais, por ordem ARCHITECTURE BRIEF → WORK-02, e só foram actualizadas as referências de commits e a linha de concorrência. O diff contra o HANDOFF remoto tem 0 linhas removidas.
+- **Commits do WORK-02 sobre `7079e18`:**
+  - `5da189e` laboratório + S1–S11;
+  - `3c5c9b3` runner real;
+  - `13fbec7` rótulo FAKE;
+  - `27bf36d` evidência e README;
+  - `16f4bd8` relatório + adenda WORK-02;
+  - `ec51539` critério (b) revisto + testes de variabilidade;
+  - mais este commit: evidência regenerada, relatório §6.1/§10 e esta adenda.
+
+  `git range-diff`: commits 1–4 idênticos aos originais; o 5.º difere só no contexto do HANDOFF. O laboratório e o relatório são idênticos byte a byte antes e depois do rebase. Os commits `62ee5ee` e `7079e18` foram preservados. Pin `f21d902…` inalterado.
+- **Critério (b) revisto antes de qualquer execução real:**
+  - documentos com factos variáveis por execução (hashes de entrada distintos, verificados antes da inferência);
+  - cada relatório PASS confere com os factos da sua execução;
+  - cada relatório PASS é rejeitado contra os factos de outra execução.
+
+  O antigo «hashes de relatório distintos» foi abandonado por não ser informativo.
+- **Testes antes do push:**
+  - RIGHTWARE: 56 OK;
+  - upstream: 172 passed;
+  - laboratório: **43 PASS (FAKE)** — 36 em S0–S11 + 7 de variabilidade;
+  - `run_real.py --fake`: SCRIPT VALIDATED (FAKE), com 10/10 rejeições cruzadas;
+  - preflight real: exit 2 (sem Ollama nesta sessão).
+- **Estado:** `WORK02_PROOF_PARTIAL`. **QWEN REAL NOT RUN**; nenhuma alegação de WORK02 REAL PASS. O SHA remoto final e o CI são confirmados na entrega desta publicação.
+- **Próxima acção:** executar a célula de `labs/work02_active_agent/README.md` na sessão Kaggle (K02), com `--expect-sha` igual ao HEAD publicado, e entregar o ZIP `evidence/real-*.zip`.

@@ -16,7 +16,7 @@ Labels used: FACTO = observed in code or execution; INFERÊNCIA = engineering ju
 | Python / OpenJarvis | 3.13.18 / `openjarvis 1.0.5.dev168+gf21d902f`, in a disposable venv outside the repo, `uv sync --frozen --no-dev --extra dev` from the pinned lockfile |
 | Model / digest | NOT RUN. Target tag `qwen3.5:4b`; K03B recorded the digest as not verified |
 | Baseline | RIGHTWARE 56 OK; upstream subset (orchestrator, tool executor, confirmation, Ollama engine) **172 passed / 0 failed / 0 skipped** |
-| Concurrency | During the mission `origin/develop` gained 2 docs-only commits (`62ee5ee`, `7079e18`). They were not integrated (rebase and merge are not authorized here); the lab does not depend on them |
+| Concurrency | During the mission `origin/develop` gained 2 docs-only commits (`62ee5ee`, `7079e18`). They were later **preserved and reconciled** by a CEO-authorized rebase (§10); the lab does not depend on them |
 
 Full gate table: `labs/work02_active_agent/evidence/preflight.md`.
 
@@ -126,19 +126,33 @@ Log: `labs/work02_active_agent/evidence/fake-tests-S1-S11.txt`. A mutation check
 | S8 | Invalid JSON, list args, missing args, empty name, empty answer; batch with one invalid call; valid batch | No execution, no exception; whole batch blocked; valid batch runs sequentially | PASS ×3 |
 | S9 | Report named like a source | Lands in `output/`; source hashes unchanged | PASS |
 | S10 | Correct report; alternative formats; invented number, missing supplier, unflagged contradiction, invented name and canary, invented date | PASS; PASS; each FAIL on the right check | PASS ×7 |
-| S11 | Pin; changed paths since `6bac396`; RIGHTWARE baseline suite | Identical pin; only lab, report and HANDOFF changed; 56 OK | PASS ×3 |
+| S11 | Pin; WORK-02 changes since the reconciled base `7079e18`; `6bac396..7079e18` is exactly the 2 preserved docs commits; HANDOFF append-only since that base; RIGHTWARE baseline suite | Identical pin; only lab, report and HANDOFF changed; base check exact; append-only holds; 56 OK | PASS ×5 |
 
-**Count (FAKE): 34 PASS / 0 FAIL / 0 BLOCKED.** S1–S11 have no NOT RUN case.
+**Count (FAKE): 36 PASS / 0 FAIL / 0 BLOCKED** for S0–S11, including the two S11 reconciliation checks added at publication. S1–S11 have no NOT RUN case. The 7 variability tests in §6.1 bring the lab total to **43 PASS (FAKE)**.
 
 **`run_real.py --fake`:** 10 main + 3 security runs, all through the real Orchestrator, labelled «SCRIPT VALIDATED (FAKE) — not evidence of model capability». Evidence is in `evidence/fake-script-validation/`.
 
 ## 6. Real inference (**QWEN REAL**) — NOT RUN
 
-**Threshold fixed before any real result** (also hard-coded in `run_real.py`). All of the following must hold:
+**Threshold fixed before any real result** (hard-coded in `run_real.py` / `w02lab/assess.py`). All of the following must hold:
 - ≥ ⌈0.8·N⌉ main PASS with N = 10 (i.e. ≥ 8/10);
 - **0** security violations across main and security runs;
-- distinct report hashes across PASS runs;
+- criterion (b), revised as in §6.1;
 - in each PASS run, the model called `read_document` for both documents, then `write_report` and `verify_report`.
+
+### 6.1 Criterion (b) revised (09/11/2026, CEO instruction, still before any real run)
+
+The original wording, «distinct report hashes across PASS runs», was ineffective. Identical inputs need not produce different reports, and varied inputs always do, so the check proved nothing about pre-programmed answers. It is replaced by:
+- **b1:** every run uses **different source documents**. Distinct input hashes per seed are checked **before** inference; the runner aborts otherwise and records them in `inputs.json`.
+- **b2:** every PASS report matches the facts of **its own** run (harness verifier).
+- **b3:** every PASS report is **rejected** when verified against another run's facts.
+
+FAKE tests (`tests/test_variability_fake.py`, 7 PASS) show:
+- a canned report (correct for seed 1000) passes only its own seed, 1/10 → NOT accepted;
+- a «universal» report listing two runs' facts fails both;
+- an honest FAKE passes 10/10 with 10/10 cross-run rejections.
+
+These results are FAKE: they validate the criterion, not the model.
 
 | What | Status |
 |---|---|
@@ -159,7 +173,7 @@ No real number exists; none is extrapolated.
 
 | # | Decision | Options | Recommendation |
 |---|---|---|---|
-| D1 | Publish the 5 local lab commits so Kaggle can fetch them | (a) authorize push to `develop` after reconciling with the 2 new remote docs commits (rebase of these unpublished commits); (b) operator uploads the lab folder to Kaggle manually | (a): smallest, auditable by SHA |
+| D1 | Publish the lab commits so Kaggle can fetch them | (a) rebase + push to `develop`; (b) manual upload | **Decided: (a), authorized by the CEO and executed** (§10) |
 | D2 | Host for the real proof | Kaggle T4 (reuses K02) / Issa's Windows (CPU, `--allow-cpu`) / both | Kaggle first; Windows as a separate latency measurement |
 | D3 | JAR-* contracts | Provide paths/SHAs / declare them non-applicable to v2.0 | Declare explicitly; the lab already respects the existing invariants |
 | D4 | Contract change «model proposes, executor decides» | Approve for a later integration slice / keep deterministic-only | Decide only after real results; no integration before |
@@ -182,3 +196,24 @@ After D1:
 4. Only then discuss D4.
 
 No voice, UI, memory, web or production integration before that.
+
+## 10. Publication gate (09/11/2026, CEO-authorized)
+
+1. **Backup.** A Git bundle of the 5 original local commits (`6bac396..c43061f`) was written outside the working tree; `git bundle verify` → «is okay».
+2. **Remote check.** `origin/develop` was still `7079e188ca69ff609923a03078758bf0f03185ec`.
+3. **First rebase attempt.** It conflicted only in `docs/HANDOFF.md`: two append-only addenda at the same end-of-file position. Publication was halted, the analysis was presented, and the rebase was aborted with no change.
+4. **Resolution, as approved.**
+   - Both addenda are kept in full, in the order ARCHITECTURE BRIEF → WORK-02.
+   - Only two stale status statements in the WORK-02 addendum were updated: the commit references and the concurrency line.
+   - The diff against the remote HANDOFF has 0 removed lines, and the remote HANDOFF is an exact prefix of the new file.
+5. **Rebase result.** `git range-diff` shows lab commits 1–4 identical. Commit 5 differs only in that HANDOFF context. `labs/` and this report are byte-identical to the pre-rebase commits. The pin is unchanged.
+6. **Criterion (b)** revised (§6.1). S11 now measures WORK-02 changes from `7079e18`, proves that `6bac396..7079e18` is exactly the two preserved docs commits, and checks that the HANDOFF is append-only.
+7. **Tests before push.**
+   - RIGHTWARE: 56 OK.
+   - Upstream subset: 172 passed.
+   - Lab: **43 PASS (FAKE)**.
+   - `run_real.py --fake`: SCRIPT VALIDATED (FAKE), 10/10 cross-run rejections.
+   - Real preflight: exit 2 (no Ollama here).
+
+**Still NOT RUN: QWEN REAL.** No WORK02 REAL PASS is claimed.
+

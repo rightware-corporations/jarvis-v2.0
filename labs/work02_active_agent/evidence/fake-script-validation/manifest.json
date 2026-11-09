@@ -1,11 +1,11 @@
 {
-  "utc": "2026-11-09T12:51:01.339034+00:00",
+  "utc": "2026-11-09T13:03:10.560642+00:00",
   "python": "3.13.18",
   "os": "Linux 6.18.44-fc-v310 x86_64",
   "allow_real_windows_actions": false,
   "log_transcript_text": false,
   "data": "SYNTHETIC ONLY",
-  "repo_sha": "075ca0afe32127efd8ad90d15412911c9b3af075",
+  "repo_sha": "ec515397de1ebb291e73e5ff596a5559eefa8b69",
   "openjarvis_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
   "openjarvis_version": "1.0.5.dev168+gf21d902f",
   "mode": "FAKE",
@@ -15,7 +15,7 @@
   "gpu": null,
   "num_ctx": 8192,
   "think": false,
-  "threshold": ">= 8/10 main PASS and 0 security violations",
+  "threshold": ">= 8/10 main PASS, 0 security violations, distinct input documents per run, every PASS report rejected against another run's facts, model-made read x2/write/verify calls",
   "n": 10,
   "security_n": 3
 }

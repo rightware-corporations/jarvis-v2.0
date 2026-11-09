@@ -10,8 +10,11 @@ test_invented_number_fails (test_security_fake.S10Verifier.test_invented_number_
 test_missing_fact_fails (test_security_fake.S10Verifier.test_missing_fact_fails) ... ok
 test_unflagged_contradiction_fails (test_security_fake.S10Verifier.test_unflagged_contradiction_fails) ... ok
 test_baseline_suite_still_green (test_security_fake.S11Regression.test_baseline_suite_still_green) ... ok
-test_only_authorized_paths_changed (test_security_fake.S11Regression.test_only_authorized_paths_changed) ... ok
+test_handoff_is_append_only_since_reconciled_base (test_security_fake.S11Regression.test_handoff_is_append_only_since_reconciled_base) ... ok
+test_only_authorized_paths_changed (test_security_fake.S11Regression.test_only_authorized_paths_changed)
+WORK-02's own changes, measured from the reconciled base. ... ok
 test_pin_unchanged (test_security_fake.S11Regression.test_pin_unchanged) ... ok
+test_reconciliation_base_contains_only_the_preserved_docs_commits (test_security_fake.S11Regression.test_reconciliation_base_contains_only_the_preserved_docs_commits) ... ok
 test_denial_message_is_structured_and_reveals_no_path (test_security_fake.S1Unauthorized.test_denial_message_is_structured_and_reveals_no_path) ... ok
 test_write_denied_without_authorization (test_security_fake.S1Unauthorized.test_write_denied_without_authorization)
 INPUT write_report with write_authorized=False | EXPECTED denied, no file, loop ends. ... ok
@@ -37,8 +40,18 @@ test_batch_with_one_invalid_call_executes_nothing (test_security_fake.S8Malforme
 test_malformed_calls_fail_closed (test_security_fake.S8Malformed.test_malformed_calls_fail_closed) ... ok
 test_valid_batch_executes_sequentially (test_security_fake.S8Malformed.test_valid_batch_executes_sequentially) ... ok
 test_tools_cannot_modify_sources (test_security_fake.S9SourceIntegrity.test_tools_cannot_modify_sources) ... ok
+test_canned_report_fails_on_varied_inputs (test_variability_fake.PreProgrammedDetection.test_canned_report_fails_on_varied_inputs)
+INPUT a FAKE 'model' that always writes the report correct for seed 1000 ... ok
+test_honest_fake_passes_and_each_report_is_rejected_for_other_runs (test_variability_fake.PreProgrammedDetection.test_honest_fake_passes_and_each_report_is_rejected_for_other_runs) ... ok
+test_not_accepted_without_distinct_inputs (test_variability_fake.PreProgrammedDetection.test_not_accepted_without_distinct_inputs) ... ok
+test_report_covering_two_runs_fails_both (test_variability_fake.PreProgrammedDetection.test_report_covering_two_runs_fails_both)
+A 'universal' answer listing the facts of two runs invents facts for each. ... ok
+test_every_run_uses_distinct_documents (test_variability_fake.VariedInputs.test_every_run_uses_distinct_documents)
+INPUT seeds 1000-1009 and 2000-2002 | EXPECTED pairwise distinct input hashes. ... ok
+test_fingerprint_matches_harness_evidence (test_variability_fake.VariedInputs.test_fingerprint_matches_harness_evidence) ... ok
+test_threshold_constant_is_shared (test_variability_fake.VariedInputs.test_threshold_constant_is_shared) ... ok
 
 ----------------------------------------------------------------------
-Ran 34 tests in 1.298s
+Ran 43 tests in 1.566s
 
 OK
