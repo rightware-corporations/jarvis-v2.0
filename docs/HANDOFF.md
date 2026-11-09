@@ -564,3 +564,18 @@ Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `
 - **Requisitos operacionais permanentes:** `docs/HANDOFF.md` actualiza-se após resultados materiais; no máximo dois agentes em edição concorrente se ficarem em ficheiros separados, e ambos verificam HEAD; `main` fica intacta.
 
 **Estado desta adenda:** relatório arquivado; avaliação metodológica concluída; execução Qwen multi-etapa **NOT RUN**; arquitectura/segurança ainda **PROPOSTA / REVIEW**, não release.
+
+
+## ADENDA — 09/11/2026: ARCHITECTURE BRIEF — modelo, agentes, prompts e armazenamento
+
+**Origem:** pedido do operador de compreender profundamente o que o WORK-02 fará, como os agentes e ferramentas executam tarefas, o papel do `system prompt`, a base de dados e as camadas reais do projecto. Documentação explicativa publicada em [`docs/research/ARCHITECTURE_AGENT_INTELLIGENCE_BRIEF.md`](research/ARCHITECTURE_AGENT_INTELLIGENCE_BRIEF.md), commit `62ee5ee29a7e1012af9228e79db49bf5f425eab7`. Documento consultado após criação; sem modificação a código.
+
+**Reconciliações verificadas no código desta data:**
+- `configs/local.toml` mantém `default_agent="simple"` **e `default_model="qwen3.5:2b"`**. O 4B é candidato favorecido por ensaio K03, **não o default aprovado/aplicado**; comandos de teste podem seleccioná-lo explicitamente.
+- `[agent].default_system_prompt` define identidade «Jarvis do Issa / RIGHTWARE» e regras linguísticas/de honestidade; prompt **não concede** ferramentas, permissões ou execução.
+- `rightware/voice.py` constrói `SimpleAgent` sobre Ollama com `AgentContext` em memória da sessão; `rightware/windows_actions.py` só autoriza duas acções Windows determinísticas com confirmação. A prova `NativeReActAgent+CalculatorTool` ocorreu separadamente no Kaggle.
+- Dados: conversa corrente em RAM; upstream disponibiliza `LocalFactStore` com `memory_facts.jsonl`; pesquisa documental SQLite/FTS5 exige extensão Rust no backend inspeccionado; agenda upstream tem `SchedulerStore` SQLite; logs RIGHTWARE JSONL/JSON na pasta `.runtime/logs`. **Não há PostgreSQL nem base única RIGHTWARE configurada para esta experiência; memória persistente integrada não está provada**. `context_from_memory=false` no perfil inicial.
+- A arquitectura futura `UI/voz → Orchestrator + Ollama/Qwen → tools limitadas → policy RIGHTWARE por chamada → executor → verifier → auditoria/memória opt-in → resposta` permanece **RECOMENDAÇÃO**, não implementação ou decisão de release.
+- **Próxima acção:** o operador pode enviar o prompt WORK-02 anterior ao Claude. A tarefa do Claude é prova controlada com Orchestrator + Qwen real onde disponível, sem alterar o runtime actual antes de testes; manter distinção entre FAKE, implementação e prova integrada. Handoff actualizado por essa nova entrega.
+
+**Estado:** explicação e documentação publicadas; nenhuma execução de agente multi-tool novo ou selecção oficial do modelo efectuada nesta adenda.
