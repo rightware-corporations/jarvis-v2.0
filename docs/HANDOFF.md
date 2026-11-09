@@ -630,3 +630,14 @@ Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `
 - **Próxima acção:** executar a célula de `labs/work02_active_agent/README.md` na sessão Kaggle (K02), com `--expect-sha` igual ao HEAD publicado, e entregar o ZIP `evidence/real-*.zip`.
 
 **Confirmação pós-publicação (WORK-02):** `origin/develop = 45d8408495ae48ed708bcaf0682714706e595e0f` (push normal, fast-forward `7079e18..45d8408`, sem force); `main` intacta em `9198e1a`. CI *RIGHTWARE foundation* run `42622213335`: `launcher` PASS e `windows-compat` PASS. Esse CI corre a suite RIGHTWARE, não o laboratório; o laboratório (43 PASS FAKE) precisa do venv OpenJarvis e foi executado localmente antes do push. Para o ensaio real usar `--expect-sha 45d8408495ae48ed708bcaf0682714706e595e0f`, porque o código do laboratório nesse SHA é idêntico ao deste commit, que só altera documentação. **QWEN REAL continua NOT RUN.**
+
+
+## ADENDA — 09/11/2026: K04 — BLOQUEIO KAGGLE: Failed to Authorize Session
+
+**Origem:** capturas de ecrã fornecidas pelo operador durante tentativa K04 no editor do Kaggle `JARVIS_ISSA_KAGGLE`. **Estado:** `K04_ENVIRONMENT_BLOCKED` / **QWEN REAL NOT RUN** (não declarar teste falhado do modelo).
+
+**Evidência de UI:** badge `Draft Session Error`; mensagem central explícita **`Failed to Authorize Session`** após refresh; sessão de execução não autorizada, sem output do diagnóstico Python/Ollama; menu de sessão com `Start session` esbatido. O notebook mostrava `Draft saved`. O operador confirmou que clicar no badge de erro não abre detalhes. A origem exacta do erro (cookies, conta, quota, backend Kaggle ou outro) **NÃO FOI IDENTIFICADA**.
+
+**Recomendações de recuperação não destrutiva:** preservar o notebook e, se possível, exportar `.ipynb`; abrir editor pelo URL canónico sem `/edit/run/<id>` e reautenticar; testar janela incógnita/segundo browser sem extensões de bloqueio; se necessário, testar um notebook novo mínimo para distinguir sessão anterior de problema de conta/plataforma. Não começar pelo `Factory reset` ou pelo `Restart & Clear Cell Outputs`; evitar perda de artefactos não persistidos. Depois de o kernel iniciar, executar só `print("KERNEL OK")` e um diagnóstico com timeout do Ollama/modelos. Se a sessão reiniciar, K01/K02 podem precisar de preparação, mas **não rerun do benchmark K03**. Para falhas persistentes, reportar ao suporte Kaggle a mensagem exacta, URL do notebook e timestamp sem credenciais.
+
+**Estado de publicação anterior independente:** `develop@fa9faa9256b7941f2efd5c638fe6b6b7bb6efdb5` contém WORK02 laboratório; CI GitHub push run `42622380927` `success` (Linux/Windows). A falha Kaggle **não invalida** o código publicado nem prova capacidade Qwen multi-tool. Não houve nesta adenda mudança no laboratório, submódulo, modelo, notas de aceitação ou branch main.
