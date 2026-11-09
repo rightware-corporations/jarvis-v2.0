@@ -715,3 +715,50 @@ Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `
 **Não executados propositadamente:** GATE 4 (Orchestrator a seleccionar ferramenta) e GATE 5 (WORK-02 completo, 10 tarefas + 3 segurança). Assim, **`WORK02_QWEN_REAL` continua NOT RUN**, apesar de `WORK03_GATE3_QWEN_REAL_PASS`. Não afirmar que a IA já executa trabalhos multi-etapa.
 
 **Próxima decisão:** autorizar **apenas o disparo GATE 4** no mesmo SHA fixado `e34ab4c36f2d8f9dd215d70fee01919d8e0c6bf9`, branch `develop`, `up_to_gate=4`, `gate5_authorization` vazio, após confirmar integridade dos resultados GATE 3 e estado do workflow. Se GATE 4 falhar, classificar modelo vs ambiente vs ferramenta; não executar GATE 5 sem nova aprovação.
+
+## ADENDA — 09/11/2026: WORK-03 — activação Opção A e primeiro disparo real (só GATE 3)
+
+**Autorização:** CEO, Activation Gate A. Branch default mantida (`main`); sem merge de `develop`; GATES 4 e 5 **não** executados.
+
+### Correcção do requisito de disco (antes da activação), commit `e34ab4c`
+
+- **Medido (FACTO):** arquivo Ollama 0.40.15 com 1,44 GiB (SHA-256 OK); 2,36 GiB depois de extraído, dos quais 2,28 GiB são bibliotecas GPU removidas em CPU (ficam 0,074 GiB).
+- **Pico estável:** ~5,8 GiB, com o modelo contado como ≤4,0 GiB (limite superior). Com 50 % de margem, `MIN_FREE_DISK_GIB=9`, abaixo dos 14 GB documentados.
+- **Novas recusas fail-closed:** o GATE 3 recusa descarregar o modelo com <5 GiB livres e o GATE 2 recusa sem `zstd`, ambos com `ENVIRONMENT BLOCKED`. Nada é instalado para contornar.
+- **Sonda real só de leitura** (`foundation` job `runner-capacity`, run `42661348947`): `ubuntu-24.04` imagem `20261101.360.1`, `/` 145 G com **86 G livres** (RUNNER_TEMP, workspace e HOME no mesmo disco), `MemTotal` 16 367 528 kB, swap 3 GiB, 4 vCPU AMD EPYC 9V74, `zstd` 1.5.7.
+
+### Activação, Opção A
+
+- `main` `9198e1a` → **`946e22b`**: acrescenta **apenas** `.github/workflows/work03-cpu-agent.yml`, com o blob `fcea918cee0e63ea8dc88aa03dc31d6356f95063`, idêntico ao da `develop@e34ab4c`.
+- O único trigger é `workflow_dispatch`. A `develop` e o pin `f21d902…` não mudaram.
+- Actions: workflow `WORK-03 CPU real agent (manual)` registado, id `412351033`, `active`, 0 execuções antes do disparo.
+
+### Disparo 1 — run `42661672673`
+
+https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42661672673 · `workflow_dispatch` · ref `develop` · SHA `e34ab4c36f2d8f9dd215d70fee01919d8e0c6bf9` · `up_to_gate=3` · `gate5_authorization` vazio.
+
+| Gate | Estado | Evidência (log) |
+|---|---|---|
+| 0a | PASS | inputs válidos |
+| 0 | PASS | HEAD = SHA; gitlink e submódulo = pin; árvore limpa |
+| 1 | PASS | AMD **EPYC 7763**, 4 vCPU, RAM 15 GiB (13 livres), 86 G livres, Python 3.12.3, rustc 1.99.1 |
+| 2 | PASS | Ollama `0.40.15`, SHA-256 OK, `LISTEN 127.0.0.1:11434` apenas; 77 MB após remover as bibliotecas GPU; venv core 359 MB |
+| 3 | **QWEN REAL PASS** (servidor gerou resposta não vazia) | descarga `qwen3.5:4b` ~20,3 s, «verifying sha256 digest … success», 3,1 G em disco; carga + primeira geração (16 tokens) + consultas ≤ **5,75 s** (limite superior pelos timestamps) |
+| 4, 5 | NOT RUN | por autorização |
+
+- **Resumo do workflow:** `STOPPED AFTER GATE 3 (WORK-02 NOT RUN)`. Job `success` em ~62 s.
+- **Artefacto:** `work03-evidence-42661672673`, id `13694207825`, 9 343 B, `sha256:274110d41b3adb51af36cc9e704f2991ac48e95e4e26e0c962ac53ccfdfac5ca`, expira a 09/12/2026.
+- **Digest do modelo e texto gerado: NÃO VERIFICADOS nesta sessão.** Estão em `gates.jsonl`, `ollama-tags.json` e `gate3-generate.json` dentro do artefacto. A descarga daqui foi bloqueada pelo proxy (blob storage do GitHub). O digest, quando lido, é **referência provisória** e deve repetir-se nos disparos seguintes.
+
+### Observações e bloqueadores
+
+1. **Lacuna de observabilidade:** o GATE 3 grava digest, tempo e resposta só no artefacto, não no log. Proposta: imprimi-los também no log e no resumo do passo. Exige actualizar o ficheiro na `develop`; a cópia na `main` só serve para registo.
+2. **Hardware variável:** o probe calhou num EPYC 9V74, o disparo num EPYC 7763. As latências comparam-se dentro do mesmo run.
+3. O `openjarvis` reporta `0.0.1.dev1+unknown.gf21d902f4` no checkout raso (sem tags): é o mesmo commit do pin.
+4. Sem recursos pagos, sem regressões, sem alterações inesperadas nas branches.
+
+### Interpretação
+
+GATE 3 prova que o **modelo real corre em CPU** neste runner. **Não** prova uso de ferramentas nem agente activo; WORK-02 continua **NOT RUN**.
+
+**Recomendação para o GATE 4:** avançar com `up_to_gate=4` no mesmo SHA, depois de o operador ler o digest no artefacto (ou de aprovada a correcção de observabilidade). Na mesma execução, o GATE 3 repete-se e permite verificar que o digest é estável.
