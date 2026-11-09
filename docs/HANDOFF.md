@@ -700,3 +700,18 @@ Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `
   - a classificação escondia uma falha do modelo no GATE 4;
   - o teste de âmbito do WORK-02 foi fixado ao intervalo imutável `7079e18..fa9faa9`.
 - **Estado:** `WORK03_PREPARED — ACTIVATION BLOCKED`. **QWEN REAL NOT RUN**. **Próxima acção:** decisão do CEO sobre A/B/C/D; depois, três disparos (`up_to_gate=3`, `4` e `5` com autorização) e registo aqui de cada artefacto `work03-evidence-<run_id>`.
+
+
+## ADENDA — 09/11/2026: WORK-03 RUN 42661672673 — QWEN REAL GATE 3 PASS
+
+**Confirmação independente pela API GitHub Actions e logs do job**, não apenas pelo relato do Claude. Run URL: https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42661672673 ; job id `129314563878`. Execução via `workflow_dispatch` em `develop@e34ab4c36f2d8f9dd215d70fee01919d8e0c6bf9`, run iniciado `2026-11-09T17:08:25Z`, concluído `17:09:34Z`, `status=completed`, `conclusion=success`. `main` encontrava-se em `946e22bbc2eb00b1a6e427a2ff6ed1e6b7987d07` no momento da consulta.
+
+**Gates de facto executados e aprovados:** `0a PASS`, `0 PASS`, `1 PASS`, `2 PASS`, `3 QWEN REAL PASS`. Nos logs: OpenJarvis pin validado; Ollama 0.40.15 instalado/servido em loopback; `qwen3.5:4b` puxado com indicação de verificação SHA-256 bem-sucedida do download; `/api/generate` concluiu, resposta não vazia. Job completou com sucesso e classificou `overall=STOPPED AFTER GATE 3 (WORK-02 NOT RUN)`.
+
+**Recursos medidos no job:** 4 vCPU, cerca de 15 GiB RAM, disco root com 86 GiB livres antes da instalação e ~83 GiB livres após o pull do modelo (`/dev/root`, 145G total). O directório de modelos Ollama ocupava ~3.1 GiB depois do pull. Estes valores reflectem a VM concreta, não uma garantia para todos os runners. O tempo do job foi ~65 segundos no total (inclui setup, instalação e pull); **não é benchmark de velocidade do agente ou do Windows**.
+
+**Evidências:** artefacto GitHub Actions `work03-evidence-42661672673`, artifact ID `13694207825`, 9343 bytes, disponível na página do run no momento da consulta. Logs contêm `GATE 3 QWEN REAL PASS`. O SHA digest exacto do modelo e `first_generate_s` devem ser extraídos de `gates.jsonl` dentro do artefacto antes de publicar valores específicos; não inventar. Como não houve ainda validação independente da integridade do conteúdo do ZIP neste registo, preservar distinção entre **job confirmado** e **artefacto ainda por inspeccionar em profundidade**.
+
+**Não executados propositadamente:** GATE 4 (Orchestrator a seleccionar ferramenta) e GATE 5 (WORK-02 completo, 10 tarefas + 3 segurança). Assim, **`WORK02_QWEN_REAL` continua NOT RUN**, apesar de `WORK03_GATE3_QWEN_REAL_PASS`. Não afirmar que a IA já executa trabalhos multi-etapa.
+
+**Próxima decisão:** autorizar **apenas o disparo GATE 4** no mesmo SHA fixado `e34ab4c36f2d8f9dd215d70fee01919d8e0c6bf9`, branch `develop`, `up_to_gate=4`, `gate5_authorization` vazio, após confirmar integridade dos resultados GATE 3 e estado do workflow. Se GATE 4 falhar, classificar modelo vs ambiente vs ferramenta; não executar GATE 5 sem nova aprovação.
