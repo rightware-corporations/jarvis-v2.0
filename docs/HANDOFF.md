@@ -534,3 +534,33 @@ Fluxo proposto: pedido por voz/texto → agente `orchestrator` ou `native_react`
 - Resultados da investigação devem actualizar este handoff como hipótese, prova de código, prova executada, risco e acção, com origem e SHA. **Não iniciar refactor grande nem activar `full-system-access` sem discussão explícita.**
 
 **Estado desta adenda:** investigação de documentação e código; não é implementação de ferramentas nem aprovação de arquitectura comercial.
+
+
+## ADENDA — 09/11/2026: WORK-01 — relatório formal arquivado e analisado
+
+**Fonte:** entrega do GPT Work pelo operador RIGHTWARE, documento `WORK01_ACTIVE_ASSISTANT_AUDIT.md` (665 linhas, 80 610 bytes UTF-8 na versão anexada). Cópia integral sem alteração de conteúdo publicada em [`docs/research/WORK01_ACTIVE_ASSISTANT_AUDIT.md`](research/WORK01_ACTIVE_ASSISTANT_AUDIT.md) no commit `ace1d7c6295d50313f7f009a893bf5a16fabbd5d`; verificada igualdade textual entre anexo e blob GitHub. Estado formal **`WORK01_AUDIT_PARTIAL`**. Não tratar este documento como autorização de implementação.
+
+### Âmbito e verificação
+
+- **Snapshot auditado:** RIGHTWARE `develop@247a50cf105081caa6e80eda463fd1e44cbadf04`; OpenJarvis pin `f21d902f4d3bd7f0f3f138f1a4613019a394b549`. Upstream consultado `a4aa0271dd1479ef547d24cf69a62e0e8307d22c`, 9 commits ahead. **O submódulo RIGHTWARE NÃO foi actualizado.**
+- **Inventário de código:** `OrchestratorAgent`, `NativeReActAgent`, `Operative`, `DeepResearch`, tools, skills, memória, scheduler, browser, MCP e frontend React/Tauri existem no upstream fixado, mas não estão integrados/validados como conjunto na experiência Jarvis do Issa. `rightware/voice.py` utiliza `SimpleAgent` sem ferramentas e `windows_actions.py` só cobre Notepad/Calculator.
+- **Ensaios WORK01:** `30/30` cenários **FAKE** (10 D1 stock; 10 D2 documentos; 10 D3 pesquisa simulada) e quatro recusas esperadas. O harness usa respostas programadas, apenas stdlib Python, **não executa OpenJarvis nem Qwen**, e não representa latência de inferência. Não proclamar sucesso de automação por IA com base nestes testes. O K03 de inferência real anterior comprovou conversação e calculadora separada, **não** sequência multi-tool.
+- **Lacunas explícitas:** PC/hardware Issa não conhecido; working tree privada do Claude não verificada; contratos JAR-CONF/JAR-COG/JAR-INFER/VEXEL não localizados nesta revisão; Windows/PT voice, GUI, agente real multi-etapa não testados por WORK01.
+- **Achados P0 para integração:** política de capacidades upstream com `default_deny=False` em alguns percursos; `file_write` sem confirmação própria; caminhos vazios podem alargar acesso; scanner de memória em falha pode continuar a captar factos; tool timeout pode não terminar side effects, assim como cancelamento actual da voz pode não matar worker. Pré-condições de segurança devem ser explícitas por ferramenta/entrada e testadas sob negação.
+- **Outros achados:** SQLite do caminho consultado depende de extensão Rust; GUI upstream já tem componentes de voz/aprovações/memória mas sem build Windows validado; presets com shell irrestrita são inadequados para piloto; actualização upstream requer auditoria separada.
+
+### Recomendação técnica (NÃO é decisão de arquitectura aprovada)
+
+Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `max_turns` limitado, guard obrigatório em cada invocação e verificador independente**, no motor local Ollama Qwen3.5 4B inicialmente. Utilizar dados sintéticos e pastas de leitura/saída fixadas. Operação de escrita só com autorização vinculada a parâmetros, destino e preview; não alterar originais; sem shell geral, terminal remoto, passwords, rede não aprovada ou alteração de privilegios. Reduzir planificação a ferramentas conhecidas e comprováveis; não confiar em labels de sucesso do modelo.
+
+**Gate de prova recomendado para engenharia WORK02, após pré-requisitos:** implementar e executar no ambiente isolado, com `OrchestratorAgent` real e Qwen3.5 4B, o fluxo `ler a.txt + b.txt → produzir síntese PT com fontes e sem factos inventados → escrever resultado.md como novo artefacto → reabrir/verificar conteúdo e hash → comunicar sucesso apenas com receipt`. Testar dez execuções (cada uma com saída nova limpa) + tentativas negativas (sem autorização, path traversal, troca de parâmetros, tool desconhecida, injecção em documento, timeout/cancelamento); recolher resultados estruturados, classificando MODELO/FERRAMENTA/AMBIENTE/PERMISSÃO. Não declarar PASS se usar apenas FAKE ou API directa Ollama sem OpenJarvis.
+
+### Sequência proposta / limites de autorização
+
+- **WORK02-0:** localizar e reconciliar contratos JAR-CONF/JAR-COG/JAR-INFER caso existam como artefactos verificáveis; documentar ausências sem inventar conteúdo. Engenharia de autoridade e nova política permanece em REVIEW se contratos mandatórios forem desconhecidos.
+- **WORK02-1:** preflight read-only no checkout/venv isolados: OpenJarvis pin, Rust disponível, Qwen modelo/digest, denied-by-default smoke, dependências Windows e capacidade de executar Orchestrator. Sem alterações no PC Issa nem atualização upstream.
+- **WORK02-2:** desenhar prova isolada `OrchestratorAgent`+ferramentas limitadas; produzir evidência real e proposta de patch, sem assumir integração/merge como autorizados por este relatório.
+- **Depois:** decisão técnica formal da RIGHTWARE sobre política de aprovação/cancelamento, integração de voz, reaproveitamento GUI, Internet controlada, memória opt-in e agendamento. Não introduzir ferramentas globais ou dar acesso a todo o PC.
+- **Requisitos operacionais permanentes:** `docs/HANDOFF.md` actualiza-se após resultados materiais; no máximo dois agentes em edição concorrente se ficarem em ficheiros separados, e ambos verificam HEAD; `main` fica intacta.
+
+**Estado desta adenda:** relatório arquivado; avaliação metodológica concluída; execução Qwen multi-etapa **NOT RUN**; arquitectura/segurança ainda **PROPOSTA / REVIEW**, não release.
