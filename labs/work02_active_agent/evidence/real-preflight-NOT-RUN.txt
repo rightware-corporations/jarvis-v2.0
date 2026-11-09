@@ -1,0 +1,1 @@
+PREFLIGHT FAIL: Ollama not reachable on http://127.0.0.1:11434 (URLError); start it, do not install here
