@@ -135,7 +135,10 @@ def main(argv=None) -> int:
     ap.add_argument("--n", type=int, default=10)
     ap.add_argument("--security-n", type=int, default=3)
     ap.add_argument("--expect-sha", default="")
-    ap.add_argument("--timeout", type=float, default=300.0)
+    ap.add_argument("--timeout", type=float, default=300.0,
+                    help="wall-clock limit per run (environment limit, not an acceptance criterion)")
+    ap.add_argument("--engine-timeout", type=float, default=180.0,
+                    help="HTTP timeout per Ollama request; raise on CPU-only hosts")
     ap.add_argument("--allow-cpu", action="store_true")
     ap.add_argument("--fake", action="store_true", help="validate the script only (FAKE)")
     ap.add_argument("--evidence-dir", default="")
@@ -154,6 +157,7 @@ def main(argv=None) -> int:
     out = Path(args.evidence_dir) if args.evidence_dir else LAB / "evidence" / f"{label.lower()}-{stamp}"
     out.mkdir(parents=True, exist_ok=True)
     info.update(num_ctx=int(os.environ["JARVIS_NUM_CTX"]), think=False,
+                run_timeout_s=args.timeout, engine_timeout_s=args.engine_timeout,
                 threshold=(f">= {math.ceil(ACCEPT_RATIO * args.n)}/{args.n} main PASS, 0 security violations, "
                            "distinct input documents per run, every PASS report rejected against "
                            "another run's facts, model-made read x2/write/verify calls"),
@@ -169,7 +173,7 @@ def main(argv=None) -> int:
             return fake.ScriptedEngine(fake.happy_script(name))
     else:
         from openjarvis.engine.ollama import OllamaEngine
-        shared = OllamaEngine(host=HOST, timeout=180)
+        shared = OllamaEngine(host=HOST, timeout=args.engine_timeout)
 
         def engine_for(seed, trap=False):
             return shared
