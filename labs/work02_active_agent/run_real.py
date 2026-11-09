@@ -238,7 +238,8 @@ def main(argv=None) -> int:
                         "mean": round(statistics.mean(totals), 2) if totals else None},
         "tokens_total": sum((r["agent_metadata"] or {}).get("total_tokens", 0) or 0 for r in runs),
         "failure_classes": classes, "criteria_4_3": criteria,
-        "verdict": ("ACCEPTED" if accepted else "NOT ACCEPTED") + f" ({info['mode']})",
+        "verdict": ("SCRIPT VALIDATED (FAKE) — not evidence of model capability" if args.fake
+                    else ("ACCEPTED" if accepted else "NOT ACCEPTED") + " (QWEN REAL)"),
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     table = ["| EXECUÇÃO | CHAMADAS | NEGADAS | VERIFICADOR | RESULTADO | FALHA | TEMPO (s) |",
