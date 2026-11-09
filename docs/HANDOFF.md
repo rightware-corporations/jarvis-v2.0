@@ -628,3 +628,5 @@ Preferir **`OrchestratorAgent` com catálogo restrito, `parallel_tools=False`, `
   - preflight real: exit 2 (sem Ollama nesta sessão).
 - **Estado:** `WORK02_PROOF_PARTIAL`. **QWEN REAL NOT RUN**; nenhuma alegação de WORK02 REAL PASS. O SHA remoto final e o CI são confirmados na entrega desta publicação.
 - **Próxima acção:** executar a célula de `labs/work02_active_agent/README.md` na sessão Kaggle (K02), com `--expect-sha` igual ao HEAD publicado, e entregar o ZIP `evidence/real-*.zip`.
+
+**Confirmação pós-publicação (WORK-02):** `origin/develop = 45d8408495ae48ed708bcaf0682714706e595e0f` (push normal, fast-forward `7079e18..45d8408`, sem force); `main` intacta em `9198e1a`. CI *RIGHTWARE foundation* run `42622213335`: `launcher` PASS e `windows-compat` PASS. Esse CI corre a suite RIGHTWARE, não o laboratório; o laboratório (43 PASS FAKE) precisa do venv OpenJarvis e foi executado localmente antes do push. Para o ensaio real usar `--expect-sha 45d8408495ae48ed708bcaf0682714706e595e0f`, porque o código do laboratório nesse SHA é idêntico ao deste commit, que só altera documentação. **QWEN REAL continua NOT RUN.**
