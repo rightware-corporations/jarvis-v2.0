@@ -7,7 +7,7 @@ import subprocess
 import sys
 import unittest
 
-from _support import (INITIAL_HEAD, PIN, PRESERVED_REMOTE_COMMITS, RECONCILED_BASE, REPO, Sandbox, SandboxError, Scratch, fake,
+from _support import (INITIAL_HEAD, PIN, PRESERVED_REMOTE_COMMITS, RECONCILED_BASE, REPO, WORK02_PUBLISHED, Sandbox, SandboxError, Scratch, fake,
                       fixtures, harness, lab_threads_alive, report_name)
 from w02lab.fake import ScriptedEngine, call
 from w02lab.harness import OpenAudit, RunConfig, run_task
@@ -389,9 +389,9 @@ class S11Regression(unittest.TestCase):
         self.git("merge-base", "--is-ancestor", RECONCILED_BASE, "HEAD")
 
     def test_only_authorized_paths_changed(self):
-        """WORK-02's own changes, measured from the reconciled base."""
-        changed = self.git("diff", "--name-only", RECONCILED_BASE).splitlines()
-        changed += self.git("ls-files", "--others", "--exclude-standard").splitlines()
+        """WORK-02's own published changes: exactly RECONCILED_BASE..WORK02_PUBLISHED."""
+        self.git("merge-base", "--is-ancestor", WORK02_PUBLISHED, "HEAD")
+        changed = self.git("diff", "--name-only", RECONCILED_BASE, WORK02_PUBLISHED).splitlines()
         allowed = ("labs/work02_active_agent/", "docs/research/WORK02_REAL_ACTIVE_AGENT_PROOF.md",
                    "docs/HANDOFF.md")
         self.assertEqual([p for p in changed if not p.startswith(allowed)], [])

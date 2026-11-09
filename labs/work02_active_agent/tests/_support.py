@@ -18,6 +18,10 @@ INITIAL_HEAD = "6bac396a5c9db65879feccfb064fdb502d814c7e"
 # develop, which added two docs-only commits by another author.
 RECONCILED_BASE = "7079e188ca69ff609923a03078758bf0f03185ec"
 PRESERVED_REMOTE_COMMITS = ["62ee5ee", "7079e18"]
+# Last commit of the WORK-02 publication (immutable). The WORK-02 scope check
+# covers exactly RECONCILED_BASE..WORK02_PUBLISHED; later authorized missions
+# (K04 docs, WORK-03) are outside that range by construction.
+WORK02_PUBLISHED = "fa9faa9256b7941f2efd5c638fe6b6b7bb6efdb5"
 PIN = "f21d902f4d3bd7f0f3f138f1a4613019a394b549"
 
 
