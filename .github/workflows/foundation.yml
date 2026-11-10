@@ -89,7 +89,7 @@ jobs:
         working-directory: labs/work04_cognitive/tests
         env:
           HOME: ${{ runner.temp }}/home
-        run: ../../../vendor/openjarvis/.venv/bin/python -m unittest -v test_w04_fake test_w04_workflow test_w04_r2_completion test_w04_r2_source_guard test_w04_r2_semantics test_w04_r2_classification test_w04_r2_adversarial
+        run: ../../../vendor/openjarvis/.venv/bin/python -m unittest -v test_w04_fake test_w04_workflow test_w04_r2_completion test_w04_r2_source_guard test_w04_r2_semantics test_w04_r2_classification test_w04_r2_adversarial test_w04_r2_fixtures
 
   # WORK-03: read-only capacity probe of the same runner image the manual
   # inference workflow uses. Downloads nothing, installs nothing, no model.
