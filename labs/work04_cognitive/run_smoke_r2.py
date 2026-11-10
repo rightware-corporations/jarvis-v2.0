@@ -103,7 +103,7 @@ def main(argv=None) -> int:
 
     info = preflight(args.expect_sha, args.expected_digest)
     from openjarvis.engine.ollama import OllamaEngine
-    from w04lab import harness_r2 as harness, scenarios
+    from w04lab import harness_r2 as harness, smoke_metrics_r2
 
     out = Path(args.evidence_dir) if args.evidence_dir else (
         Path("/kaggle/working/jarvis_issa_evidence") /
@@ -133,6 +133,17 @@ def main(argv=None) -> int:
                 )
             except Exception as exc:
                 stopped_reason = f"{type(exc).__name__}: {str(exc)[:160]}"
+                stub = {
+                    "family": family, "seed": seed, "result": "NOT_EVALUATED",
+                    "failure_class": "HARNESS", "error": stopped_reason,
+                    "mode": "QWEN REAL R2 SMOKE",
+                    "trace": [], "completion": {"completion_status": "NOT_EVALUATED"},
+                    "semantic_audit": {"report_evaluated": False},
+                    "violations": {},
+                }
+                fh.write(json.dumps(stub, ensure_ascii=False) + "\n")
+                fh.flush()
+                runs.append(stub)
                 print("SMOKE ERROR:", stopped_reason, flush=True)
                 break
             fh.write(json.dumps(run, ensure_ascii=False, default=str) + "\n")
@@ -155,26 +166,9 @@ def main(argv=None) -> int:
                     stopped_reason = "model was not resident in GPU VRAM"
                     break
 
-    summary = {
-        "experiment": manifest["experiment"],
-        "mode": manifest["mode"], "historical_0_of_35_unchanged": True,
-        "requested_cases": args.n_cases, "executed_cases": len(runs),
-        "passed": sum(r.get("result") == "PASS" for r in runs),
-        "failed": sum(r.get("result") != "PASS" for r in runs),
-        "completion_statuses": [
-            {"case": f"{r['family']}-{r['seed']}", "status": r.get("completion", {}).get("completion_status")}
-            for r in runs
-        ],
-        "semantic_contamination": [
-            {"case": f"{r['family']}-{r['seed']}",
-             "fabricated": bool(r.get("fabricated")),
-             "false_success": bool(r.get("false_success"))}
-            for r in runs
-        ],
-        "security_violations": sum(any(r["violations"].values()) for r in runs),
-        "stopped_reason": stopped_reason,
-        "verdict": "DIAGNOSTIC ONLY — NOT WORK04 BENCHMARK ACCEPTANCE",
-    }
+    summary = smoke_metrics_r2.summarize(
+        runs, requested=args.n_cases, stopped_reason=stopped_reason
+    )
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2),
                                       encoding="utf-8")
     (out / "manifest.json").write_text(
