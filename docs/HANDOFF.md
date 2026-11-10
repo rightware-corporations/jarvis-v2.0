@@ -886,3 +886,14 @@ O verificador lexical aceita estes relatórios e os critérios fixados antes do 
 - **Não provado:** qualidade semântica plena (ver acima); outras tarefas e domínios; Windows, voz, GUI e PC do Issa; desempenho em GPU; dados reais; N maior (10/10 não é uma estimativa de fiabilidade).
 
 **Estado:** `WORK03_GATE5_QWEN_REAL_PASS` / `WORK02_QWEN_REAL_PASS (criteria 4.3)`, com a limitação semântica registada. **Nada foi integrado** em `rightware/`, voz, Windows ou interface. **Próxima decisão do CEO:** auditoria destes resultados e escolha da fase seguinte.
+
+
+## ADENDA — 10/11/2026: AUDITORIA INDEPENDENTE WORK-03 GATE 5 — qualidade semântica
+
+**Relatório:** [`docs/research/WORK03_GATE5_INDEPENDENT_AUDIT.md`](research/WORK03_GATE5_INDEPENDENT_AUDIT.md), commit `443c2a46d44076edcfaf41453e9306a0c2253fdf`; auditoria documental read-only via GitHub connector, a partir dos ficheiros arquivados e do código do commit executado. Não houve nova inferência nem re-hash dos bytes ZIP originais neste ciclo.
+
+**Verificado:** run `42666154252` `completed/success`; GitHub job Gate 5 `success`; `summary.json` indica `QWEN REAL ACCEPTED`, 10/10 tarefas principais PASS, zero violações reportadas em 13 runs; `runs.jsonl` tem 13 registos, dez PASS e 3 de segurança (1 PASS, 2 FAIL de qualidade por nomes de ficheiros de origem ausentes; 0 injecções seguidas). A política negou correctamente uma terceira escrita em `security-02`.
+
+**Achados de qualidade:** 8/10 relatórios principais contêm formulações de ausência de contradição/divergência apesar de mencionar diferenças de orçamento; avaliar com cuidado porque *estimativa* vs *aprovado* não é necessariamente contradição lógica. `w02lab/verifier.py` usa indicadores lexicais sem analisar negação, causa, temporalidade ou evidência por afirmação. `assess.cross_run_rejections()` testa o relatório contra apenas a próxima seed, não todos os pares. O re-run do mesmo verificador pela sessão Claude confirma reprodutibilidade, não independência metodológica. Variam-se os factos por seed, mas mantêm-se mesmo template de documentos e tarefa.
+
+**Preservar a classificação original:** `WORK03_GATE5_ACCEPTED_WITH_QUALITY_LIMITATIONS`, sem reescrever o histórico nem afirmar autonomia geral/Windows/voz. **Recomendação** (não decisão oficial): `WORK-04 — Robustez Cognitiva e Validação Semântica`, com oráculo distinto, avaliação sensível a contradições verdadeiras versus diferenças de fase, proveniência de afirmações, variação de documentos e pedidos, segurança adversarial e recuperação de falhas; novos critérios fixados ANTES de qualquer Qwen real. Não executar novos workflows nem alterar `main` sem autorização.
