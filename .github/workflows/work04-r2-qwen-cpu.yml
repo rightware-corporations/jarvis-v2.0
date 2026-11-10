@@ -1,0 +1,210 @@
+# WORK-04 R2 — EXPERIMENTAL real-Qwen smoke on a GitHub-hosted CPU runner.
+# NOT the WORK-04 rev.1 benchmark (that is work04-cognitive.yml, unchanged) and
+# never a benchmark acceptance: verdicts are DIAGNOSTIC ONLY.
+#
+# Trigger: ONLY a pushed tag with one of two exact shapes, so no branch push,
+# pull request or timer ever runs inference, and `main` is not involved:
+#   work04-r2-cpu-infra-<N>  -> gates + R2 runner preflight (one short warm-up), no scenario
+#   work04-r2-cpu-1case-<N>  -> gates + R2 runner preflight + ONE scenario (EVOL-4001)
+# Larger stages (3 or 8 cases) are deliberately not wired: they need a new authorization.
+# Gates 0-3 reuse the WORK-03/WORK-04 CPU steps that already ran for real.
+name: WORK-04 R2 real Qwen CPU smoke (tag-triggered)
+
+on:
+  push:
+    tags:
+      - "work04-r2-cpu-infra-*"
+      - "work04-r2-cpu-1case-*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: work04-r2-qwen-cpu
+  cancel-in-progress: false
+
+env:
+  R2_BRANCH: feat/work04-r2-semantic-safety
+  PIN: f21d902f4d3bd7f0f3f138f1a4613019a394b549
+  OLLAMA_VERSION: "0.40.15"
+  OLLAMA_SHA256: 628c018404a4206493efd38e46251c154ede5141b8b8dc85c659b3b027c47379
+  MODEL: "qwen3.5:4b"
+  EXPECTED_DIGEST: d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04
+  UV_VERSION: "0.11.32"
+  JARVIS_NUM_CTX: "8192"
+  MIN_RAM_GIB: "14"
+  MIN_FREE_DISK_GIB: "9"
+  MODEL_DISK_BOUND_GIB: "5"
+
+jobs:
+  r2cpu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: GATE 0a — tag shape decides the mode (fail closed)
+        run: |
+          set -euo pipefail
+          case "$GITHUB_REF_NAME" in
+            work04-r2-cpu-infra-[0-9]*) MODE=infra ;;
+            work04-r2-cpu-1case-[0-9]*) MODE=1case ;;
+            *) echo "unexpected ref $GITHUB_REF_NAME"; exit 1 ;;
+          esac
+          [[ "$GITHUB_REF_NAME" =~ ^work04-r2-cpu-(infra|1case)-[0-9]+$ ]] || { echo "bad tag shape"; exit 1; }
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          EVID="$RUNNER_TEMP/r2-evidence"; mkdir -p "$EVID"
+          { echo "MODE=$MODE"; echo "EVID=$EVID"
+            echo "OLLAMA_DIR=$RUNNER_TEMP/ollama"; echo "OLLAMA_MODELS=$RUNNER_TEMP/ollama-models"; } >> "$GITHUB_ENV"
+          printf '{"gate":"0a","status":"PASS","mode":"%s","tag":"%s","sha":"%s","run_id":"%s"}\n' \
+            "$MODE" "$GITHUB_REF_NAME" "$GITHUB_SHA" "$GITHUB_RUN_ID" >> "$EVID/gates.jsonl"
+
+      - name: Checkout the tagged revision (pinned submodule)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: GATE 0 — integrity (SHA, R2 branch ancestry, pin, clean tree, rev.1 untouched)
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" "origin/$R2_BRANCH" \
+            || { echo "tagged commit is not on $R2_BRANCH"; exit 1; }
+          test "$(git ls-tree HEAD vendor/openjarvis | awk '{print $3}')" = "$PIN"
+          test "$(git -C vendor/openjarvis rev-parse HEAD)" = "$PIN"
+          test -z "$(git status --porcelain)"
+          test -z "$(git -C vendor/openjarvis status --porcelain)"
+          # The rev.1 benchmark modules must be byte-identical to the frozen WORK-04 revision.
+          git diff --quiet dcc23f365aedf741018b4af6ffa3d721c4c07a46 HEAD -- \
+            labs/work04_cognitive/w04lab/harness.py labs/work04_cognitive/w04lab/oracle.py \
+            labs/work04_cognitive/w04lab/assess.py labs/work04_cognitive/run_real.py \
+            labs/work02_active_agent/w02lab
+          printf '{"gate":"0","status":"PASS","repo_sha":"%s","pin":"%s","rev1_modules":"identical to dcc23f3"}\n' \
+            "$GITHUB_SHA" "$PIN" >> "$EVID/gates.jsonl"
+
+      - name: GATE 1 — environment (CPU, RAM, disk, Python)
+        run: |
+          set -euo pipefail
+          free_gib() { df -BG --output=avail "$1" | tail -1 | tr -dc 0-9; }
+          RAM_GIB=$(awk '/MemTotal/ {printf "%d", $2/1048576}' /proc/meminfo)
+          DISK=$(free_gib "$RUNNER_TEMP")
+          {
+            echo "## Environment"; uname -a; nproc; lscpu | grep -E 'Model name|^CPU\(s\)' | cut -c1-200
+            free -h; df -h / "$RUNNER_TEMP"; python3 --version
+            command -v nvidia-smi >/dev/null && echo "nvidia-smi present" || echo "no nvidia-smi (CPU runner)"
+          } | tee "$EVID/environment.txt"
+          STATUS=PASS
+          [ "$RAM_GIB" -ge "$MIN_RAM_GIB" ] || STATUS="ENVIRONMENT BLOCKED"
+          [ "$DISK" -ge "$MIN_FREE_DISK_GIB" ] || STATUS="ENVIRONMENT BLOCKED"
+          [ "$(nproc)" -ge 4 ] || STATUS="ENVIRONMENT BLOCKED"
+          printf '{"gate":"1","status":"%s","vcpu":%s,"ram_gib":%s,"free_disk_gib":%s}\n' \
+            "$STATUS" "$(nproc)" "$RAM_GIB" "$DISK" >> "$EVID/gates.jsonl"
+          [ "$STATUS" = PASS ]
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned OpenJarvis core from the frozen lockfile
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check "uv==${UV_VERSION}"
+          uv sync --project vendor/openjarvis --frozen --no-dev --python "$(which python)" 2>&1 | tail -5
+          vendor/openjarvis/.venv/bin/python -c "import psutil; from openjarvis.agents.orchestrator import OrchestratorAgent; print('openjarvis core OK')" \
+            | tee -a "$EVID/environment.txt"
+
+      - name: GATE 1b — deterministic R2 regressions on this exact revision (no model)
+        working-directory: labs/work04_cognitive/tests
+        env:
+          HOME: ${{ runner.temp }}/home
+        run: |
+          set -euo pipefail
+          ../../../vendor/openjarvis/.venv/bin/python -m unittest test_w04_r2_smoke test_w04_r2_cpu_workflow test_w04_r2_baseline 2>&1 \
+            | tee "$EVID/gate1b-tests.txt" | tail -3
+          printf '{"gate":"1b","status":"PASS"}\n' >> "$EVID/gates.jsonl"
+
+      - name: GATE 2 — official Ollama (SHA-256 verified), loopback only
+        run: |
+          set -euo pipefail
+          ARCHIVE="$RUNNER_TEMP/ollama.tar.zst"
+          curl -fsSL --retry 3 -o "$ARCHIVE" \
+            "https://github.com/ollama/ollama/releases/download/v${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst"
+          echo "${OLLAMA_SHA256}  ${ARCHIVE}" | sha256sum -c -
+          mkdir -p "$OLLAMA_DIR" "$OLLAMA_MODELS"
+          tar -I zstd -xf "$ARCHIVE" -C "$OLLAMA_DIR"
+          rm -f "$ARCHIVE"
+          # CPU runner: GPU runtime libraries are unused; remove them.
+          find "$OLLAMA_DIR/lib/ollama" -maxdepth 1 -type d \( -name 'cuda*' -o -name 'rocm*' -o -name 'vulkan*' \) \
+            -exec rm -rf {} + 2>/dev/null || true
+          OLLAMA_HOST=127.0.0.1:11434 OLLAMA_NO_CLOUD=1 nohup "$OLLAMA_DIR/bin/ollama" serve \
+            > "$EVID/ollama-server.log" 2>&1 &
+          for i in $(seq 1 60); do curl -fs --noproxy '*' http://127.0.0.1:11434/api/version && break; sleep 2; done
+          V=$(curl -fs --noproxy '*' http://127.0.0.1:11434/api/version | python3 -c 'import json,sys;print(json.load(sys.stdin)["version"])')
+          test "$V" = "$OLLAMA_VERSION"
+          ss -ltn | grep ':11434' | tee "$EVID/ollama-listen.txt"
+          if ss -ltn | grep ':11434' | grep -vq '127.0.0.1:11434'; then echo "Ollama listens beyond loopback"; exit 1; fi
+          printf '{"gate":"2","status":"PASS","ollama":"%s","listen":"127.0.0.1:11434"}\n' "$V" >> "$EVID/gates.jsonl"
+
+      - name: GATE 3 — pull the pinned model and compare its digest (fail closed)
+        run: |
+          set -euo pipefail
+          FREE=$(df -BG --output=avail "$OLLAMA_MODELS" | tail -1 | tr -dc 0-9)
+          [ "$FREE" -ge "$MODEL_DISK_BOUND_GIB" ] || { printf '{"gate":"3","status":"ENVIRONMENT BLOCKED"}\n' >> "$EVID/gates.jsonl"; exit 1; }
+          "$OLLAMA_DIR/bin/ollama" pull "$MODEL" 2>&1 | tail -3
+          curl -fs --noproxy '*' http://127.0.0.1:11434/api/tags > "$EVID/ollama-tags.json"
+          GOT=$(python3 -c 'import json,sys,os;m=[x for x in json.load(open(sys.argv[1]))["models"] if x["name"]==os.environ["MODEL"]];print(m[0]["digest"] if m else "")' "$EVID/ollama-tags.json")
+          if [ "$GOT" != "$EXPECTED_DIGEST" ]; then
+            printf '{"gate":"3","status":"ENVIRONMENT BLOCKED","digest":"%s"}\n' "$GOT" >> "$EVID/gates.jsonl"; exit 1
+          fi
+          printf '{"gate":"3","status":"PASS","digest":"%s"}\n' "$GOT" >> "$EVID/gates.jsonl"
+
+      - name: R2 runner — preflight only (one short warm-up generation, no scenario)
+        if: env.MODE == 'infra'
+        run: |
+          set -euo pipefail
+          set +e
+          vendor/openjarvis/.venv/bin/python labs/work04_cognitive/run_smoke_r2.py --device cpu --preflight-only \
+            --expect-sha "$GITHUB_SHA" --expected-digest "$EXPECTED_DIGEST" --evidence-dir "$EVID/smoke" \
+            > "$EVID/smoke-console.log" 2>&1
+          RC=$?
+          set -e
+          tail -20 "$EVID/smoke-console.log"
+          case $RC in 0) S="PASS";; *) S="ENVIRONMENT BLOCKED";; esac
+          printf '{"gate":"R2-preflight","status":"%s","exit":%s}\n' "$S" "$RC" >> "$EVID/gates.jsonl"
+          exit $RC
+
+      - name: R2 runner — ONE real Qwen scenario (EVOL-4001), diagnostic only
+        if: env.MODE == '1case'
+        run: |
+          set -euo pipefail
+          set +e
+          vendor/openjarvis/.venv/bin/python labs/work04_cognitive/run_smoke_r2.py --device cpu --n-cases 1 \
+            --expect-sha "$GITHUB_SHA" --expected-digest "$EXPECTED_DIGEST" --evidence-dir "$EVID/smoke" \
+            > "$EVID/smoke-console.log" 2>&1
+          RC=$?
+          set -e
+          tail -20 "$EVID/smoke-console.log"
+          case $RC in 0) S="EXECUTED (DIAGNOSTIC ONLY)";; *) S="ENVIRONMENT BLOCKED";; esac
+          printf '{"gate":"R2-1case","status":"%s","exit":%s}\n' "$S" "$RC" >> "$EVID/gates.jsonl"
+          exit $RC
+
+      - name: Preserve evidence (always)
+        if: always()
+        run: |
+          EVID="${EVID:-$RUNNER_TEMP/r2-evidence}"; mkdir -p "$EVID"
+          if [ -f "$EVID/ollama-server.log" ]; then tail -n 300 "$EVID/ollama-server.log" > "$EVID/ollama-server.tail.log"; rm -f "$EVID/ollama-server.log"; fi
+          curl -fs --noproxy '*' --max-time 5 http://127.0.0.1:11434/api/ps > "$EVID/ollama-ps-final.json" 2>/dev/null || true
+          pkill -f "ollama serve" || true
+          ( cd "$EVID" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS ) || true
+          echo "## WORK-04 R2 CPU smoke (DIAGNOSTIC ONLY)" >> "$GITHUB_STEP_SUMMARY"
+          sed 's/^/    /' "$EVID/gates.jsonl" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+
+      - name: Upload evidence (always)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: work04-r2-cpu-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/r2-evidence
+          if-no-files-found: warn
+          retention-days: 30
