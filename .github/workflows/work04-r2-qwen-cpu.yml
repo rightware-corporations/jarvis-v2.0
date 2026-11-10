@@ -10,7 +10,7 @@
 #   "1case" -> gates + R2 runner preflight + ONE scenario (EVOL-4001)
 # Larger stages (3 or 8 cases) are deliberately not wired: they need a new authorization.
 # Gates 0-3 reuse the WORK-03/WORK-04 CPU steps that already ran for real.
-name: WORK-04 R2 real Qwen CPU smoke (tag-triggered)
+name: WORK-04 R2 real Qwen CPU smoke (request-triggered)
 
 on:
   push:
