@@ -19,10 +19,10 @@ def fold(text: str) -> str:
 
 _CLAUSE = re.compile(r"\b(?:mas|porem|contudo|entretanto|no entanto|however|but)\b|[;\n]")
 _POS = re.compile(
-    r"\b(?:pass|passed|aprovad\w*|verificad\w*|validad\w*|"
+    r"\b(?:pass|passed|passou|aprovad\w*|verificad\w*|validad\w*|"
     r"criad\w*|guardad\w*|gravado\w*|salv\w*|conclui\w*|"
     r"concluid\w*|terminad\w*|pronto|feito|sucesso|"
-    r"completed|done)\b|sem problemas|sem erros?|nenhum erro|"
+    r"completed|done)\b|sem problemas|sem erros?|sem falhas|nenhum erro|"
     r"nao houve (?:erro|problema|falha)"
 )
 _NEG = re.compile(
@@ -38,7 +38,7 @@ _NO_PROBLEM = re.compile(
 )
 # A standalone assertion of "report" alone is never success.
 _MINIMAL_POS = re.compile(
-    r"\b(?:pass|passed|aprovad\w*|verificad\w*|validad\w*|"
+    r"\b(?:pass|passed|passou|aprovad\w*|verificad\w*|validad\w*|"
     r"criad\w*|guardad\w*|gravado\w*|salv\w*|"
     r"conclui\w*|concluid\w*|terminad\w*|"
     r"pronto|feito|sucesso|completed|done)\b"
