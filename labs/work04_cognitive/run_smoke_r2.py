@@ -103,7 +103,7 @@ def main(argv=None) -> int:
 
     info = preflight(args.expect_sha, args.expected_digest)
     from openjarvis.engine.ollama import OllamaEngine
-    from w04lab import harness, scenarios
+    from w04lab import harness_r2 as harness, scenarios
 
     out = Path(args.evidence_dir) if args.evidence_dir else (
         Path("/kaggle/working/jarvis_issa_evidence") /
