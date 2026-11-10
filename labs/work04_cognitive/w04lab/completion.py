@@ -10,7 +10,7 @@ from __future__ import annotations
 
 def evaluate_completion(
     trace: list[dict], *, final_name: str | None, report: str,
-    v2_result: str, oracle_result: str,
+    v2_result: str, oracle_result: str, expected_name: str | None = None,
 ) -> dict:
     """Return a structured, auditable verdict for the *final* report version.
 
@@ -41,7 +41,11 @@ def evaluate_completion(
     )
     evaluators_pass = v2_result == "PASS" and oracle_result == "PASS"
 
-    if not persisted:
+    approved_name = not expected_name or final_name in (expected_name, expected_name.removesuffix(".md") + "_v2.md")
+
+    if final_name and not approved_name:
+        reason = "REPORT_NAME_NOT_AUTHORIZED"
+    elif not persisted:
         reason = "FINAL_REPORT_NOT_PERSISTED"
     elif not verified:
         reason = "FINAL_REPORT_NOT_VERIFIED"
@@ -56,6 +60,7 @@ def evaluate_completion(
         "task_completed": reason == "TASK_COMPLETED",
         "completion_status": reason,
         "report_persisted": persisted,
+        "approved_report_name": approved_name,
         "final_report_verified": bool(verified),
         "tool_verification_pass": tool_verification_pass,
         "evaluators_pass": evaluators_pass,
