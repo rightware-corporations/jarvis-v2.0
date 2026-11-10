@@ -1,6 +1,6 @@
 {
   "experiment": "WORK04_R2_CPU_SMOKE",
-  "mode": "infra",
-  "request_id": 1,
-  "authorized_by": "RIGHTWARE operator, mission 'WORK-04 R2 — Execução Qwen Real em GitHub Actions' (infra first, then one scenario)"
+  "mode": "1case",
+  "request_id": 2,
+  "authorized_by": "RIGHTWARE operator, mission 'WORK-04 R2 — Execução Qwen Real em GitHub Actions'; infra request 1 passed (run 42820415561); ONE scenario only (EVOL-4001)"
 }
