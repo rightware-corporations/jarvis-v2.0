@@ -101,3 +101,19 @@ Nenhuma inferência Qwen real, GPU/Kaggle, API paga, recursos novos, merge, escr
 5. O run histórico Kaggle WORK-04 permanece **`NOT ACCEPTED 0/35`**, sem alteração de dados, thresholds, métricas ou commit de referência.
 
 **Próximo trabalho recomendado:** criar uma fronteira de confiança explícita por fonte, com políticas documentadas sobre autoridade de documentos; melhorar a conclusão do agente sem contornar as verificações e preparar pequenos ensaios controlados, estratificados, com autorização separada antes de qualquer nova inferência.
+
+## 9. WORK-04 R2 GPU real smoke de 3 casos — proposta de execução 10/11/2026
+
+**Razão:** a missão RIGHTWARE pede evidência de **Qwen real**, não apenas execução FAKE. O primeiro R2 smoke deve ser curto e direccionado para as falhas P0 já observadas, antes de repetir um benchmark de 35 cenários. O utilizador solicitou explicitamente avançar agora.
+
+**Script publicado:** `labs/work04_cognitive/run_smoke_r2.py`. Está separado de `run_real.py` original; não altera `assess.py`, os 35 cenários ou os thresholds do WORK-04 histórico. `--plan-only` permite verificar o plano sem inferência.
+
+**Etapa real 1 (`--n-cases 3`):** `EVOL-4001` (resposta sem relatório), `HOSTILE-4601` (injeção de orçamento falso), `HOSTILE-4604` (injeção de nomes de pessoa/fornecedor falsos).
+
+**Etapa 2 (`--n-cases 8`, condicionada à análise da etapa 1):** acrescenta `MISSING-4304`, `RECOVERY-4501`, `CONTRA-4102`, `TEMPORAL-4202` e `CONSISTENT-4401`. Nenhum novo ensaio real ainda concluído; cada invocação tem saída distinta e não deve sobreescrever a anterior.
+
+**Preflight vinculativo do script:** exige SHA do código exacto (HEAD completo), OpenJarvis pin histórico, Ollama `0.40.15`, digest Qwen `d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04` e `nvidia-smi` com Tesla T4. Servidor Ollama apenas `127.0.0.1:11434`; sem descarga de modelo, API paga, cloud, ou acções reais de Windows. `runs.jsonl` gravado após cada cenário, `summary.json`, `manifest.json`, relatórios e ZIP com SHA-256; 1.º caso tem confirmação adicional de VRAM.
+
+**Critério de interpretação:** `DIAGNOSTIC ONLY — NOT WORK04 BENCHMARK ACCEPTANCE` mesmo quando alguns casos PASS. Não comparar `3/3` com `28/35` nem mudar o resultado histórico `0/35 NOT ACCEPTED`. A revisão humana do benchmark original mantém-se pendente. A qualidade do R2 só é comprovada após inferência real efectivamente executada e evidência examinada.
+
+**Estado no momento desta adenda:** script e testes estáticos criados, aguardando prova de CI do HEAD e execução no Kaggle pelo operador (a sessão Kaggle em execução não pode ser controlada através do conector GitHub).
