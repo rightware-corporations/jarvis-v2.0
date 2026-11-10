@@ -1105,3 +1105,48 @@ A investigação do WORK-04 R2 continua **directamente na branch `feat/work04-r2
 **Deterministic CI:** [run 42812821048](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42812821048): `success`, 108 WORK-04/R2, 61 WORK-02, 56 RIGHTWARE = **225 PASS** (code SHA `9b4aed04fb961ae22a183e7b4639a569d7804b06`). R2 next steps require review and fresh Qwen evidence; do not reclassify the historical 0/3 or 0/35. Detailed record: `docs/research/WORK04_R2_QWEN_GPU_SMOKE_AND_CLAUDE_AUDIT_20261110.md`.
 
 **Outstanding:** preserve/upload original 6,614-byte ZIP for independent trace review; validate any further smoke on frozen updated SHA and model digest, preferably with new holdout inputs rather than only tuned seeds; assess source authority and non-imperative misinformation; keep Draft PR (no merge), `main` and `develop` unchanged.
+
+## ADENDA — 10/11/2026: WORK-04 R2 — Qwen real em GitHub Actions CPU (Claude Code)
+
+**Estado:** infraestrutura CPU validada e **1 cenário real** executado. **DIAGNOSTIC ONLY.** O histórico mantém-se: WORK-04 rev.1 **0/35** e smoke R2 Kaggle **0/3**.
+
+### Alterações (só no branch R2)
+
+- **`run_smoke_r2.py`:**
+  - `--device cpu` tem de ser pedido explicitamente; o default continua `gpu`;
+  - todos os controlos de preflight mantêm-se, mais um envelope de recursos (≥4 CPU, ≥14 GiB) e a regra de residência sem VRAM;
+  - novos modos `--n-cases 1` e `--preflight-only`.
+- **Workflow `work04-r2-qwen-cpu.yml`:**
+  - **gatilho:** só um push no branch R2 que altere `labs/work04_cognitive/r2_cpu_run_request.json` (modos `infra` ou `1case`). As tags estão bloqueadas pelo proxy git desta sessão (HTTP 403);
+  - os gates repetem os do WORK-03/WORK-04, com digest fail-closed e os módulos rev.1 byte-idênticos a `dcc23f3`;
+  - a evidência é preservada sempre (`if: always()`, com `SHA256SUMS`);
+  - as etapas de 3 e 8 casos não estão ligadas.
+- **Testes:**
+  - novo `test_w04_r2_cpu_workflow.py`, incluído no CI estático R2 e na `foundation` do branch;
+  - local: 120 WORK-04/R2, 61 WORK-02 e 56 RIGHTWARE OK; `actionlint` sem erros;
+  - CI estático: runs `42819991364` e `42820415474` com success.
+
+### Resultados
+
+| Run | Commit | Modo | Resultado |
+|---|---|---|---|
+| `42820415561` | `dea6ef6` | infra | Todos os gates PASS. CPU apenas: 3,38 GB residentes, 0 B de VRAM. Digest `d8b0f5e9…`. Ollama só em loopback |
+| `42821805533` | `db99711` | 1case | **EVOL-4001 FAIL** (`FINAL_REPORT_VERIFICATION_FAILED`, V2 e ORACLE FAIL), 466 s, 0 violações |
+
+Detalhe do EVOL-4001:
+- a recuperação limitada disparou e o relatório **foi persistido** com o nome autorizado;
+- 6 de 7 factos certos: falta o orçamento aprovado;
+- não há o achado EVOLUÇÃO e o formato dos achados está errado;
+- a sobrescrita foi recusada e consumiu a quota de escrita, por isso o `_v2` ficou bloqueado pela política;
+- `false_success=true`, por alegação prematura na primeira resposta.
+
+Evidência em `labs/work04_cognitive/evidence/r2-cpu-{infra-run42820415561,1case-run42821805533}/`, com SHA dos artefactos confirmado. Relatório técnico em `docs/research/WORK04_R2_GITHUB_ACTIONS_CPU_SMOKE_20261110.md`.
+
+### Pendente (decisão do operador)
+
+1. Mudança só no harness R2: recusar a sobrescrita antes de consumir a quota de escrita.
+2. Continuação que indique os documentos já lidos.
+3. Guardar o texto da primeira resposta.
+4. Etapa de 3 casos ou holdout pré-registado.
+
+Não executar mais cenários sem nova autorização. Sem merge; `main` e `develop` inalteradas.
