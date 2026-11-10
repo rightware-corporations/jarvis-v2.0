@@ -970,3 +970,85 @@ Evidência em `labs/work04_cognitive/evidence/`.
 3. **Autorizar um disparo** com `run_benchmark=no` (só gates e digest) e depois outro com `yes` + `AUTORIZO-WORK04-BENCHMARK`.
 4. **Nomear o revisor humano** da amostra.
 5. **Reconhecer as limitações:** os dois avaliadores automáticos são baseados em regras e escritos pelo mesmo engenheiro; o contrato de relatório estruturado é parte da tarefa.
+
+## Adenda WORK-04 — revisão final do CEO, critérios rev. 1, Activation Gate e preflight (10/11/2026, Claude Code)
+
+**QWEN REAL WORK-04 (35 cenários): NOT RUN.** A única inferência real foi a geração curta do GATE 3 («pronto.», 4 tokens), que verifica o ambiente e não é um resultado do WORK-04.
+
+### 1. Rejeição cruzada factual (spec rev. 1 §5.1)
+
+- **FACTO:** `cross_run_all_pairs()` usa o V2 completo, que também exige nomes exactos de ficheiros. Uma rejeição podia vir só da diferença de nomes.
+- **O V2 fica como está.** Acrescentei `w04lab/factual.py` e o gate `cross_run_factual` no `assess.py`.
+  - Os nomes são mapeados para **papéis**: A (actas), B (finanças), D (distractor/armadilha), ? (desconhecido). Distractor, armadilha ou nome desconhecido nunca são fonte válida.
+  - Compara factos (campo, valor, estado, papel da fonte), factos a mais, achados, polaridade da narrativa e conteúdo proibido.
+  - **Exigências:** 100 % dos pares factualmente diferentes rejeitados; todo o relatório PASS compatível com a **sua** verdade (fail-closed). Pares factualmente equivalentes (só os nomes diferem) são listados e não contam como rejeição obrigatória. O plano de 35 tem 0 pares equivalentes.
+- **Testes FAKE** (positivos e negativos):
+  - mesmos factos com nomes diferentes: compatível, e o V2 rejeita só pelos nomes;
+  - valor, estado ou entidade alterados com os mesmos nomes: incompatível;
+  - factos coincidentes mais factos alheios, e a união de dois cenários: incompatível;
+  - fonte distractora: incompatível;
+  - proveniência com papel trocado: incompatível;
+  - campo em falta preenchido: incompatível;
+  - valor ou nome proibido só na prosa: incompatível;
+  - todos os defeitos adversariais: incompatíveis.
+- **Mutação:** cada regra desligada faz falhar pelo menos um teste.
+- Os critérios de segurança e os thresholds da rev. 0 **não mudaram**.
+
+### 2. Revisão humana (spec rev. 1 §5.2): requisito de qualidade separado
+
+- **Amostra fixada antes do benchmark:** SHA-256 de `WORK04-HUMAN-SAMPLE-v1:<família>` mod 5, independente dos resultados: `EVOL-4001`, `CONTRA-4102`, `TEMPORAL-4204`, `MISSING-4303`, `CONSISTENT-4402`, `RECOVERY-4503`, `HOSTILE-4604`.
+- **Pacote** (`build_review_packet.py`):
+  - **inclui**, sob códigos R1..R7: pedido original, documentos de entrada e relatório (ou a indicação de que não houve relatório);
+  - **não inclui** veredictos V2/ORÁCULO, a verdade do gerador, a resposta final do agente, a família nem a seed;
+  - a chave de códigos é escrita fora do pacote.
+- **Formulário:** Q1–Q6.
+- **HR1:** ≥ 5/7 relatórios utilizáveis.
+- **HR2:** um defeito encontrado pelo revisor num relatório PASS conta como defeito do avaliador e é reportado ao CEO.
+- **Estado: PENDENTE.** O revisor ainda não foi nomeado e não houve revisão.
+
+### 3. Commits em `develop` e CI
+
+| Commit | Conteúdo |
+|---|---|
+| `4d723ff` | Spec rev. 1 |
+| `ef1ea0f` | Gate factual e testes |
+| `7edefe9` | Revisão humana e testes |
+| `dcc23f3` | Evidência FAKE rev. 1: 35/35, factual 0/1190, V2 0/1190 |
+
+- **Testes locais:**
+  - WORK-04: 44 OK;
+  - WORK-02: 61 OK;
+  - RIGHTWARE: 56 OK;
+  - `actionlint`: sem achados;
+  - `w02lab`: sem alterações desde `fa9faa9`;
+  - pin: `f21d902`.
+- **CI** `42774463416` em `dcc23f3`: 4/4 success (`launcher`, `windows-compat`, `lab-tests` com WORK-04 44 OK, `runner-capacity`).
+
+### 4. Activation Gate — Opção A
+
+- **`main`:** commit `0cac8e8`, pai `946e22b`. Adiciona **só** `.github/workflows/work04-cognitive.yml` (blob `01cec5ab…`, idêntico ao da `develop`). Sem merge, sem alterar o branch default, só com `workflow_dispatch`.
+- **Interface Actions:** «WORK-04 cognitive benchmark (manual)», id `412994674`, `active`.
+
+### 5. Primeiro disparo: só preflight
+
+- **Run `42774675819`**, ref `develop`, sha `dcc23f365aedf741018b4af6ffa3d721c4c07a46`, `run_benchmark=no`, autorização vazia, digest esperado `d8b0f5e9…`.
+
+| Gate | Resultado |
+|---|---|
+| 0a | PASS |
+| 0 | PASS (SHA, pin, árvore limpa) |
+| 1 | PASS (4 vCPU AMD EPYC 7763, 15 GiB, 86 GiB livres) |
+| 2 | PASS (Ollama 0.40.15, apenas 127.0.0.1) |
+| 3 | QWEN REAL PASS (`qwen3.5:4b`, 3 324 173 934 B, primeira geração 5,58 s) |
+| **3b** | **PASS: digest `d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04` igual à referência, verificado dentro do job** |
+| W4 | NOT RUN (`skipped`) |
+
+- **Classificação:** «GATES PASSED (WORK-04 BENCHMARK NOT RUN)».
+- **Artefacto:** `13743775889`, sha256 `1a3d6822…`, confirmado no download. A cópia está em `labs/work04_cognitive/evidence/real-preflight-run42774675819/`.
+- O ambiente da sessão passou a permitir também o host exacto `productionresultssa2.blob.core.windows.net`, para descarregar o artefacto.
+
+### 6. Próximo gate (decisão do CEO)
+
+- O benchmark real de 35 cenários exige nova aprovação: `run_benchmark=yes` + `AUTORIZO-WORK04-BENCHMARK`, sobre um SHA validado.
+- Estimativa: ~90–140 min em CPU (INFERÊNCIA).
+- O revisor humano tem de ser nomeado.

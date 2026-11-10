@@ -1,0 +1,6 @@
+{"gate":"0a","status":"PASS","sha":"dcc23f365aedf741018b4af6ffa3d721c4c07a46","run_benchmark":"no","actor":"rightware-corporations","run_id":"42774675819"}
+{"gate":"0","status":"PASS","repo_sha":"dcc23f365aedf741018b4af6ffa3d721c4c07a46","pin":"f21d902f4d3bd7f0f3f138f1a4613019a394b549"}
+{"gate":"1","status":"PASS","vcpu":4,"ram_gib":15,"free_disk_gib":86}
+{"gate":"2","status":"PASS","ollama":"0.40.15","listen":"127.0.0.1:11434"}
+{"gate":"3","status":"QWEN REAL PASS","model":"qwen3.5:4b","digest":"d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04","first_generate_s":5.58}
+{"gate":"3b","status":"PASS","digest":"d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04"}
