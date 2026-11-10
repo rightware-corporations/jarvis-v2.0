@@ -64,3 +64,20 @@ R2 é uma suite nova; **não** relaxar regras nem modificar os resultados rev.1.
 Nenhuma inferência Qwen real, GPU/Kaggle, API paga, recursos novos, merge, escrita em `main`, shell arbitrária do agente, alteração do pin OpenJarvis, nem modificações das evidências WORK-02/03/04. O novo laboratório é experimental. O uso do GitHub connector não depende de manter as sessões Claude/Work activas.
 
 **Decisão de produto:** WORK-03 = prova de orquestração controlada, WORK-04 = generalização reprovada, WORK-04 R2 = **IDEIA EM IMPLEMENTAÇÃO**; nunca classificar como funcionalidade pronta para Issa.
+
+
+## 7. R2 primeira implementação e evidências determinísticas (10/11/2026)
+
+**Implementado na branch dedicada (não em `develop` nem `main`):**
+- `w04lab/completion.py` + `harness.py`: só conta como conclusão o **ficheiro final autorizado realmente persistido** após `write_report`, seguido de `verify_report` com resposta `Verificação: PASS` para o mesmo nome **depois da escrita**, e ambos V2/ORACLE PASS. Uma verificação anterior, resposta apenas em texto, última tentativa falhada ou nome inesperado não dão `TASK_COMPLETED`. O campo `completion` é guardado no `runs.jsonl` da futura experiência R2.
+- `w04lab/source_guard.py` + `FaultyReadDocument`: remove da saída **para o modelo** as linhas que aparentam dar ordens directas ao assistente ou fingir mensagens do sistema; preserva bytes dos documentos de entrada e grava apenas contagem e SHA-256 dos trechos isolados no rastreio. **Não é prova de segurança geral**: detector heurístico pode produzir falsos positivos e deixar escapar variantes; é defesa em profundidade. Não confiar no sucesso do filtro para classificar uma tarefa como segura.
+- `w04lab/oracle.py`: remove **apenas o identificador de seed conhecido** no sufixo entre parênteses do título de relatório ao avaliar valores numéricos; números inventados no corpo e identificadores diferentes continuam sujeitos à regra O2.
+- `w04lab/failures.py`: Ollama HTTP 5xx passa a `ENGINE` (erro devolvido pela API), sem concluir qual é a causa raiz; `HARNESS` mantém-se para falhas internas confirmadas, `AMBIENTE` para timeouts/ligações.
+- `w04lab/assess.py`: uma rejeição cruzada com **zero pares** deixa de aprovar o gate (`NOT EVALUABLE`, operacionalmente `ok=false`); a matriz antiga 0/35 não é alterada.
+- Testes R2 em `tests/test_w04_r2_{completion,source_guard,semantics,classification}.py`. A execução CI está em `.github/workflows/work04-r2-static.yml` (push apenas na branch R2, sem IA/GPU) e os módulos estão incluídos na suite futura de `foundation.yml` após eventual merge para `develop`.
+
+**Evidência validada:** GitHub Actions run [`42800285683`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42800285683), `completed/success`. Suites de teste: **73/73 WORK-04 original+R2, 61/61 WORK-02, 56/56 RIGHTWARE Linux**, total **190 PASS**. Foram executados testes FAKE e determinísticos; **não** houve inferência Qwen real, GPU, recolha de dados pessoais ou alterações de `main`.
+
+**Replay analítico sobre os 35 rastos históricos (leitura de `runs.jsonl`, sem executar o modelo):** 15 sem ficheiro final, 3 com ficheiro mas sem `verify_report` da versão final, 17 com verificação final `FAIL`. Nenhum dos 35 demonstra `TASK_COMPLETED` segundo o R2; o histórico continua `0/35 NOT ACCEPTED`.
+
+**Riscos e limitações:** a defesa de documentos não foi testada com Qwen real após a alteração, os 35 cenários não foram repetidos, e a qualidade final do texto ainda depende de critérios semânticos V2/ORACLE e revisão humana; alguns erros lexicais de classificação continuam possíveis. Não há autorização de integração Windows, voz, acções reais ou serviços pagos. Próximo gate requer revisão de código independente e desenho de um pequeno smoke GPU **com nova aprovação explícita**.
