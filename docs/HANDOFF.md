@@ -1150,3 +1150,46 @@ Evidência em `labs/work04_cognitive/evidence/r2-cpu-{infra-run42820415561,1case
 4. Etapa de 3 casos ou holdout pré-registado.
 
 Não executar mais cenários sem nova autorização. Sem merge; `main` e `develop` inalteradas.
+
+## ADENDA — 10/11/2026: WORK-04 R2 — correcções aprovadas após o run 42821805533 (sem inferência)
+
+**Estado:** implementado e testado de forma determinística. **Não foi executada nenhuma inferência Qwen.** O ficheiro de pedido não foi alterado. O histórico mantém-se: 0/35, 0/3 e EVOL-4001 FAIL.
+
+### Causa (investigação)
+
+- A continuação de recuperação arranca com **contexto novo**: o `OrchestratorAgent` não guarda histórico entre `run()`.
+- O modelo escreveu **uma linha por campo** e perdeu o orçamento aprovado, por isso não havia base para o achado EVOLUÇÃO.
+- A linha de achados não tinha parênteses rectos.
+- A correcção foi uma sobrescrita quase idêntica, que gastou a 2.ª quota de escrita.
+
+### Implementado (só no branch R2; política WORK-02 e módulos rev.1 intactos)
+
+1. **Pré-validação de sobrescritas** (`write_guard_r2.py`):
+   - custa 1 chamada global e nenhuma quota de escrita;
+   - recusa sem tocar em ficheiros;
+   - mantém a precedência das recusas anteriores;
+   - nomes inválidos seguem o caminho congelado;
+   - no máximo 2 recusas gratuitas;
+   - o sandbox continua a ser a verificação definitiva, incluindo em corridas.
+2. **Recuperação contextual:** a continuação indica os documentos lidos com sucesso e o orçamento restante do **mesmo** `Policy`. Não acrescenta nada.
+3. **Evidência da primeira resposta:** texto sanitizado, ≤4000 caracteres, SHA-256 do original e do guardado, e o indicador de alegação prematura.
+4. **Correcção guiada pelo verificador:**
+   - dicas fixas por regra falhada, mais o nome `_v2` exacto;
+   - nenhum valor da verdade (testado nas 7 famílias);
+   - o verificador não mudou.
+
+### Testes e CI
+
+- `test_w04_r2_write_guard.py`: 22 testes FAKE, com mutação.
+- CI real [`42826967560`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42826967560) em `4b2fcf9`: **143 + 61 + 56 = 260 PASS**. `actionlint` sem erros.
+
+### Riscos
+
+- Os resultados R2 posteriores a `4b2fcf9` **não são comparáveis** com os anteriores, porque o feedback mudou.
+- A eficácia com Qwen real não foi verificada.
+- A recuperação continua sem histórico.
+- A ambiguidade «uma linha por facto» no prompt continua por decidir.
+
+Detalhe em `docs/research/WORK04_R2_GITHUB_ACTIONS_CPU_SMOKE_20261110.md` §7.
+
+**Próximo passo:** o operador decide a próxima execução real. Sem merge; `main` e `develop` inalteradas.

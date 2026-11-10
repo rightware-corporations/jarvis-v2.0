@@ -124,3 +124,54 @@ CPU-mode preflight controls:
 - **Recovery continuation:** tell the model which documents it already read, to avoid repeated reads. No new permissions.
 - **Evidence:** store the text of the first (premature) answer, not only its hash. The data is synthetic.
 - **Next real stage:** after the decision, either the 3-case stage, or new **holdout** seeds and attacks pre-registered before the run.
+
+## 7. Follow-up engineering after run 42821805533 (no new inference)
+
+Operator decision: items 1–3 approved; item 4 asked for an investigation and a prepared correction. **No Qwen inference in this step.** Commits on the R2 branch: `feat` (overwrite pre-check, recovery, evidence, feedback) and `test`, HEAD `4b2fcf9`.
+
+### 7.1 Root cause of the EVOL-4001 omission (FACTO from the trace, documents and code)
+
+1. **The recovery continuation starts with a fresh model context.** `OrchestratorAgent.run()` keeps no history between calls; `_build_messages` uses only the optional `context`. So after the answer-only first run, the model had to list and read again (3 of 12 calls), and it wrote its report from the second reading only.
+2. **One row per field.** The approved budget (`Orçamento aprovado: 4 380 000 MZN`, in `nota_financeira.md`, list layout) is plainly present. The model wrote **one** `orçamento` row (the estimated value) instead of one row per state. This is consistent with the prompt template «uma linha por facto; Campo ∈ …», read as one line per field (INFERÊNCIA). Without both rows, no `[EVOLUÇÃO]` is derivable.
+3. **Format.** The finding line had no brackets (`- EM FALTA: …`), so the structure rule also failed.
+4. **The correction attempt was an overwrite** of almost identical content (863 → 870 chars). It consumed the second write slot under the frozen policy, so `_v2` was impossible.
+
+### 7.2 Implemented (R2 only; `w02lab/policy.py` and the rev.1 modules unchanged)
+
+| Item | Module | Behaviour |
+|---|---|---|
+| Overwrite pre-check | `w04lab/write_guard_r2.py` (`OverwritePrecheckPolicy` subclass, `WriteReportR2`) | A write to an existing target (same case-insensitive rule as the sandbox) costs **one global call**, **no write slot**. See below |
+| Contextual recovery | `recovery_r2.py` | The single continuation lists the documents **read successfully** and the **same** remaining budget (calls, writes, verifies). No new tool, permission, quota or attempt |
+| First-answer evidence | `evidence_r2.py` | When recovery happens: sanitised text (control/zero-width characters removed, credential-shaped strings redacted), ≤ 4000 chars, `raw_sha256` + `stored_sha256`, truncation flag. `premature_completion_claim` kept |
+| Rule-guided correction | `feedback_r2.py` + `VerifyReportV2` | On FAIL, after the unchanged category list, fixed per-rule hints chosen **only** from the names of failed rules, plus the exact `_v2` file name when a write slot remains. Hints are identical for every scenario and contain no truth value, state or count (tested over 7 families). The verifier is unchanged |
+
+Overwrite pre-check details:
+- It is approved only as a refusal, delivered without touching files.
+- Earlier denials keep precedence: fail-closed batch, cancel, deadline, step limit.
+- Invalid names follow the frozen path.
+- At most 2 free refusals; further attempts are denied outright.
+- The sandbox's atomic no-overwrite check still applies to every executed write. A race is refused by the sandbox with the same `_v2` guidance.
+
+**Tests:** `test_w04_r2_write_guard.py`, 22 FAKE tests.
+
+| Area | Cases |
+|---|---|
+| Write path | Success; refusal without a write slot; case-insensitive target; `_v2` after an overwrite, then the frozen 2-write limit |
+| Limits | Bounded repeats; global quota; invalid names; precedence of cancel and batch denials |
+| Fail-closed | Flagged call refused even if the target disappears; race; tool error (`OSError`); boundary refusal |
+| Recovery | Contextual continuation within the same budget, through the real `OrchestratorAgent` |
+| Correction | Full overwrite → `_v2` → PASS within quotas, using the EVOL-4001 failure shape |
+| Leak checks | No truth values in feedback; sanitised evidence |
+
+Every new rule is killed by mutation.
+
+**CI (real):** static R2 run [`42826967560`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42826967560) on `4b2fcf9`: success, with **143** WORK-04/R2 + **61** WORK-02 + **56** RIGHTWARE = **260 PASS**. `actionlint` is clean. No request-file change was made, so no inference ran.
+
+### 7.3 Remaining risks
+
+- **Behaviour is untested with Qwen.** Nothing here shows that Qwen will use `_v2` or follow the hints.
+- **The R2 experiment conditions change.** The R2 verify feedback is now richer than the rev.1 one. R2 results after `4b2fcf9` are **not comparable** with the 0/3 Kaggle smoke or with run 42821805533.
+- **The hints teach the report contract.** They contain no hidden values, but they do tell the model how its report fails. A future PASS measures «task + guided correction», not first-shot quality.
+- **Recovery still starts from a fresh context**, so the model must re-read documents. Passing the earlier conversation, or the already-delivered sanitised document text, into the continuation would save calls but is a new design decision.
+- **The overwrite subclass relies on private attributes** of the frozen `Policy` (`_lock`, `_approved`, `_deny_next`). The WORK-02 file is pinned by tests, so drift would be caught, not silent.
+- **The prompt template is ambiguous** («uma linha por facto»). Clarifying it in `SYSTEM_PROMPT` was not done, because it changes the first-shot task; that needs a decision.
