@@ -55,7 +55,7 @@ class SmokeContract(unittest.TestCase):
     def test_gpu_preflight_runs_before_scenario_inference(self):
         text = SCRIPT.read_text(encoding="utf-8")
         self.assertIn("validate_ollama_binding()", text)
-        self.assertIn("validate_model_residency()", text)
+        self.assertIn("validate_model_residency(device)", text)
         self.assertLess(text.index("info = preflight("), text.index("for family, seed in CASES"))
 
     def test_runner_distinguishes_smoke_from_historical_acceptance(self):

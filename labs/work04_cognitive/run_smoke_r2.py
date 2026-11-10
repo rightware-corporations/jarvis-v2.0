@@ -25,6 +25,10 @@ PIN = "f21d902f4d3bd7f0f3f138f1a4613019a394b549"
 HOST = "http://127.0.0.1:11434"
 MODEL = "qwen3.5:4b"
 OLLAMA_VERSION = "0.40.15"
+# CPU is allowed only when requested explicitly (--device cpu), on a runner
+# comparable to the WORK-03 GitHub-hosted CPU proof (4 vCPU, ~15.6 GiB RAM).
+MIN_CPU_RAM_GIB = 14
+MIN_CPU_COUNT = 4
 
 # Preregistered order: start with the two demonstrated content-injection
 # failures and one answer-only failure; only then broaden to 7 families.
@@ -65,8 +69,17 @@ def validate_ollama_binding() -> list[str]:
     return addresses
 
 
-def validate_model_residency() -> dict:
-    """Warm the local model and confirm actual VRAM before case 1.
+def residency_ok(models: list[dict], device: str) -> tuple[bool, int, int]:
+    """Qwen must be loaded; on GPU with VRAM, on CPU with NO VRAM (no silent offload)."""
+    match = [m for m in models if m.get("name") == MODEL]
+    size = max((int(m.get("size") or 0) for m in match), default=0)
+    vram = max((int(m.get("size_vram") or 0) for m in match), default=0)
+    ok = size > 0 and (vram > 0 if device == "gpu" else vram == 0)
+    return ok, size, vram
+
+
+def validate_model_residency(device: str = "gpu") -> dict:
+    """Warm the local model and confirm where it is resident before case 1.
 
     This is an extra short REAL Qwen call for environment preflight, not a
     benchmark case; it is recorded in the manifest.
@@ -82,23 +95,43 @@ def validate_model_residency() -> dict:
         method="POST",
     )
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    with opener.open(req, timeout=180) as response:
+    with opener.open(req, timeout=180 if device == "gpu" else 600) as response:
         warm = json.load(response)
     if warm.get("error"):
-        raise RuntimeError("Ollama returned an error during GPU preflight")
-    loaded = local_json("/api/ps").get("models", [])
-    match = [m for m in loaded if m.get("name") == MODEL]
-    vram = max((int(m.get("size_vram") or 0) for m in match), default=0)
-    if vram <= 0:
-        raise RuntimeError("Qwen not resident in GPU VRAM after preflight generation")
+        raise RuntimeError(f"Ollama returned an error during {device.upper()} preflight")
+    ok, size, vram = residency_ok(local_json("/api/ps").get("models", []), device)
+    if not ok:
+        raise RuntimeError("Qwen not resident in GPU VRAM after preflight generation" if device == "gpu"
+                           else "Qwen not resident on CPU-only memory after preflight generation")
     return {
         "warmup_real_inference": True,
+        "preflight_model_bytes": size,
         "preflight_vram_bytes": vram,
         "warmup_response_tokens": warm.get("eval_count"),
     }
 
 
-def preflight(expected_sha: str, expected_digest: str) -> dict:
+def cpu_resources() -> dict:
+    """Explicit CPU mode: verify the runner matches the authorised CPU envelope."""
+    mem_kib = 0
+    with open("/proc/meminfo", encoding="ascii") as fh:
+        for line in fh:
+            if line.startswith("MemTotal:"):
+                mem_kib = int(line.split()[1])
+    ram_gib = mem_kib / 1048576
+    cpus = os.cpu_count() or 0
+    if ram_gib < MIN_CPU_RAM_GIB or cpus < MIN_CPU_COUNT:
+        raise RuntimeError(f"CPU runner below envelope ({cpus} CPU, {ram_gib:.1f} GiB RAM)")
+    model = ""
+    with open("/proc/cpuinfo", encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            if line.startswith("model name"):
+                model = line.split(":", 1)[1].strip()
+                break
+    return {"cpu_count": cpus, "ram_gib": round(ram_gib, 1), "cpu_model": model}
+
+
+def preflight(expected_sha: str, expected_digest: str, device: str = "gpu") -> dict:
     if not expected_sha or not expected_digest:
         raise ValueError("both expected SHA and model digest are required")
     sha = run_git("rev-parse", "HEAD")
@@ -110,12 +143,18 @@ def preflight(expected_sha: str, expected_digest: str) -> dict:
         raise RuntimeError("submodule pin mismatch")
     if run_git("-C", "vendor/openjarvis", "rev-parse", "HEAD") != PIN:
         raise RuntimeError("submodule checkout mismatch")
-    if not shutil.which("nvidia-smi"):
-        raise RuntimeError("GPU required: this is not an authorized CPU experiment")
-    gpu = subprocess.run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
-                         capture_output=True, text=True, check=True).stdout.strip()
-    if "Tesla T4" not in gpu:
-        raise RuntimeError("expected Kaggle Tesla T4 GPU; do not silently change hardware")
+    if device == "gpu":
+        if not shutil.which("nvidia-smi"):
+            raise RuntimeError("GPU required: pass --device cpu explicitly for a CPU experiment")
+        gpu = subprocess.run(["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+                             capture_output=True, text=True, check=True).stdout.strip()
+        if "Tesla T4" not in gpu:
+            raise RuntimeError("expected Kaggle Tesla T4 GPU; do not silently change hardware")
+        hardware = {"gpu": gpu}
+    elif device == "cpu":
+        hardware = {"gpu": "CPU ONLY (explicit --device cpu)", **cpu_resources()}
+    else:
+        raise ValueError(f"unknown device {device!r}")
     version = local_json("/api/version").get("version")
     if version != OLLAMA_VERSION:
         raise RuntimeError("Ollama version mismatch")
@@ -123,9 +162,9 @@ def preflight(expected_sha: str, expected_digest: str) -> dict:
     if tags.get(MODEL, {}).get("digest") != expected_digest:
         raise RuntimeError("Qwen model digest mismatch")
     bind_addresses = validate_ollama_binding()
-    warmed = validate_model_residency()
+    warmed = validate_model_residency(device)
     return {"repo_sha": sha, "openjarvis_pin": PIN, "ollama": version,
-            "model": MODEL, "model_digest": expected_digest, "gpu": gpu,
+            "model": MODEL, "model_digest": expected_digest, "device": device, **hardware,
             "ollama_listen_addresses": bind_addresses, **warmed}
 
 
@@ -133,15 +172,19 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--expect-sha", default="")
     ap.add_argument("--expected-digest", default="")
-    ap.add_argument("--n-cases", type=int, choices=(3, 8), default=3)
+    ap.add_argument("--n-cases", type=int, choices=(1, 3, 8), default=3)
+    ap.add_argument("--device", choices=("gpu", "cpu"), default="gpu",
+                    help="gpu (Kaggle T4, default) or cpu (explicit; GitHub-hosted runner)")
     ap.add_argument("--evidence-dir", default="")
     ap.add_argument("--plan-only", action="store_true")
+    ap.add_argument("--preflight-only", action="store_true",
+                    help="run the full preflight (incl. one short warm-up generation), record it, run no scenario")
     args = ap.parse_args(argv)
 
     if args.plan_only:
         print(json.dumps({"experiment": "WORK04_R2_SMOKE_NOT_BENCHMARK",
                           "cases": CASES[:args.n_cases], "count": args.n_cases,
-                          "models_called": False}, ensure_ascii=False))
+                          "device": args.device, "models_called": False}, ensure_ascii=False))
         return 0
 
     for name in list(os.environ):
@@ -156,7 +199,9 @@ def main(argv=None) -> int:
     os.environ["JARVIS_NUM_CTX"] = "8192"
     sys.path.insert(0, str(LAB))
 
-    info = preflight(args.expect_sha, args.expected_digest)
+    if args.device == "cpu" and not args.evidence_dir:
+        raise SystemExit("--device cpu requires an explicit --evidence-dir")
+    info = preflight(args.expect_sha, args.expected_digest, args.device)
     from openjarvis.engine.ollama import OllamaEngine
     from w04lab import harness_r2 as harness, smoke_metrics_r2
 
@@ -166,6 +211,13 @@ def main(argv=None) -> int:
     )
     # No overwrite even if this is retried: preserve every experiment.
     out.mkdir(parents=True, exist_ok=False)
+    if args.preflight_only:
+        (out / "preflight.json").write_text(json.dumps(
+            {"experiment": "WORK04_R2_SMOKE_PREFLIGHT_ONLY", "scenarios_run": 0,
+             "utc": dt.datetime.now(dt.timezone.utc).isoformat(), **info},
+            ensure_ascii=False, indent=2), encoding="utf-8")
+        print("PREFLIGHT OK:", json.dumps(info, ensure_ascii=False), flush=True)
+        return 0
     manifest = {"experiment": "WORK04_R2_SMOKE_NOT_BENCHMARK",
                 "utc": dt.datetime.now(dt.timezone.utc).isoformat(),
                 "mode": "QWEN REAL", "data": "SYNTHETIC ONLY",
@@ -214,11 +266,14 @@ def main(argv=None) -> int:
                 flush=True,
             )
             if len(runs) == 1:
-                loaded = local_json("/api/ps").get("models", [])
-                vram = max((int(m.get("size_vram") or 0) for m in loaded), default=0)
+                ok, size, vram = residency_ok(local_json("/api/ps").get("models", []), args.device)
                 manifest["first_case_vram_bytes"] = vram
-                if vram <= 0:
+                manifest["first_case_model_bytes"] = size
+                if not ok and args.device == "gpu":
                     stopped_reason = "model was not resident in GPU VRAM"
+                    break
+                if not ok and size > 0:   # CPU mode: unexpected VRAM offload
+                    stopped_reason = "CPU experiment unexpectedly offloaded to VRAM"
                     break
 
     summary = smoke_metrics_r2.summarize(
