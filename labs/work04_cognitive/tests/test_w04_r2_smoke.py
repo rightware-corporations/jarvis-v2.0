@@ -45,7 +45,8 @@ class SmokeContract(unittest.TestCase):
     def test_runner_distinguishes_smoke_from_historical_acceptance(self):
         text = SCRIPT.read_text(encoding="utf-8")
         self.assertIn("WORK04 QWEN REAL 0/35 NOT ACCEPTED", text)
-        self.assertIn("DIAGNOSTIC ONLY", text)
+        self.assertIn("smoke_metrics_r2.summarize(", text)
+        self.assertIn("DIAGNOSTIC ONLY", (REPO / "labs/work04_cognitive/w04lab/smoke_metrics_r2.py").read_text(encoding="utf-8"))
         self.assertNotIn("from w04lab.assess import assess", text)
 
 
