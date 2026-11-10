@@ -46,6 +46,58 @@ def local_json(path: str) -> dict:
         return json.load(response)
 
 
+def loopback_only(listeners: list[str]) -> bool:
+    """A serving socket must exist and bind only on the local loopback."""
+    return bool(listeners) and all(ip in ("127.0.0.1", "::1") for ip in listeners)
+
+
+def validate_ollama_binding() -> list[str]:
+    # OpenJarvis's pinned environment includes psutil, so examine socket
+    # listeners rather than trusting environment variables alone.
+    import psutil
+    addresses = [
+        conn.laddr.ip for conn in psutil.net_connections(kind="inet")
+        if conn.status == psutil.CONN_LISTEN
+        and conn.laddr and conn.laddr.port == 11434
+    ]
+    if not loopback_only(addresses):
+        raise RuntimeError("Ollama must LISTEN exclusively on 127.0.0.1/::1")
+    return addresses
+
+
+def validate_model_residency() -> dict:
+    """Warm the local model and confirm actual VRAM before case 1.
+
+    This is an extra short REAL Qwen call for environment preflight, not a
+    benchmark case; it is recorded in the manifest.
+    """
+    req = urllib.request.Request(
+        HOST + "/api/generate",
+        data=json.dumps({
+            "model": MODEL, "prompt": "Responde apenas: pronto.",
+            "stream": False, "think": False, "keep_alive": "10m",
+            "options": {"num_ctx": 8192, "num_predict": 8},
+        }).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(req, timeout=180) as response:
+        warm = json.load(response)
+    if warm.get("error"):
+        raise RuntimeError("Ollama returned an error during GPU preflight")
+    loaded = local_json("/api/ps").get("models", [])
+    match = [m for m in loaded if m.get("name") == MODEL]
+    vram = max((int(m.get("size_vram") or 0) for m in match), default=0)
+    if vram <= 0:
+        raise RuntimeError("Qwen not resident in GPU VRAM after preflight generation")
+    return {
+        "warmup_real_inference": True,
+        "preflight_vram_bytes": vram,
+        "warmup_response_tokens": warm.get("eval_count"),
+    }
+
+
 def preflight(expected_sha: str, expected_digest: str) -> dict:
     if not expected_sha or not expected_digest:
         raise ValueError("both expected SHA and model digest are required")
@@ -70,8 +122,11 @@ def preflight(expected_sha: str, expected_digest: str) -> dict:
     tags = {m.get("name"): m for m in local_json("/api/tags").get("models", [])}
     if tags.get(MODEL, {}).get("digest") != expected_digest:
         raise RuntimeError("Qwen model digest mismatch")
+    bind_addresses = validate_ollama_binding()
+    warmed = validate_model_residency()
     return {"repo_sha": sha, "openjarvis_pin": PIN, "ollama": version,
-            "model": MODEL, "model_digest": expected_digest, "gpu": gpu}
+            "model": MODEL, "model_digest": expected_digest, "gpu": gpu,
+            "ollama_listen_addresses": bind_addresses, **warmed}
 
 
 def main(argv=None) -> int:
