@@ -1193,3 +1193,14 @@ Não executar mais cenários sem nova autorização. Sem merge; `main` e `develo
 Detalhe em `docs/research/WORK04_R2_GITHUB_ACTIONS_CPU_SMOKE_20261110.md` §7.
 
 **Próximo passo:** o operador decide a próxima execução real. Sem merge; `main` e `develop` inalteradas.
+
+
+## ADENDA — 10/11/2026: QWEN REAL EVOL-4001 rerun — 42829191737 (FAIL)
+
+**Explicit operator authorization:** one CPU real Qwen `EVOL-4001` using code baseline `7110b244b7c780cdd4d2ffe01b4c500f3f042af7`. Trigger commit `b4984b2452bb8735d0cbf4db3529e00380c14231` differs only in `labs/work04_cognitive/r2_cpu_run_request.json` (request ID 3); all executable code byte-identical to authorized baseline. No other scenarios executed; no merge and no `main`/`develop` changes.
+
+**Run:** https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42829191737 — workflow success operationally, **scenario FAIL**. Qwen3.5:4b in GitHub Actions CPU; 193.322 seconds; 0 sandbox violations; 11 executed tool calls; 2 successful `write_report`, 2 successful `verify_report` calls (both returned verification FAIL); 1 refused attempt to create `_v3.md` after write budget consumed; `false_success=true` for premature first response. Final report `relatorio_4001_v2.md` persisted and verified but rejected by V2 and ORACLE. Facts and provenance PASS; structure and findings FAIL. The model incorrectly says 13 June 2027 is *before* 28 May 2027, writes `- INCONSISTÊNCIA TEMPORAL` without required square brackets, and omits the required budget `[EVOLUÇÃO]` despite including both estimated and approved budget rows.
+
+**Evidence integrity independently confirmed from downloaded ZIP:** GitHub Actions artifact `13770527129`, compressed 19,944 B, SHA-256 `2e1a32bdbd56cb7138f974a76a401f77f83a9810674192e5c82ff9b267a519d6`; all 14 `SHA256SUMS` entries valid. Inner `smoke.zip` SHA-256 `1a9e8e4aa38d5df8a209c6fe3e678ecfbb3a9d0c5f2b487145b76a0b310fb350`. Artefact configured for 30-day retention. Detailed permanent forensic record: `docs/research/WORK04_R2_CPU_EVOL4001_RUN42829191737.md`.
+
+**Strategic interpretation:** bounded recovery and second-version write path now proven by Qwen real; factual-temporal reasoning and finding syntax still fail. Historic WORK-04 0/35 and Kaggle R2 0/3 remain unchanged. **No new inference authorized.** Next step: deterministic investigation and explicit decision on any corrections; never relax evaluator or secret/permission boundaries for a green score.
