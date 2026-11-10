@@ -4,7 +4,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from w04lab import assess, failures  # noqa: E402
+from w04lab import assess_r2 as assess, failures  # noqa: E402
 
 
 class Failures(unittest.TestCase):
