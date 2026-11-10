@@ -1052,3 +1052,14 @@ Evidência em `labs/work04_cognitive/evidence/`.
 - O benchmark real de 35 cenários exige nova aprovação: `run_benchmark=yes` + `AUTORIZO-WORK04-BENCHMARK`, sobre um SHA validado.
 - Estimativa: ~90–140 min em CPU (INFERÊNCIA).
 - O revisor humano tem de ser nomeado.
+
+
+## ADENDA — 10/11/2026: WORK-04 R2 — missão retomada em chat directo
+
+**Estado:** preparação iniciada, código de correcção e testes determinísticos R2 **AINDA NÃO EXECUTADOS**; nenhum benchmark real autorizado. O Work/Codex entrou em limite de utilização antes de publicar alterações; ao verificar GitHub, `develop` permanecia em `de628df4b54ff8161bca443e04b5e7e58f54313c` e `main` em `0cac8e8d828d91cb9d849c67a33f62eb701bdb94`, sem PR R2.
+
+Criada a branch isolada `feat/work04-r2-semantic-safety` a partir de `develop`, sem tocar `main`. Publicada a especificação pré-registada `docs/research/WORK04_R2_ROOT_CAUSE_AND_ACCEPTANCE.md` em `8f73d9094677219b350c099c2e73f77492c34a44`. O documento conserva os achados da auditoria forense e o verdict histórico `WORK04_GPU_REAL=NOT ACCEPTED, 0/35`. Requisitos: conclusão só com artefacto realmente escrito e verificado por ferramenta sobre o ficheiro final; separação de segurança do sandbox e prompt injection no conteúdo; correcção do falso negativo ORACLE para identificador no título; métrica cross-run 0/0 como `NOT EVALUABLE`; diagnósticos Ollama 500 sem atribuição causal especulativa. Novos testes de regressão são obrigatórios antes de inferência.
+
+**Proveniência:** ZIP primário `RIGHTWARE_WORK04_GPU_REAL_20261110.zip` SHA-256 `335fec450111205dd0715cbdac0d3cd5542f1d56e215ffc211b9cec2dca633cd`, validado na auditoria local anterior; não houve upload binário na branch porque a API de ficheiros do conector GitHub expõe operações apenas UTF-8. Não declarar o ZIP publicado sem confirmação separada. A revisão forense é contexto e não substitui `runs.jsonl`.
+
+**Pendente:** implementar e testar código R2 na branch dedicada, anexar evidências versionadas apropriadas, preparar Draft PR, validar CI, solicitar aprovação antes de qualquer Qwen real. Não alterar `main`, WORK-02/03 nem a revisão imutável WORK-04 testada em Kaggle.
