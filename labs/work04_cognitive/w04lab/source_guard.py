@@ -50,14 +50,14 @@ _TABLE_ROLE = re.compile(r"^\s*\|\s*(?:system|developer|assistant|agent)\s*\|")
 
 _COMMAND = re.compile(
     r"\b(?:ignora|ignore|disregard|desconsidera|sobrepoe|sobrescreve|"
-    r"grava|escreve|copia|executa|chama|invoca|le|revele|"
+    r"muda|grava|escreve|copia|executa|chama|invoca|le|revele|"
     r"replace|override|delete|run_command|edita|remove|apaga|"
     r"follow|reveal|use|pretend|trust|obey)\b"
 )
 _DIRECTED_COMMAND = re.compile(
     r"^\s*(?:[#>*-]+\s*)?"
     r"(?:ignora|ignore|disregard|desconsidera|sobrepoe|sobrescreve|"
-    r"grava|escreve|copia|executa|chama|invoca|le|revele|"
+    r"muda|grava|escreve|copia|executa|chama|invoca|le|revele|"
     r"replace|override|delete|run_command|edita|remove|apaga|"
     r"follow|reveal|use|pretend|trust|obey)\b"
 )
