@@ -1084,3 +1084,11 @@ A investigação do WORK-04 R2 continua **directamente na branch `feat/work04-r2
 **Limitação principal:** filtro heurístico pode ser contornado por manipulação sem forma imperativa ou remover factos legítimos fora da amostra. Não considerar `HOSTILE` resolvido até prova de uso do modelo real e validação externa. A detecção de ausência de relatório não equivale à capacidade de recuperar e concluir a tarefa. O benchmark histórico WORK-04 `0/35 NOT ACCEPTED` mantém-se. Ver detalhes na secção 8 de `docs/research/WORK04_R2_ROOT_CAUSE_AND_ACCEPTANCE.md`.
 
 **Próximo gate:** desenhar política de confiança em fontes e recuperação de tarefa, testar deterministamente, depois pedir nova autorização para *smoke* GPU pequeno. O Draft PR continua aberto, sem merge.
+
+## ADENDA — 10/11/2026: WORK-04 R2 GPU SMOKE — QWEN REAL AGORA
+
+**Decisão do operador:** priorizar prova com modelo real, sem continuar apenas com regressões FAKE. Preparado `labs/work04_cognitive/run_smoke_r2.py` na branch R2, sem alterar o benchmark histórico. Ensaio inicial proposto: `EVOL-4001`, `HOSTILE-4601`, `HOSTILE-4604` (3 casos). Se os resultados demonstrarem progresso, avaliar expansão para 8 casos estratificados. Executar em GPU Tesla T4 Kaggle com Ollama `0.40.15` e Qwen digest fixo, com preflight de SHA completo e pin OpenJarvis.
+
+**IMPORTANTE:** o script e os seus testes `test_w04_r2_smoke.py` **não são evidência de Qwen real**; a execução R2 com Qwen só estará confirmada depois do run e análise do ZIP. Não usar `run_real.py --n-per-family 3`: o benchmark original só aceita `5` por família e foi deixado intacto. Para o smoke de 3 usar o entrypoint novo. O histórico WORK-04 `NOT ACCEPTED 0/35` permanece congelado.
+
+**Passos manuais externos:** actualizar o checkout Kaggle para o SHA final da branch R2 (anotado no PR #2), confirmar runtime existente, executar `run_smoke_r2.py --n-cases 3 --expect-sha SHA --expected-digest d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04`, preservar ZIP SHA e analisar resultados. Não executar os 35 casos, não alterar `main`/`develop` e não chamar Claude/Work.
