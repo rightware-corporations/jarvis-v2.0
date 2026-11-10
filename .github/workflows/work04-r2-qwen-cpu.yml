@@ -2,19 +2,22 @@
 # NOT the WORK-04 rev.1 benchmark (that is work04-cognitive.yml, unchanged) and
 # never a benchmark acceptance: verdicts are DIAGNOSTIC ONLY.
 #
-# Trigger: ONLY a pushed tag with one of two exact shapes, so no branch push,
-# pull request or timer ever runs inference, and `main` is not involved:
-#   work04-r2-cpu-infra-<N>  -> gates + R2 runner preflight (one short warm-up), no scenario
-#   work04-r2-cpu-1case-<N>  -> gates + R2 runner preflight + ONE scenario (EVOL-4001)
+# Trigger: ONLY a push to the isolated R2 branch that changes the versioned
+# request file labs/work04_cognitive/r2_cpu_run_request.json. Ordinary code
+# pushes, pull requests and timers never run inference; `main` is not involved.
+# The request file names exactly one mode:
+#   "infra" -> gates + R2 runner preflight (one short warm-up), no scenario
+#   "1case" -> gates + R2 runner preflight + ONE scenario (EVOL-4001)
 # Larger stages (3 or 8 cases) are deliberately not wired: they need a new authorization.
 # Gates 0-3 reuse the WORK-03/WORK-04 CPU steps that already ran for real.
 name: WORK-04 R2 real Qwen CPU smoke (tag-triggered)
 
 on:
   push:
-    tags:
-      - "work04-r2-cpu-infra-*"
-      - "work04-r2-cpu-1case-*"
+    branches:
+      - feat/work04-r2-semantic-safety
+    paths:
+      - labs/work04_cognitive/r2_cpu_run_request.json
 
 permissions:
   contents: read
@@ -41,28 +44,31 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
-      - name: GATE 0a — tag shape decides the mode (fail closed)
-        run: |
-          set -euo pipefail
-          case "$GITHUB_REF_NAME" in
-            work04-r2-cpu-infra-[0-9]*) MODE=infra ;;
-            work04-r2-cpu-1case-[0-9]*) MODE=1case ;;
-            *) echo "unexpected ref $GITHUB_REF_NAME"; exit 1 ;;
-          esac
-          [[ "$GITHUB_REF_NAME" =~ ^work04-r2-cpu-(infra|1case)-[0-9]+$ ]] || { echo "bad tag shape"; exit 1; }
-          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
-          EVID="$RUNNER_TEMP/r2-evidence"; mkdir -p "$EVID"
-          { echo "MODE=$MODE"; echo "EVID=$EVID"
-            echo "OLLAMA_DIR=$RUNNER_TEMP/ollama"; echo "OLLAMA_MODELS=$RUNNER_TEMP/ollama-models"; } >> "$GITHUB_ENV"
-          printf '{"gate":"0a","status":"PASS","mode":"%s","tag":"%s","sha":"%s","run_id":"%s"}\n' \
-            "$MODE" "$GITHUB_REF_NAME" "$GITHUB_SHA" "$GITHUB_RUN_ID" >> "$EVID/gates.jsonl"
-
-      - name: Checkout the tagged revision (pinned submodule)
+      - name: Checkout the pushed revision (pinned submodule)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
           submodules: recursive
           fetch-depth: 0
           persist-credentials: false
+
+      - name: GATE 0a — the versioned request decides the mode (fail closed)
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/$R2_BRANCH" ] || { echo "unexpected ref $GITHUB_REF"; exit 1; }
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          MODE=$(python3 -I -c 'import json,sys
+          d=json.load(open(sys.argv[1]))
+          assert set(d)=={"experiment","mode","request_id","authorized_by"}, "unexpected keys"
+          assert d["experiment"]=="WORK04_R2_CPU_SMOKE", "experiment"
+          assert d["mode"] in ("infra","1case"), "mode"
+          assert isinstance(d["request_id"],int) and d["request_id"]>0, "request_id"
+          print(d["mode"])' labs/work04_cognitive/r2_cpu_run_request.json)
+          EVID="$RUNNER_TEMP/r2-evidence"; mkdir -p "$EVID"
+          cp labs/work04_cognitive/r2_cpu_run_request.json "$EVID/request.json"
+          { echo "MODE=$MODE"; echo "EVID=$EVID"
+            echo "OLLAMA_DIR=$RUNNER_TEMP/ollama"; echo "OLLAMA_MODELS=$RUNNER_TEMP/ollama-models"; } >> "$GITHUB_ENV"
+          printf '{"gate":"0a","status":"PASS","mode":"%s","sha":"%s","run_id":"%s"}\n' \
+            "$MODE" "$GITHUB_SHA" "$GITHUB_RUN_ID" >> "$EVID/gates.jsonl"
 
       - name: GATE 0 — integrity (SHA, R2 branch ancestry, pin, clean tree, rev.1 untouched)
         run: |

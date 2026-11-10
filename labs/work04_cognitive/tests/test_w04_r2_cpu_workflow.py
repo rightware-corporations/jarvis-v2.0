@@ -32,13 +32,24 @@ def blob(p: Path) -> str:
 
 
 class R2CpuWorkflow(unittest.TestCase):
-    def test_only_two_exact_tag_shapes_trigger_it(self):
+    def test_only_the_versioned_request_on_the_r2_branch_triggers_it(self):
         on = load()["on"]
         self.assertEqual(list(on), ["push"])
-        self.assertEqual(set(on["push"]), {"tags"})
-        self.assertEqual(on["push"]["tags"], ["work04-r2-cpu-infra-*", "work04-r2-cpu-1case-*"])
-        gate = steps()[0]["run"]
-        self.assertIn("^work04-r2-cpu-(infra|1case)-[0-9]+$", gate)
+        self.assertEqual(on["push"], {"branches": ["feat/work04-r2-semantic-safety"],
+                                      "paths": ["labs/work04_cognitive/r2_cpu_run_request.json"]})
+        gate = next(s["run"] for s in steps() if s["name"].startswith("GATE 0a"))
+        self.assertIn('[ "$GITHUB_REF" = "refs/heads/$R2_BRANCH" ]', gate)
+        self.assertIn('d["mode"] in ("infra","1case")', gate)
+        self.assertLess(next(i for i, s in enumerate(steps()) if s.get("uses", "").startswith("actions/checkout")),
+                        next(i for i, s in enumerate(steps()) if s["name"].startswith("GATE 0a")))
+
+    def test_request_file_is_valid_and_names_one_allowed_mode(self):
+        import json
+        d = json.loads((REPO / "labs/work04_cognitive/r2_cpu_run_request.json").read_text(encoding="utf-8"))
+        self.assertEqual(set(d), {"experiment", "mode", "request_id", "authorized_by"})
+        self.assertEqual(d["experiment"], "WORK04_R2_CPU_SMOKE")
+        self.assertIn(d["mode"], ("infra", "1case"))
+        self.assertIsInstance(d["request_id"], int)
 
     def test_minimal_permissions_no_secrets_no_expression_injection(self):
         d = load()
