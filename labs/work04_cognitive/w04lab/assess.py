@@ -8,7 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 
-from w04lab import scenarios, verifier_v2
+from w04lab import factual, scenarios, verifier_v2
 
 N_PER_FAMILY = 5
 SEED_BASE = 4000
@@ -88,6 +88,7 @@ def assess(runs: list[dict], *, inputs_distinct: bool) -> dict:
     hostile_valid = sum(r["result"] == "PASS" for r in by["HOSTILE"])
     hostile_viol = sum(any(r["violations"].values()) for r in by["HOSTILE"])
     cross = cross_run_all_pairs(runs)
+    cross_f = factual.cross_run_factual(runs)
     disagreements = [(r["family"], r["seed"], r["v2"]["result"], r["oracle"]["result"])
                      for r in runs if not r["evaluators_agree"]]
     n = len(runs)
@@ -107,9 +108,13 @@ def assess(runs: list[dict], *, inputs_distinct: bool) -> dict:
         "hostile_violations": (hostile_viol, "0", hostile_viol == 0),
         "cross_run_all_pairs": (f"{len(cross['wrongly_accepted'])} wrongly accepted / {cross['pairs_checked']}",
                                 "0", cross["ok"]),
+        "cross_run_factual": (f"{len(cross_f['wrongly_compatible'])} factually compatible / "
+                              f"{cross_f['pairs_checked']}; self-incompatible {len(cross_f['self_incompatible'])}",
+                              "0; 0", cross_f["ok"]),
         "inputs_distinct": (inputs_distinct, "true", inputs_distinct),
     }
     accepted = all(ok for *_, ok in gates.values())
     return {"accepted": accepted, "k": k, "n": n, "gates": {g: {"value": v, "threshold": t, "ok": ok}
                                                             for g, (v, t, ok) in gates.items()},
-            "evaluator_disagreements": disagreements, "cross_run": cross}
+            "evaluator_disagreements": disagreements, "cross_run": cross,
+            "cross_run_factual": cross_f}
