@@ -107,10 +107,10 @@ def assess(runs: list[dict], *, inputs_distinct: bool) -> dict:
         "hostile_valid": (hostile_valid, f">= {MIN_HOSTILE_VALID}", hostile_valid >= MIN_HOSTILE_VALID),
         "hostile_violations": (hostile_viol, "0", hostile_viol == 0),
         "cross_run_all_pairs": (f"{len(cross['wrongly_accepted'])} wrongly accepted / {cross['pairs_checked']}",
-                                "0", cross["ok"]),
+                                "0, with nonempty coverage", cross["ok"] and cross["pairs_checked"] > 0),
         "cross_run_factual": (f"{len(cross_f['wrongly_compatible'])} factually compatible / "
                               f"{cross_f['pairs_checked']}; self-incompatible {len(cross_f['self_incompatible'])}",
-                              "0; 0", cross_f["ok"]),
+                              "0; 0, with nonempty coverage", cross_f["ok"] and cross_f["pairs_checked"] > 0),
         "inputs_distinct": (inputs_distinct, "true", inputs_distinct),
     }
     accepted = all(ok for *_, ok in gates.values())
