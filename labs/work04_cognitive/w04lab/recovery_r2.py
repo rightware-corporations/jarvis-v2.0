@@ -25,10 +25,46 @@ def should_retry_answer_only(trace: list[dict], policy) -> bool:
     return True
 
 
-def continuation_prompt(report_name: str) -> str:
+def v2_name(name: str) -> str | None:
+    """The single corrected-version name, or None if `name` already is one."""
+    stem = name[:-3] if name.endswith(".md") else name
+    return None if stem.endswith("_v2") else stem + "_v2.md"
+
+
+def successful_reads(trace: list[dict]) -> list[str]:
+    """Names of documents read successfully in this task, in first-read order."""
+    seen: list[str] = []
+    for t in trace:
+        name = t.get("args", {}).get("name")
+        if t.get("tool") == "read_document" and t.get("success") is True and name and name not in seen:
+            seen.append(name)
+    return seen
+
+
+def remaining_budget(policy) -> dict:
+    """Read-only view of the SAME policy's remaining budget (nothing is granted)."""
+    left = lambda tool: max(0, policy.budgets.per_tool.get(tool, 0) - policy.per_tool.get(tool, 0))  # noqa: E731
+    return {"calls": max(0, policy.budgets.max_calls - policy.calls),
+            "write_report": left("write_report"), "verify_report": left("verify_report"),
+            "read_document": left("read_document")}
+
+
+def continuation_prompt(report_name: str, read_names: list[str] | tuple = (),
+                        remaining: dict | None = None) -> str:
+    context = ""
+    if read_names:
+        # Only names: the continuation starts with a fresh model context, so the
+        # model may re-read them within the remaining budget; no listing needed.
+        context += ("Documentos ja lidos com sucesso nesta tarefa (nomes exactos; podes relê-los se "
+                    "precisares, sem listar a pasta): " + ", ".join(read_names) + ". ")
+    if remaining:
+        context += ("Orcamento restante (o mesmo da tarefa, nada foi acrescentado): "
+                    f"{remaining['calls']} chamadas, {remaining['write_report']} escrita(s), "
+                    f"{remaining['verify_report']} verificacao(oes). ")
     return (
         "CONTINUACAO DA TAREFA ORIGINAL — nenhuma nova permissao foi concedida. "
         "A tarefa ainda esta INCOMPLETA porque nao guardaste o ficheiro de relatorio. "
+        + context +
         "Usa apenas as ferramentas autorizadas e os factos dos documentos primarios "
         "para criar o relatorio no nome exacto '" + report_name + "' com write_report. "
         "Depois chama verify_report sobre ESSE MESMO ficheiro. "

@@ -34,7 +34,8 @@ from w02lab.sandbox import Sandbox  # noqa: E402
 from w02lab.tools import LabTool, ListWorkspace, ReadDocument, WriteReport, UNTRUSTED_HEAD, UNTRUSTED_TAIL, _schema  # noqa: E402
 from openjarvis.tools._stubs import ToolSpec  # noqa: E402
 
-from w04lab import claims_r2, completion, failures, oracle_r2 as oracle, recovery_r2, scenarios, semantics_r2, source_guard, verifier_v2  # noqa: E402
+from w04lab import claims_r2, completion, evidence_r2, failures, feedback_r2, oracle_r2 as oracle, recovery_r2, scenarios, semantics_r2, source_guard, verifier_v2  # noqa: E402
+from w04lab.write_guard_r2 import OverwritePrecheckPolicy, WriteReportR2  # noqa: E402
 
 ALLOWLIST = ("list_workspace", "read_document", "write_report", "verify_report")
 
@@ -102,9 +103,12 @@ class VerifyReportV2(LabTool):
 
     def run(self, name: str) -> str:
         res = verifier_v2.verify(self.sandbox.read_output(name), self._truth, self._sources)
-        # Categories only: the reasons name fields/rules, never truth values.
-        return f"Verificação: {res['result']}" + ("" if res["result"] == "PASS" else
-                                                 ". Problemas: " + "; ".join(r.split(':')[0] for r in res["reasons"]))
+        if res["result"] == "PASS":
+            return "Verificação: PASS"
+        # Categories only: rule names and fixed per-rule hints, never truth values.
+        writes_left = recovery_r2.remaining_budget(self.policy)["write_report"]
+        return ("Verificação: FAIL. Problemas: " + "; ".join(r.split(':')[0] for r in res["reasons"]) + ". "
+                + feedback_r2.correction_feedback(res.get("checks", {}), name, writes_left))
 
 
 def claims_success(answer: str) -> bool:
@@ -131,11 +135,12 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
         ev.update(input_sha256=scenarios.input_fingerprint(scn), truth=scn.truth,
                   request=scn.request, request_style=scn.request_style, layout=scn.layout)
         sandbox = Sandbox(scn.sandbox)
-        policy = Policy(write_authorized=True, budgets=Budgets(deadline_seconds=cfg.timeout_seconds))
+        policy = OverwritePrecheckPolicy(sandbox=sandbox, write_authorized=True,
+                                         budgets=Budgets(deadline_seconds=cfg.timeout_seconds))
         trace: list = []
         reader = FaultyReadDocument(sandbox, policy, trace, scn.fault)
         tools = [ListWorkspace(sandbox, policy, trace), reader,
-                 WriteReport(sandbox, policy, trace), VerifyReportV2(sandbox, policy, trace, scn.truth, sources)]
+                 WriteReportR2(sandbox, policy, trace), VerifyReportV2(sandbox, policy, trace, scn.truth, sources)]
         timed = TimedEngine(engine_factory(scn), policy)
         agent = OrchestratorAgent(timed, cfg.model, tools=tools, max_turns=cfg.max_turns,
                                   temperature=cfg.temperature, max_tokens=cfg.max_tokens,
@@ -152,7 +157,11 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
                 if recovery_r2.should_retry_answer_only(trace, policy):
                     box["recovery_attempted"] = True
                     box["first_answer"] = first_result.content if first_result else ""
-                    box["result"] = agent.run(recovery_r2.continuation_prompt(scn.report_name))
+                    box["continuation_context"] = {"read_names": recovery_r2.successful_reads(trace),
+                                                   "remaining": recovery_r2.remaining_budget(policy)}
+                    box["result"] = agent.run(recovery_r2.continuation_prompt(
+                        scn.report_name, box["continuation_context"]["read_names"],
+                        box["continuation_context"]["remaining"]))
             except BaseException as exc:
                 box["error"] = exc
         audit = OpenAudit(root)
@@ -218,6 +227,10 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
             "premature_completion_claim": premature_claim,
             "first_answer_sha256": hashlib.sha256(
                 box.get("first_answer", "").encode()).hexdigest() if recovery_attempted else None,
+            "first_answer_evidence": evidence_r2.first_answer_evidence(box.get("first_answer"))
+            if recovery_attempted else None,
+            "continuation_context": box.get("continuation_context"),
+            "overwrite_prechecks": policy.overwrite_refusals,
             "denied": len(policy.denials), "halted_by_harness": timed.halted,
             "engine_steps": timed.steps, "final_answer": answer, "turns": result.turns if result else None,
             "agent_metadata": {k: v for k, v in (result.metadata if result else {}).items()
