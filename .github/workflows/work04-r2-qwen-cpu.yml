@@ -126,7 +126,7 @@ jobs:
           HOME: ${{ runner.temp }}/home
         run: |
           set -euo pipefail
-          ../../../vendor/openjarvis/.venv/bin/python -m unittest test_w04_r2_smoke test_w04_r2_cpu_workflow test_w04_r2_baseline 2>&1 \
+          ../../../vendor/openjarvis/.venv/bin/python -m unittest test_w04_r2_smoke test_w04_r2_cpu_workflow test_w04_r2_baseline test_w04_r2_write_guard 2>&1 \
             | tee "$EVID/gate1b-tests.txt" | tail -3
           printf '{"gate":"1b","status":"PASS"}\n' >> "$EVID/gates.jsonl"
 
