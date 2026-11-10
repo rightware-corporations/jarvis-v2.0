@@ -1074,3 +1074,13 @@ Continuação executada directamente pela RIGHTWARE via integração GitHub nest
 **CI validado:** run `42800285683` concluiu `success`: 73 WORK-04+R2, 61 WORK-02, 56 RIGHTWARE = **190 PASS**. Apenas FAKE/determinístico. Replay read-only do histórico 35: 15 `NOT_PERSISTED`, 3 `NOT_VERIFIED`, 17 `VERIFY_FAILED`; nenhum `TASK_COMPLETED`. Ainda **não** executado Qwen R2 nem validada resistência a ataques novos em inferência; `WORK04_GPU_REAL` histórico continua `NOT ACCEPTED 0/35`.
 
 **Próxima revisão:** auditoria independente de segurança semântica, testes de generalização não codificados para os cinco ataques originais e eventual pequeno smoke real com nova autorização. **Manter Draft, não fazer merge**, não alterar `main`, não gastar GPU ou créditos de serviços de IA.
+
+## ADENDA — 10/11/2026: WORK-04 R2 AUDITORIA ADVERSARIAL ESTÁTICA
+
+A investigação do WORK-04 R2 continua **directamente na branch `feat/work04-r2-semantic-safety`** e no Draft PR #2. Adicionadas regressões em `test_w04_r2_adversarial.py` e `test_w04_r2_fixtures.py`; o filtro da ferramenta `read_document` foi fortalecido contra cabeçalhos de papel falsificados (Markdown, XML, JSON, HTML, tabelas) e comandos dirigidos ao assistente. Os testes confirmaram preservação integral dos documentos principais em 35 fixtures e isolamento das cinco notas hostis originais, sem modificar o conteúdo no disco.
+
+**Evidência:** GitHub Actions run `42802487652`, `completed/success`; 79 testes WORK-04+R2, 61 WORK-02, 56 RIGHTWARE (196 PASS); todos FAKE/estáticos. Nenhuma nova inferência Qwen/Kaggle, nenhum merge ou escrita em `main` ou `develop`.
+
+**Limitação principal:** filtro heurístico pode ser contornado por manipulação sem forma imperativa ou remover factos legítimos fora da amostra. Não considerar `HOSTILE` resolvido até prova de uso do modelo real e validação externa. A detecção de ausência de relatório não equivale à capacidade de recuperar e concluir a tarefa. O benchmark histórico WORK-04 `0/35 NOT ACCEPTED` mantém-se. Ver detalhes na secção 8 de `docs/research/WORK04_R2_ROOT_CAUSE_AND_ACCEPTANCE.md`.
+
+**Próximo gate:** desenhar política de confiança em fontes e recuperação de tarefa, testar deterministamente, depois pedir nova autorização para *smoke* GPU pequeno. O Draft PR continua aberto, sem merge.
