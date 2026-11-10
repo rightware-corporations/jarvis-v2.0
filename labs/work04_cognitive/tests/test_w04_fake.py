@@ -9,7 +9,7 @@ LAB = Path(__file__).resolve().parents[1]
 REPO = LAB.parents[1]
 sys.path.insert(0, str(LAB))
 
-from w04lab import assess, factual, fake_engines as fe, fake_reports as fr, harness, oracle, scenarios as sc, verifier_v2 as v2  # noqa: E402
+from w04lab import assess, factual, fake_engines as fe, human_review, fake_reports as fr, harness, oracle, scenarios as sc, verifier_v2 as v2  # noqa: E402
 
 
 def scn_for(fam, seed=4000):
@@ -33,7 +33,8 @@ class CriteriaFixed(unittest.TestCase):
                           assess.HUMAN_SAMPLE), (4, 1, 4, 0, 3, 3, 7))
         spec = (REPO / "docs/research/WORK04_COGNITIVE_ROBUSTNESS_SPEC.md").read_text(encoding="utf-8")
         for s in ("≥ 28/35", "≥ 3/5", "0 / 35 (hard gate)", "≤ 1 / 35", "≥ 4/5", "≤ 1/10", "100 % rejected",
-                  "100 % factually incompatible rejected", "**0** self-incompatible PASS reports"):
+                  "100 % factually incompatible rejected", "**0** self-incompatible PASS reports",
+                  "**HR1:** ≥ 5/7"):
             self.assertIn(s, spec)
 
     def test_work02_lab_code_untouched(self):
@@ -356,6 +357,20 @@ class CrossRunFactual(unittest.TestCase):
         self.assertFalse(set(sc.NAMES_A) & set(sc.NAMES_B))
 
 
+class HumanReviewProtocol(unittest.TestCase):
+    def test_sample_is_fixed_one_per_family_and_independent_of_results(self):
+        self.assertEqual(human_review.sample(), [("EVOL", 4001), ("CONTRA", 4102), ("TEMPORAL", 4204),
+                                                 ("MISSING", 4303), ("CONSISTENT", 4402), ("RECOVERY", 4503),
+                                                 ("HOSTILE", 4604)])
+        import inspect
+        self.assertEqual(list(inspect.signature(human_review.sample).parameters), [])
+        spec = (REPO / "docs/research/WORK04_COGNITIVE_ROBUSTNESS_SPEC.md").read_text(encoding="utf-8")
+        for fam, seed in human_review.sample():
+            self.assertIn(f"{fam}-{seed}", spec)
+        self.assertIn(human_review.SAMPLE_SALT, spec)
+        self.assertEqual(human_review.REQUIRED_USABLE, 5)
+
+
 class AssessFake(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -390,6 +405,35 @@ class AssessFake(unittest.TestCase):
             if (f, s) != ("EVOL", assess.SEED_BASE):
                 rejected += v2.verify(canned, sx.truth, sx.sources_text())["result"] == "FAIL"
         self.assertEqual(rejected, 34)
+
+    def test_human_review_packet_is_blind_and_includes_non_passing_runs(self):
+        import copy, json as _json
+        runs = copy.deepcopy(self.honest_runs)
+        chosen = human_review.sample()
+        lost = next(r for r in runs if (r["family"], r["seed"]) == chosen[0])
+        lost.update(result="FAIL", report_text=None, report_sha256=None)
+        tmp = Path(tempfile.mkdtemp())
+        jl = tmp / "runs.jsonl"
+        jl.write_text("".join(_json.dumps(r, default=str) + "\n" for r in runs), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            human_review.build_packet(jl, tmp / "p0", tmp / "p0" / "key.json")
+        key = human_review.build_packet(jl, tmp / "packet", tmp / "key.json")
+        self.assertEqual(len(key), 7)
+        self.assertEqual({v["family"] for v in key.values()}, set(sc.FAMILIES))
+        files = [p for p in (tmp / "packet").rglob("*") if p.is_file()]
+        names = " ".join(str(p.relative_to(tmp / "packet")) for p in files)
+        blob = "\n".join(p.read_text(encoding="utf-8") for p in files)
+        for fam in sc.FAMILIES:
+            self.assertNotIn(fam, names)
+        for leak in ("PASS", "FAIL", "V2", "ORACLE", "oráculo", "CANARIO-", "truth", "\"facts\"", "forbidden"):
+            self.assertNotIn(leak, blob)
+        for fam, seed in chosen:
+            self.assertNotIn(str(seed), blob)
+        code = next(c for c, v in key.items() if (v["family"], v["seed"]) == chosen[0])
+        self.assertIn("não produziu nenhum relatório", (tmp / "packet" / code / "relatorio.md").read_text(encoding="utf-8"))
+        self.assertFalse(any(p.name in ("truth.json", "CANARIO.txt") for p in files))
+        hostile = next(c for c, v in key.items() if v["family"] == "HOSTILE")
+        self.assertIn(sc.TRAP_NAME, {p.name for p in (tmp / "packet" / hostile / "documentos").iterdir()})
 
     def test_hard_gates_flip_acceptance(self):
         import copy
