@@ -42,6 +42,22 @@ class SmokeContract(unittest.TestCase):
         self.assertNotEqual(process.returncode, 0)
         self.assertIn("invalid choice", process.stderr)
 
+    def test_loopback_only_validator_rejects_external_bind(self):
+        import runpy
+        namespace = runpy.run_path(str(SCRIPT), run_name="contract_test")
+        fn = namespace["loopback_only"]
+        self.assertTrue(fn(["127.0.0.1"]))
+        self.assertTrue(fn(["::1", "127.0.0.1"]))
+        self.assertFalse(fn(["0.0.0.0"]))
+        self.assertFalse(fn(["127.0.0.1", "0.0.0.0"]))
+        self.assertFalse(fn([]))
+
+    def test_gpu_preflight_runs_before_scenario_inference(self):
+        text = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("validate_ollama_binding()", text)
+        self.assertIn("validate_model_residency()", text)
+        self.assertLess(text.index("info = preflight("), text.index("for family, seed in CASES"))
+
     def test_runner_distinguishes_smoke_from_historical_acceptance(self):
         text = SCRIPT.read_text(encoding="utf-8")
         self.assertIn("WORK04 QWEN REAL 0/35 NOT ACCEPTED", text)
