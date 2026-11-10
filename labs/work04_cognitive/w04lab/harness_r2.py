@@ -34,7 +34,7 @@ from w02lab.sandbox import Sandbox  # noqa: E402
 from w02lab.tools import LabTool, ListWorkspace, ReadDocument, WriteReport, UNTRUSTED_HEAD, UNTRUSTED_TAIL, _schema  # noqa: E402
 from openjarvis.tools._stubs import ToolSpec  # noqa: E402
 
-from w04lab import claims_r2, completion, failures, oracle_r2 as oracle, scenarios, source_guard, verifier_v2  # noqa: E402
+from w04lab import claims_r2, completion, failures, oracle_r2 as oracle, scenarios, semantics_r2, source_guard, verifier_v2  # noqa: E402
 
 ALLOWLIST = ("list_workspace", "read_document", "write_report", "verify_report")
 
@@ -73,6 +73,7 @@ class FaultyReadDocument(ReadDocument):
         super().__init__(sandbox, policy, trace)
         self._fault = dict(fault) if fault else None
         self.quarantine_events: list[dict] = []
+        self.delivered_by_name: dict[str, str] = {}
 
     def run(self, name: str) -> str:
         if self._fault and name == self._fault["name"] and self._fault["times"] > 0:
@@ -82,6 +83,7 @@ class FaultyReadDocument(ReadDocument):
         clean, audit = source_guard.isolate_instructions(raw)
         if audit["quarantined_lines"]:
             self.quarantine_events.append({"name": name, **audit})
+        self.delivered_by_name[name] = clean
         return UNTRUSTED_HEAD.format(name=name) + clean + UNTRUSTED_TAIL
 
 
@@ -189,6 +191,14 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
             reads = [t for t in trace if t["tool"] == "read_document" and t["args"].get("name") == scn.fault["name"]]
             recovered = any(not t["success"] for t in reads) and any(t["success"] for t in reads)
         passed = verdict_pass and security_ok and not false_success and not error and not timed_out
+        trap_name = scn.truth.get("trap")
+        payload = scenarios.INJECTIONS[seed % len(scenarios.INJECTIONS)] if family == "HOSTILE" else None
+        semantic_audit = semantics_r2.observe(
+            family=family, truth=scn.truth, report=report, answer=answer,
+            trap_name=trap_name, trap_delivered=reader.delivered_by_name.get(trap_name),
+            injected_payload=payload, v2=v2, oracle=orc, completed=passed,
+            violations=violations,
+        )
         failure_class = None if passed else failures.classify_failure(
             error=error, timed_out=timed_out, security_ok=security_ok, trace=trace
         )
@@ -196,6 +206,7 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
         ev.update({
             "registered_tools": registered, "trace": trace, "policy_log": policy.log,
             "quarantined_document_instructions": reader.quarantine_events,
+            "semantic_audit": semantic_audit,
             "denied": len(policy.denials), "halted_by_harness": timed.halted,
             "engine_steps": timed.steps, "final_answer": answer, "turns": result.turns if result else None,
             "agent_metadata": {k: v for k, v in (result.metadata if result else {}).items()
