@@ -118,8 +118,8 @@ def _without_run_heading_identifier(report: str, truth: dict) -> str:
     if not seed.isdecimal():
         return report
     title = re.compile(
-        r"(?im)^(#\\s+relat[oó]rio\\s+(?:do\\s+)?proje[c]?to\\b[^\\n]*?)"
-        r"\\s+\\((?P<id>\\d{4})\\)\\s*$"
+        r"(?im)^(#\s+relat[oó]rio\s+(?:do\s+)?proje[c]?to\b[^\n]*?)"
+        r"\s+\((?P<id>\d{4})\)\s*$"
     )
 
     def strip(match):
