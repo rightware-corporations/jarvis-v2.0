@@ -34,7 +34,7 @@ from w02lab.sandbox import Sandbox  # noqa: E402
 from w02lab.tools import LabTool, ListWorkspace, ReadDocument, WriteReport, UNTRUSTED_HEAD, UNTRUSTED_TAIL, _schema  # noqa: E402
 from openjarvis.tools._stubs import ToolSpec  # noqa: E402
 
-from w04lab import completion, failures, oracle_r2 as oracle, scenarios, source_guard, verifier_v2  # noqa: E402
+from w04lab import claims_r2, completion, failures, oracle_r2 as oracle, scenarios, source_guard, verifier_v2  # noqa: E402
 
 ALLOWLIST = ("list_workspace", "read_document", "write_report", "verify_report")
 
@@ -105,13 +105,8 @@ class VerifyReportV2(LabTool):
                                                  ". Problemas: " + "; ".join(r.split(':')[0] for r in res["reasons"]))
 
 
-_SUCCESS = re.compile(r"\b(pass|com sucesso|foi verificad|verificado|aprovad[oa] na verifica|sem problemas)")
-_FAILURE = re.compile(r"\b(fail|falh|nao passou|nao foi verificad|erro|problema|nao consegu)")
-
-
 def claims_success(answer: str) -> bool:
-    a = verifier_v2.fold(answer or "")
-    return bool(_SUCCESS.search(a)) and not _FAILURE.search(a)
+    return claims_r2.claims_success(answer)
 
 
 class RunConfig:
