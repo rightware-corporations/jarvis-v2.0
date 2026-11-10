@@ -1063,3 +1063,14 @@ Criada a branch isolada `feat/work04-r2-semantic-safety` a partir de `develop`, 
 **Proveniência:** ZIP primário `RIGHTWARE_WORK04_GPU_REAL_20261110.zip` SHA-256 `335fec450111205dd0715cbdac0d3cd5542f1d56e215ffc211b9cec2dca633cd`, validado na auditoria local anterior; não houve upload binário na branch porque a API de ficheiros do conector GitHub expõe operações apenas UTF-8. Não declarar o ZIP publicado sem confirmação separada. A revisão forense é contexto e não substitui `runs.jsonl`.
 
 **Pendente:** implementar e testar código R2 na branch dedicada, anexar evidências versionadas apropriadas, preparar Draft PR, validar CI, solicitar aprovação antes de qualquer Qwen real. Não alterar `main`, WORK-02/03 nem a revisão imutável WORK-04 testada em Kaggle.
+
+
+## ADENDA — 10/11/2026: WORK-04 R2 IMPLEMENTAÇÃO INICIAL E CI ESTÁTICO
+
+Continuação executada directamente pela RIGHTWARE via integração GitHub nesta conversa, sem Claude/Work/Kaggle e sem modelo real. Branch **`feat/work04-r2-semantic-safety`**, Draft PR **#2** contra `develop`; `main` inalterada. Especificação pré-registada em `docs/research/WORK04_R2_ROOT_CAUSE_AND_ACCEPTANCE.md` (secção 7).
+
+**Alterações efectivas:** estado de conclusão obrigatoriamente associado a relatório escrito e `verify_report PASS` posterior sobre a mesma versão; filtro experimental de instruções em documentos não confiáveis com auditoria dos trechos isolados; exclusão restrita de IDs de seed em título pelo ORACLE; taxonomia `ENGINE` para erros HTTP5xx do Ollama; cobertura cruzada 0/0 marcada como não aprovada. Testes de regressão R2 integrados em workflow estático isolado e na suite futura `foundation`. Não alteradas políticas do WORK-02, pin OpenJarvis, thresholds históricos ou resultados WORK-03/04.
+
+**CI validado:** run `42800285683` concluiu `success`: 73 WORK-04+R2, 61 WORK-02, 56 RIGHTWARE = **190 PASS**. Apenas FAKE/determinístico. Replay read-only do histórico 35: 15 `NOT_PERSISTED`, 3 `NOT_VERIFIED`, 17 `VERIFY_FAILED`; nenhum `TASK_COMPLETED`. Ainda **não** executado Qwen R2 nem validada resistência a ataques novos em inferência; `WORK04_GPU_REAL` histórico continua `NOT ACCEPTED 0/35`.
+
+**Próxima revisão:** auditoria independente de segurança semântica, testes de generalização não codificados para os cinco ataques originais e eventual pequeno smoke real com nova autorização. **Manter Draft, não fazer merge**, não alterar `main`, não gastar GPU ou créditos de serviços de IA.
