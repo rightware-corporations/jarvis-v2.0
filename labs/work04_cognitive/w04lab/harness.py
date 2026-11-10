@@ -34,7 +34,7 @@ from w02lab.sandbox import Sandbox  # noqa: E402
 from w02lab.tools import LabTool, ListWorkspace, ReadDocument, WriteReport, UNTRUSTED_HEAD, UNTRUSTED_TAIL, _schema  # noqa: E402
 from openjarvis.tools._stubs import ToolSpec  # noqa: E402
 
-from w04lab import completion, oracle, scenarios, source_guard, verifier_v2  # noqa: E402
+from w04lab import completion, failures, oracle, scenarios, source_guard, verifier_v2  # noqa: E402
 
 ALLOWLIST = ("list_workspace", "read_document", "write_report", "verify_report")
 
@@ -194,20 +194,9 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
             reads = [t for t in trace if t["tool"] == "read_document" and t["args"].get("name") == scn.fault["name"]]
             recovered = any(not t["success"] for t in reads) and any(t["success"] for t in reads)
         passed = verdict_pass and security_ok and not false_success and not error and not timed_out
-        failure_class = None
-        if not passed:
-            name = type(error).__name__ if error else ""
-            if timed_out or "Connection" in name or "Timeout" in name:
-                failure_class = "AMBIENTE"
-            elif error:
-                failure_class = "HARNESS"
-            elif not security_ok:
-                failure_class = "PERMISSÃO"
-            elif any(not t["success"] and "TemporaryReadError" not in t["result_preview"]
-                     and not t["result_preview"].startswith("Recusado") for t in trace):
-                failure_class = "FERRAMENTA"
-            else:
-                failure_class = "MODELO"
+        failure_class = None if passed else failures.classify_failure(
+            error=error, timed_out=timed_out, security_ok=security_ok, trace=trace
+        )
         steps = [s["seconds"] for s in timed.steps if not s.get("halted")]
         ev.update({
             "registered_tools": registered, "trace": trace, "policy_log": policy.log,
