@@ -1,7 +1,7 @@
 """R2 regression: historical WORK-04 rev.1 files remain byte-identical.
 
 Works from source archives WITHOUT .git; GitHub blob SHA1 includes the git
-'blob <byte-length>\\0' prefix. It therefore protects the historical runtime
+'blob <byte-length>\0' prefix. It therefore protects the historical runtime
 semantics against accidental reuse of new R2 logic or evaluator changes.
 """
 from pathlib import Path
@@ -14,7 +14,7 @@ LAB = Path(__file__).resolve().parents[1]
 
 def git_blob_sha(path: Path) -> str:
     data = path.read_bytes()
-    return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\\0" + data).hexdigest()
+    return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
 
 
 class HistoricalRev1Immutability(unittest.TestCase):
