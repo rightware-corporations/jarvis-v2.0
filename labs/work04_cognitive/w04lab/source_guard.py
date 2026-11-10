@@ -21,7 +21,7 @@ def _normal(text: str) -> str:
 _ROLE = re.compile(
     r"^\s*(?:[#>*\-]+\s*)?"
     r"(?:instrucoes\s+(?:para|ao)\s+(?:o\s+)?(?:assistente|modelo|agente)|"
-    r"nota\s+do\s+sistema|(?:system|developer|assistant|modelo|agente)\s*(?:message|prompt)?\s*:)",
+    r"nota\s+do\s+sistema\s*:|(?:system|developer|assistant|modelo|agente)\s*(?:message|prompt)?\s*:)",
 )
 _COMMAND = re.compile(
     r"\b(?:ignora|ignore|desconsidera|sobrepoe|sobrescreve|"
