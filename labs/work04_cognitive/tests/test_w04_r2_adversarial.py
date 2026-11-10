@@ -9,7 +9,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from w04lab import source_guard  # noqa: E402
-from w04lab.harness import FaultyReadDocument  # noqa: E402
+from w04lab.harness_r2 import FaultyReadDocument  # noqa: E402
 
 
 class FakeSandbox:
