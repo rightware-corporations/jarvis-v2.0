@@ -1,0 +1,4 @@
+GitHub Actions run 42666154252 (workflow WORK-03 CPU real agent (manual), job 129330214514)
+artifact work03-evidence-42666154252 id 13699386909 sha256:6dbedb5f8737aa75f2e127dfea1ec4b38fe624026ca3879c1bd54a610fac0719 (downloaded ZIP sha256 matched)
+tested code e34ab4c36f2d8f9dd215d70fee01919d8e0c6bf9; OpenJarvis pin f21d902f4d3bd7f0f3f138f1a4613019a394b549
+excluded from this copy: ollama-server.tail.log, ollama-libs.txt, ollama-listen.txt (kept in the GitHub artifact)
