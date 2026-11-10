@@ -62,7 +62,7 @@ def isolate_instructions(text: str) -> tuple[str, dict]:
         stripped = line.strip()
         direct = is_instruction(line)
         if direct:
-            in_block = True
+            in_block = line.rstrip().endswith(":")
         elif not stripped:
             in_block = False
         if direct or (in_block and stripped and not line.lstrip().startswith("# ")):
