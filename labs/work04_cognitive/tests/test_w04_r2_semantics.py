@@ -6,7 +6,7 @@ import unittest
 
 LAB = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(LAB))
-from w04lab import fake_reports, oracle, scenarios  # noqa: E402
+from w04lab import fake_reports, oracle_r2 as oracle, scenarios  # noqa: E402
 
 
 class OracleReportIdentifiers(unittest.TestCase):
