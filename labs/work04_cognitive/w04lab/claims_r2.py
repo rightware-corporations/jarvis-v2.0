@@ -33,7 +33,7 @@ _NEG = re.compile(
 )
 # Negated error terms are positive evidence, not failures.
 _NO_PROBLEM = re.compile(
-    r"sem problemas|sem erros?|nenhum erro|"
+    r"sem problemas|sem erros?|sem falhas|nenhum erro|"
     r"nao houve (?:erro(?:s)?|problema(?:s)?|falha(?:s)?)"
 )
 # A standalone assertion of "report" alone is never success.
