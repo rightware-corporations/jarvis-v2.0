@@ -108,6 +108,26 @@ def _fact_in_sentence(fact: dict, s: str) -> bool:
     return _f(fact["value"]) in s
 
 
+def _without_run_heading_identifier(report: str, truth: dict) -> str:
+    """Exclude ONLY the known benchmark seed in a report-title metadata suffix.
+
+    This is metadata, not a financial assertion. Numbers elsewhere (including
+    in any budget row, paragraph or another title) remain fully checked.
+    """
+    seed = str(truth.get("seed", ""))
+    if not seed.isdecimal():
+        return report
+    title = re.compile(
+        r"(?im)^(#\\s+relat[oó]rio\\s+(?:do\\s+)?proje[c]?to\\b[^\\n]*?)"
+        r"\\s+\\((?P<id>\\d{4})\\)\\s*$"
+    )
+
+    def strip(match):
+        return match.group(1) if match.group("id") == seed else match.group(0)
+
+    return title.sub(strip, report)
+
+
 def judge(report: str, truth: dict, sources: dict[str, str]) -> dict:
     reasons = []
     sents = _sentences(report)
@@ -127,7 +147,7 @@ def judge(report: str, truth: dict, sources: dict[str, str]) -> dict:
         n, d = _values(sources[name])
         src_nums |= n
         src_dates |= d
-    rep_nums, rep_dates = _values(report)
+    rep_nums, rep_dates = _values(_without_run_heading_identifier(report, truth))
     unsupported_n = sorted(rep_nums - src_nums - {y for (y, _, _) in src_dates})
     unsupported_d = sorted(rep_dates - src_dates)
     if unsupported_n or unsupported_d:
