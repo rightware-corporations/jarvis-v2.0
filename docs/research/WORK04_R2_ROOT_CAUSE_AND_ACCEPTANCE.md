@@ -81,3 +81,23 @@ Nenhuma inferência Qwen real, GPU/Kaggle, API paga, recursos novos, merge, escr
 **Replay analítico sobre os 35 rastos históricos (leitura de `runs.jsonl`, sem executar o modelo):** 15 sem ficheiro final, 3 com ficheiro mas sem `verify_report` da versão final, 17 com verificação final `FAIL`. Nenhum dos 35 demonstra `TASK_COMPLETED` segundo o R2; o histórico continua `0/35 NOT ACCEPTED`.
 
 **Riscos e limitações:** a defesa de documentos não foi testada com Qwen real após a alteração, os 35 cenários não foram repetidos, e a qualidade final do texto ainda depende de critérios semânticos V2/ORACLE e revisão humana; alguns erros lexicais de classificação continuam possíveis. Não há autorização de integração Windows, voz, acções reais ou serviços pagos. Próximo gate requer revisão de código independente e desenho de um pequeno smoke GPU **com nova aprovação explícita**.
+
+## 8. Auditoria adversarial estática — 10/11/2026
+
+**Objectivo:** tentar contornar o guard de documentos **sem** inferência Qwen e sem alteração do benchmark imutável `0/35`.
+
+### Novas regressões
+- `test_w04_r2_adversarial.py`: oito classes de ataques em documentos sintéticos, incluindo cabeçalhos Markdown que fingem `SYSTEM MESSAGE`, XML `<system>`, JSON com `role=system`, comentário HTML, tabela com papel `SYSTEM`, instruções em inglês, diretivas PT-MZ e ordem urgente em linha; testado directamente em `source_guard.isolate_instructions` e em `FaultyReadDocument.run`. São **testes FAKE estáticos**, não modelos de IA.
+- `test_w04_r2_fixtures.py`: percorre os **35 cenários pré-existentes** e exige que todos os documentos de fontes primárias mantenham conteúdo byte-a-byte após a filtragem; verifica também que as cinco notas adversariais originais são isoladas e **não modificadas no disco**. Em adição, amostras legítimas de documentos administrativos servem de controlo contra falsos positivos conhecidos.
+- `source_guard.py`: detecção adicional de falsificação de papéis em Markdown, XML, JSON, HTML e tabelas; modo de isolamento de blocos e de comandos isolados. Preserva a proveniência (contagens + SHA-256 dos trechos isolados), sem registar conteúdo textual dos ataques.
+
+**CI confirmada** no [run `42802487652`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/42802487652), antes desta adenda: **79 WORK-04/R2 + 61 WORK-02 + 56 RIGHTWARE = 196 testes PASS**. Todos determinísticos/FAKE; nenhum Qwen/GPU usado. A `main` e a `develop` não foram alteradas.
+
+**Limites de segurança que persistem:**
+1. O filtro por padrões **não** detecta todas as formas de manipulação ou de instruções disfarçadas. Um texto que parece dado factual mas procede de fonte sem autoridade pode continuar a contaminar a interpretação do modelo. Proveniência, allowlists de fontes, revisão por afirmação e verificação externa continuam necessárias.
+2. Isolar texto suspeito pode remover informação legítima fora dos 35 fixtures; não há estimativa robusta de falsos positivos em documentos externos.
+3. Passar numa suite estática demonstra a detecção **daquelas variantes**, não imunidade do Qwen a prompt injection.
+4. O R2 passou a **detectar** casos de resposta sem relatório e de verificação incompleta; ainda **não demonstrou corrigir a tendência do modelo para terminar cedo**. Essa eficácia só será avaliada com smoke real autorizado.
+5. O run histórico Kaggle WORK-04 permanece **`NOT ACCEPTED 0/35`**, sem alteração de dados, thresholds, métricas ou commit de referência.
+
+**Próximo trabalho recomendado:** criar uma fronteira de confiança explícita por fonte, com políticas documentadas sobre autoridade de documentos; melhorar a conclusão do agente sem contornar as verificações e preparar pequenos ensaios controlados, estratificados, com autorização separada antes de qualquer nova inferência.
