@@ -1096,3 +1096,24 @@ Detalhe em `docs/research/WORK05_PRODUCT_AGENT_FOUNDATION.md`.
 **Próxima missão RECOMENDADA, não realizada:** `WORK-05 R1 — Security Hardening & Real-Agent Readiness` nesta mesma branch, mediante revisão da situação remota, testes adversariais/determinísticos, CI, Draft PR contra `develop` sem merge e depois pedido de autorização separado para um único smoke Qwen. Não executar Qwen, não alterar `main`/`develop`, nem tocar no benchmark WORK-04. A branch anterior `feat/work05-product-agent-foundation` e PR #3 foram criados noutra sessão e **não** devem ser incorporados automaticamente neste WORK-05.
 
 **Protocolo de continuidade aprovado pelo operador:** antes de cada mensagem de progresso substancial ou output de conclusão do agente, anexar um registo curto, factual, datado e sanitizado a `docs/HANDOFF.md`, com actividade, branch/HEAD anterior, alterações, testes e próximo passo; fazer commit/push, confirmar HEAD remoto, **só então** enviar esse output indicando o commit. Se o push falhar, comunicar que o checkpoint NÃO foi persistido. Não guardar transcrições, segredos nem dados pessoais no repositório público. O registo é append-only, nunca reescrever adendas anteriores.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-A — base e revisão de segurança (Claude Code)
+
+**Fase:** R1-A concluída; segue-se a R1-B.
+
+**Base:** `feat/work05-product-agent`, `188e1b7`, integrado por fast-forward (só a adenda do operador). O código é igual a `6fedaca` (CI `43099989107`: 94 OK, 0 saltados).
+
+**Feito:** as sondas determinísticas, sem rede externa, **confirmaram** cinco defeitos:
+- **F1 P0:** DNS rebinding. O IP validado (`93.184.216.34`) não é aquele a que o httpcore se liga (`127.0.0.1`), porque o nome é resolvido de novo.
+- **F2 P1:** o lote não é atómico. Capacidade e quotas não são pré-validadas.
+- **F3 P1:** o prazo não é verificado de novo na execução.
+- **F4 P1:** uma falha de auditoria deixa uma aprovação órfã e uma quota consumida.
+- **F5 P1:** HTTP 404 e 500 são tratados como fonte OK.
+
+**Ficheiros:** `docs/research/WORK05_R1_SECURITY_REVIEW.md` (novo) e este HANDOFF. Nenhum código alterado.
+
+**Riscos:** nenhum alterado ainda.
+
+**Próxima operação:** R1-B, transporte com IP fixado (pinned) e testes de rede.
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.
