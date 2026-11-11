@@ -1584,3 +1584,31 @@ Both `docs/HANDOFF.md` lineages were append-only relative to `develop@de628df4b5
 **Próxima operação:** CI deste HEAD e pedido de autorização ao operador para o primeiro smoke real, com o SHA deste checkpoint como `approved_code_sha`.
 
 Nenhuma inferência Qwen.
+
+## CHECKPOINT — 12/11/2026: WORK-06 — primeiro smoke real autorizado: INCOMPLETE, bloqueado no GATE 2, SEM inferência (Claude Code)
+
+**Autorização do operador:** uma execução, `request_id` 1, código aprovado `25ccf216c8d3053701827635d4e340411cf6d114`, plano `b9be5c69…`. Antes do pedido verifiquei que o HEAD aprovado estava inalterado (local = remoto, árvore limpa, sem ficheiro de pedido, plano igual).
+
+**Execução:**
+- commit de pedido `4d6aa4c3a06cdaad2e67db699847147e88c1acb6` (só `ops/work05_smoke_request.json`);
+- run [`43113524962`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43113524962): **GATE 0 (autorização) PASS** (aprovado ≠ disparo, diff só do pedido, `request_id` 1, `run_attempt` 1, plano igual) e GATE 1 PASS;
+- **GATE 2 FAIL**: a suite de produto deu 149 testes e 1 falha (`test_inert_until_an_authorised_request_file_exists`);
+- GATE 3 e o passo do smoke foram **saltados**: sem download do modelo, **sem inferência Qwen**.
+
+**Veredicto: INCOMPLETE.** Não há evidência sobre o agente real. A capacidade do agente fica por medir.
+
+**Causa** (defeito meu, de `26ce9a9`): o teste de contrato exigia a *ausência* do ficheiro de pedido, mas o GATE 2 corre a suite no próprio commit de pedido. Falhou fechado, como previsto pelo desenho dos gates.
+
+**Correcção `7d1c545`:**
+- o teste passa a validar a estrutura do pedido quando o ficheiro existe;
+- novo teste de regressão corre o contrato numa cópia temporária **com** pedido;
+- reintroduzir a asserção antiga faz a regressão falhar (mutação detectada).
+
+**Local:** venv **150 OK, 0 saltados** no commit com pedido; `actionlint` sem erros; pin `f21d902`.
+
+**Evidência:** artefacto `13896154747`, sha256 `63fbb88b…` confirmado, 4/4 `SHA256SUMS` OK. Cópia em `docs/evidence/work06-smoke-run43113524962/`.
+
+**Estado do protocolo:**
+- o `request_id` 1 ficou **consumido** (uso único);
+- uma nova execução precisa de **nova autorização explícita**, com `request_id` 2 e um novo `approved_code_sha` igual ao HEAD de `develop` imediatamente antes do novo pedido;
+- não foi feita nenhuma segunda execução.
