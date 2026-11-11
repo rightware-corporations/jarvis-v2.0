@@ -1,0 +1,59 @@
+# RIGHTWARE Jarvis do Issa — code-level Windows demo readiness.
+# Does NOT download or infer with Qwen; does NOT validate microphone/STT/TTS
+# or launch Windows apps. Actual hardware demonstration still needs operator.
+name: JARVIS Issa demo Windows static readiness
+
+on:
+  push:
+    branches:
+      - demo/issa-20261111
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-readiness:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout pinned OpenJarvis submodule
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Parse the actual Windows launcher (PowerShell 5.1)
+        shell: powershell
+        run: |
+          $path = Join-Path (Get-Location) 'rightware\windows\Jarvis-Issa.ps1'
+          $tokens = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host "PASS PowerShell syntax (not real voice/device validation)"
+
+      - name: Compile launcher and Python modules
+        shell: pwsh
+        run: |
+          python -m py_compile jarvis.py rightware/runtime.py rightware/voice.py rightware/diagnose.py rightware/windows_actions.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run RIGHTWARE Python unit regressions (FAKE, no inference)
+        shell: pwsh
+        run: |
+          python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Ensure the demonstration only adds documentation and its own static gate
+        shell: pwsh
+        run: |
+          Write-Host "Static readiness PASS. No Qwen inferred; no voice/microphone tested."
