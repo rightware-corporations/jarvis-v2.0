@@ -1052,3 +1052,34 @@ Evidência em `labs/work04_cognitive/evidence/`.
 - O benchmark real de 35 cenários exige nova aprovação: `run_benchmark=yes` + `AUTORIZO-WORK04-BENCHMARK`, sobre um SHA validado.
 - Estimativa: ~90–140 min em CPU (INFERÊNCIA).
 - O revisor humano tem de ser nomeado.
+
+## ADENDA — 11/11/2026: WORK-05 — fundação do agente de produto (Claude Code)
+
+**Branch:** `feat/work05-product-agent`, criado a partir de `develop@de628df`, isolado do branch R2. Sem merge; `main` e `develop` inalteradas. **Nenhuma inferência Qwen.** A evidência WORK-04 e o pin OpenJarvis `f21d902` estão intactos.
+
+**Implementado** (o primeiro caminho vertical do produto):
+- Instrução → Qwen (`OrchestratorAgent` fixado) → proposta de ferramenta → `AgentPolicy` (registo fechado, schema exacto, capacidade da sessão, quotas, prazo, cancelamento, lote fail-closed, aprovação de uso único) → execução → `ToolOutcome` verificado por código → resposta verdadeira.
+- **`web_read`, só leitura de páginas públicas:**
+  - apenas GET; sem headers, corpo ou cookies vindos do modelo;
+  - SSRF verificado com o guarda do upstream mais um teste `is_global`, em cada redireccionamento e no IP efectivamente ligado;
+  - limites de tamanho e tempo;
+  - texto devolvido em moldura de dados não confiáveis com fronteira aleatória.
+- **`windows_action`:** o mesmo `WindowsActions`, com autorização da sessão e confirmação humana.
+- **CLI:** `python jarvis.py agent "…" [--allow-web] [--allow-actions]`; as duas capacidades estão desligadas por omissão.
+- **Auditoria:** só ferramenta, decisão e resultado; os URLs ficam reduzidos a servidor + hash.
+
+**Não exposto:**
+- o `http_request` do upstream, que expande variáveis de ambiente em headers do modelo;
+- `shell_exec`, `file_write` e as ferramentas de browser com cliques ou escrita.
+
+**Testes:**
+- 38 novos (21 de política/web, 14 de sessão com o `OrchestratorAgent` real e motor FAKE, 3 do lançador);
+- 15 mutações de segurança, todas detectadas;
+- local: 94 OK na venv, sem nenhum teste saltado;
+- workflow `work05-product.yml`: falha se algum teste for saltado na venv.
+
+**Fase 3 documentada, não implementada:** voz, aplicações de desktop, browser autenticado, ficheiros, estado persistente e Shared Intelligence, que fica como projecto independente sem ligação.
+
+Detalhe em `docs/research/WORK05_PRODUCT_AGENT_FOUNDATION.md`.
+
+**Próximo gate (decisão do operador):** um smoke Qwen real, autorizado, com `--allow-web` sobre uma página pública estável, para medir as chamadas de ferramenta, a citação de fontes e as recusas. Depois, ligar a voz à mesma `AgentSession.run`.
