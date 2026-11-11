@@ -1193,3 +1193,27 @@ Especificação em `docs/research/WORK05_R1_QWEN_SMOKE_SPEC.md`.
 3. pedir autorização para o smoke com o HEAD exacto.
 
 Nenhuma inferência Qwen; `main` e `develop` inalteradas.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1 concluído — Draft PR #4, pronto para o gate do smoke Qwen (Claude Code)
+
+**Estado:** R1-A a R1-F concluídas. Todos os defeitos confirmados (F1 a F7) estão corrigidos com testes escritos antes da correcção.
+
+**Código:** HEAD `586d066` (código final `5592fe5`). CI real [`43105438599`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43105438599): **136 OK na venv fixada, 0 saltados**; Python simples 136 (37 saltados, por depender de OpenJarvis, httpx ou pyyaml).
+
+**Draft PR #4** para `develop`: https://github.com/rightware-corporations/jarvis-v2.0/pull/4 (sem merge; não incorpora o PR #3 nem `feat/work05-product-agent-foundation`).
+
+**Riscos residuais:**
+- o backend fixado depende do `HTTPTransport._pool` do httpx 0.28.1 (coberto por teste);
+- TLS contra um servidor real: NOT VERIFIED neste ambiente;
+- a exactidão factual das respostas do Qwen nunca é verificada; só a proveniência fica registada;
+- desinformação declarativa em páginas públicas não é filtrada;
+- `--allow-web` faz pedidos de rede a servidores que o modelo escolhe (auditados).
+
+**Próxima operação (só com autorização explícita do operador):**
+1. o operador aprova o smoke `docs/research/WORK05_R1_QWEN_SMOKE_SPEC.md` sobre um HEAD exacto;
+2. criar e enviar `ops/work05_smoke_request.json` (`request_id: 1`), o que dispara uma única execução;
+3. descarregar e verificar a evidência e classificar o resultado.
+
+Depois do smoke, ligar a voz à `AgentSession.run`.
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.
