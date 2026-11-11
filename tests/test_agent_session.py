@@ -203,7 +203,7 @@ class ProductBoundary(unittest.TestCase):
             for mod in mods:
                 with self.subTest(file=f.name, module=mod):
                     self.assertFalse(mod.split(".")[0] in ("labs", "w02lab", "w04lab"))
-                    self.assertTrue(mod.split(".")[0] in ("rightware", "openjarvis", "__future__", "httpx")
+                    self.assertTrue(mod.split(".")[0] in ("rightware", "openjarvis", "__future__", "httpx", "httpcore")
                                     or mod.split(".")[0] in __import__("sys").stdlib_module_names, mod)
 
     def test_unsafe_upstream_tools_are_not_used(self):

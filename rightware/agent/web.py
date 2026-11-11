@@ -8,11 +8,16 @@ Request path:
 * GET only; http/https; ports 80/443 only; no credentials in the URL; no
   model-controlled headers; a fixed User-Agent; no cookies.
 * SSRF: every URL, including every redirect target, must pass the audited
-  upstream ``openjarvis.security.ssrf.check_ssrf`` (when available) AND a
-  stricter local check: every resolved address must be globally routable
-  (``ipaddress.is_global``). After connecting, the peer address of the
-  actual socket is checked again before the body is read (DNS-rebinding
-  defence).
+  upstream ``openjarvis.security.ssrf.check_ssrf`` AND a stricter local
+  check: every resolved address must be globally routable
+  (``ipaddress.is_global``).
+* DNS rebinding (R1 F1): the default transport uses a PINNED network backend.
+  The TCP connection is opened only to an IP address taken from the same
+  resolution that was validated inside ``connect_tcp``; the host name is never
+  resolved again by the socket layer. The URL is not rewritten, so TLS SNI
+  and certificate verification still use the real host name (httpcore passes
+  the origin host as ``server_hostname``). The peer address of the open
+  socket is checked again before the body is read (second layer).
 * Limits: 5 redirects, 15 s timeout, 1 MB body, text/html or text/plain.
 
 Response path: HTML is reduced to visible text by the stdlib parser. The
@@ -86,7 +91,13 @@ def check_url(url: str, resolver: Callable[[str], list[str]] = _resolve,
         raise WebRefused("URL inválido")
     if any(c in url for c in "\r\n\t\x00 "):
         raise WebRefused("URL com caracteres não permitidos")
-    parts = urlsplit(url)
+    try:
+        parts = urlsplit(url)
+        parts.port                                   # raises ValueError on a malformed port
+    except ValueError:
+        raise WebRefused("URL malformado") from None
+    if "\\" in url:
+        raise WebRefused("URL com caracteres não permitidos")
     if parts.scheme not in ("http", "https"):
         raise WebRefused("só são permitidos endereços http ou https")
     if parts.username or parts.password or "@" in parts.netloc:
@@ -104,12 +115,7 @@ def check_url(url: str, resolver: Callable[[str], list[str]] = _resolve,
         raise WebRefused("endereço local não permitido")
     if ssrf(url):
         raise WebRefused("bloqueado pela protecção SSRF")
-    try:
-        addresses = resolver(host)
-    except OSError:
-        raise WebRefused("não foi possível resolver o servidor") from None
-    if not addresses or not all(_global(a) for a in addresses):
-        raise WebRefused("o servidor resolve para um endereço privado ou reservado")
+    validated_addresses(host, resolver)
     return url
 
 
@@ -173,6 +179,60 @@ def frame(page: Page, boundary: str | None = None) -> str:
             + ("\n(Página cortada: só foi lida uma parte.)" if page.truncated else ""))
 
 
+MAX_CONNECTIONS = 4
+
+
+def validated_addresses(host: str, resolver: Callable[[str], list[str]]) -> list[str]:
+    """Resolve once and return the addresses only if ALL are globally routable."""
+    try:
+        addresses = resolver(host)
+    except OSError:
+        raise WebRefused("não foi possível resolver o servidor") from None
+    if not addresses or not all(_global(a) for a in addresses):
+        raise WebRefused("o servidor resolve para um endereço privado ou reservado")
+    return addresses
+
+
+def pinned_transport(resolver: Callable[[str], list[str]] = _resolve):
+    """httpx transport whose sockets connect only to pre-validated public IPs.
+
+    Returns (transport, backend); ``backend.connections`` records (host, ip, port)
+    for evidence. No proxy (trust_env=False), TLS verification on, no HTTP/2,
+    no retries, Unix sockets refused.
+    """
+    import httpcore
+    import httpx
+
+    class _PinnedBackend(httpcore.SyncBackend):
+        def __init__(self):
+            self.connections: list[tuple[str, str, int]] = []
+
+        def connect_tcp(self, host, port, timeout=None, local_address=None, socket_options=None):
+            if port not in (80, 443):
+                raise WebRefused("só são permitidas as portas 80 e 443")
+            last = None
+            for ip in validated_addresses(host, resolver):
+                try:
+                    stream = super().connect_tcp(ip, port, timeout, local_address, socket_options)
+                except httpcore.ConnectError as exc:
+                    last = exc
+                    continue
+                self.connections.append((host, ip, port))
+                return stream
+            raise last or WebRefused("sem endereço público disponível")
+
+        def connect_unix_socket(self, *args, **kwargs):
+            raise WebRefused("sockets locais não são permitidos")
+
+    backend = _PinnedBackend()
+    transport = httpx.HTTPTransport(verify=True, trust_env=False, retries=0)
+    transport._pool = httpcore.ConnectionPool(
+        ssl_context=httpx.create_ssl_context(verify=True, trust_env=False),
+        max_connections=MAX_CONNECTIONS, max_keepalive_connections=0,
+        http1=True, http2=False, retries=0, network_backend=backend)
+    return transport, backend
+
+
 class HttpxFetcher:
     """Real retrieval with httpx (installed in the pinned upstream venv)."""
 
@@ -181,6 +241,7 @@ class HttpxFetcher:
                  ssrf: Callable[[str], str | None] = upstream_ssrf):
         self.resolver, self.transport, self.ssrf = resolver, transport, ssrf
         self.peer_check = peer_check or self._peer_is_global
+        self.backend = None
 
     @staticmethod
     def _peer_is_global(response) -> bool:
@@ -197,7 +258,9 @@ class HttpxFetcher:
         kwargs = {"timeout": TIMEOUT_S, "follow_redirects": False, "trust_env": False,
                   "headers": {"User-Agent": USER_AGENT, "Accept": "text/html,text/plain"}}
         if self.transport is not None:
-            kwargs["transport"] = self.transport
+            kwargs["transport"] = self.transport          # tests: deterministic MockTransport
+        else:
+            kwargs["transport"], self.backend = pinned_transport(self.resolver)
         with httpx.Client(**kwargs) as client:
             for _ in range(MAX_REDIRECTS + 1):
                 client.cookies.clear()                     # never carry cookies between requests
