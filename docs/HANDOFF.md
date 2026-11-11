@@ -1167,3 +1167,29 @@ Nenhuma inferência Qwen; `main` e `develop` inalteradas.
 **Próxima operação:** push, CI real, Draft PR para `develop` e especificação do smoke Qwen (sem o executar).
 
 Nenhuma inferência Qwen; `main` e `develop` inalteradas.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-E/R1-F — CI e smoke Qwen preparado (inerte) (Claude Code)
+
+**Fase:** R1-F preparada; R1-E em curso (CI final e Draft PR).
+
+**CI real** (`work05-product.yml`):
+- `43104443490` (R1-B, `b675359`): success;
+- `43104992193` (R1-C/D, `3cb82d5`): success.
+
+**Commit `5592fe5`:**
+- `rightware/agent_smoke.py`: `RecordingEngine` regista o que o modelo emitiu na fronteira do motor; `classify()` dá PASS/FAIL/INCOMPLETE;
+- um motor com guião ou um digest errado dão sempre INCOMPLETE;
+- PASS exige que o próprio modelo proponha `web_read` para `https://example.com/`;
+- workflow `work05-qwen-smoke.yml`, **inerte** até existir `ops/work05_smoke_request.json`;
+- 12 testes e 5 mutações, todas detectadas.
+
+Especificação em `docs/research/WORK05_R1_QWEN_SMOKE_SPEC.md`.
+
+**Local:** venv **136 OK, 0 saltados**; Python simples 136 (35 saltados); `actionlint` sem erros; submódulo no pin `f21d902`, sem diferenças.
+
+**Próxima operação:**
+1. confirmar o CI deste HEAD;
+2. criar o Draft PR para `develop` (sem merge);
+3. pedir autorização para o smoke com o HEAD exacto.
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.
