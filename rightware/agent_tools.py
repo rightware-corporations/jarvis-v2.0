@@ -84,6 +84,9 @@ def read_scoped_document(root: Path, name: str) -> tuple[str, str]:
             if _bad_entry(opened) or (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
                 raise ToolDenied("identidade do documento mudou")
             data = os.read(fd, _MAX_READ + 1)
+            after = os.fstat(fd)
+            if (after.st_mtime_ns, after.st_size) != (opened.st_mtime_ns, opened.st_size):
+                raise ToolDenied("documento alterado durante a leitura")
         finally:
             os.close(fd)
         if len(data) > _MAX_READ or Path(os.path.realpath(path)).parent != root:
@@ -128,9 +131,13 @@ class AgentToolRuntime:
 
     def _audit(self, name: str, args: dict, outcome: str) -> None:
         # Only a digest of potentially sensitive arguments; no text, paths or credentials.
+        try:
+            fingerprint = _digest(name, args) if type(name) is str and type(args) is dict else None
+        except (TypeError, ValueError, OverflowError):
+            fingerprint = None
         record = {"utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-                  "tool": name if name in _SCHEMAS else "unknown",
-                  "args_sha256": _digest(name, args) if isinstance(args, dict) else None,
+                  "tool": name if type(name) is str and name in _SCHEMAS else "unknown",
+                  "args_sha256": fingerprint,
                   "outcome": outcome}
         self.audit_path.parent.mkdir(parents=True, exist_ok=True)
         with self.audit_path.open("a", encoding="utf-8") as stream:
@@ -203,8 +210,15 @@ class AgentToolRuntime:
                 if approved is None or approved != _digest(name, args):
                     raise ToolDenied("autorização inexistente, alterada ou já utilizada")
             except (ToolDenied, TypeError, ValueError):
-                self._audit(name, args, "REFUSED")
+                try:
+                    self._audit(name, args, "REFUSED")
+                except OSError:
+                    pass
                 return ToolOutcome(str(name), "REFUSED", False, "autorização recusada")
+            try:
+                self._audit(name, args, "AUTHORIZED")
+            except OSError:
+                return ToolOutcome(str(name), "FAILED", False, "auditoria indisponível; nada executado")
         try:
             if name == "read_document":
                 content, digest = read_scoped_document(self.document_root, args["name"])
@@ -220,14 +234,21 @@ class AgentToolRuntime:
                 raise ToolDenied("ferramenta desconhecida")
         except (ToolDenied, OSError, ValueError):
             result = ToolOutcome(name, "FAILED", False, "operação não concluída")
-        self._audit(name, args, result.outcome)
+        try:
+            self._audit(name, args, result.outcome)
+        except OSError:
+            return ToolOutcome(name, "AUDIT_FAILED", False,
+                               "resultado final sem auditoria; não afirmar conclusão")
         return result
 
     def run_batch(self, calls: list[dict], *, confirm=None) -> list[ToolOutcome]:
         try:
             tickets = self.authorize_batch(calls)
         except (ToolDenied, TypeError, ValueError):
-            self._audit("<batch>", {}, "REFUSED")
+            try:
+                self._audit("<batch>", {}, "REFUSED")
+            except OSError:
+                pass
             return [ToolOutcome("batch", "REFUSED", False, "lote recusado")]
         return [self.execute(ticket, call["name"], call["args"], confirm=confirm)
                 for ticket, call in zip(tickets, calls)]
