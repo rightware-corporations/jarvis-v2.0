@@ -1140,3 +1140,30 @@ Nenhuma inferência Qwen; `main` e `develop` inalteradas.
 - TLS contra um servidor real: NOT VERIFIED neste ambiente.
 
 **Próxima operação:** R1-C (atomicidade do lote, prazo na execução, auditoria fail-closed, classificação após recusas).
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-C + R1-D — política, execução e respostas verdadeiras (Claude Code)
+
+**Fase:** R1-C e R1-D concluídas; segue-se a R1-E (CI real, Draft PR) e a R1-F (especificação do smoke).
+
+**Commits:**
+- `58e1ba8` (política):
+  - F2: lote pré-validado por inteiro (nomes, schema, capacidades, cancelamento, prazo, quotas por ferramenta e globais a contar com o lote);
+  - F3: prazo verificado de novo na fronteira;
+  - F4: a auditoria é escrita antes de qualquer mudança de estado; se falhar, nega sem consumir nada.
+- `df222b2` (sessão):
+  - F5: HTTP não-2xx passa a `HTTP_ERROR` e página sem texto a `EMPTY_CONTENT`, e nenhum dos dois conta como fonte;
+  - novo campo `verification` (resposta HTTP / conteúdo obtido / ferramenta verificada / fonte registada / `answer_factually_verified=False` sempre);
+  - F6: chamadas só recusadas dão `TOOLS_REFUSED`, e não `ANSWERED`;
+  - perda de auditoria dá `ERROR`;
+  - linhas de estado explícitas para HALTED, falha, recusa e acção não feita;
+  - leitura parcial assinalada.
+
+**Testes:** escritos antes da correcção. 8 de 12 (política) e 12 falhas em 10 testes (sessão) **falhavam na base**; agora passam. Local: **venv 124 OK, 0 saltados**; Python simples 124, 35 saltados. Mutações R1-C/D: 12/12 detectadas. Tabela de estado em `docs/research/WORK05_R1_SECURITY_REVIEW.md`.
+
+**Ficheiros:** `rightware/agent/{policy,session}.py`, `tests/test_agent_{policy_r1,session_r1,session}.py`.
+
+**Riscos:** a exactidão das respostas do Qwen continua NÃO verificada por desenho; só a proveniência fica registada.
+
+**Próxima operação:** push, CI real, Draft PR para `develop` e especificação do smoke Qwen (sem o executar).
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.

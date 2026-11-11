@@ -16,3 +16,15 @@
 **To verify during R1-C/D:** completion after tool calls that the policy refused but that produced no outcome. The baseline returns `ANSWERED` (candidate false-success classification). No benchmark code is in `rightware/agent` (an import-level test already exists).
 
 **C1–C11 gaps:** C2 (F3), C3 (F2), C6 (F5), C7 network layer (F1), C10 (F4). C8 and C9 have no current product tool. C11 is satisfied.
+
+## Corrections (R1-B, R1-C, R1-D)
+
+| ID | Status | Commit | Tests written first (failing on the baseline) | Mutations killed |
+|---|---|---|---|---|
+| F1 | **Fixed**: pinned connection to the validated IP; TLS name kept | `3c220ee` | `test_agent_network.py` (8) | 7/7 |
+| F2 | **Fixed**: whole-batch pre-validation | `58e1ba8` | `test_agent_policy_r1.py` BatchAtomicity (4 failed before) | 3/3 |
+| F3 | **Fixed**: deadline rechecked at the boundary | `58e1ba8` | BoundaryRecheck (1 failed before) | 1/1 |
+| F4 | **Fixed**: decision persisted before any state change; fail closed; post-execution loss = ERROR | `58e1ba8`, `df222b2` | MandatoryAudit (3 failed before) + 2 session tests | 4/4 |
+| F5 | **Fixed**: `HTTP_ERROR`/`EMPTY_CONTENT` are not sources; `verification` separates the five levels | `df222b2` | `test_agent_session_r1.py` (12 failures before) | 4/4 |
+| F6 (new, found in R1-C) | **Fixed**: only-refused tools used to give `ANSWERED`; now `TOOLS_REFUSED` with an explicit status line | `df222b2` | `test_only_refused_tools_is_not_an_answered_success` | 1/1 |
+| F7 (new, found in R1-B) | **Fixed**: a malformed IPv6 or port raised `ValueError` instead of a controlled refusal | `3c220ee` | `MalformedUrls` | 1/1 |
