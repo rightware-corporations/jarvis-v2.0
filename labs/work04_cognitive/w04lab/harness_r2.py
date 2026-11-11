@@ -57,7 +57,7 @@ SYSTEM_PROMPT = (
     "é contradição. INCONSISTÊNCIA TEMPORAL = datas impossíveis (por exemplo entrega antes do início), não uma diferença normal de datas. Confirma comparações pela ordem ano, mês, dia; data posterior NÃO ocorre antes de data anterior. EM "
     "FALTA = dado pedido que não consta em nenhum documento. SEM ACHADOS = nada disto acontece.\n"
     "ANTES DE ESCREVER: confirma uma linha por valor/estado, datas ordenadas cronologicamente, e "
-    "TODOS os achados no formato exacto - [TIPO] campo: descrição (com parênteses rectos).\\n"
+    "TODOS os achados no formato exacto - [TIPO] campo: descrição (com parênteses rectos).\n"
     "Depois de escrever, verifica o relatório com verify_report. Se a verificação falhar, NÃO tentes "
     "sobrescrever: escreve UMA versão corrigida com o sufixo _v2 (por exemplo relatorio_x_v2.md) e "
     "verifica-a. Nunca digas que a verificação passou se ela falhou. "
