@@ -130,7 +130,13 @@ class WorkflowContract(unittest.TestCase):
         on = self.load()["on"]
         self.assertEqual(on, {"push": {"branches": ["develop"],
                                        "paths": ["ops/work05_smoke_request.json"]}})
-        self.assertFalse((ROOT / "ops/work05_smoke_request.json").exists())
+        # Inertness comes from the path trigger + the authorisation gate, not from the file's absence:
+        # on a request commit the file exists and this suite runs as GATE 2 (run 43113524962 defect).
+        request = ROOT / "ops/work05_smoke_request.json"
+        if request.exists():
+            data = json.loads(request.read_text(encoding="utf-8"))
+            self.assertEqual(set(data), SM.REQUEST_KEYS)
+            self.assertEqual(data["experiment"], SM.EXPERIMENT)
         self.assertEqual(self.load()["env"]["BRANCH"], "develop")
         self.assertNotIn("feat/work05-product-agent", WF.read_text(encoding="utf-8"))
 
@@ -170,6 +176,29 @@ def _req(**over):
             "plan_sha256": SM.plan_sha256(), "authorized_by": "operador RIGHTWARE, 2026-11-12"}
     base.update(over)
     return base
+
+
+class SuiteOnARequestCommit(unittest.TestCase):
+    """Regression for run 43113524962: GATE 2 runs this suite on the request commit itself."""
+
+    def test_contract_tests_pass_when_a_request_file_is_present(self):
+        import shutil
+        import tempfile
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            shutil.copytree(ROOT / "rightware", tmp / "rightware")
+            (tmp / "tests").mkdir()
+            shutil.copy(ROOT / "tests" / "test_agent_smoke.py", tmp / "tests")
+            (tmp / ".github" / "workflows").mkdir(parents=True)
+            shutil.copy(WF, tmp / ".github" / "workflows")
+            (tmp / "ops").mkdir()
+            (tmp / SM.REQUEST_PATH).write_text(json.dumps(_req()), encoding="utf-8")
+            out = subprocess.run([sys.executable, "-m", "unittest", "tests.test_agent_smoke.WorkflowContract",
+                                  "tests.test_agent_smoke.Classification"], cwd=tmp, capture_output=True, text=True)
+            self.assertEqual(out.returncode, 0, out.stderr[-2000:])
+            self.assertNotIn("skipped", out.stderr.splitlines()[-1])
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
 
 
 class AuthorisationPure(unittest.TestCase):
