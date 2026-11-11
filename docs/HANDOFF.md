@@ -1693,3 +1693,21 @@ Total: 1 chamada de ferramenta (limite 3), 2 respostas do modelo (limite 4 turno
 **Governança:** apenas `develop`, sem novas branches; `main` e `demo/issa-20261111` sem alterações. O plano anterior de WORK-07 de voz fica **ADIADO** e não deve ser executado inadvertidamente. Antes de outputs substanciais: adenda sanitizada ao HANDOFF, commit/push, confirmar HEAD e citar SHA. Nenhum Qwen real, browser real, merge ou código de runtime alterado neste checkpoint.
 
 **Próxima acção:** operador enviar missão de implementação de WORK-07 ao Claude/Codex, indicando `docs/research/WORK07_WEB_AUTONOMY_SPEC.md` como especificação vinculativa e exigindo paragem antes de execução externa e real-Qwen.
+
+## CHECKPOINT — 12/11/2026: WORK-07 Fase 1 — decisão de arquitectura do navegador (Claude Code)
+
+**HEAD inicial verificado:** `e8fd35e6358abe38c8321cc2797b43142d4e8cef` (local = remoto, árvore limpa). Li a spec WORK-07, `session.py`, `policy.py`, `web.py`, o `browser.py` upstream fixado e o loop do `OrchestratorAgent`.
+
+**Decisão:** novo adaptador `rightware/agent/browser.py` (`PublicBrowser`), um navegador **semântico sem JavaScript** sobre o mesmo transporte fixado do `web_read`.
+- Ferramentas: `web_open`, `web_find`, `web_type`, `web_submit` (só formulários de pesquisa GET) e `web_follow`.
+- Capacidade única `browse` por tarefa, com allowlist de hosts verificada **em cada salto**, incluindo redireccionamentos.
+
+**Razões:**
+- o browser Playwright upstream só verifica SSRF no URL inicial, aceita seletores livres, executa JavaScript interno e não está instalado na venv;
+- com Chromium não conseguiríamos provar a fronteira de rede sem um proxy de egress novo.
+
+Detalhe em `docs/research/WORK07_BROWSER_ADAPTER_DESIGN.md`.
+
+**Risco (INFERÊNCIA):** que a pesquisa do RFC Editor funcione sem JavaScript ainda não está verificado; confirma-se no preflight da Fase 4, que exige autorização. Se precisar de JavaScript, a alternativa Playwright isolada precisa de nova aprovação.
+
+**Não efectuado:** sem acesso a sites externos, sem Qwen, sem código ainda. **Próxima operação:** implementar o adaptador, a integração com `AgentSession`/`AgentPolicy` e os testes com fixture.
