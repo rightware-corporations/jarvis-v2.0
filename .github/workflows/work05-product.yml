@@ -23,4 +23,4 @@ jobs:
       - name: Product unit tests (no Ollama, no Qwen, no browser network)
         run: python -m unittest discover -s tests -v
       - name: Security boundary tests, explicitly
-        run: python -m unittest -v tests.test_agent_tools
+        run: python -m unittest discover -s tests -p 'test_agent_tools.py' -v
