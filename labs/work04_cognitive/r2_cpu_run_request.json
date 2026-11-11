@@ -1,6 +1,6 @@
 {
   "experiment": "WORK04_R2_CPU_SMOKE",
   "mode": "1case",
-  "request_id": 3,
-  "authorized_by": "RIGHTWARE operator explicit authorization 2026-11-10, exactly ONE Qwen real CPU EVOL-4001; code baseline 7110b244b7c780cdd4d2ffe01b4c500f3f042af7; historical evidence immutable, no main/develop updates"
+  "request_id": 4,
+  "authorized_by": "RIGHTWARE operator; this exact commit was presented for approval on 2026-11-11 and is pushed only after explicit approval. ONE Qwen real CPU EVOL-4001 regression on code f003b12ccd4b798c4cb27c9ca583e4d74c5fcb1b; historical results immutable; no main/develop changes"
 }
