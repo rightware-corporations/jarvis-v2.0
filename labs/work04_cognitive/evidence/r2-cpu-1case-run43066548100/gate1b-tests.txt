@@ -1,0 +1,33 @@
+......................../opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpfsmfu6cv'>
+  _warnings.warn(warn_message, ResourceWarning)
+.../opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpt12a7920'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpxkgbpzyc'>
+  _warnings.warn(warn_message, ResourceWarning)
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpu0qe428s'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpph2eep4_'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp9jzukuxn'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpoxmnj3nl'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmprhzk6epe'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpt_7vsiwu'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp574k41ft'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmptampzsvc'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpm2fcf0zr'>
+  _warnings.warn(warn_message, ResourceWarning)
+./opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpssyz1tx2'>
+  _warnings.warn(warn_message, ResourceWarning)
+../opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/tempfile.py:1019: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpwotseul3'>
+  _warnings.warn(warn_message, ResourceWarning)
+......................
+----------------------------------------------------------------------
+Ran 61 tests in 0.636s
+
+OK

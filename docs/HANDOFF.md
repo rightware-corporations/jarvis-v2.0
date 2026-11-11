@@ -1268,3 +1268,39 @@ Detalhe em `docs/research/WORK04_R2_GITHUB_ACTIONS_CPU_SMOKE_20261110.md` §7.
 3. Especificação do primeiro instrumento de leitura do produto segundo C1–C11.
 
 Sem merge; `main` e `develop` inalteradas.
+
+## ADENDA — 11/11/2026: regressão Qwen real EVOL-4001 em `f003b12` (run 43066548100) — DIAGNOSTIC FAIL
+
+**Autorização:** o operador autorizou explicitamente uma execução única do EVOL-4001 em CPU. O commit enviado foi `0816ec7`, que só altera o ficheiro de pedido em relação a `f003b12` (verificado antes do push). Não houve mais nenhuma inferência.
+
+**Operacional:**
+- todos os gates PASS; digest `d8b0f5e9…`; apenas loopback; 0 violações de segurança;
+- artefacto `13876602462`, sha256 `f51f35c4…` (igual ao digest do GitHub), `SHA256SUMS` todos OK;
+- cópia em `labs/work04_cognitive/evidence/r2-cpu-1case-run43066548100/`.
+
+**Cognitivo: EVOL-4001 FAIL** (`FINAL_REPORT_VERIFICATION_FAILED`).
+- **V2 FAIL** só em R1 (estrutura) e R5 (achados). **ORACLE PASS.**
+- 7/7 factos, os dois estados do orçamento, e a EVOLUÇÃO correcta com as datas na ordem certa.
+- A linha de achado foi escrita sem parênteses rectos (`- EVOLUÇÃO:`).
+- Contrafactual diagnóstico, sem alterar o veredicto: só com os parênteses rectos, V2 e ORACLE dariam PASS.
+- `false_success=false`; não houve alegação prematura nem foi precisa recuperação.
+- 2 escritas e 2 verificações, ambas FAIL; depois **5 tentativas `_v3` recusadas** por quota, até `max_turns`. Duração 591 s.
+
+**Comparação** (3 runs CPU, condições distintas, sem agregação):
+- o conteúdo semântico passou de errado (6/7 factos, achado temporal invertido) a correcto;
+- as falsas alegações de sucesso desapareceram;
+- o formato `[TIPO]` falhou em 3 de 3 runs.
+
+**Bloqueadores:**
+- **B1:** formato em texto livre.
+- **B2:** turnos desperdiçados após esgotar a quota de escrita. A recusa da política chega ao modelo sem o motivo («policy denied the call»).
+- **B3:** o feedback completo não fica na evidência (a pré-visualização tem 160 caracteres).
+
+**Recomendação** (não implementada; exige decisão):
+1. Lint determinístico da linha de achado no feedback R2, citando as linhas do próprio relatório.
+2. Parar quando não houver caminho para concluir (escritas esgotadas e última verificação FAIL).
+3. Registar o feedback completo na evidência.
+4. No produto: argumentos estruturados (JSON schema) e renderização por código, em vez de exigir formato em texto livre ao modelo.
+5. Uma nova regressão EVOL-4001 com autorização; holdouts só depois de um PASS.
+
+Detalhe em `docs/research/WORK04_R2_CPU_EVOL4001_RUN43066548100.md`. Critérios inalterados. Históricos 0/35, 0/3, 0/1 e 0/1 inalterados. Sem merge; `main` e `develop` inalteradas.
