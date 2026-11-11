@@ -1117,3 +1117,26 @@ Detalhe em `docs/research/WORK05_PRODUCT_AGENT_FOUNDATION.md`.
 **Próxima operação:** R1-B, transporte com IP fixado (pinned) e testes de rede.
 
 Nenhuma inferência Qwen; `main` e `develop` inalteradas.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-B — SSRF / DNS rebinding corrigido (Claude Code)
+
+**Fase:** R1-B concluída; segue-se a R1-C.
+
+**Correcção F1 (P0), commit `3c220ee`:**
+- o `web_read` usa por omissão um backend httpcore fixado (pinned);
+- o `connect_tcp` resolve uma vez, exige que todos os IPs sejam globais e liga-se só a esses IPs literais;
+- portas diferentes de 80 e 443, e sockets Unix, são recusados na camada de socket;
+- o URL e o nome não são reescritos, por isso o TLS mantém SNI e verificação de certificado (`verify` e `check_hostname` ligados);
+- sem proxy, sem HTTP/2, sem tentativas repetidas, no máximo 4 ligações;
+- a verificação do peer mantém-se como segunda camada;
+- URLs malformados (IPv6 partido, porta inválida, `\\`) passam a ser recusas controladas.
+
+**Testes** (`tests/test_agent_network.py`, 8): o socket liga-se ao IP validado; rebinding para 127/8, 10/8, metadados, CGNAT, `::ffff:127.0.0.1`, `::1` e resolução mista nunca chega a abrir socket; o redireccionamento é validado e fixado de novo; portas e sockets Unix recusados; proxies do ambiente ignorados; TLS e limites; 10 URLs malformados. **7 mutações, todas detectadas.**
+
+**Local:** venv 102 OK, 0 saltados; Python simples 102, 25 saltados. CI pendente até ao push.
+
+**Riscos residuais:**
+- a correcção depende do atributo `_pool` do `HTTPTransport` (httpx 0.28.1 fixado); um teste falha se mudar;
+- TLS contra um servidor real: NOT VERIFIED neste ambiente.
+
+**Próxima operação:** R1-C (atomicidade do lote, prazo na execução, auditoria fail-closed, classificação após recusas).
