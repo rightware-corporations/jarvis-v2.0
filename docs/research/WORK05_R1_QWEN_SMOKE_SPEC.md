@@ -66,3 +66,24 @@ A source record proves what was read, not that every sentence is true.
 ## Expected cost
 
 About 5–10 minutes on CPU, extrapolated from earlier CPU runs (INFERÊNCIA).
+
+## WORK-06 revision (2026-11-12): authorisation on `develop`
+
+The workflow listens to **`develop`** only. The old trigger, `feat/work05-product-agent`, was obsolete after branch consolidation.
+
+**Request file** `ops/work05_smoke_request.json` (exact keys):
+```json
+{"experiment": "WORK05_PRODUCT_AGENT_REAL_SMOKE", "request_id": 1,
+ "approved_code_sha": "<40-hex develop HEAD approved by the operator>",
+ "plan_sha256": "<python -m rightware.agent_smoke --plan-only → plan_sha256>",
+ "authorized_by": "<single line>"}
+```
+
+**Gate** (`rightware/agent_smoke.check_request`, before any install or model; tested):
+1. The approved code SHA and the triggering request commit SHA are different, and both are recorded.
+2. The request commit changes **only** the request file relative to the approved SHA, and the approved SHA is its ancestor. Consequence: the approved SHA must be the `develop` HEAD **immediately before** the request commit. Any intervening commit, including documentation, voids the request.
+3. `request_id = previous + 1 = number of request commits`. This makes each request single use and refuses replays and gaps.
+4. GitHub re-runs (`run_attempt > 1`) are refused; a new run needs a new request.
+5. `plan_sha256` must equal the fixed plan: model, digest, Ollama version, pin, URL, instruction, capabilities and limits.
+
+**Preflight** (runner): the running code must equal the approved code apart from the request file. The digest is fixed (not a parameter) and the pin is checked. Evidence records `approved_code_sha`, `trigger_sha` and `plan_sha256`.

@@ -1555,3 +1555,32 @@ Both `docs/HANDOFF.md` lineages were append-only relative to `develop@de628df4b5
 **FINDING DE INTEGRAÇÃO (confirmado por leitura em `develop`):** `.github/workflows/work05-qwen-smoke.yml` ainda escuta apenas `push` para `feat/work05-product-agent` em `ops/work05_smoke_request.json` e define `BRANCH: feat/work05-product-agent`. Assim, o runner de smoke preparado pelo Claude **não está actualmente habilitado para a branch oficial `develop`**. Não criar uma branch adicional nem copiar pedido para a branch antiga. Corrigir primeiro os gatilhos/guardas em `develop`, com testes determinísticos e confirmação de que não ocorre inferência sem um pedido especificamente autorizado. Cuidado: o commit de pedido altera o HEAD; vincular a aprovação ao SHA de código autorizado e verificar o SHA do commit disparador separadamente, com gate anti-replay e recusa se houver outras mudanças inesperadas.
 
 **Próxima missão RECOMENDADA (não executada):** `WORK-06 — Real Qwen Product Agent Acceptance Gate`: fase A preflight e retarget do workflow para `develop`, preservando inércia e verificando segurança; fase B solicitar autorização explícita para **uma** inferência Qwen3.5:4b com digest pinado, `web_read` de uma única página pública fixa e sem efeitos Windows; fase C executar só após autorização, colher evidências/veredicto PASS/FAIL/INCOMPLETE e persistir HANDOFF. Se falhar, corrigir no mesmo `develop` e repetir apenas sob autorização para nova execução. A integração de voz na `AgentSession.run` vem depois do gate real. Não antecipar a demo Issa nem mexer na `main`.
+
+## CHECKPOINT — 12/11/2026: WORK-06 — smoke Qwen redireccionado para `develop`, autorização ao código aprovado, inerte (Claude Code)
+
+**Base:** `develop` `012e54b` (= remoto). A finding de `012e54b` foi confirmada: o workflow do smoke ainda escutava `feat/work05-product-agent`. Não foi criada nenhuma branch.
+
+**Linha de base:** produto 136 OK na venv, 0 saltados; WORK-04/R2 178 OK; WORK-02 61 OK; pin `f21d902`. O código de produto é idêntico ao de `ff46a02` (R1).
+
+**Commit `26ce9a9`:**
+- `work05-qwen-smoke.yml` passa a escutar `develop` e o caminho `ops/work05_smoke_request.json`;
+- o gate 0 corre `rightware.agent_smoke --check-request` antes de qualquer instalação ou modelo;
+- o pedido indica `approved_code_sha`; o commit de pedido é separado e só pode mudar o ficheiro de pedido;
+- `request_id` = anterior + 1 = número de commits de pedido (uso único, sem replay); re-runs recusados;
+- `plan_sha256` fixa o modelo, digest, página, ferramentas e limites;
+- o preflight recusa código diferente do aprovado e só aceita o digest fixo;
+- o pin passa a ser verificado na mesma raiz (antes verificava sempre o repositório principal).
+
+**Testes:** 13 novos (puros e com um repositório git temporário: aprovado, replay, re-run, código introduzido no pedido, SHA fora do histórico, ficheiro ausente). Produto na venv **149 OK, 0 saltados**; WORK-04/R2 178 OK; WORK-02 61 OK; `actionlint` sem erros. **9 mutações de autorização, todas detectadas.**
+
+**Inércia:** `ops/work05_smoke_request.json` **não existe**; sem ele, o gate falha fechado (exit 2).
+
+**Plano fixo:** `plan_sha256 = b9be5c6916ccf3a62e1f742af206f90da895dfa8ff2c98a0c522784c7373df9d`. Especificação actualizada em `docs/research/WORK05_R1_QWEN_SMOKE_SPEC.md` (revisão WORK-06).
+
+**Regra operacional:** o `approved_code_sha` tem de ser o HEAD de `develop` imediatamente antes do commit de pedido; qualquer commit intermédio, mesmo documental, anula o pedido.
+
+**Riscos:** não há branch protection em `develop` (pendente administrativo); commits concorrentes de outros agentes anulam a autorização (fail-closed, intencional).
+
+**Próxima operação:** CI deste HEAD e pedido de autorização ao operador para o primeiro smoke real, com o SHA deste checkpoint como `approved_code_sha`.
+
+Nenhuma inferência Qwen.
