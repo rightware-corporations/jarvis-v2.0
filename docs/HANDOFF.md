@@ -1215,3 +1215,56 @@ Detalhe em `docs/research/WORK04_R2_GITHUB_ACTIONS_CPU_SMOKE_20261110.md` §7.
 **Gates:** 7 novos testes determinísticos em `test_w04_r2_continuity.py`, integrados no CI estático e preflight CPU. CI real https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43053462119 — **150 WORK-04/R2 + 61 WORK-02 + 56 RIGHTWARE = 267 PASS**. `labs/work04_cognitive/r2_cpu_run_request.json` não foi alterado; **nenhuma inferência Qwen real foi iniciada**. Os históricos permanecem WORK-04 0/35, Kaggle R2 0/3 e CPU EVOL-4001 0/1 nos respectivos ensaios.
 
 **Documentação completa:** `docs/research/WORK04_R2_CONTEXT_CONTINUITY_20261111.md`. **Risco:** replay de dados não confiáveis não garante segurança semântica; o Qwen ainda não foi revalidado. Próximo passo condicionado a autorização nova: uma única regressão EVOL-4001 com Qwen real, commit e hashes fixos; posteriormente holdouts novos. `main`, `develop` e benchmark rev.1 não alterados. Draft PR #2 aberto, sem merge.
+
+## ADENDA — 11/11/2026: auditoria R2 (continuidade, fontes não confiáveis, correcção, cronologia) e contrato para o runtime (Claude Code)
+
+**Estado:** dois defeitos corrigidos com testes determinísticos; contrato de integração documentado. **Nenhuma inferência Qwen.** O ficheiro de pedido não foi alterado. O histórico mantém-se: 0/35, 0/3 e EVOL-4001 0/1 (×2, runs `42821805533` e `42829191737`).
+
+### Defeitos encontrados e corrigidos (só no branch R2)
+
+**D1 — fontes injectadas no canal de utilizador (segurança).**
+- O replay de `cec23bf` coloca o texto das fontes na mensagem de **utilizador** da continuação, um canal de maior confiança do que um resultado de ferramenta.
+- Um documento podia escrever `[FIM DO DOCUMENTO]` e continuar «fora» do bloco. O `source_guard` não isolava nada; verifiquei-o com uma sonda.
+- **Correcção (`3cf5865`; testes em `b59eec5`):**
+  - fronteira aleatória por replay (`secrets.token_hex`);
+  - marcadores parecidos com os de moldura, e a própria fronteira, são neutralizados dentro dos dados;
+  - o prompt explica a regra da moldura;
+  - as contagens ficam na evidência.
+
+**D2 — raciocínio temporal deixado ao modelo.**
+- No run `42829191737`, o modelo afirmou que «13 de junho de 2027» ocorre antes de «28 de maio de 2027».
+- O feedback só dizia «achados incorrectos».
+- **Correcção (`ff89f54`):** `chronology_r2` compara, por código, afirmações explícitas antes/depois entre duas datas, só do texto do próprio relatório:
+  - formatos: português por extenso, ISO e dd/mm/aaaa;
+  - relações negadas ou ambíguas são ignoradas;
+  - o resultado é acrescentado ao FAIL do `verify_report`;
+  - nunca consulta a verdade oculta (testado).
+
+**D3 — CI incompleto.** A suite `foundation.yml` não corria `test_w04_r2_continuity`. As três listas (estático R2, `foundation` e gate 1b do workflow CPU) estão agora alinhadas.
+
+### Testes e CI
+
+- `test_w04_r2_hardening.py`: 10 testes. Cada correcção é morta por mutação, incluindo a fronteira fixa e a remoção da negação.
+- CI real [`43060995813`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43060995813) em `b59eec5`: **160 WORK-04/R2 + 61 WORK-02 + 56 RIGHTWARE = 277 PASS**. `actionlint` sem erros.
+
+### Contrato runtime
+
+`docs/research/R2_RUNTIME_INTEGRATION_CONTRACT.md` compara o agente R2 com `rightware/runtime.py`, `voice.py` e `windows_actions.py`:
+- define o contrato mínimo C1–C11 (registo fechado, dupla autorização, quotas, autorização de sessão mais confirmação por acção, sucesso só por resultado verificado, dados não confiáveis com fronteira, factos determinísticos por código, recuperação limitada, auditoria sem texto da conversa);
+- lista o que **não** deve ser transportado (cenários, verdade, verificadores, oráculos, dicas do benchmark).
+
+**Nenhum código do produto foi alterado.**
+
+### Riscos
+
+- O replay continua a mostrar factos declarativos falsos de documentos não confiáveis, dentro da moldura; a moldura não é um filtro de conteúdo.
+- A verificação cronológica só cobre afirmações explícitas entre duas datas na mesma frase.
+- As condições R2 voltaram a mudar a partir de `b59eec5`; os resultados não são comparáveis com os anteriores.
+
+### Próximo gate (decisão do operador)
+
+1. EVOL-4001 real em CPU, sobre o HEAD fixado.
+2. Holdout pré-registado.
+3. Especificação do primeiro instrumento de leitura do produto segundo C1–C11.
+
+Sem merge; `main` e `develop` inalteradas.
