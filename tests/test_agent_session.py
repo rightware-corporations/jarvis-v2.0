@@ -93,7 +93,8 @@ class VerticalSlice(unittest.TestCase):
         r = s.run("Qual é o câmbio do dólar em https://example.org/cambio ?")
         self.assertEqual(r.completion, "ANSWERED_WITH_SOURCES")
         self.assertEqual(self.fetcher.calls, ["https://example.org/cambio"])
-        self.assertIn("Fontes lidas: https://example.org/cambio (HTTP 200)", r.text)
+        self.assertIn("Fontes lidas (o registo da fonte não confirma cada afirmação desta resposta): "
+                      "https://example.org/cambio (HTTP 200)", r.text)
         self.assertEqual(r.flags, [])
         self.assertEqual(r.sources[0]["sha256"], "a" * 64)
         tool_msg = [m for msgs in self.engine.seen for m in msgs if "PAGINA-NAO-CONFIAVEL" in str(m)]

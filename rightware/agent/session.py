@@ -50,7 +50,7 @@ TOOLS: dict[str, ToolDef] = {
 @dataclasses.dataclass
 class ToolOutcome:
     tool: str
-    status: str                 # OK | REFUSED | FAILED | VERIFIED | NOT_VERIFIED | CANCELLED | BLOCKED
+    status: str                 # OK | HTTP_ERROR | EMPTY_CONTENT | REFUSED | FAILED | VERIFIED | NOT_VERIFIED | CANCELLED | BLOCKED
     content: str                # what the model receives
     evidence: dict              # what code verified (no conversation text)
 
@@ -63,6 +63,7 @@ class AgentReply:
     sources: list[dict]
     halted: str | None
     flags: list[str]
+    verification: dict = dataclasses.field(default_factory=dict)
 
 
 class _GuardedEngine:
@@ -108,8 +109,9 @@ class _PolicyTool(BaseTool):
                 out = self.runner(params)
             except Exception as exc:          # fail closed, no internals
                 out = ToolOutcome(self.definition.name, "FAILED", f"Erro da ferramenta ({type(exc).__name__}).", {})
+        if not self.policy.note_outcome(self.definition.name, params, out.status):
+            out.evidence["audit"] = "FAILED"          # reported as an error by the session
         self.outcomes.append(out)
-        self.policy.note_outcome(self.definition.name, params, out.status)
         return ToolResult(tool_name=self.definition.name, content=out.content,
                           success=out.status in ("OK", "VERIFIED"))
 
@@ -138,9 +140,18 @@ class AgentSession:
             return ToolOutcome("web_read", "REFUSED", f"Leitura recusada: {exc}.", {})
         except Exception as exc:
             return ToolOutcome("web_read", "FAILED", f"A leitura falhou ({type(exc).__name__}).", {})
-        return ToolOutcome("web_read", "OK", frame(page), {
-            "final_url": page.final_url, "status": page.status, "content_type": page.content_type,
-            "sha256": page.sha256, "chars": len(page.text), "truncated": page.truncated})
+        evidence = {"final_url": page.final_url, "status": page.status, "content_type": page.content_type,
+                    "sha256": page.sha256, "chars": len(page.text), "truncated": page.truncated}
+        if not 200 <= page.status < 300:
+            # A response was received, but it is not a retrieved source (R1 F5).
+            return ToolOutcome("web_read", "HTTP_ERROR",
+                               f"A página respondeu com HTTP {page.status}; o conteúdo não foi lido nem "
+                               "pode ser usado como fonte.", evidence)
+        if not page.text.strip():
+            return ToolOutcome("web_read", "EMPTY_CONTENT",
+                               "A página não tem texto legível (pode depender de JavaScript); "
+                               "não pode ser usada como fonte.", evidence)
+        return ToolOutcome("web_read", "OK", frame(page), evidence)
 
     def _windows_action(self, args: dict) -> ToolOutcome:
         if self.actions is None:
@@ -173,15 +184,19 @@ class AgentSession:
             answer = ("Não consigo ligar ao modelo local. Confirma que o Ollama está a correr."
                       if "Connect" in name or "Connect" in str(exc) else
                       f"Ocorreu um erro e o pedido não foi concluído ({name}).")
-            return AgentReply(answer, "ERROR", outcomes, [], guarded.halted, [])
+            return AgentReply(answer + "\nEstado: erro — o pedido não foi concluído.", "ERROR", outcomes, [],
+                              guarded.halted, [], _verification(outcomes, []))
         return self._compose(answer, outcomes, guarded.halted, policy)
 
     @staticmethod
     def _compose(answer: str, outcomes: list[ToolOutcome], halted: str | None, policy: AgentPolicy) -> AgentReply:
         flags: list[str] = []
         sources = [o.evidence for o in outcomes if o.tool == "web_read" and o.status == "OK"]
+        http_errors = [o.evidence for o in outcomes if o.status == "HTTP_ERROR"]
         actions = [o for o in outcomes if o.tool == "windows_action"]
         verified_action = any(o.status == "VERIFIED" for o in actions)
+        denied = [e for e in policy.log if not e["allowed"]]
+        audit_failed = policy.audit_failures > 0 or any(o.evidence.get("audit") == "FAILED" for o in outcomes)
         text = answer.strip()
         if _CLAIMS_EFFECT.search(text) and not verified_action:
             flags.append("UNVERIFIED_EFFECT_CLAIM")
@@ -189,12 +204,19 @@ class AgentSession:
         if _CLAIMS_READ.search(text) and not sources:
             flags.append("UNSUPPORTED_READ_CLAIM")
             text += "\n(Nota: nenhuma página foi lida com sucesso neste pedido.)"
-        denied = [e for e in policy.log if not e["allowed"]]
         if sources:
-            text += "\nFontes lidas: " + "; ".join(f"{s['final_url']} (HTTP {s['status']})" for s in sources)
+            text += ("\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): "
+                     + "; ".join(f"{s['final_url']} (HTTP {s['status']}"
+                                 + (", leitura parcial" if s.get("truncated") else "") + ")" for s in sources))
+        for e in http_errors:
+            text += f"\nPágina não utilizada: {e['final_url']} respondeu HTTP {e['status']}."
         if denied:
+            flags.append("TOOL_REFUSALS")
             text += f"\n({len(denied)} pedido(s) de ferramenta recusado(s) pela política.)"
-        if halted:
+        if audit_failed:
+            flags.append("AUDIT_FAILED")
+            completion = "ERROR"
+        elif halted:
             completion = "HALTED"
         elif actions:
             completion = "ACTION_VERIFIED" if verified_action else "ACTION_NOT_DONE"
@@ -202,14 +224,33 @@ class AgentSession:
             completion = "ANSWERED_WITH_SOURCES"
         elif outcomes:
             completion = "TOOLS_FAILED"
+        elif denied:
+            completion = "TOOLS_REFUSED"
         else:
             completion = "ANSWERED"
-        return AgentReply(text, completion, outcomes, sources, halted, flags)
+        text += {
+            "ERROR": "\nEstado: erro de auditoria — o resultado não pode ser confirmado.",
+            "HALTED": f"\nEstado: pedido interrompido ({halted}); a resposta pode estar incompleta.",
+            "TOOLS_FAILED": "\nEstado: não foi possível concluir o pedido com as ferramentas.",
+            "TOOLS_REFUSED": "\nEstado: não foi possível concluir o pedido; as ferramentas foram recusadas.",
+            "ACTION_NOT_DONE": "\nEstado: a acção não foi executada.",
+        }.get(completion, "")
+        return AgentReply(text, completion, outcomes, sources, halted, flags, _verification(outcomes, sources))
+
+
+def _verification(outcomes: list[ToolOutcome], sources: list[dict]) -> dict:
+    """What code actually established. The answer's factual accuracy is never claimed."""
+    web = [o for o in outcomes if o.tool == "web_read"]
+    return {"http_response": any(o.status in ("OK", "HTTP_ERROR", "EMPTY_CONTENT") for o in web),
+            "content_retrieved": any(o.status == "OK" for o in web),
+            "tool_verified": any(o.status in ("OK", "VERIFIED") for o in outcomes),
+            "provenance_recorded": bool(sources),
+            "answer_factually_verified": False}
 
 
 def reply_json(reply: AgentReply) -> str:
     """Machine-readable outcome (no conversation text besides the final reply)."""
     return json.dumps({"completion": reply.completion, "halted": reply.halted, "flags": reply.flags,
-                       "sources": reply.sources,
+                       "verification": reply.verification, "sources": reply.sources,
                        "outcomes": [{"tool": o.tool, "status": o.status, "evidence": o.evidence}
                                     for o in reply.outcomes]}, ensure_ascii=False)
