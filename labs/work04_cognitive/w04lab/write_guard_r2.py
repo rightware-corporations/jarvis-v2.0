@@ -43,11 +43,43 @@ def overwrite_message(name: str) -> str:
 class OverwritePrecheckPolicy(Policy):
     MAX_FREE_OVERWRITE_REFUSALS = 2
 
+    NO_PATH = "sem caminho autorizado para concluir: escritas ou verificações esgotadas e a última verificação falhou"
+
     def __init__(self, *, sandbox, **kwargs):
         super().__init__(**kwargs)
         self._sandbox = sandbox
         self.overwrite_refusals = 0
         self._overwrite_keys: list[str] = []
+        self._last_written: str | None = None
+        self._verify_results: dict[str, bool] = {}   # report name -> last verification passed
+
+    # -- R2-B: fail-closed stop when completion is no longer reachable ------
+    def note_success(self, name: str, args: dict) -> None:
+        super().note_success(name, args)
+        if name == "write_report":
+            with self._lock:
+                self._last_written = args["name"]
+
+    def note_verification(self, report_name: str, passed: bool) -> None:
+        with self._lock:
+            self._verify_results[report_name] = bool(passed)
+
+    def _left(self, tool: str) -> int:
+        return self.budgets.per_tool.get(tool, 0) - self.per_tool.get(tool, 0)
+
+    @property
+    def halt_reason(self) -> str | None:
+        base = super().halt_reason
+        if base:
+            return base
+        with self._lock:
+            last = self._last_written
+            if last is None or self._verify_results.get(last) is True:
+                return None
+            failed = self._verify_results.get(last) is False
+            if (failed and self._left("write_report") <= 0) or self._left("verify_report") <= 0:
+                return self.NO_PATH
+            return None
 
     def _target_exists(self, name: str) -> bool:
         return name.lower() in {n.lower() for n in os.listdir(self._sandbox.output_dir)}

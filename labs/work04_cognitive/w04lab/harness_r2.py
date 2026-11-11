@@ -34,7 +34,7 @@ from w02lab.sandbox import Sandbox  # noqa: E402
 from w02lab.tools import LabTool, ListWorkspace, ReadDocument, WriteReport, UNTRUSTED_HEAD, UNTRUSTED_TAIL, _schema  # noqa: E402
 from openjarvis.tools._stubs import ToolSpec  # noqa: E402
 
-from w04lab import chronology_r2, claims_r2, completion, evidence_r2, failures, feedback_r2, oracle_r2 as oracle, recovery_r2, scenarios, semantics_r2, source_guard, verifier_v2  # noqa: E402
+from w04lab import chronology_r2, structure_lint_r2, claims_r2, completion, evidence_r2, failures, feedback_r2, oracle_r2 as oracle, recovery_r2, scenarios, semantics_r2, source_guard, verifier_v2  # noqa: E402
 from w04lab.write_guard_r2 import OverwritePrecheckPolicy, WriteReportR2  # noqa: E402
 
 ALLOWLIST = ("list_workspace", "read_document", "write_report", "verify_report")
@@ -96,6 +96,19 @@ class VerifyReportV2(LabTool):
     def __init__(self, sandbox, policy, trace, truth, sources):
         super().__init__(sandbox, policy, trace)
         self._truth, self._sources = truth, sources
+        self.feedback_events: list[dict] = []
+
+    def _deliver(self, name: str, text: str, out: str, passed: bool) -> str:
+        # R2-C: keep exactly what the agent receives, bound to its trace entry
+        # (execute() appends the entry after run(); its result_sha256 == raw_sha256).
+        self.feedback_events.append({
+            "trace_index": len(self.trace), "report_name": name,
+            "report_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "result": "PASS" if passed else "FAIL",
+            **evidence_r2.bounded_text(out, evidence_r2.MAX_FEEDBACK_CHARS)})
+        if hasattr(self.policy, "note_verification"):
+            self.policy.note_verification(name, passed)
+        return out
 
     @property
     def spec(self) -> ToolSpec:
@@ -107,13 +120,15 @@ class VerifyReportV2(LabTool):
         text = self.sandbox.read_output(name)
         res = verifier_v2.verify(text, self._truth, self._sources)
         if res["result"] == "PASS":
-            return "Verificação: PASS"
+            return self._deliver(name, text, "Verificação: PASS", True)
         # Categories only: rule names and fixed per-rule hints, never truth values.
         writes_left = recovery_r2.remaining_budget(self.policy)["write_report"]
-        return ("Verificação: FAIL. Problemas: " + "; ".join(r.split(':')[0] for r in res["reasons"]) + ". "
-                + feedback_r2.correction_feedback(res.get("checks", {}), name, writes_left)
-                # Deterministic date order of the agent's OWN text (never the hidden truth).
-                + chronology_r2.feedback(text))
+        out = ("Verificação: FAIL. Problemas: " + "; ".join(r.split(':')[0] for r in res["reasons"]) + ". "
+               + feedback_r2.correction_feedback(res.get("checks", {}), name, writes_left)
+               # Deterministic checks of the agent's OWN text (never the hidden truth):
+               + structure_lint_r2.feedback(text)       # R2-A finding-line syntax
+               + chronology_r2.feedback(text))          # date order
+        return self._deliver(name, text, out, False)
 
 
 def claims_success(answer: str) -> bool:
@@ -144,8 +159,9 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
                                          budgets=Budgets(deadline_seconds=cfg.timeout_seconds))
         trace: list = []
         reader = FaultyReadDocument(sandbox, policy, trace, scn.fault)
+        verifier_tool = VerifyReportV2(sandbox, policy, trace, scn.truth, sources)
         tools = [ListWorkspace(sandbox, policy, trace), reader,
-                 WriteReportR2(sandbox, policy, trace), VerifyReportV2(sandbox, policy, trace, scn.truth, sources)]
+                 WriteReportR2(sandbox, policy, trace), verifier_tool]
         timed = TimedEngine(engine_factory(scn), policy)
         agent = OrchestratorAgent(timed, cfg.model, tools=tools, max_turns=cfg.max_turns,
                                   temperature=cfg.temperature, max_tokens=cfg.max_tokens,
@@ -242,6 +258,8 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
             if recovery_attempted else None,
             "continuation_context": box.get("continuation_context"),
             "overwrite_prechecks": policy.overwrite_refusals,
+            "verify_feedback": verifier_tool.feedback_events,
+            "no_path_halt": timed.halted == OverwritePrecheckPolicy.NO_PATH,
             "denied": len(policy.denials), "halted_by_harness": timed.halted,
             "engine_steps": timed.steps, "final_answer": answer, "turns": result.turns if result else None,
             "agent_metadata": {k: v for k, v in (result.metadata if result else {}).items()

@@ -44,6 +44,9 @@ def summarize(runs: list[dict], *, requested: int, stopped_reason: str | None) -
             "successful_verifies": sum(t.get("tool") == "verify_report" and t.get("success") is True for t in trace),
             "denied": r.get("denied"),
             "quarantine_events": len(r.get("quarantined_document_instructions", [])),
+            "no_path_halt": r.get("no_path_halt"),
+            "halted_by_harness": r.get("halted_by_harness"),
+            "verify_feedback_events": len(r.get("verify_feedback") or []),
             "error": r.get("error"),
         })
     return {

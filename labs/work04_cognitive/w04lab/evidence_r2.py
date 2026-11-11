@@ -13,15 +13,24 @@ _SECRET = re.compile(r"(?i)\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9
                      r"AKIA[0-9A-Z]{16}|xox[abpr]-[A-Za-z0-9-]{10,}|bearer\s+[A-Za-z0-9._~+/=-]{16,})")
 
 
-def first_answer_evidence(text: str | None) -> dict:
+MAX_FEEDBACK_CHARS = 6000
+
+
+def bounded_text(text: str | None, max_chars: int = MAX_CHARS) -> dict:
+    """Sanitised (control/zero-width removed, credential shapes redacted), size-bounded copy
+    with SHA-256 of the raw text (comparable with the trace's result_sha256) and of the copy."""
     raw = text or ""
     clean = _SECRET.sub("[REDACTED-CREDENTIAL-SHAPE]", _CONTROL.sub("", raw))
-    stored = clean[:MAX_CHARS]
+    stored = clean[:max_chars]
     return {
         "text": stored,
         "raw_sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
         "stored_sha256": hashlib.sha256(stored.encode("utf-8")).hexdigest(),
         "raw_chars": len(raw),
-        "truncated": len(clean) > MAX_CHARS,
+        "truncated": len(clean) > max_chars,
         "redactions": len(_SECRET.findall(raw)),
     }
+
+
+def first_answer_evidence(text: str | None) -> dict:
+    return bounded_text(text, MAX_CHARS)
