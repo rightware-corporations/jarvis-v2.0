@@ -1612,3 +1612,13 @@ Nenhuma inferência Qwen.
 - o `request_id` 1 ficou **consumido** (uso único);
 - uma nova execução precisa de **nova autorização explícita**, com `request_id` 2 e um novo `approved_code_sha` igual ao HEAD de `develop` imediatamente antes do novo pedido;
 - não foi feita nenhuma segunda execução.
+
+## CHECKPOINT — 12/11/2026: WORK-06 — CI corrigido após o checkpoint do smoke (Claude Code)
+
+**Problema:** o CI de `e74356a` falhou nos workflows de produto e foundation. No passo com Python simples (sem pyyaml), o teste de regressão rejeitava os saltos legítimos do `WorkflowContract` na cópia temporária.
+
+**Correcção `deee844`:** o teste de regressão é saltado sem pyyaml e continua obrigatório na venv, onde qualquer salto faz falhar o job.
+
+**Local:** venv **150 OK, 0 saltados**; Python sem pyyaml (simulado) 150 OK, 39 saltados.
+
+**Smoke:** este push não altera `ops/work05_smoke_request.json`, por isso não há nova execução. O estado do smoke mantém-se: `request_id` 1 consumido, veredicto INCOMPLETE, nova execução só com nova autorização.
