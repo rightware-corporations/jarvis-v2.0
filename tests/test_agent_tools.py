@@ -123,7 +123,8 @@ class AgentToolTests(unittest.TestCase):
     def test_audit_does_not_log_document_names_or_contents(self):
         self.runtime.run_batch([self._read()])
         lines = self.audit.read_text(encoding="utf-8").splitlines()
-        record = json.loads(lines[0])
+        self.assertEqual(json.loads(lines[0])["outcome"], "AUTHORIZED")
+        record = json.loads(lines[-1])
         self.assertEqual(record["tool"], "read_document")
         self.assertEqual(record["outcome"], "OK")
         self.assertEqual(len(record["args_sha256"]), 64)
