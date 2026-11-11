@@ -1353,3 +1353,12 @@ O HEAD de código para o próximo EVOL-4001 é `b8e4bc0c6aabfdf70781d4ea9c64e39d
 - o modelo pode continuar a ignorar o formato mesmo com a linha citada;
 - o lint e a paragem mudam outra vez a condição R2, por isso os resultados não são comparáveis com os anteriores;
 - a rota B não está verificada.
+
+
+## ADENDA — 11/11/2026: RECUPERAÇÃO DE SESSÃO / WORK-05 INICIALIZADO (SEM QWEN)
+
+**Fonte:** leitura directa do branch R2, do Draft PR #2 e do run 43070956530, reconciliada com histórico textual entregue pelo operador. O histórico privado do chat **não** foi copiado para este repositório público. Resumo sanitizado e protocolo de continuidade em [docs/WORK05_CONTINUITY.md](WORK05_CONTINUITY.md).
+
+**Base imutável:** WORK-04 0/35, R2 Kaggle 0/3, últimos EVOL-4001 CPU FAIL; 295 testes determinísticos PASS no run `43070956530`, código `b8e4bc0`, HANDOFF R2 `dd5dbd6`. Não houve nova inferência, merge ou alteração de `main`/`develop`.
+
+**Isolamento:** criado `feat/work05-product-agent-foundation` a partir de `dd5dbd6`; evita concorrência com Claude Code em `feat/work04-r2-semantic-safety`. Primeiro commit de continuidade `aa82139`. **Próximo gate:** WORK-05-A, núcleo de autorização/execução tipada e leitura de documentos em escopo explícito, com testes determinísticos; ligação Qwen/browser e evidência real ainda NÃO VERIFICADAS.
