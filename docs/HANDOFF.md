@@ -1362,3 +1362,21 @@ O HEAD de código para o próximo EVOL-4001 é `b8e4bc0c6aabfdf70781d4ea9c64e39d
 **Base imutável:** WORK-04 0/35, R2 Kaggle 0/3, últimos EVOL-4001 CPU FAIL; 295 testes determinísticos PASS no run `43070956530`, código `b8e4bc0`, HANDOFF R2 `dd5dbd6`. Não houve nova inferência, merge ou alteração de `main`/`develop`.
 
 **Isolamento:** criado `feat/work05-product-agent-foundation` a partir de `dd5dbd6`; evita concorrência com Claude Code em `feat/work04-r2-semantic-safety`. Primeiro commit de continuidade `aa82139`. **Próximo gate:** WORK-05-A, núcleo de autorização/execução tipada e leitura de documentos em escopo explícito, com testes determinísticos; ligação Qwen/browser e evidência real ainda NÃO VERIFICADAS.
+
+
+## ADENDA — 11/11/2026: WORK-05-A — NÚCLEO DE FERRAMENTAS DO PRODUTO (SEM INFERÊNCIA)
+
+**Branch isolada:** feat/work05-product-agent-foundation, criada a partir de dd5dbd6 do R2. **Sem modificação de main/develop/R2, sem Qwen, sem merge.** O R2 continua com o seu histórico 0/35, 0/3 e EVOL-4001 FAIL; o novo trabalho não altera os veredictos.
+
+**Ficheiros:**
+- rightware/agent_tools.py: registo fechado para read_document e open_windows_action; validação estrita de nomes/tipos, batch fail-closed, quota e prazo, tickets ligados a hash e de utilização única, dupla validação, cancelamento, auditoria antes/depois da execução, leitura local sob escopo com verificação de bytes, tratamento como dados não confiáveis.
+- tests/test_agent_tools.py: 17 testes determinísticos (permissões, substituição de argumentos, replay, limites, path traversal, symlink, dimensão/UTF-8, injeção em delimitadores, auditoria indisponível, confirmação Windows). Sem acção Windows real ou Qwen.
+- .github/workflows/work05-product.yml: CI de produto exclusivo WORK-05, sem modelos ou rede.
+- docs/WORK05_CONTINUITY.md e docs/research/WORK05_PRODUCT_AGENT_FOUNDATION.md: contexto sanitizado, fronteiras, riscos e gates seguintes.
+- AGENTS.md: regra de actualizar HANDOFF após cada checkpoint, proteção de branches e classificação honesta de provas.
+
+**Alterações principais:** commits aa82139 (continuidade), c47a929 (início no HANDOFF), 7ac8fca (código), 2fa49e5 (testes), 441e194 (workflow), ac9f008 (discovery), f4ee2dd (reforço audit/read), 8110281 (testes adversariais), be63e56 (correcção de teste), 6586bf3 (especificação), 3bf7930 (regras do repositório).
+
+**CI comprovado:** run [43078755510](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43078755510), HEAD 6586bf3, completed/success: 73 testes totais PASS; 17 testes WORK-05 PASS repetidos na etapa dedicada. A suite inicial da branch teve dois runs intermédios FAIL devido à expectativa antiga de uma única entrada na auditoria; a asserção foi corrigida e o run 43078755510 passou. Não ocultar os runs FAIL.
+
+**Limites:** os componentes ainda não estão ligados ao OrchestratorAgent/Qwen, nem à interface de voz, nem a navegador. A leitura comprova bytes, não verdade factual. Não é validação Windows no PC do destinatário. Próxima etapa WORK-05-B: auditar assinatura OpenJarvis fixada e criar adaptador testado com agente FAKE. WORK-05-C: navegação web de leitura com mitigação SSRF e redirects. Só depois solicitar autorização para inferência Qwen real.
