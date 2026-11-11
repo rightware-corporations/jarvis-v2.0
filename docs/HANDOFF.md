@@ -1053,7 +1053,6 @@ Evidência em `labs/work04_cognitive/evidence/`.
 - Estimativa: ~90–140 min em CPU (INFERÊNCIA).
 - O revisor humano tem de ser nomeado.
 
-
 ## ADENDA — 10/11/2026: WORK-04 R2 — missão retomada em chat directo
 
 **Estado:** preparação iniciada, código de correcção e testes determinísticos R2 **AINDA NÃO EXECUTADOS**; nenhum benchmark real autorizado. O Work/Codex entrou em limite de utilização antes de publicar alterações; ao verificar GitHub, `develop` permanecia em `de628df4b54ff8161bca443e04b5e7e58f54313c` e `main` em `0cac8e8d828d91cb9d849c67a33f62eb701bdb94`, sem PR R2.
@@ -1353,3 +1352,174 @@ O HEAD de código para o próximo EVOL-4001 é `b8e4bc0c6aabfdf70781d4ea9c64e39d
 - o modelo pode continuar a ignorar o formato mesmo com a linha citada;
 - o lint e a paragem mudam outra vez a condição R2, por isso os resultados não são comparáveis com os anteriores;
 - a rota B não está verificada.
+
+
+## ADENDA — 11/11/2026: WORK-05 — fundação do agente de produto (Claude Code)
+
+**Branch:** `feat/work05-product-agent`, criado a partir de `develop@de628df`, isolado do branch R2. Sem merge; `main` e `develop` inalteradas. **Nenhuma inferência Qwen.** A evidência WORK-04 e o pin OpenJarvis `f21d902` estão intactos.
+
+**Implementado** (o primeiro caminho vertical do produto):
+- Instrução → Qwen (`OrchestratorAgent` fixado) → proposta de ferramenta → `AgentPolicy` (registo fechado, schema exacto, capacidade da sessão, quotas, prazo, cancelamento, lote fail-closed, aprovação de uso único) → execução → `ToolOutcome` verificado por código → resposta verdadeira.
+- **`web_read`, só leitura de páginas públicas:**
+  - apenas GET; sem headers, corpo ou cookies vindos do modelo;
+  - SSRF verificado com o guarda do upstream mais um teste `is_global`, em cada redireccionamento e no IP efectivamente ligado;
+  - limites de tamanho e tempo;
+  - texto devolvido em moldura de dados não confiáveis com fronteira aleatória.
+- **`windows_action`:** o mesmo `WindowsActions`, com autorização da sessão e confirmação humana.
+- **CLI:** `python jarvis.py agent "…" [--allow-web] [--allow-actions]`; as duas capacidades estão desligadas por omissão.
+- **Auditoria:** só ferramenta, decisão e resultado; os URLs ficam reduzidos a servidor + hash.
+
+**Não exposto:**
+- o `http_request` do upstream, que expande variáveis de ambiente em headers do modelo;
+- `shell_exec`, `file_write` e as ferramentas de browser com cliques ou escrita.
+
+**Testes:**
+- 38 novos (21 de política/web, 14 de sessão com o `OrchestratorAgent` real e motor FAKE, 3 do lançador);
+- 15 mutações de segurança, todas detectadas;
+- local: 94 OK na venv, sem nenhum teste saltado;
+- workflow `work05-product.yml`: falha se algum teste for saltado na venv.
+
+**Fase 3 documentada, não implementada:** voz, aplicações de desktop, browser autenticado, ficheiros, estado persistente e Shared Intelligence, que fica como projecto independente sem ligação.
+
+Detalhe em `docs/research/WORK05_PRODUCT_AGENT_FOUNDATION.md`.
+
+**Próximo gate (decisão do operador):** um smoke Qwen real, autorizado, com `--allow-web` sobre uma página pública estável, para medir as chamadas de ferramenta, a citação de fontes e as recusas. Depois, ligar a voz à mesma `AgentSession.run`.
+
+ 
+## ADENDA — 11/11/2026: WORK-05 — CHECKPOINT DE RETOMA E AUDITORIA PRELIMINAR (SEM MUDANÇA DE CÓDIGO)
+
+**Origem:** revisão read-only do GitHub após relatório final do Claude; registo de continuidade solicitado explicitamente pelo operador, para suportar mudança de chat/limites de contexto. **Estado confirmado**: `feat/work05-product-agent` HEAD anterior a esta adenda `6fedaca3546cd416c4398df2ca1b8ee574734fc3`; GitHub Actions `43099989107` **completed/success**. Testes: 94 executados na venv OpenJarvis, nenhum saltado; Python simples: 94 descobertos, 18 saltados. Claude reportou 15 mutações detectadas (não repetidas nesta revisão). **Nenhuma inferência Qwen real** nem validação do JARVIS em Windows neste gate.
+
+**Implementação já existente (não modificada nesta adenda):** `rightware/agent/{policy,web,session,cli}.py`, testes WORK-05, documentação de interfaces futuras; `AgentSession` usa `OrchestratorAgent` e `web_read` read-only, com motor FAKE nos testes. O WORK-04 R2, `main`, `develop` e pin OpenJarvis permanecem fora do escopo desta revisão.
+
+**Questões levantadas em auditoria estática — hipóteses a confirmar com testes, NÃO falhas exploradas:** (P0) protecção DNS rebinding: `check_url()` resolve antes, mas o cliente `httpx` estabelece a ligação separadamente e só valida o IP do peer depois de enviar GET; testar pinning/transport que bloqueie ligação a destino não previamente autorizado. (P1) `batch_guard` não parece pré-validar permissões de sessão e quotas de **todo** o lote antes de executar o primeiro pedido; testar atomicidade de autorização. (P1) `web_read` trata qualquer resposta com Content-Type aceite como leitura `OK`, incluindo potenciais HTTP 4xx/5xx; separar resposta HTTP recebida de fonte útil. (P1) `ANSWERED_WITH_SOURCES` e inclusão de URL são prova de leitura, não prova de exactidão factual de cada afirmação; não alegar grounding sem prova. Analisar também audit fail-closed, bytes/limites, protecção de credenciais e semântica do estado HALTED.
+
+**Próxima missão RECOMENDADA, não realizada:** `WORK-05 R1 — Security Hardening & Real-Agent Readiness` nesta mesma branch, mediante revisão da situação remota, testes adversariais/determinísticos, CI, Draft PR contra `develop` sem merge e depois pedido de autorização separado para um único smoke Qwen. Não executar Qwen, não alterar `main`/`develop`, nem tocar no benchmark WORK-04. A branch anterior `feat/work05-product-agent-foundation` e PR #3 foram criados noutra sessão e **não** devem ser incorporados automaticamente neste WORK-05.
+
+**Protocolo de continuidade aprovado pelo operador:** antes de cada mensagem de progresso substancial ou output de conclusão do agente, anexar um registo curto, factual, datado e sanitizado a `docs/HANDOFF.md`, com actividade, branch/HEAD anterior, alterações, testes e próximo passo; fazer commit/push, confirmar HEAD remoto, **só então** enviar esse output indicando o commit. Se o push falhar, comunicar que o checkpoint NÃO foi persistido. Não guardar transcrições, segredos nem dados pessoais no repositório público. O registo é append-only, nunca reescrever adendas anteriores.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-A — base e revisão de segurança (Claude Code)
+
+**Fase:** R1-A concluída; segue-se a R1-B.
+
+**Base:** `feat/work05-product-agent`, `188e1b7`, integrado por fast-forward (só a adenda do operador). O código é igual a `6fedaca` (CI `43099989107`: 94 OK, 0 saltados).
+
+**Feito:** as sondas determinísticas, sem rede externa, **confirmaram** cinco defeitos:
+- **F1 P0:** DNS rebinding. O IP validado (`93.184.216.34`) não é aquele a que o httpcore se liga (`127.0.0.1`), porque o nome é resolvido de novo.
+- **F2 P1:** o lote não é atómico. Capacidade e quotas não são pré-validadas.
+- **F3 P1:** o prazo não é verificado de novo na execução.
+- **F4 P1:** uma falha de auditoria deixa uma aprovação órfã e uma quota consumida.
+- **F5 P1:** HTTP 404 e 500 são tratados como fonte OK.
+
+**Ficheiros:** `docs/research/WORK05_R1_SECURITY_REVIEW.md` (novo) e este HANDOFF. Nenhum código alterado.
+
+**Riscos:** nenhum alterado ainda.
+
+**Próxima operação:** R1-B, transporte com IP fixado (pinned) e testes de rede.
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-B — SSRF / DNS rebinding corrigido (Claude Code)
+
+**Fase:** R1-B concluída; segue-se a R1-C.
+
+**Correcção F1 (P0), commit `3c220ee`:**
+- o `web_read` usa por omissão um backend httpcore fixado (pinned);
+- o `connect_tcp` resolve uma vez, exige que todos os IPs sejam globais e liga-se só a esses IPs literais;
+- portas diferentes de 80 e 443, e sockets Unix, são recusados na camada de socket;
+- o URL e o nome não são reescritos, por isso o TLS mantém SNI e verificação de certificado (`verify` e `check_hostname` ligados);
+- sem proxy, sem HTTP/2, sem tentativas repetidas, no máximo 4 ligações;
+- a verificação do peer mantém-se como segunda camada;
+- URLs malformados (IPv6 partido, porta inválida, `\\`) passam a ser recusas controladas.
+
+**Testes** (`tests/test_agent_network.py`, 8): o socket liga-se ao IP validado; rebinding para 127/8, 10/8, metadados, CGNAT, `::ffff:127.0.0.1`, `::1` e resolução mista nunca chega a abrir socket; o redireccionamento é validado e fixado de novo; portas e sockets Unix recusados; proxies do ambiente ignorados; TLS e limites; 10 URLs malformados. **7 mutações, todas detectadas.**
+
+**Local:** venv 102 OK, 0 saltados; Python simples 102, 25 saltados. CI pendente até ao push.
+
+**Riscos residuais:**
+- a correcção depende do atributo `_pool` do `HTTPTransport` (httpx 0.28.1 fixado); um teste falha se mudar;
+- TLS contra um servidor real: NOT VERIFIED neste ambiente.
+
+**Próxima operação:** R1-C (atomicidade do lote, prazo na execução, auditoria fail-closed, classificação após recusas).
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-C + R1-D — política, execução e respostas verdadeiras (Claude Code)
+
+**Fase:** R1-C e R1-D concluídas; segue-se a R1-E (CI real, Draft PR) e a R1-F (especificação do smoke).
+
+**Commits:**
+- `58e1ba8` (política):
+  - F2: lote pré-validado por inteiro (nomes, schema, capacidades, cancelamento, prazo, quotas por ferramenta e globais a contar com o lote);
+  - F3: prazo verificado de novo na fronteira;
+  - F4: a auditoria é escrita antes de qualquer mudança de estado; se falhar, nega sem consumir nada.
+- `df222b2` (sessão):
+  - F5: HTTP não-2xx passa a `HTTP_ERROR` e página sem texto a `EMPTY_CONTENT`, e nenhum dos dois conta como fonte;
+  - novo campo `verification` (resposta HTTP / conteúdo obtido / ferramenta verificada / fonte registada / `answer_factually_verified=False` sempre);
+  - F6: chamadas só recusadas dão `TOOLS_REFUSED`, e não `ANSWERED`;
+  - perda de auditoria dá `ERROR`;
+  - linhas de estado explícitas para HALTED, falha, recusa e acção não feita;
+  - leitura parcial assinalada.
+
+**Testes:** escritos antes da correcção. 8 de 12 (política) e 12 falhas em 10 testes (sessão) **falhavam na base**; agora passam. Local: **venv 124 OK, 0 saltados**; Python simples 124, 35 saltados. Mutações R1-C/D: 12/12 detectadas. Tabela de estado em `docs/research/WORK05_R1_SECURITY_REVIEW.md`.
+
+**Ficheiros:** `rightware/agent/{policy,session}.py`, `tests/test_agent_{policy_r1,session_r1,session}.py`.
+
+**Riscos:** a exactidão das respostas do Qwen continua NÃO verificada por desenho; só a proveniência fica registada.
+
+**Próxima operação:** push, CI real, Draft PR para `develop` e especificação do smoke Qwen (sem o executar).
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1-E/R1-F — CI e smoke Qwen preparado (inerte) (Claude Code)
+
+**Fase:** R1-F preparada; R1-E em curso (CI final e Draft PR).
+
+**CI real** (`work05-product.yml`):
+- `43104443490` (R1-B, `b675359`): success;
+- `43104992193` (R1-C/D, `3cb82d5`): success.
+
+**Commit `5592fe5`:**
+- `rightware/agent_smoke.py`: `RecordingEngine` regista o que o modelo emitiu na fronteira do motor; `classify()` dá PASS/FAIL/INCOMPLETE;
+- um motor com guião ou um digest errado dão sempre INCOMPLETE;
+- PASS exige que o próprio modelo proponha `web_read` para `https://example.com/`;
+- workflow `work05-qwen-smoke.yml`, **inerte** até existir `ops/work05_smoke_request.json`;
+- 12 testes e 5 mutações, todas detectadas.
+
+Especificação em `docs/research/WORK05_R1_QWEN_SMOKE_SPEC.md`.
+
+**Local:** venv **136 OK, 0 saltados**; Python simples 136 (35 saltados); `actionlint` sem erros; submódulo no pin `f21d902`, sem diferenças.
+
+**Próxima operação:**
+1. confirmar o CI deste HEAD;
+2. criar o Draft PR para `develop` (sem merge);
+3. pedir autorização para o smoke com o HEAD exacto.
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.
+
+## CHECKPOINT — 11/11/2026: WORK-05 R1 concluído — Draft PR #4, pronto para o gate do smoke Qwen (Claude Code)
+
+**Estado:** R1-A a R1-F concluídas. Todos os defeitos confirmados (F1 a F7) estão corrigidos com testes escritos antes da correcção.
+
+**Código:** HEAD `586d066` (código final `5592fe5`). CI real [`43105438599`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43105438599): **136 OK na venv fixada, 0 saltados**; Python simples 136 (37 saltados, por depender de OpenJarvis, httpx ou pyyaml).
+
+**Draft PR #4** para `develop`: https://github.com/rightware-corporations/jarvis-v2.0/pull/4 (sem merge; não incorpora o PR #3 nem `feat/work05-product-agent-foundation`).
+
+**Riscos residuais:**
+- o backend fixado depende do `HTTPTransport._pool` do httpx 0.28.1 (coberto por teste);
+- TLS contra um servidor real: NOT VERIFIED neste ambiente;
+- a exactidão factual das respostas do Qwen nunca é verificada; só a proveniência fica registada;
+- desinformação declarativa em páginas públicas não é filtrada;
+- `--allow-web` faz pedidos de rede a servidores que o modelo escolhe (auditados).
+
+**Próxima operação (só com autorização explícita do operador):**
+1. o operador aprova o smoke `docs/research/WORK05_R1_QWEN_SMOKE_SPEC.md` sobre um HEAD exacto;
+2. criar e enviar `ops/work05_smoke_request.json` (`request_id: 1`), o que dispara uma única execução;
+3. descarregar e verificar a evidência e classificar o resultado.
+
+Depois do smoke, ligar a voz à `AgentSession.run`.
+
+Nenhuma inferência Qwen; `main` e `develop` inalteradas.
+
+
+## CHECKPOINT — 11/11/2026: R2 three-way reconciliation (GitHub operations)
+
+Both `docs/HANDOFF.md` lineages were append-only relative to `develop@de628df4b54ff8161bca443e04b5e7e58f54313c`. This document concatenates the R2 history and the independent WORK-05/product + branch-governance history without discarding either. The lab remains **experimental**; historic WORK-04 0/35 stays NOT ACCEPTED. This merge is NOT a Qwen inference nor acceptance of benchmark quality. CI and the final integration into develop remain separate verification gates.
