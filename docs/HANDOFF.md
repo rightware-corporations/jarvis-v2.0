@@ -1380,3 +1380,10 @@ O HEAD de código para o próximo EVOL-4001 é `b8e4bc0c6aabfdf70781d4ea9c64e39d
 **CI comprovado:** run [43078755510](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43078755510), HEAD 6586bf3, completed/success: 73 testes totais PASS; 17 testes WORK-05 PASS repetidos na etapa dedicada. A suite inicial da branch teve dois runs intermédios FAIL devido à expectativa antiga de uma única entrada na auditoria; a asserção foi corrigida e o run 43078755510 passou. Não ocultar os runs FAIL.
 
 **Limites:** os componentes ainda não estão ligados ao OrchestratorAgent/Qwen, nem à interface de voz, nem a navegador. A leitura comprova bytes, não verdade factual. Não é validação Windows no PC do destinatário. Próxima etapa WORK-05-B: auditar assinatura OpenJarvis fixada e criar adaptador testado com agente FAKE. WORK-05-C: navegação web de leitura com mitigação SSRF e redirects. Só depois solicitar autorização para inferência Qwen real.
+
+
+### WORK-05-A — PR/CI checkpoint final (11/11/2026)
+
+- Draft PR **[#3](https://github.com/rightware-corporations/jarvis-v2.0/pull/3)** criado sobre o R2 (base feat/work04-r2-semantic-safety), sem merge; branch WORK-05 continua independente.
+- CI do HEAD anterior 735edfaff (HANDOFF incluído) confirmado **success** nos runs [43079009397](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43079009397) e [43079069528](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43079069528). São testes determinísticos; Qwen real NÃO executado.
+- O próximo checkpoint de engenharia é **WORK-05-B: adaptar propostas tipadas de OpenJarvis à fronteira RIGHTWARE com testes FAKE**, sem tocar nas branches protegidas, no benchmark R2 ou na memória Shared Intelligence. A branch WORK-04 R2 pode continuar no seu próprio Draft PR #2 sem conflito de escrita.
