@@ -48,14 +48,16 @@ SYSTEM_PROMPT = (
     "cada vez.\n\n"
     "FORMATO DO RELATÓRIO (Markdown):\n"
     "# título\n## Resumo\n(texto curto)\n## Factos\n| Campo | Valor | Estado | Fonte |\n|---|---|---|---|\n"
-    "(uma linha por facto; Campo ∈ projecto, responsável, fornecedor, orçamento, início, entrega; Estado: "
+    "(uma linha por VALOR e ESTADO; não uma linha por campo; o mesmo campo pode ter linhas diferentes para estimado e aprovado; Campo ∈ projecto, responsável, fornecedor, orçamento, início, entrega; Estado: "
     "estimado, aprovado ou —; Fonte: nome EXACTO do ficheiro onde o valor aparece)\n"
     "## Achados\n(linhas '- [TIPO] campo: descrição'; TIPO ∈ CONTRADIÇÃO, EVOLUÇÃO, INCONSISTÊNCIA TEMPORAL, "
     "EM FALTA, SEM ACHADOS)\n## Fontes\n(lista dos nomes EXACTOS dos ficheiros usados)\n\n"
     "DEFINIÇÕES: CONTRADIÇÃO = o mesmo campo, no mesmo estado e data, tem valores incompatíveis em documentos "
     "diferentes. EVOLUÇÃO = o mesmo campo muda entre estados ou datas (por exemplo estimado → aprovado); não "
-    "é contradição. INCONSISTÊNCIA TEMPORAL = datas impossíveis (por exemplo entrega antes do início). EM "
+    "é contradição. INCONSISTÊNCIA TEMPORAL = datas impossíveis (por exemplo entrega antes do início), não uma diferença normal de datas. Confirma comparações pela ordem ano, mês, dia; data posterior NÃO ocorre antes de data anterior. EM "
     "FALTA = dado pedido que não consta em nenhum documento. SEM ACHADOS = nada disto acontece.\n"
+    "ANTES DE ESCREVER: confirma uma linha por valor/estado, datas ordenadas cronologicamente, e "
+    "TODOS os achados no formato exacto - [TIPO] campo: descrição (com parênteses rectos).\\n"
     "Depois de escrever, verifica o relatório com verify_report. Se a verificação falhar, NÃO tentes "
     "sobrescrever: escreve UMA versão corrigida com o sufixo _v2 (por exemplo relatorio_x_v2.md) e "
     "verifica-a. Nunca digas que a verificação passou se ela falhou. "
@@ -157,11 +159,17 @@ def run_task(engine_factory, *, seed: int, family: str, cfg: RunConfig, keep_dir
                 if recovery_r2.should_retry_answer_only(trace, policy):
                     box["recovery_attempted"] = True
                     box["first_answer"] = first_result.content if first_result else ""
-                    box["continuation_context"] = {"read_names": recovery_r2.successful_reads(trace),
-                                                   "remaining": recovery_r2.remaining_budget(policy)}
+                    read_names = recovery_r2.successful_reads(trace)
+                    replay, replay_meta = recovery_r2.bounded_source_replay(
+                        read_names, reader.delivered_by_name)
+                    box["continuation_context"] = {
+                        "read_names": read_names,
+                        "remaining": recovery_r2.remaining_budget(policy),
+                        "replayed_sources": replay_meta,
+                    }
                     box["result"] = agent.run(recovery_r2.continuation_prompt(
-                        scn.report_name, box["continuation_context"]["read_names"],
-                        box["continuation_context"]["remaining"]))
+                        scn.report_name, read_names,
+                        box["continuation_context"]["remaining"], replay))
             except BaseException as exc:
                 box["error"] = exc
         audit = OpenAudit(root)
