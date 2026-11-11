@@ -1,13 +1,15 @@
-# WORK-05 real-Qwen smoke of the PRODUCT agent (CPU, GitHub-hosted). Prepared, INERT.
-# Runs only when a push to feat/work05-product-agent changes ops/work05_smoke_request.json
-# (file absent until the operator authorises an exact HEAD). One fixed public page,
-# read-only web, no Windows effects, no shell/filesystem tool. Diagnostic, not acceptance.
+# WORK-05/06 real-Qwen smoke of the PRODUCT agent (CPU, GitHub-hosted). Prepared, INERT.
+# Runs only when a push to `develop` changes ops/work05_smoke_request.json (absent until the
+# operator authorises an exact CODE commit). The request commit is separate from the approved
+# code commit and may change nothing else; request_id is single use; re-runs are refused
+# (gate logic and tests: rightware/agent_smoke.py check_request / tests/test_agent_smoke.py).
+# One fixed public page, read-only web, no Windows effects, no shell/filesystem tool.
 name: WORK-05 product agent real Qwen smoke (request-triggered)
 
 on:
   push:
     branches:
-      - feat/work05-product-agent
+      - develop
     paths:
       - ops/work05_smoke_request.json
 
@@ -19,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  BRANCH: feat/work05-product-agent
+  BRANCH: develop
   PIN: f21d902f4d3bd7f0f3f138f1a4613019a394b549
   OLLAMA_VERSION: "0.40.15"
   OLLAMA_SHA256: 628c018404a4206493efd38e46251c154ede5141b8b8dc85c659b3b027c47379
@@ -39,15 +41,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: GATE 0 — request, ref, SHA, branch ancestry, pin, clean tree
+      - name: GATE 0 — authorisation (approved code SHA, request-only diff, single use, no re-run), ref, pin
         run: |
           set -euo pipefail
           [ "$GITHUB_REF" = "refs/heads/$BRANCH" ] || { echo "unexpected ref"; exit 1; }
-          python3 -I -c 'import json,sys
-          d=json.load(open(sys.argv[1]))
-          assert set(d)=={"experiment","request_id","authorized_by"}, "keys"
-          assert d["experiment"]=="WORK05_PRODUCT_AGENT_REAL_SMOKE", "experiment"
-          assert isinstance(d["request_id"],int) and d["request_id"]>0, "request_id"' ops/work05_smoke_request.json
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git merge-base --is-ancestor "$GITHUB_SHA" "origin/$BRANCH"
           test "$(git ls-tree HEAD vendor/openjarvis | awk '{print $3}')" = "$PIN"
@@ -55,8 +52,11 @@ jobs:
           test -z "$(git status --porcelain)"
           EVID="$RUNNER_TEMP/smoke-evidence"; mkdir -p "$EVID"
           cp ops/work05_smoke_request.json "$EVID/request.json"
-          { echo "EVID=$EVID"; echo "OLLAMA_DIR=$RUNNER_TEMP/ollama"; echo "OLLAMA_MODELS=$RUNNER_TEMP/ollama-models"; } >> "$GITHUB_ENV"
-          printf '{"gate":"0","status":"PASS","sha":"%s"}\n' "$GITHUB_SHA" >> "$EVID/gates.jsonl"
+          python3 -E -s -m rightware.agent_smoke --check-request --run-attempt "$GITHUB_RUN_ATTEMPT" > "$EVID/authorisation.json"
+          APPROVED=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["approved_code_sha"])' "$EVID/authorisation.json")
+          { echo "EVID=$EVID"; echo "APPROVED_SHA=$APPROVED"
+            echo "OLLAMA_DIR=$RUNNER_TEMP/ollama"; echo "OLLAMA_MODELS=$RUNNER_TEMP/ollama-models"; } >> "$GITHUB_ENV"
+          printf '{"gate":"0","status":"PASS","trigger_sha":"%s","approved_code_sha":"%s"}\n' "$GITHUB_SHA" "$APPROVED" >> "$EVID/gates.jsonl"
 
       - name: GATE 1 — resources
         run: |
@@ -101,8 +101,8 @@ jobs:
         run: |
           set -euo pipefail
           set +e
-          vendor/openjarvis/.venv/bin/python -m rightware.agent_smoke --expect-sha "$GITHUB_SHA" \
-            --expected-digest "$EXPECTED_DIGEST" --evidence-dir "$EVID/smoke" > "$EVID/smoke-console.log" 2>&1
+          vendor/openjarvis/.venv/bin/python -m rightware.agent_smoke --approved-code-sha "$APPROVED_SHA" \
+            --evidence-dir "$EVID/smoke" > "$EVID/smoke-console.log" 2>&1
           RC=$?
           set -e
           tail -5 "$EVID/smoke-console.log"

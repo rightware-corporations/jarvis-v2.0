@@ -6,8 +6,16 @@ call was PROPOSED BY THE REAL MODEL: every engine response is recorded at the
 engine boundary (``RecordingEngine``), and PASS requires engine_id 'ollama',
 the pinned model digest and a model-proposed ``web_read`` for the fixed URL.
 
-    python -m rightware.agent_smoke --plan-only
-    python -m rightware.agent_smoke --expect-sha <40-hex> --expected-digest <64-hex> --evidence-dir DIR
+    python -m rightware.agent_smoke --plan-only            # prints the plan and its SHA-256
+    python -m rightware.agent_smoke --check-request --run-attempt N   # authorisation gate (no model)
+    python -m rightware.agent_smoke --approved-code-sha <40-hex> --evidence-dir DIR
+
+Authorisation (WORK-06, branch ``develop``): the operator approves an exact CODE
+commit and the fixed plan; a separate REQUEST commit adds the request file
+``ops/work05_smoke_request.json`` = {experiment, request_id, approved_code_sha,
+plan_sha256, authorized_by}. The request commit may differ from the approved
+code ONLY in that file; request_id must increase by exactly one per request
+commit (single use, no replay); a GitHub re-run (run attempt > 1) is refused.
 
 Exit: 0 = run completed (verdict in evidence, may be FAIL), 2 = preflight or
 environment blocked. A PASS is diagnostic evidence for this single case,
@@ -27,6 +35,10 @@ import urllib.request
 
 PIN = "f21d902f4d3bd7f0f3f138f1a4613019a394b549"
 MODEL = "qwen3.5:4b"
+EXPECTED_DIGEST = "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04"
+REQUEST_PATH = "ops/work05_smoke_request.json"
+EXPERIMENT = "WORK05_PRODUCT_AGENT_REAL_SMOKE"
+REQUEST_KEYS = {"experiment", "request_id", "approved_code_sha", "plan_sha256", "authorized_by"}
 OLLAMA_VERSION = "0.40.15"
 HOST = "http://127.0.0.1:11434"
 URL = "https://example.com/"
@@ -104,8 +116,86 @@ def classify(*, engine_id: str, model_digest: str | None, expected_digest: str,
             "answer_factually_verified": False}
 
 
-def _git(*args: str) -> str:
-    return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
+def plan() -> dict:
+    """The fixed experiment. Any change to it changes plan_sha256 and voids an authorisation."""
+    return {"experiment": EXPERIMENT, "url": URL, "instruction": INSTRUCTION, "capabilities": ["web"],
+            "windows_actions": False, "limits": LIMITS, "model": MODEL, "model_digest": EXPECTED_DIGEST,
+            "ollama": OLLAMA_VERSION, "openjarvis_pin": PIN}
+
+
+def plan_sha256() -> str:
+    return hashlib.sha256(json.dumps(plan(), sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
+def _hex(value, n) -> bool:
+    return isinstance(value, str) and len(value) == n and all(c in "0123456789abcdef" for c in value)
+
+
+def validate_request(req, *, trigger_sha: str, changed_files: list[str], previous_request_id: int,
+                     request_commits: int, run_attempt: int, approved_is_ancestor: bool) -> list[str]:
+    """Pure authorisation check. Returns the list of problems (empty = authorised)."""
+    if not isinstance(req, dict) or set(req) != REQUEST_KEYS:
+        return ["request keys must be exactly " + ", ".join(sorted(REQUEST_KEYS))]
+    problems = []
+    if req["experiment"] != EXPERIMENT:
+        problems.append("wrong experiment")
+    rid = req["request_id"]
+    if not isinstance(rid, int) or isinstance(rid, bool) or rid < 1:
+        problems.append("request_id must be a positive integer")
+    else:
+        if rid != previous_request_id + 1:
+            problems.append("request_id must be exactly previous + 1 (replay or gap)")
+        if rid != request_commits:
+            problems.append("request_id must equal the number of request commits (single use)")
+    if not _hex(req["approved_code_sha"], 40):
+        problems.append("approved_code_sha must be a full lowercase 40-hex SHA")
+    elif req["approved_code_sha"] == trigger_sha:
+        problems.append("the request must be a separate commit after the approved code")
+    if req["plan_sha256"] != plan_sha256():
+        problems.append("plan_sha256 does not match the fixed plan")
+    who = req["authorized_by"]
+    if not isinstance(who, str) or not who.strip() or len(who) > 200 or "\n" in who:
+        problems.append("authorized_by must be a short single-line text")
+    if changed_files != [REQUEST_PATH]:
+        problems.append("the request commit may change only " + REQUEST_PATH)
+    if not approved_is_ancestor:
+        problems.append("approved_code_sha is not an ancestor of the request commit")
+    if run_attempt != 1:
+        problems.append("re-runs are refused: push a new request instead")
+    return problems
+
+
+def _git(*args: str, root: Path | None = None) -> str:
+    return subprocess.check_output(["git", *args], cwd=root or ROOT, text=True).strip()
+
+
+def check_request(run_attempt: int, root: Path | None = None) -> dict:
+    """Gather the git facts for the request at HEAD and validate them (no model, no network)."""
+    head = _git("rev-parse", "HEAD", root=root)
+    try:
+        req = json.loads(_git("show", f"HEAD:{REQUEST_PATH}", root=root))
+    except (subprocess.CalledProcessError, ValueError):
+        return {"ok": False, "problems": ["request file missing or not JSON at HEAD"], "trigger_sha": head}
+    try:
+        prev = json.loads(_git("show", f"HEAD^:{REQUEST_PATH}", root=root)).get("request_id", 0)
+    except (subprocess.CalledProcessError, ValueError):
+        prev = 0
+    prev = prev if isinstance(prev, int) and not isinstance(prev, bool) else -1
+    approved = req.get("approved_code_sha") if isinstance(req, dict) else None
+    changed, ancestor = [], False
+    if _hex(approved, 40):
+        try:
+            changed = sorted(_git("diff", "--name-only", approved, head, root=root).split())
+            subprocess.check_call(["git", "merge-base", "--is-ancestor", approved, head], cwd=root or ROOT)
+            ancestor = True
+        except subprocess.CalledProcessError:
+            ancestor = False
+    commits = int(_git("rev-list", "--count", "HEAD", "--", REQUEST_PATH, root=root) or 0)
+    problems = validate_request(req, trigger_sha=head, changed_files=changed, previous_request_id=prev,
+                                request_commits=commits, run_attempt=run_attempt, approved_is_ancestor=ancestor)
+    return {"ok": not problems, "problems": problems, "trigger_sha": head,
+            "approved_code_sha": approved if _hex(approved, 40) else None,
+            "request_id": req.get("request_id") if isinstance(req, dict) else None}
 
 
 def _local(path: str) -> dict:
@@ -114,45 +204,50 @@ def _local(path: str) -> dict:
         return json.load(r)
 
 
-def preflight(expect_sha: str, expected_digest: str) -> dict:
-    if len(expect_sha) != 40 or len(expected_digest) != 64:
-        raise RuntimeError("full 40-char SHA and 64-char digest are required")
-    if _git("rev-parse", "HEAD") != expect_sha:
-        raise RuntimeError("repository SHA differs from the authorised revision")
-    if _git("status", "--porcelain", "--", "rightware"):
-        raise RuntimeError("product code modified locally")
-    if _git("ls-tree", "HEAD", "vendor/openjarvis").split()[2] != PIN or \
-            _git("-C", "vendor/openjarvis", "rev-parse", "HEAD") != PIN:
+def preflight(approved_code_sha: str, expected_digest: str = EXPECTED_DIGEST, root: Path | None = None) -> dict:
+    if not _hex(approved_code_sha, 40) or expected_digest != EXPECTED_DIGEST:
+        raise RuntimeError("a full approved code SHA and the fixed model digest are required")
+    head = _git("rev-parse", "HEAD", root=root)
+    if _git("status", "--porcelain", root=root):
+        raise RuntimeError("working tree modified locally")
+    if sorted(_git("diff", "--name-only", approved_code_sha, head, root=root).split()) not in ([], [REQUEST_PATH]):
+        raise RuntimeError("running code differs from the approved code revision")
+    gitlink = _git("ls-tree", "HEAD", "vendor/openjarvis", root=root).split()
+    if len(gitlink) < 3 or gitlink[2] != PIN or \
+            _git("-C", "vendor/openjarvis", "rev-parse", "HEAD", root=root) != PIN:
         raise RuntimeError("OpenJarvis pin mismatch")
     if _local("/api/version").get("version") != OLLAMA_VERSION:
         raise RuntimeError("Ollama version mismatch")
     digest = {m.get("name"): m.get("digest") for m in _local("/api/tags").get("models", [])}.get(MODEL)
     if digest != expected_digest:
         raise RuntimeError("model digest mismatch")
-    return {"repo_sha": expect_sha, "openjarvis_pin": PIN, "ollama": OLLAMA_VERSION,
-            "model": MODEL, "model_digest": digest}
+    return {"approved_code_sha": approved_code_sha, "trigger_sha": head, "openjarvis_pin": PIN,
+            "ollama": OLLAMA_VERSION, "model": MODEL, "model_digest": digest, "plan_sha256": plan_sha256()}
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--plan-only", action="store_true")
-    ap.add_argument("--expect-sha", default="")
-    ap.add_argument("--expected-digest", default="")
+    ap.add_argument("--check-request", action="store_true")
+    ap.add_argument("--run-attempt", type=int, default=0)
+    ap.add_argument("--approved-code-sha", default="")
     ap.add_argument("--evidence-dir", default="")
     args = ap.parse_args(argv)
-    plan = {"experiment": "WORK05_PRODUCT_AGENT_REAL_SMOKE", "url": URL, "instruction": INSTRUCTION,
-            "capabilities": ["web"], "windows_actions": False, "limits": LIMITS, "model": MODEL,
-            "models_called": False}
+    fixed = plan()
     if args.plan_only:
-        print(json.dumps(plan, ensure_ascii=False))
+        print(json.dumps({**fixed, "plan_sha256": plan_sha256(), "models_called": False}, ensure_ascii=False))
         return 0
+    if args.check_request:
+        result = check_request(args.run_attempt)
+        print(json.dumps(result, ensure_ascii=False))
+        return 0 if result["ok"] else 2
     if not args.evidence_dir:
         print("--evidence-dir is required", file=sys.stderr)
         return 2
     out = Path(args.evidence_dir)
     out.mkdir(parents=True, exist_ok=False)
     try:
-        info = preflight(args.expect_sha, args.expected_digest)
+        info = preflight(args.approved_code_sha)
     except Exception as exc:
         (out / "preflight.json").write_text(json.dumps({"status": "BLOCKED", "reason": str(exc)[:200]}), encoding="utf-8")
         print("PREFLIGHT BLOCKED:", str(exc)[:200], file=sys.stderr)
@@ -170,10 +265,10 @@ def main(argv=None) -> int:
     reply = session.run(INSTRUCTION)
     outcome = json.loads(reply_json(reply))
     verdict = classify(engine_id=engine.engine_id, model_digest=info["model_digest"],
-                       expected_digest=args.expected_digest, responses=engine.responses,
+                       expected_digest=EXPECTED_DIGEST, responses=engine.responses,
                        completion=reply.completion, outcomes=outcome["outcomes"], flags=reply.flags,
                        sources=reply.sources, answer=reply.text)
-    evidence = {**plan, "models_called": True, **info, "utc_start": started.isoformat(),
+    evidence = {**fixed, "models_called": True, **info, "utc_start": started.isoformat(),
                 "utc_end": dt.datetime.now(dt.timezone.utc).isoformat(),
                 "model_responses": engine.responses, "reply": outcome, "answer": reply.text,
                 "verdict": verdict}
