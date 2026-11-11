@@ -34,7 +34,7 @@ from w02lab.sandbox import Sandbox  # noqa: E402
 from w02lab.tools import LabTool, ListWorkspace, ReadDocument, WriteReport, UNTRUSTED_HEAD, UNTRUSTED_TAIL, _schema  # noqa: E402
 from openjarvis.tools._stubs import ToolSpec  # noqa: E402
 
-from w04lab import claims_r2, completion, evidence_r2, failures, feedback_r2, oracle_r2 as oracle, recovery_r2, scenarios, semantics_r2, source_guard, verifier_v2  # noqa: E402
+from w04lab import chronology_r2, claims_r2, completion, evidence_r2, failures, feedback_r2, oracle_r2 as oracle, recovery_r2, scenarios, semantics_r2, source_guard, verifier_v2  # noqa: E402
 from w04lab.write_guard_r2 import OverwritePrecheckPolicy, WriteReportR2  # noqa: E402
 
 ALLOWLIST = ("list_workspace", "read_document", "write_report", "verify_report")
@@ -104,13 +104,16 @@ class VerifyReportV2(LabTool):
                         parameters=_schema({"name": {"type": "string", "description": "Nome do relatório"}}, ["name"]))
 
     def run(self, name: str) -> str:
-        res = verifier_v2.verify(self.sandbox.read_output(name), self._truth, self._sources)
+        text = self.sandbox.read_output(name)
+        res = verifier_v2.verify(text, self._truth, self._sources)
         if res["result"] == "PASS":
             return "Verificação: PASS"
         # Categories only: rule names and fixed per-rule hints, never truth values.
         writes_left = recovery_r2.remaining_budget(self.policy)["write_report"]
         return ("Verificação: FAIL. Problemas: " + "; ".join(r.split(':')[0] for r in res["reasons"]) + ". "
-                + feedback_r2.correction_feedback(res.get("checks", {}), name, writes_left))
+                + feedback_r2.correction_feedback(res.get("checks", {}), name, writes_left)
+                # Deterministic date order of the agent's OWN text (never the hidden truth).
+                + chronology_r2.feedback(text))
 
 
 def claims_success(answer: str) -> bool:
