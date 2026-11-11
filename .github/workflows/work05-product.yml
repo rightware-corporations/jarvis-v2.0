@@ -4,11 +4,15 @@ name: RIGHTWARE WORK-05 product agent tests
 on:
   push:
     branches:
+      - develop
       - feat/work05-product-agent
+  pull_request:
+    branches:
+      - develop
 permissions:
   contents: read
 concurrency:
-  group: work05-product
+  group: work05-product-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   product:
