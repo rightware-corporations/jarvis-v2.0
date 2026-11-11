@@ -1,0 +1,33 @@
+{
+  "experiment": "WORK04_R2_SMOKE_NOT_BENCHMARK",
+  "utc": "2026-11-10T13:09:33.306990+00:00",
+  "mode": "QWEN REAL",
+  "data": "SYNTHETIC ONLY",
+  "benchmark_historical": "WORK04 QWEN REAL 0/35 NOT ACCEPTED — UNCHANGED",
+  "criteria": "per-run completion+V2+ORACLE, NO benchmark acceptance threshold",
+  "cases": [
+    [
+      "EVOL",
+      4001
+    ]
+  ],
+  "repo_sha": "db99711bae5d65c92234571271c66a72a5764ace",
+  "openjarvis_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "ollama": "0.40.15",
+  "model": "qwen3.5:4b",
+  "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+  "device": "cpu",
+  "gpu": "CPU ONLY (explicit --device cpu)",
+  "cpu_count": 4,
+  "ram_gib": 15.6,
+  "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+  "ollama_listen_addresses": [
+    "127.0.0.1"
+  ],
+  "warmup_real_inference": true,
+  "preflight_model_bytes": 3376404232,
+  "preflight_vram_bytes": 0,
+  "warmup_response_tokens": 4,
+  "first_case_vram_bytes": 0,
+  "first_case_model_bytes": 3376404232
+}

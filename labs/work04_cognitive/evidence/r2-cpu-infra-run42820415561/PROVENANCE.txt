@@ -1,0 +1,3 @@
+GitHub Actions run 42820415561 (workflow work04-r2-qwen-cpu.yml, mode infra, request 1), commit dea6ef661a2ff34b86b6f9823c72da218494c037
+artifact 13766586043 sha256:bf2199c930327eacb75f7c1097610fd2da2c80e76891d989145c4c0e4bb4e3ee (downloaded ZIP sha256 matched; SHA256SUMS verified)
+excluded: ollama-server.tail.log, ollama-ps-final.json (kept in the GitHub artifact). Real Qwen use: one 4-token warm-up generation only, no scenario.
