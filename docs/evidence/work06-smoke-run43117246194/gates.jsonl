@@ -1,0 +1,5 @@
+{"gate":"0","status":"PASS","trigger_sha":"173224f009bf146afd0ee6186616c3f316873df9","approved_code_sha":"95b238de8ee5b3232107926240ff383730987e90"}
+{"gate":"1","status":"PASS","vcpu":4,"ram_gib":15}
+{"gate":"2","status":"PASS"}
+{"gate":"3","status":"PASS","digest":"d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04"}
+{"gate":"smoke","exit":0}

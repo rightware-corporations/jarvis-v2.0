@@ -1,0 +1,9 @@
+c29f978b832cc2c497a6cb12b9b968598e0796d54bd2fac46902adaaab585488  ./authorisation.json
+cf72cd32c40a1a063ebbafb4515aef775102cc19d1a17ce9b82067b987285b5e  ./gates.jsonl
+fb4ca814256fb402638f9e8da32ad14359b88cc92fddd95ca943a7f7b71fb17c  ./ollama-server.tail.log
+72df4e71317970fb064d19c5198a8c1da5fe2914bdc99885f11ee1cab93f8fb7  ./ollama-tags.json
+a075e63ceb0fbb7765f96ac7201f0bc24575941a5a653125248313cfcab3ec4b  ./product-tests.txt
+f17e4ccc4a7547b43d9ad65fac45b16ba2413008988bf16677190d9c09f7ba39  ./request.json
+60ed803b1ffd46013f2c4b4001cb8eab71a0202882dd7d9699de08f0bcb217b2  ./smoke-console.log
+b526d5c6a555e668a7063bbab1fc89d2c457acc748c4b8e4dba29b4ddbc39b68  ./smoke/audit.jsonl
+98c4f4c1fedb646a7147f6b5dcb3ef9216e6c1d72def794b04a993e6942cee4a  ./smoke/smoke.json

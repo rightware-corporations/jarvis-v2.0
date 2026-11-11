@@ -1622,3 +1622,48 @@ Nenhuma inferência Qwen.
 **Local:** venv **150 OK, 0 saltados**; Python sem pyyaml (simulado) 150 OK, 39 saltados.
 
 **Smoke:** este push não altera `ops/work05_smoke_request.json`, por isso não há nova execução. O estado do smoke mantém-se: `request_id` 1 consumido, veredicto INCOMPLETE, nova execução só com nova autorização.
+
+## CHECKPOINT — 12/11/2026: WORK-06 — segundo smoke real autorizado (`request_id` 2): **PASS** (Claude Code)
+
+**Autorização do operador:** uma execução, `request_id` 2, código aprovado `95b238de8ee5b3232107926240ff383730987e90`, plano `b9be5c6916ccf3a62e1f742af206f90da895dfa8ff2c98a0c522784c7373df9d`.
+
+**Pré-verificação:**
+- `develop` local = remoto = HEAD aprovado, árvore limpa;
+- plano inalterado;
+- CI verde em `95b238d` (produto `43114318570`, foundation `43114318517`);
+- commit de pedido `173224f009bf146afd0ee6186616c3f316873df9` só com `ops/work05_smoke_request.json`;
+- `--check-request` local `ok: true`;
+- suite na venv 150 OK, 0 saltados.
+
+**Execução:** run [`43117246194`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43117246194), `run_attempt` 1.
+- GATE 0 PASS (autorização), GATE 1 PASS (4 vCPU, 15 GiB), GATE 2 PASS (150 testes, 0 saltados), GATE 3 PASS (Ollama 0.40.15 por SHA-256, loopback, digest `d8b0f5e9…`).
+- Smoke: exit 0, cerca de 31 s (23:08:25 → 23:08:57 UTC).
+
+**Chamadas emitidas pelo Qwen** (registadas na fronteira do motor, `engine_id` `ollama`):
+1. resposta 1: `web_read` com `url` `https://example.com/` (argumentos sha256 `871da561…`), sem texto;
+2. resposta 2: nenhuma chamada, 104 caracteres de texto.
+
+Total: 1 chamada de ferramenta (limite 3), 2 respostas do modelo (limite 4 turnos). Nenhuma outra ferramenta proposta. Audit com 2 registos (aprovação e outcome OK).
+
+**Resposta:** «Segundo a própria página, este domínio serve para exemplos de documentação sem necessidade de permissão.» O produto acrescenta: «Fontes lidas (…): https://example.com/ (HTTP 200)».
+- completion `ANSWERED_WITH_SOURCES`, sem flags;
+- fonte HTTP 200 `text/html`, sha256 `25ddf2c8…`, 179 caracteres.
+
+**Veredicto (`classify`): PASS.** `answer_mentions_page_terms` true; `answer_factually_verified` **false**.
+
+**Evidência:** artefacto `13898932605`, ZIP sha256 `02e8a2ae…` igual ao digest do GitHub, 9/9 `SHA256SUMS` OK. Cópia em `docs/evidence/work06-smoke-run43117246194/`.
+
+**Limitações:**
+- uma única execução (n=1), sem medida de estabilidade;
+- página trivial e fixa; runner Linux CPU do GitHub, não a máquina Windows do operador;
+- o texto do próprio modelo **não citou o endereço** pedido na instrução; a citação vem do produto, e o PASS não exige a citação no texto;
+- a veracidade da frase não é verificada automaticamente;
+- sem voz, sem acções Windows, sem ficheiros nem shell.
+
+**Estado do protocolo:**
+- `request_id` 2 **consumido**;
+- uma terceira inferência precisa de nova autorização explícita (`request_id` 3, com `approved_code_sha` igual ao HEAD de `develop` imediatamente antes do pedido).
+
+**Próxima acção proposta (aguarda decisão do operador):**
+- repetições controladas para medir estabilidade, e/ou
+- avançar para a missão seguinte (integração de voz em português), que segundo o plano só começa após este gate.
