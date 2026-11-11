@@ -1523,3 +1523,24 @@ Nenhuma inferência Qwen; `main` e `develop` inalteradas.
 ## CHECKPOINT — 11/11/2026: R2 three-way reconciliation (GitHub operations)
 
 Both `docs/HANDOFF.md` lineages were append-only relative to `develop@de628df4b54ff8161bca443e04b5e7e58f54313c`. This document concatenates the R2 history and the independent WORK-05/product + branch-governance history without discarding either. The lab remains **experimental**; historic WORK-04 0/35 stays NOT ACCEPTED. This merge is NOT a Qwen inference nor acceptance of benchmark quality. CI and the final integration into develop remain separate verification gates.
+
+
+## CHECKPOINT — 11/11/2026: CONSOLIDAÇÃO DE BRANCHES (operador, GitHub; sem inferência)
+
+**Decisão de governação:** três linhas permanentes: `main` (release aprovada), `develop` (desenvolvimento quotidiano), `demo/issa-20261111` (demonstração quando autorizada). Ver `docs/BRANCH_STRATEGY.md` e `AGENTS.md`.
+
+**Merge e preservação confirmados:**
+1. PR #4: WORK-05 R1 integrado em `develop`, commit `929fa945166ad4515498aba35a41a6eff3d2b4c9`; CI `43105709812` success no HEAD da feature. Agente real de produto com testes determinísticos (136 OK na venv), **sem inferência Qwen**.
+2. PR #5: dois workflows exclusivos de `main` preservados através de merge `main → develop`, commit `63986b9a563fa11ca7430e466bdfaceaeecb4645`. São **manuais**; nenhum benchmark executado. `main` permanece `0cac8e8d828d91cb9d849c67a33f62eb701bdb94`.
+3. Documento de investigação único copiado para `develop`, commit `671bdb2e733fe47009a28792047e4404afd68065`.
+4. PR #3 (protótipo paralelo WORK-05-A) fechado **sem merge**; não integra o código alternativo no runtime de produto.
+5. WORK-04 R2: conflito real identificado apenas em `docs/HANDOFF.md`, cujas versões derivavam ambas, por *append-only*, do mesmo base de 119065 caracteres. Reconciliação automática preservou **ambos os segmentos** e todos os 83 outros ficheiros R2, commit de merge `5798c70ee5843c8a21945d4f2279dd2b2f2efd10`. CI `43107964069` (R2 estático) e `43107975121` (WORK05) success. PR #2 integrado em `develop`, merge `1d4661556bc12527e7dead495917b103c8fe090f`. **Resultado histórico de Qwen no WORK04 R2 permanece 0/35, NOT ACCEPTED.** A integração da investigação não aprova a capacidade cognitiva do produto.
+6. Commit de arquivo de ascendência `7200b123dd8d775db064c942cdd711e0384fc87f` integrou o **histórico Git** do protótipo WORK-05-A e da investigação original com a mesma árvore de ficheiros de `develop` (0 ficheiros alterados). Preserva commits para recuperação, sem instalar código alternativo.
+7. PR #6 sincronizou `develop → demo/issa-20261111` mantendo os dois commits próprios da demo, merge `ccac84ec75e907ec709242dee7bfff745df41295`. CI Windows **estático** `43108564844` success; sem prova real de áudio/hardware.
+8. O workflow WORK05 determinístico foi activado para `develop` e PRs para `develop`, commit `7e4d8c8f403560d4c9ecbbc13ee6d5da02087ef8`. GitHub Actions `43108141030` e `43108341951` SUCCESS no `develop` integrado. `docs/BRANCH_STRATEGY.md` actualizado em `7d3f6c1a0a04d68cd90d878353575c677ffbc245`.
+
+**Verificação de ascendência:** compara `main`, `feat/work05-product-agent`, `feat/work04-r2-semantic-safety`, `feat/work05-product-agent-foundation` e `research/jarvis-agent-survey-20261111` contra `develop`: todos com `behind_develop=0` (histórico alcançável). `demo/issa` sincronizado separadamente. O último HEAD de `develop` ANTES desta adenda é `7d3f6c1a0a04d68cd90d878353575c677ffbc245`.
+
+**Pendências administrativas que NÃO foram realizadas:** quatro branches temporárias ainda existem fisicamente (total actual: 7) porque o conector GitHub disponível não tem ferramenta para apagar refs. O conector também não disponibiliza operação de regras de protecção de branches; no GitHub `main` e `develop` permanecem `protected=false`. O operador com acesso administrativo poderá eliminar as quatro branches temporárias **após confirmar SHAs/ascendência e ausência de workers**, e activar branch protection/rulesets. Não alegar que há só três refs ou que as protecções estão activadas até verificar na API.
+
+**Próximo desenvolvimento:** a fonte de trabalho é `develop`. Revalidar remoto/CI/HANDOFF antes da próxima missão. A autorização para um smoke Qwen real é um gate distinto, ainda não emitida. Demo Issa fica separada até decisão do operador. Persistir checkpoints de engenharia antes dos outputs; não guardar conversas nem segredos neste repositório público.
