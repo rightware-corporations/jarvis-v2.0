@@ -1304,3 +1304,52 @@ Sem merge; `main` e `develop` inalteradas.
 5. Uma nova regressão EVOL-4001 com autorização; holdouts só depois de um PASS.
 
 Detalhe em `docs/research/WORK04_R2_CPU_EVOL4001_RUN43066548100.md`. Critérios inalterados. Históricos 0/35, 0/3, 0/1 e 0/1 inalterados. Sem merge; `main` e `develop` inalteradas.
+
+## ADENDA — 11/11/2026: R2-A/B/C/D — reparação determinística dos bloqueadores do run 43066548100 (sem inferência)
+
+**Estado:** implementado e validado por CI. **Nenhuma inferência Qwen.** Ficheiro de pedido inalterado. V2, ORACLE, rev.1, critérios e históricos (0/35, 0/3, 0/1, 0/1, 0/1) inalterados. Sem merge.
+
+### Implementação (só no branch R2)
+
+- **R2-A (`structure_lint_r2`)** — lint da secção `## Achados` do **próprio** relatório:
+  - cita as linhas inválidas (sanitizadas, até 100 caracteres, no máximo 4 linhas);
+  - indica o formato obrigatório `- [TIPO] campo: descrição`;
+  - não lê a verdade, não reescreve o relatório e não altera veredictos;
+  - aceita exactamente o que o V2 consegue ler.
+- **R2-B (`OverwritePrecheckPolicy.halt_reason`)** — paragem fail-closed (`sem caminho autorizado para concluir…`) quando:
+  - o último relatório escrito falhou a verificação e já não há quota de escrita; ou
+  - as verificações se esgotaram sem PASS.
+
+  As quotas, a política e o registo de recusas ficam inalterados. A forma do run 43066548100 reproduzida de forma determinística pára **sem** as 5 tentativas `_v3`.
+- **R2-C** — cada resposta do `verify_report` fica guardada:
+  - completa e sanitizada, até 6000 caracteres;
+  - com SHA-256 igual ao `result_sha256` do rasto, o índice da chamada no rasto e o SHA do relatório;
+  - o resumo expõe `no_path_halt` e o número de feedbacks.
+- **R2-D (`docs/research/R2D_STRUCTURED_OUTPUT_CONTRACT.md`)** — especificação:
+  - **FACTO:** o `OllamaEngine` fixado reduz `json_schema` a `"format": "json"`, perdendo o schema;
+  - **rota A** (argumentos de ferramenta tipados, validados no código RIGHTWARE, Markdown gerado por código) é a recomendada;
+  - **rota B** (`format:<schema>` directo) está NOT VERIFIED;
+  - os protocolos do laboratório e do produto ficam separados.
+
+### Commits
+
+| Commit | Conteúdo |
+|---|---|
+| `cd3a5a0` | Código |
+| `c7696aa` | 18 testes e listas de CI |
+| `b8e4bc0` | Especificação R2-D |
+
+Todas as regras novas são mortas por mutação.
+
+### CI real
+
+[`43070956530`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43070956530) em `b8e4bc0`: **178 WORK-04/R2 + 61 WORK-02 + 56 RIGHTWARE = 295 PASS**. `actionlint` sem erros.
+
+### Prontidão para a próxima inferência
+
+O HEAD de código para o próximo EVOL-4001 é `b8e4bc0c6aabfdf70781d4ea9c64e39dfb7bb03e`; o commit deste HANDOFF é só documentação. Disparo com um commit que altere só o ficheiro de pedido, após autorização explícita.
+
+**Riscos:**
+- o modelo pode continuar a ignorar o formato mesmo com a linha citada;
+- o lint e a paragem mudam outra vez a condição R2, por isso os resultados não são comparáveis com os anteriores;
+- a rota B não está verificada.
