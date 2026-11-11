@@ -184,6 +184,10 @@ class SuiteOnARequestCommit(unittest.TestCase):
     def test_contract_tests_pass_when_a_request_file_is_present(self):
         import shutil
         import tempfile
+        try:
+            import yaml  # noqa: F401
+        except ImportError:   # plain Python: WorkflowContract skips there; the venv job (no skips) runs this
+            self.skipTest("pyyaml only in the pinned venv")
         tmp = Path(tempfile.mkdtemp())
         try:
             shutil.copytree(ROOT / "rightware", tmp / "rightware")
