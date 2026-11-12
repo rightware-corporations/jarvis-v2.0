@@ -2587,3 +2587,17 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **GATE DE CONCLUSÃO:** só declarar E3/L1–L4 como demonstrados se os testes e respectivos falsos PASS forem rastreáveis e CI estiver confirmado. Não avançar automaticamente para patch de produto nem real Qwen. Próxima decisão do operador: seleccionar política de objectivos/verificação com base nos resultados, decidir se e como implementar num incremento separado de produção.
 
 **ESTADO DESTE CHECKPOINT:** autorização e contrato **publicados por ChatGPT**; execução E3/L1–L4 **ainda não demonstrada** nesta operação.
+
+## CHECKPOINT — 12/11/2026: R3-C2-014 — matriz E3/L1–L4 preparada por ChatGPT (investigação documental)
+
+**Fonte de autorização:** operador já autorizou exclusivamente experiências FAKE/laboratório E3 e L1–L4 (checkpoint R3-C2-014 precedente). O presente trabalho NÃO iniciou Claude nem executou testes. **HEAD de início:** `ed580c863cb0b758b18e41e4c4d84572562f2b07` (CI desse commit 3/3 success). **Commit documental precedente:** `d7595385ac5ba340dbcb5cd645c509813fa631ed`.
+
+**Artefacto criado:** `docs/research/WORK07_R3C2_014_E3_L1L4_TEST_CONTRACT.md`, com 12 fixtures sintéticas E3, 15 casos L1–L4, modelo de vínculo receipt↔objectivo, invariantes e métricas para falsos PASS/FAIL. Documento de desenho/aceitação, **não prova de execução**. Sem código, dependências ou comportamento de produção alterados.
+
+**Direcção de investigação:** objectivos T1 (contrato confiável) não podem ser retirados/despromovidos por extracção determinística parcial T2 ou propostas de modelo T3; ausência de objectivos identificados não equivale a conclusão. Evidências devem provir de outcomes reais, com `task_id/run_id/call_id` e critérios/versões explícitos, nunca de memória, URL, título, afirmação do modelo ou recusa de ferramenta. Separar execução/completude operacional/correcção factual e usar UNKNOWN quando prova insuficiente.
+
+**Riscos e limites:** o documento contém candidatos a schemas, não interfaces aprovadas. Para instruções abertas a extracção fiável pode continuar não demonstrada. Não executar mutante sem limites externos: mutação E4 anterior causou OOM.
+
+**Estado:** E3/L1–L4 AUTORIZADOS para laboratório e testes, mas **não executados/confirmados nesta operação**. Claude poderá consumir a matriz no próximo ciclo de execução, sem perder seu trabalho paralelo. Preservar todos os checkpoints anteriores.
+
+**Próxima acção:** Claude revalidar HEAD local/remoto/HANDOFF/CI; executar somente E3 + L1–L4 em testes FAKE e reportar resultados/limites/CI em novo checkpoint. Nenhum patch `rightware/`, Qwen, persistência, alteração de pin/policy/quotas, main ou benchmark histórico autorizado.
