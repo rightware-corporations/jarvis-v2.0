@@ -118,6 +118,47 @@ class RecordingEngine:
         return ""
 
 
+def reconcile_tool_audit(entries: list[dict]) -> dict:
+    """Count hook approvals without a matching boundary outcome, without raw arguments.
+
+    Diagnostic only: an approved hook is not proof that OpenJarvis executed the
+    tool. Denied proposals do not require an outcome. Reconcile repeated calls
+    by (tool, already-sanitised args), not by URL text or the model's claims.
+    """
+    pending: dict[str, list[str]] = {}
+    unmatched_outcomes = 0
+    for event in entries:
+        if not event.get("allowed"):
+            continue
+        tool = str(event.get("tool", ""))
+        key = json.dumps([tool, event.get("args", {})], sort_keys=True, ensure_ascii=False)
+        if "outcome" in event:
+            approvals = pending.get(key, [])
+            if approvals:
+                approvals.pop(0)
+            else:
+                unmatched_outcomes += 1
+        else:
+            pending.setdefault(key, []).append(tool)
+    pending_tools = sorted(tool for tools in pending.values() for tool in tools)
+    return {"approved_without_outcome": len(pending_tools),
+            "pending_tool_names": pending_tools,
+            "outcome_without_approval": unmatched_outcomes,
+            "audit_entries": len(entries)}
+
+
+def read_tool_audit(path: Path) -> dict:
+    """Read persisted minimal audit data; a malformed or absent trace is explicit."""
+    try:
+        entries = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        if not all(isinstance(event, dict) for event in entries):
+            raise ValueError("audit event is not an object")
+    except (OSError, ValueError):
+        return {"status": "UNREADABLE", "approved_without_outcome": None,
+                "pending_tool_names": [], "outcome_without_approval": None}
+    return {"status": "READABLE", **reconcile_tool_audit(entries)}
+
+
 # -- Phase 4: site preflight (no model) -------------------------------------------------
 READY = {"site-preflight": "READY", "qwen": "PASS"}          # the ONLY accepted verdicts
 
@@ -259,8 +300,10 @@ def run(op: str, approved: str, out: Path) -> int:
     verdict = evaluate(engine_id=engine.engine_id, model_digest=info["model_digest"],
                        expected_digest=A.EXPECTED_DIGEST, responses=engine.responses, events=events,
                        reply=outcome, answer=engine.final_text(), max_tool_calls=lim["tool_calls"])
+    audit_integrity = read_tool_audit(out / "audit.jsonl")
     evidence = {**fixed, "models_called": True, **info, "utc_start": started.isoformat(),
-                "utc_end": dt.datetime.now(dt.timezone.utc).isoformat(), "model_responses": engine.responses,
+                "utc_end": dt.datetime.now(dt.timezone.utc).isoformat(),
+                "tool_execution_audit": audit_integrity, "model_responses": engine.responses,
                 "browser_events": events, "reply": outcome, "model_answer": engine.final_text(),
                 "product_reply": reply.text, "verdict": verdict}
     (out / "qwen_gate.json").write_text(json.dumps(evidence, ensure_ascii=False, indent=2), encoding="utf-8")

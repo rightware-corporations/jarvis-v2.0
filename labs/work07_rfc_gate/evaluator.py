@@ -58,20 +58,38 @@ def check_document(number: str, status, final_url: str | None, title: str | None
 
 
 def spans(answer: str) -> dict[str, str]:
-    """Text attributed to each RFC number: sentence/line segments, split again at each
-    mention when a segment names both numbers."""
+    """Associate answer text with RFCs across Markdown section headings and bullets.
+
+    Headings that identify one RFC retain context for the following bullet lines.
+    Mixed-RFC sentences are split at each number and clear context; unrelated
+    headings clear context. This is evaluator-only and does not relax source checks.
+    """
     out = {n: "" for n in GOLD}
-    for seg in re.split(r"\n|;|(?<=[.!?])\s+", answer):
-        hits = sorted((m.start(), m.group(0)) for m in re.finditer(r"9110|9112", seg))
-        if not hits:
+    active = None
+    numbers = re.compile(r"\b(?:9110|9112)\b")
+    for raw in answer.splitlines():
+        line = raw.strip()
+        if not line:
             continue
-        if len({h[1] for h in hits}) == 1:
-            out[hits[0][1]] += " " + seg
-            continue
-        for i, (pos, n) in enumerate(hits):
-            end = hits[i + 1][0] if i + 1 < len(hits) else len(seg)
-            start = 0 if i == 0 else pos
-            out[n] += " " + seg[start:end]
+        heading = bool(re.match(r"(?:#{1,6}\s+|\*\*[^*]+\*\*\s*:?\s*$)", line))
+        if heading and not numbers.search(line):
+            active = None
+        for seg in re.split(r";|(?<=[.!?])\s+", line):
+            hits = list(numbers.finditer(seg))
+            seen = {m.group() for m in hits}
+            if len(seen) > 1:
+                for i, match in enumerate(hits):
+                    end = hits[i + 1].start() if i + 1 < len(hits) else len(seg)
+                    chunk = seg[:end] if i == 0 else seg[match.start():end]
+                    out[match.group()] += " " + chunk
+                active = None
+            elif seen:
+                number = next(iter(seen))
+                out[number] += " " + seg
+                if re.match(r"^[#*\s-]*(?:RFC\s*)?" + number + r"\b", seg, re.IGNORECASE):
+                    active = number
+            elif active:
+                out[active] += " " + seg
     return out
 
 
