@@ -1,0 +1,7 @@
+{
+  "experiment": "WORK07_RFC_QWEN_GATE",
+  "request_id": 1,
+  "approved_code_sha": "a2a7a2ac110b04860d78bb61224929a4a98a3cc6",
+  "plan_sha256": "44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94",
+  "authorized_by": "RIGHTWARE operator, explicit chat approval 2026-11-12: WORK-07 Phase 5 real Qwen3.5:4b, 1 run, browse RFC Editor only, 14 turns, 14 calls, 768 tokens/response, 900s, develop"
+}
