@@ -2230,3 +2230,53 @@ Não foram alterados: `policy.py`, as quotas, o `_compose()`, o avaliador RFC, o
 **CI em `add1458b5874817402abf9d95f890f541afb38c1`:** WORK-05 product `43214248179`, foundation `43214248125` e foundation PR `43214257768`, todos success.
 
 R3-C1 concluído. Não se avança para o R3-C2 sem nova missão.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-001 — arquitectura em investigação, SEM implementação R3-C2 (preparado por ChatGPT; escrito por Claude Code)
+
+**Regra permanente HANDOFF-FIRST (instrução explícita do operador RIGHTWARE):**
+- Toda a entrega significativa, descoberta, decisão, experiência ou mudança de estado produz um checkpoint em `docs/HANDOFF.md`.
+- O Claude Code actualiza e faz commit do HANDOFF em cada checkpoint de engenharia, antes da etapa seguinte. O ChatGPT prepara checkpoints de investigação e propostas; a escrita técnica no repositório é exclusiva do Claude Code.
+- Antes de retomar o trabalho, verificar o HEAD remoto, o HANDOFF e o CI.
+- Registar resultados reais, limites, falhas, hipóteses, decisões aprovadas e o próximo passo exacto.
+- Histórico append-only, sem transcrições extensas, segredos ou dados pessoais desnecessários.
+- Se a actualização falhar, declarar o bloqueio e preservar o checkpoint pendente. Nunca afirmar publicação sem confirmar o commit remoto.
+
+**Baseline verificado pelo Claude Code antes desta escrita:**
+- `develop` local = remoto = `3053a75660bb336f2dbf7e14cf551be2f1369d54`, árvore limpa;
+- CI do HEAD: WORK-05 product `43214956235`, foundation `43214956076` e `43214969977`, todos success.
+
+**Estado:**
+- R3-B concluído, CI verde.
+- R3-C1 concluído: 269 testes OK, 0 saltados na venv; três workflows success.
+- Histórico Qwen: pedidos 1 e 3 FAIL, pedido 2 BLOCKED. **Não reclassificar.**
+
+**Investigação actual — R3-C2, Generic Task Completion Contract.**
+
+**Problema confirmado (R3-C1, cenários A, B e E):** o produto devolve `ANSWERED_WITH_SOURCES` sempre que há fontes lidas, mesmo que os objectivos obrigatórios não estejam comprovados.
+
+**Proposta de arquitectura — NÃO APROVADA para implementação:**
+1. **Task Contract:** objectivos e critérios de aceitação.
+2. **Evidence Registry:** associa as evidências reais a cada objectivo.
+3. **Completion Controller:** verificação, recuperação limitada e estado final.
+
+Estados candidatos: `PENDING`, `IN_PROGRESS`, `VERIFIED`, `BLOCKED`, `UNVERIFIED`.
+
+**Princípios:**
+- a presença de fontes não basta para sucesso;
+- não classificar documentos só pelo formato do URL;
+- o modelo não pode certificar a sua própria execução;
+- sem oráculos específicos das RFC no produto;
+- sem aumento de quotas ou autorizações;
+- sem recuperação ilimitada;
+- distinguir conclusão técnica de verificação factual.
+
+**Pendências:**
+1. representar os objectivos sem depender de uma decomposição infalível pelo modelo;
+2. níveis e tipos de evidência;
+3. quando é permitida a recuperação e quando é obrigatório terminar parcialmente;
+4. compatibilidade com `AgentReply`, `_compose()` e `TaskTrace`;
+5. rever a privacidade da evidência sintética antes de reutilizar o trace num runner real.
+
+**Próximo passo:** desenho do Task Contract e dos critérios de verificação do R3-C2, em investigação read-only. Não iniciar a implementação R3-C2, Qwen nem novo `request_id` sem autorização específica.
+
+**Operações deste checkpoint:** apenas esta adenda ao HANDOFF; sem alterações de código, testes, workflows, planos, `main` ou pin.
