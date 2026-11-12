@@ -2065,3 +2065,29 @@ O primeiro CI após o checkpoint `db0e7ad4` falhou em `test_request_files_absent
 **Integridade:** artefacto GitHub Actions `13930551641`, ZIP SHA256 `debbfca867ac73f20e006c8b6f6f7a97d4cdd635e067499feba3bdd211743eaf` confere com digest GitHub, **11/11** entradas do `SHA256SUMS` verificadas contra bytes reais. Os URL com chave x-typesense-api-key continuam com valor `REDACTED` nos eventos observados. Índice persistente `docs/evidence/work07-qwen-run43189355873/RESULT.md` + `PROVENANCE.txt`, sem alterar original. Histórico preservado: WORK-07 Fase 4 1/2 NOT_READY, 3 READY; Qwen Fase 5 1 FAIL real, 2 BLOCKED sem inferência, 3 FAIL real.
 
 **Próximo passo recomendado, NÃO aprovado:** investigar determinísticamente o hook/vendor OpenJarvis que aprovou ferramenta sem outcome e o controle de conclusão da tarefa, mantendo o modelo, planos, política de rede, WORK-06, `main` e pin inalterados. Não repetir Qwen nem criar request 4 sem autorização expressa do operador após engenharia/CI. Este checkpoint altera apenas documentação de evidências e HANDOFF; nenhum novo modelo foi executado para redigir o relatório.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-B — causa confirmada da aprovação sem outcome (Claude Code, investigação, sem Qwen)
+
+**Base:** HEAD remoto `3b0553d8c9fd092095684ed6cc1f0f905e4ecf54`. Artefactos originais re-descarregados e verificados:
+- run `43161108959` (pedido 1): ZIP `baecf5f0…9cec69`, 11/11 OK;
+- run `43189355873` (pedido 3): ZIP `debbfca8…743eaf`, 11/11 OK.
+
+**1. Backend do LoopGuard: Python (FACTO).**
+- O workflow usa `uv sync --frozen --no-dev`.
+- `openjarvis-rust` só existe no grupo de dependências `desktop-native`, que não é instalado.
+- Na venv fixada, `openjarvis_rust` dá `ModuleNotFoundError`, por isso `LoopGuard._rust_impl is None` e corre `_python_check`.
+
+**2. Mecanismo (FACTO, código fixado `f21d902`):**
+- `OrchestratorAgent` não aceita `loop_guard_config`, logo o `LoopGuard` usa sempre os valores por omissão (`ping_pong_window=6`, `warn_before_block=True`, `poll_tool_budget=5`, `max_identical_calls=3`).
+- Em `_run_function_calling`, a ordem é `_check_tool_allowed` (hook RIGHTWARE, que **aprova** e consome a quota), depois `LoopGuard.check_call`, e só depois `_executor.execute` (`_PolicyTool.execute`, que produz o outcome).
+- A detecção de ciclos usa só os **nomes** das ferramentas, ignorando os argumentos:
+  - a 6.ª chamada (`web_open, web_type, web_submit, web_open, web_type, web_submit`) gera o aviso e é executada;
+  - a 7.ª (`web_open`) repete o mesmo motivo e é **bloqueada**;
+  - o modelo recebe «Loop guard: Repetitive tool-calling pattern detected (ping-pong).»;
+  - a aprovação RIGHTWARE fica sem outcome, e a quota `web_open` (3) fica consumida.
+- No pedido 1, o modelo repetiu o mesmo `web_open` e a política recusou-o por «limite de chamadas desta ferramenta atingido», ou seja, a quota foi consumida pela chamada que o LoopGuard bloqueou. Está visível como a 14.ª entrada da auditoria original.
+- **Latente:** `poll_tool_budget=5` bloquearia, depois de aprovada, a 6.ª chamada de `web_follow` ou `web_find` (limite do produto: 6).
+
+**3. Reprodução determinística:** a sequência exacta do pedido 3 repetida em `AgentSession` + `OrchestratorAgent` reais (modelo FAKE, fixture local, sem rede) produz uma auditoria idêntica: 15 entradas, `web_open` n.º 7 aprovado sem outcome, e a mesma mensagem de LoopGuard ao agente.
+
+**Próxima operação:** correcção mínima no código RIGHTWARE (sem tocar no pin) e regressões.
