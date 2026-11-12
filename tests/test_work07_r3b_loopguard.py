@@ -147,7 +147,7 @@ class RealRunShapes(_SessionCase):
         self.assertIn("limite de chamadas desta ferramenta atingido", refusal[0])
         self.assertEqual(reply.outcomes[-1].status, "OK")            # the following web_follow still runs
 
-    def test_reconciliation_catches_any_future_skipped_execution(self):
+    def test_reconciliation_catches_any_future_unexecuted_approval(self):
         """If something between the hook and the tool skips execution again (simulated by putting
         the upstream LoopGuard back), the run closes it as NOT_EXECUTED and flags it."""
         original = S._RightwareOrchestrator.__init__

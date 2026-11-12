@@ -2130,3 +2130,9 @@ O primeiro CI após o checkpoint `db0e7ad4` falhou em `test_request_files_absent
 - n=0 execuções reais com esta correcção.
 
 Sem Qwen, sem Ollama, sem novo pedido, sem branches, `main` intacta.
+
+### WORK-07 R3-B — CI de `85b660f` falhou por um nome de teste (corrigido)
+
+O CI WORK-05 product `43196719884` correu **248 testes OK**, mas o passo falhou: o workflow rejeita qualquer ocorrência da palavra «skipped» no log da venv, e o nome do novo teste continha `future_skipped_execution`. Não houve nenhum teste saltado.
+
+O teste foi renomeado para `test_reconciliation_catches_any_future_unexecuted_approval`. A regra estrita do workflow ficou inalterada e o código do produto também. Localmente, a venv dá 248 OK e 0 ocorrências de «skipped».
