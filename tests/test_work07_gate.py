@@ -138,6 +138,38 @@ class Evaluator(unittest.TestCase):
         self.assertEqual(v["verdict"], "FAIL")
 
 
+def valid_request(op):
+    return {"experiment": G.OPS[op]["experiment"], "request_id": 1, "approved_code_sha": "a" * 40,
+            "plan_sha256": G.plan_sha256(op), "authorized_by": "operator"}
+
+
+def request_file_problems(root, op):
+    """Structural check of a committed gate request (absent = no problems)."""
+    path = Path(root) / G.OPS[op]["request"]
+    if not path.exists():
+        return []
+    try:
+        req = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError:
+        return ["not JSON"]
+    if not isinstance(req, dict) or set(req) != A.REQUEST_KEYS:
+        return ["keys"]
+    problems = []
+    if req["experiment"] != G.OPS[op]["experiment"]:
+        problems.append("experiment")
+    if req["plan_sha256"] != G.plan_sha256(op):
+        problems.append("plan")
+    rid = req["request_id"]
+    if not isinstance(rid, int) or isinstance(rid, bool) or rid < 1:
+        problems.append("request_id")
+    if not A._hex(req["approved_code_sha"], 40):
+        problems.append("approved_code_sha")
+    who = req["authorized_by"]
+    if not isinstance(who, str) or not who.strip() or "\n" in who or len(who) > 200:
+        problems.append("authorized_by")
+    return problems
+
+
 class PlanAndInstruction(unittest.TestCase):
     def test_model_inputs_never_contain_the_reference(self):
         fixed = json.dumps(G.plan("qwen"), ensure_ascii=False).lower()
@@ -172,9 +204,28 @@ class PlanAndInstruction(unittest.TestCase):
         self.assertIn("wrong experiment", A.validate_request({**req, "experiment": A.EXPERIMENT},
                                                              changed_files=[G.OPS["qwen"]["request"]], **kw))
 
-    def test_no_request_files_are_committed_yet(self):
-        for op in G.OPS.values():
-            self.assertFalse((ROOT / op["request"]).exists(), op["request"])
+    def test_request_files_absent_or_structurally_valid(self):
+        # GATE 2 runs this suite ON the request commit, so a present request file must pass
+        # (asserting absence here made the approved code unable to run its own gate; R1 fix).
+        for op in G.OPS:
+            self.assertEqual(request_file_problems(ROOT, op), [], op)
+
+    def test_request_file_check_rejects_malformed_requests(self):
+        import tempfile
+        root = Path(tempfile.mkdtemp())
+        self.assertEqual(request_file_problems(root, "site-preflight"), [])          # absent: fine
+        (root / "ops").mkdir()
+        good = valid_request("site-preflight")
+        path = root / G.OPS["site-preflight"]["request"]
+        path.write_text(json.dumps(good))
+        self.assertEqual(request_file_problems(root, "site-preflight"), [])
+        for bad in ({**good, "plan_sha256": G.plan_sha256("qwen")}, {**good, "experiment": "X"},
+                    {**good, "request_id": 0}, {**good, "approved_code_sha": "abc"},
+                    {**good, "authorized_by": "a\nb"}, {**good, "extra": 1}):
+            path.write_text(json.dumps(bad))
+            self.assertNotEqual(request_file_problems(root, "site-preflight"), [], bad)
+        path.write_text("{not json")
+        self.assertNotEqual(request_file_problems(root, "site-preflight"), [])
 
 
 @unittest.skipIf(yaml is None, "pyyaml required")

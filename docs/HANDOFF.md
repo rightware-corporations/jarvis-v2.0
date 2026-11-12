@@ -1830,3 +1830,26 @@ A preservação e o upload continuam `always()`, depois do veredicto.
 - Nenhum workflow WORK-07 foi disparado (não há ficheiro de pedido).
 
 **Estado:** as duas lacunas da revisão estão corrigidas e testadas. **Próxima operação** (depende da autorização do operador): pedido do preflight da Fase 4, com `request_id` 1, plano `b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4` e código aprovado igual ao HEAD de `develop` imediatamente antes do commit de pedido (este checkpoint, se nada mais for commitado).
+
+## CHECKPOINT — 12/11/2026: WORK-07 Fase 4 — autorização recebida mas NÃO executada; defeito bloqueante corrigido (Claude Code)
+
+**Autorização do operador:** preflight do site, sem modelo, `request_id` 1, código `227abc1f7f1f19e08c90d825f7739167a7c0029a`, plano `b0e4ac78…ef4`.
+
+**Verificações prévias:** local = remoto = `227abc1`, árvore limpa, plano igual, CI verde (`43151641107`, `43151641136`, `43151645741`).
+
+**Bloqueio (FACTO):** antes do push simulei localmente o GATE 2, correndo a suite com o ficheiro de pedido presente. Resultado: **1 falha** em `test_no_request_files_are_committed_yet`, que exigia a ausência dos ficheiros de pedido. O GATE 2 corre a suite no próprio commit de pedido, por isso o código aprovado nunca poderia passar o próprio gate. É o mesmo defeito que consumiu o `request_id` 1 do WORK-06.
+
+**Decisão:** **não fiz commit nem push do pedido.** O ficheiro local foi removido e o `request_id` 1 do preflight **não foi consumido**. Não houve navegação externa.
+
+**Correcção (neste commit):**
+- o teste passa a validar a estrutura do pedido quando o ficheiro existe: chaves, experiência, plano, `request_id`, SHA e `authorized_by`;
+- nova regressão `tests/test_request_commit_suite.py` corre a **suite completa** numa cópia temporária com os dois pedidos WORK-07 presentes;
+- a reintrodução da asserção antiga é detectada (mutação).
+
+**Testes:**
+- simulação do GATE 2 com o pedido presente: OK, 0 saltados;
+- venv: **211 OK, 0 saltados**; Python simples: 211 OK, 71 saltados.
+
+**Planos inalterados:** `b0e4ac78…ef4` e `44d96648…d94`. WORK-06 e pin inalterados.
+
+**Consequência:** o código aprovado mudou, por isso a Fase 4 precisa de **nova autorização** com o novo HEAD de `develop`, que é o SHA deste commit depois de o CI estar verde. Mantém-se o `request_id` 1 e o plano `b0e4ac78…ef4`.
