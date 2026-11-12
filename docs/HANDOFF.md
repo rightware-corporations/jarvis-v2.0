@@ -1741,3 +1741,33 @@ Detalhe em `docs/research/WORK07_BROWSER_ADAPTER_DESIGN.md`.
 - mutação: 5/5 mutantes detectados (allowlist, POST, credenciais, links externos, texto na auditoria).
 
 **Não efectuado:** nenhum acesso ao RFC Editor, nenhum Qwen. **Riscos:** o funcionamento sem JavaScript no RFC Editor continua por verificar (Fase 4). **Próxima operação:** avaliador e runner do gate em `labs/`, preflight do site e workflows inertes.
+
+## CHECKPOINT — 12/11/2026: WORK-07 Fases 4–5 — preflight do site e gate Qwen preparados, NÃO executados (Claude Code)
+
+**Implementado:**
+- `labs/work07_rfc_gate/evaluator.py` contém o oráculo RFC (fora do produto) e o `evaluate`, que dá PASS, FAIL ou INCOMPLETE com:
+  - critérios de processo: pesquisa e submissão pelo próprio modelo, seguir uma ligação e abrir os dois documentos com o título oficial;
+  - rubrica da resposta: pares título/propósito, ausência de troca e URLs citados;
+  - falhas de site ou runner classificadas como INCOMPLETE.
+- `labs/work07_rfc_gate/gate.py`:
+  - planos fixos `site-preflight` (`b0e4ac78…ef4`, sem modelo) e `qwen` (`44d96648…d94`);
+  - autorização igual à do WORK-06, com ficheiros de pedido próprios ainda **ausentes**;
+  - `RecordingEngine` com os argumentos públicos e o texto final do modelo;
+  - driver determinístico do preflight.
+- Workflows inertes `work07-site-preflight.yml` (sem Ollama) e `work07-qwen-rfc.yml`, ambos com `actionlint` OK.
+- O browser regista as ligações TCP reais (host, IP, porta) do backend fixado em cada evento.
+- Documento `docs/research/WORK07_REAL_GATES.md` com requisitos e texto de autorização.
+
+**Testes locais:**
+- venv: **192 OK, 0 saltados**; Python simples: 192 OK, 62 saltados;
+- `plan_sha256` do WORK-06 inalterado (`b9be5c69…`);
+- o driver do preflight dá READY contra uma **maquete local**, que não prova nada sobre o site real.
+
+**Não efectuado:** nenhum acesso ao `www.rfc-editor.org`, nenhum Qwen, nenhum ficheiro de pedido criado, nenhuma branch, nenhuma alteração em `main`.
+
+**Riscos:**
+- a pesquisa do RFC Editor sem JavaScript continua por verificar (INFERÊNCIA);
+- n=1 quando houver execução;
+- o contexto cresce com cada página e pode levar a um tempo alto em CPU.
+
+**Próxima operação:** aguardar a autorização do operador para o preflight da Fase 4 (`request_id` 1). Só depois de `READY`, a autorização separada da Fase 5.

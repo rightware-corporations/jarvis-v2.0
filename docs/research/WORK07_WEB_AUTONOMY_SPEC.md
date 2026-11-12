@@ -51,3 +51,14 @@ Target: one user instruction -> agent interprets -> plans under bounded budgets 
 On `develop`: design + minimal product adapter (if feasible) + deterministic tests + CI + updated documentation + append-only `docs/HANDOFF.md` checkpoint **before each substantial output**; push and verify remote HEAD. Respect `main` release boundary and `demo/issa-20261111` isolation; no new branches, no merges, no real Qwen without explicit authorisation. Stop and report blockers rather than diluting network or action controls.
 
 **Priority:** web multi-step research/task completion first. Voice/STT/TTS integration is intentionally postponed, not discarded.
+
+## 6. Implementation status (2026-11-12, Claude Code)
+
+| Ladder step | Status |
+|---|---|
+| **A** | Done (`WORK07_BROWSER_ADAPTER_DESIGN.md`). |
+| **B** | Done: `rightware/agent/browser.py`, fixture tests `tests/test_work07_browser.py`, and evaluator/runner/workflow tests `tests/test_work07_gate.py`. |
+| **C** | Prepared, **not run**: `labs/work07_rfc_gate/gate.py --run site-preflight` and `.github/workflows/work07-site-preflight.yml`. |
+| **D** | Prepared, **not run**: `--run qwen` and `.github/workflows/work07-qwen-rfc.yml`. |
+
+Exact authorisation requirements and plan digests: `WORK07_REAL_GATES.md`.

@@ -221,6 +221,9 @@ class PublicBrowser:
         except Exception as exc:              # fail closed, no internals
             self.events.append({**event, "outcome": "FAILED", "error": type(exc).__name__})
             return Step("FAILED", f"A navegação falhou ({type(exc).__name__}).", {})
+        backend = getattr(self.fetcher, "backend", None)    # pinned backend: real (host, ip, port) opened
+        if backend is not None:
+            event["connections"] = [list(c) for c in getattr(backend, "connections", [])][:10]
         first = page.text.split("\n", 1)[0]
         evidence = {"final_url": page.final_url, "status": page.status, "content_type": page.content_type,
                     "sha256": page.sha256, "chars": len(page.text), "truncated": page.truncated,
