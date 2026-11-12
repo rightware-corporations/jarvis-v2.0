@@ -101,3 +101,32 @@ No answers, document URLs or titles are supplied.
 2. **Phase 5** (only after Phase 4 is `READY`), a separate authorisation: «AUTORIZO uma execução real Qwen3.5:4b WORK-07, `request_id: 1`, código aprovado `<SHA>`, plano `44d96648…d94`, limites 14 turnos / 14 chamadas / 768 tokens / 900 s, apenas `browse` em `www.rfc-editor.org`».
 
 Any code change after approval changes the approved SHA, so a new authorisation is needed. Any change to the plan changes its digest.
+
+## R1 revision (2026-11-12): document validation and acceptance separated from execution
+
+**Document validation** (`evaluator.check_document`, shared by the preflight and the Qwen evaluator). A document only counts as opened if all three hold:
+- HTTP status exactly **200**;
+- after any redirect, the final URL is the canonical URL of **the same** RFC: `https://www.rfc-editor.org/rfc/rfcN`, `.html` or `.txt`;
+- the page title is exactly the official title, optionally prefixed with «RFC N:» or «RFC N -».
+
+The preflight returns `READY` **only** if RFC 9110 and RFC 9112 are both validated in this way. It records, per document:
+- the link that was followed and the final URL;
+- `redirected`, the title and the problems found.
+
+These cases give `NOT_READY` (all tested):
+- missing, wrong or swapped title;
+- redirect to the other document, to a non-document page or off the site;
+- HTTP 203 or 503.
+
+**Workflows: technical execution versus acceptance.** Each WORK-07 workflow has two separate steps:
+
+1. `TECHNICAL EXECUTION — …`: green means the runner completed. **It is not an acceptance verdict.** The exit code is written to `technical-exit.txt`.
+2. `ACCEPTANCE VERDICT — fails unless the verdict is READY/PASS` (`if: always()`): runs `gate --acceptance <op>` and writes `acceptance.json` to the evidence and to the job summary. It **fails the job** for `NOT_READY`, `FAIL`, `INCOMPLETE`, a missing or unreadable verdict, or a BLOCKED or failed runner.
+
+Evidence preservation and upload remain `if: always()` and run after the verdict, so the evidence is uploaded in every case.
+
+**Consequence:** a green job means technical completion **and** an accepted verdict. In any other case the job is red, and the technical step tells you whether the runner ran at all.
+
+The plan digests are **unchanged**, because these are code corrections covered by the approved SHA:
+- `b0e4ac78…ef4` (site preflight);
+- `44d96648…d94` (Qwen).

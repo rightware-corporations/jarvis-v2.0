@@ -1803,3 +1803,21 @@ O preflight passa a dar `READY` apenas com os dois documentos validados. Regista
 **Inalterado:** planos `b0e4ac78…ef4` e `44d96648…d94` (as correcções são de código, cobertas pelo SHA aprovado; os planos não mudam); WORK-06 (`b9be5c69…`, `agent_smoke.py`, o seu workflow) e o pin OpenJarvis.
 
 **Próxima operação:** correcção 2, separar nos workflows WORK-07 a execução técnica do veredicto de aceitação, preservando sempre as evidências.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R1 — correcção 2: workflows separam execução técnica de veredicto de aceitação (Claude Code)
+
+**Alteração:** em `work07-site-preflight.yml` e `work07-qwen-rfc.yml` há agora dois passos.
+1. `TECHNICAL EXECUTION`: verde significa apenas que o runner terminou. Escreve `technical-exit.txt`.
+2. `ACCEPTANCE VERDICT` (`if: always()`): `gate --acceptance`, com `acceptance.json` na evidência e no job summary. Falha o job em `NOT_READY`, `FAIL`, `INCOMPLETE`, `NO_VERDICT` ou com o runner BLOCKED ou em erro.
+
+A preservação e o upload continuam `always()`, depois do veredicto.
+
+**Defeito encontrado pelo novo teste e corrigido:** o shell do runner é `bash -e`, por isso o passo de aceitação abortava antes de escrever o summary e o registo. Corrigido com `set +e` explícito. Os testes executam o script real do YAML em cinco cenários: aceite, `NOT_READY`/`FAIL`/`INCOMPLETE`, runner bloqueado e runner nunca executado.
+
+**Testes:**
+- venv: **209 OK, 0 saltados**; Python simples: 209 OK, 71 saltados;
+- `actionlint` sem erros.
+
+**Inalterado:** planos `b0e4ac78…ef4` e `44d96648…d94`; WORK-06 (`b9be5c69…`, `agent_smoke.py`, `work05-qwen-smoke.yml`); pin `f21d902`.
+
+**Não efectuado:** sem navegação externa, sem Qwen, sem ficheiros de pedido, sem branches, sem alterações em `main`.

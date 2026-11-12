@@ -65,17 +65,39 @@ jobs:
           ! grep -q " skipped" "$EVID/product-tests.txt"
           printf '{"gate":"2","status":"PASS"}\n' >> "$EVID/gates.jsonl"
 
-      - name: Site preflight — real RFC Editor, semantic browser, no model
+      - name: "TECHNICAL EXECUTION — site preflight runner (green = the runner completed; NOT an acceptance verdict)"
         run: |
           set -euo pipefail
           set +e
-          vendor/openjarvis/.venv/bin/python -m labs.work07_rfc_gate.gate --run site-preflight \
-            --approved-code-sha "$APPROVED_SHA" --evidence-dir "$EVID/preflight" > "$EVID/preflight-console.log" 2>&1
+          vendor/openjarvis/.venv/bin/python -m labs.work07_rfc_gate.gate --run site-preflight --approved-code-sha "$APPROVED_SHA" \
+            --evidence-dir "$EVID/preflight" > "$EVID/preflight-console.log" 2>&1
           RC=$?
           set -e
+          echo "$RC" > "$EVID/technical-exit.txt"
           tail -5 "$EVID/preflight-console.log"
-          printf '{"gate":"preflight","exit":%s}\n' "$RC" >> "$EVID/gates.jsonl"
+          printf '{"gate":"technical","technical_exit":%s}\n' "$RC" >> "$EVID/gates.jsonl"
           exit $RC
+
+      - name: "ACCEPTANCE VERDICT — fails unless the verdict is READY (NOT_READY / FAIL / INCOMPLETE are never accepted)"
+        if: always()
+        run: |
+          set +e -uo pipefail   # the runner shell is "bash -e": keep going to record the verdict, then exit $ACC
+          EVID="${EVID:-$RUNNER_TEMP/preflight-evidence}"; mkdir -p "$EVID"
+          TECH=$(cat "$EVID/technical-exit.txt" 2>/dev/null || echo -1)
+          python3 -E -s -m labs.work07_rfc_gate.gate --acceptance site-preflight --technical-exit "$TECH" \
+            --evidence-dir "$EVID/preflight" > "$EVID/acceptance.json"
+          ACC=$?
+          if [ ! -s "$EVID/acceptance.json" ]; then
+            printf '{"operation":"site-preflight","technical_exit":%s,"verdict":"NO_VERDICT","accepted":false}\n' "$TECH" > "$EVID/acceptance.json"
+            ACC=1
+          fi
+          cat "$EVID/acceptance.json"
+          { echo "## WORK-07 site preflight: technical execution vs acceptance"
+            echo '```json'; cat "$EVID/acceptance.json"; echo '```'
+            echo "Accepted only if technical_execution = COMPLETED and verdict = READY. The evidence artifact is uploaded in every case."
+          } >> "$GITHUB_STEP_SUMMARY"
+          printf '{"gate":"acceptance","accepted_exit":%s}\n' "$ACC" >> "$EVID/gates.jsonl"
+          exit $ACC
 
       - name: Preserve evidence (always)
         if: always()

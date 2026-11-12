@@ -197,6 +197,68 @@ class Workflows(unittest.TestCase):
                 self.assertIn('! grep -q " skipped"', text)
         self.assertNotIn("ollama", (ROOT / ".github/workflows/work07-site-preflight.yml").read_text().lower())
 
+    STEPS = {"work07-site-preflight.yml": ("site-preflight", "preflight", "READY"),
+             "work07-qwen-rfc.yml": ("qwen", "gate", "PASS")}
+
+    def steps(self, name):
+        return self.load(name)["jobs"][next(iter(self.load(name)["jobs"]))]["steps"]
+
+    def test_technical_execution_and_acceptance_are_separate_steps(self):
+        for name, (op, sub, ok) in self.STEPS.items():
+            with self.subTest(name=name):
+                steps = self.steps(name)
+                names = [st.get("name", "") for st in steps]
+                tech = next(i for i, n in enumerate(names) if n.startswith("TECHNICAL EXECUTION"))
+                acc = next(i for i, n in enumerate(names) if n.startswith("ACCEPTANCE VERDICT"))
+                keep = names.index("Preserve evidence (always)")
+                upload = names.index("Upload evidence (always)")
+                self.assertTrue(tech < acc < keep < upload)
+                self.assertIn("NOT an acceptance verdict", names[tech])
+                self.assertIn(f"fails unless the verdict is {ok}", names[acc])
+                for i in (acc, keep, upload):
+                    self.assertEqual(steps[i].get("if"), "always()")
+                self.assertNotIn("if", steps[tech])
+                self.assertIn('technical-exit.txt', steps[tech]["run"])
+                self.assertIn(f"--acceptance {op}", steps[acc]["run"])
+                self.assertIn("GITHUB_STEP_SUMMARY", steps[acc]["run"])
+
+    def run_acceptance_step(self, name, verdict_file=None, technical=None):
+        import os
+        import subprocess
+        import tempfile
+        op, sub, ok = self.STEPS[name]
+        script = next(st["run"] for st in self.steps(name) if st.get("name", "").startswith("ACCEPTANCE VERDICT"))
+        evid = Path(tempfile.mkdtemp())
+        (evid / sub).mkdir()
+        if technical is not None:
+            (evid / "technical-exit.txt").write_text(f"{technical}\n")
+        if verdict_file is not None:
+            fname = "site_preflight.json" if op == "site-preflight" else "qwen_gate.json"
+            (evid / sub / fname).write_text(json.dumps(verdict_file))
+        summary = evid / "summary.md"
+        env = {**os.environ, "EVID": str(evid), "GITHUB_STEP_SUMMARY": str(summary), "RUNNER_TEMP": str(evid)}
+        rc = subprocess.run(["bash", "-e", "-c", script], cwd=ROOT, env=env, capture_output=True, text=True).returncode
+        return rc, json.loads((evid / "acceptance.json").read_text()), summary.read_text()
+
+    def test_acceptance_step_shell_behaviour(self):
+        for name, (op, sub, ok) in self.STEPS.items():
+            wrap = (lambda v: {"verdict": v, "reasons": []}) if op == "site-preflight" else \
+                (lambda v: {"verdict": {"verdict": v, "reasons": []}})
+            with self.subTest(name=name, case="accepted"):
+                rc, acc, summary = self.run_acceptance_step(name, wrap(ok), 0)
+                self.assertEqual((rc, acc["accepted"], acc["verdict"]), (0, True, ok))
+                self.assertIn("technical execution vs acceptance", summary)
+            for verdict in ("NOT_READY", "FAIL", "INCOMPLETE"):
+                with self.subTest(name=name, verdict=verdict):
+                    rc, acc, _ = self.run_acceptance_step(name, wrap(verdict), 0)
+                    self.assertEqual((rc, acc["accepted"], acc["technical_execution"]), (1, False, "COMPLETED"))
+            with self.subTest(name=name, case="runner blocked"):
+                rc, acc, _ = self.run_acceptance_step(name, wrap(ok), 2)
+                self.assertEqual((rc, acc["accepted"], acc["technical_execution"]), (1, False, "BLOCKED"))
+            with self.subTest(name=name, case="runner never ran"):
+                rc, acc, _ = self.run_acceptance_step(name, None, None)
+                self.assertEqual((rc, acc["accepted"], acc["verdict"]), (1, False, "NO_VERDICT"))
+
 
 @unittest.skipIf(httpx is None, "pinned venv (httpx) required")
 class SitePreflightDriver(unittest.TestCase):
