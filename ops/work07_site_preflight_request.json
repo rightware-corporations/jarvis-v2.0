@@ -1,7 +1,7 @@
 {
   "experiment": "WORK07_RFC_SITE_PREFLIGHT",
-  "request_id": 2,
-  "approved_code_sha": "30e05439393084624a5c8d85d89d156895934ce6",
+  "request_id": 3,
+  "approved_code_sha": "2db6df5d183df3a171d29b15982b351285fbc67e",
   "plan_sha256": "b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4",
-  "authorized_by": "RIGHTWARE operator, chat authorization 2026-11-12: WORK-07 Phase 4 site preflight request_id 2 only, no Qwen, develop"
+  "authorized_by": "RIGHTWARE operator, explicit chat approval 2026-11-12: WORK-07 Phase 4 site preflight request_id 3, GET RFC Editor only, no Qwen"
 }
