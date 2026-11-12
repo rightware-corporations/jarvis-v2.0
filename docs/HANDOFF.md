@@ -2136,3 +2136,18 @@ Sem Qwen, sem Ollama, sem novo pedido, sem branches, `main` intacta.
 O CI WORK-05 product `43196719884` correu **248 testes OK**, mas o passo falhou: o workflow rejeita qualquer ocorrência da palavra «skipped» no log da venv, e o nome do novo teste continha `future_skipped_execution`. Não houve nenhum teste saltado.
 
 O teste foi renomeado para `test_reconciliation_catches_any_future_unexecuted_approval`. A regra estrita do workflow ficou inalterada e o código do produto também. Localmente, a venv dá 248 OK e 0 ocorrências de «skipped».
+
+## CHECKPOINT FINAL — 12/11/2026: WORK-07 R3-B resolvido (Claude Code)
+
+**CI em `2f20563460b8903020e70af83d4765bf2308d7b0`:** WORK-05 product `43197910324` success (venv 248 OK, 0 saltados, sem ocorrências de «skipped»); foundation `43197910297` e `43197919704` success.
+
+**Critérios de aceitação R3-B:**
+- (1) pesquisas múltiplas legítimas executam as ferramentas: replay dos pedidos 1 e 3 e três pesquisas diferentes;
+- (2) ciclos perigosos continuam bloqueados: mesma página pela 3.ª vez, mesma pesquisa repetida, A-B-A-B, A-B-C-A-B-C;
+- (3) não há aprovações sem resultado: cada aprovação tem outcome, e qualquer resto é fechado como `NOT_EXECUTED` com flag;
+- (4) suite completa sem saltos na venv fixada;
+- (5) causa, testes e riscos documentados nos checkpoints `e894f4e`, `85b660f` e neste.
+
+Os resultados históricos FAIL dos pedidos 1 e 3 ficam preservados; a correcção não os reclassifica.
+
+**Próximo:** R3-C (controlo genérico de conclusão de tarefas), em missão separada. Qualquer novo Qwen precisa de autorização explícita com o HEAD exacto.
