@@ -91,6 +91,28 @@ class _Field:
     typed: str | None = None
 
 
+
+def _rfc_plaintext_title(text: str) -> str:
+    """Extract the printed title of an RFC plain-text document, not an HTML title.
+
+    Format-based detection, never dependent on fixed RFC numbers or titles.
+    Requires an RFC header and a standalone 'Abstract' heading; the last
+    nonempty line preceding Abstract is the document's printed title.
+    This is metadata extraction, not factual verification of its contents.
+    """
+    head = text[:3500]
+    number = re.search(r"(?m)^[ \t]*Request for Comments:[ \t]*(\d{1,6})\b", head)
+    abstract = re.search(r"(?m)^[ \t]*Abstract[ \t]*\r?$", head)
+    if not number or not abstract or abstract.start() <= number.end():
+        return ""
+    before_abstract = head[number.end():abstract.start()]
+    title = next((line.strip() for line in reversed(before_abstract.splitlines())
+                  if line.strip()), "")
+    if not title or len(title) > 120 or ":" in title:
+        return ""
+    return f"RFC {number.group(1)}: {title}"
+
+
 class _DomParser(HTMLParser):
     """Collects links, forms, controls and labels. Script/style content is ignored."""
     _SKIP = {"script", "style", "noscript", "template", "svg"}
@@ -225,9 +247,12 @@ class PublicBrowser:
         if backend is not None:
             event["connections"] = [list(c) for c in getattr(backend, "connections", [])][:10]
         first = page.text.split("\n", 1)[0]
+        extracted_title = (first[len("Título: "):][:160] if first.startswith("Título: ")
+                           else _rfc_plaintext_title(page.text) if page.content_type == "text/plain"
+                           else "")
         evidence = {"final_url": redact_url(page.final_url), "status": page.status, "content_type": page.content_type,
                     "sha256": page.sha256, "chars": len(page.text), "truncated": page.truncated,
-                    "title": first[len("Título: "):][:160] if first.startswith("Título: ") else ""}
+                    "title": extracted_title}
         if not 200 <= page.status < 300:
             self.events.append({**event, **evidence, "outcome": "HTTP_ERROR"})
             return Step("HTTP_ERROR", f"A página respondeu com HTTP {page.status}; não foi lida.", evidence)

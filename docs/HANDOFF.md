@@ -1942,3 +1942,16 @@ Após o commit base `a85a6f7ec1f55e9a8b23c0a600c01e5545cf82b8`, a suite CI do pr
 **Planos inalterados:** WORK-07 site `b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4`, WORK-07 Qwen `44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94`. O WORK-06 e o pin OpenJarvis permanecem intactos.
 
 **Próxima operação, sob autorização separada:** Fase 4, Site Preflight real, `request_id 2`, código aprovado igual ao HEAD de `develop` IMEDIATAMENTE antes do commit de pedido. Não fazer mais commits de documentação antes desse pedido. Apenas após veredicto READY com os dois RFC abertos solicitar autorização independente da Fase 5, teste autónomo Qwen3.5:4b. Claude ou GitHub Actions pode executar, não há necessidade de ChatGPT Work para estes gates já automatizados.
+
+
+## CHECKPOINT — 12/11/2026: WORK-07 Fase 4, preflight real request_id 2 — NOT_READY; título RFC texto simples corrigido
+
+**Autorização executada:** request_id 2, código aprovado `30e05439393084624a5c8d85d89d156895934ce6`, plano `b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4`, commit de pedido `6bf393cbd913c1720063fc643289140fd2a454aa`. Run GitHub Actions **43156710412**; execução técnica exit 0, aceitação NOT_READY. Nenhum Qwen; request_id 2 consumido.
+
+**Artefacto real:** id 13915089427, ZIP SHA256 `022cf336b2b2d3c19e1df6ae8d9d3f7e2dffb385638a6d54a8e6e1b9ae7fa39e` conferido; 8/8 SHA256SUMS internos confirmados. Evidências mostraram 7 carregamentos (abertura, 2 submits, 4 follows), exclusivamente www.rfc-editor.org e HTTP 200: pesquisa /search/, resultados /api/v1/search/, páginas /info/rfc9110/ e /info/rfc9112/, seguidas dos documentos canónicos /rfc/rfc9110.txt e /rfc/rfc9112.txt. A pesquisa GET funcionou sem JS. Os URLs de resultados apresentam x-typesense-api-key=REDACTED; nenhum valor original do parâmetro foi exposto nas saídas inspecionadas.
+
+**Causa exacta de NOT_READY:** o driver preferiu links oficiais de texto simples `.txt`. Nesses documentos, os títulos oficiais *HTTP Semantics* e *HTTP/1.1* aparecem como título impresso antes de `Abstract`, mas não há elemento HTML `<title>`. O browser emitia metadata title vazia, por isso o `check_document` recusou ambas as páginas: `RFC 9110: page title missing` e `RFC 9112: page title missing`. Esta falha não significa que o conteúdo não tenha sido lido. O resultado histórico NOT_READY é preservado.
+
+**Correcção implementada neste commit (ainda por validar CI):** `rightware/agent/browser.py` deriva o título de documentos RFC `text/plain` por formato genérico `Request for Comments: N` e linha de título imediatamente anterior a `Abstract`, sem qualquer resposta/oráculo RFC 9110/9112 codificado; usa o mesmo campo de evidência `title`. Testes determinísticos em `tests/test_work07_rfc_plaintext.py` usam RFCs sintéticas (incluindo 9888), casos negativos e integração via MockTransport. Network policy, modelo, planos, WORK-06 e pin OpenJarvis inalterados.
+
+**Próximo passo:** confirmar testes e CI desta correcção; pedir aprovação **separada** do site preflight `request_id 3` com o novo HEAD de `develop`. Não executar nem repetir gate automaticamente, nem autorizar Fase 5 Qwen antes de obter READY e aprovação própria.
