@@ -2224,3 +2224,9 @@ Não foram alterados: `policy.py`, as quotas, o `_compose()`, o avaliador RFC, o
 - ligar o trace no runner real, com persistência apenas hash-only.
 
 **Próximo passo exacto:** revisão do operador/ChatGPT deste relatório; depois missão R3-C2 separada. Não executar Qwen nem novo pedido sem autorização.
+
+### WORK-07 R3-C1 — CI confirmado
+
+**CI em `add1458b5874817402abf9d95f890f541afb38c1`:** WORK-05 product `43214248179`, foundation `43214248125` e foundation PR `43214257768`, todos success.
+
+R3-C1 concluído. Não se avança para o R3-C2 sem nova missão.
