@@ -2038,3 +2038,17 @@ O CI `43183788838` identificou que a descrição auxiliar do caso RFC 9112 ainda
 ### WORK-07 request_id 2 — teste estrutural adaptado ao pedido histórico bloqueado
 
 O primeiro CI após o checkpoint `db0e7ad4` falhou em `test_request_files_absent_or_structurally_valid`, pois essa suite exigia que **todos os ficheiros de pedido anteriormente commitados fossem válidos**, enquanto a execução real do `request_id 2` preservou, correctamente, o `authorized_by` inválido de 202 caracteres. O teste distingue agora EXCLUSIVAMENTE o registo histórico id 2 pelo `request_id`, SHA de código aprovado, plano e prefixo/longitude exactos do texto, exigindo `["authorized_by"]` como única anomalia. Todas as outras autorizações, incluindo a futura id 3, continuam obrigadas a ser válidas. `AgentPolicy`, `GATE 0` e `A.validate_request` não foram alterados. Nenhuma execução Qwen foi iniciada. CI do novo checkpoint pendente.
+
+
+## CHECKPOINT FINAL — 12/11/2026: WORK-07 Fase 5 request_id 2, bloqueio no GATE 0 — 231 testes PASS
+
+**HEAD de código/testes validado:** `f4e4829e3fe5a6b68ff380cc581bc421df85cc38`. Corrigido o teste de estrutura de pedidos para reconhecer exclusivamente o ficheiro histórico do request_id 2 (bloqueado por `authorized_by` de 202 caracteres), sem aceitar ficheiros malformados futuros. O `AgentPolicy`, o `GATE 0`, o limite de `authorized_by` de 200 caracteres e os digests dos planos foram mantidos; não se corrigiu retroactivamente o pedido consumido.
+
+**CI verificado no GitHub Actions:**
+- WORK-05 product `43185837014`: SUCCESS, **231 tests OK, 0 skipped na venv**; Python simples 231 OK, 84 skipped por dependências não instaladas no Python base.
+- Foundation push `43185837001`: SUCCESS.
+- Foundation PR `43185843438`: SUCCESS.
+
+**Resultado histórico da autorização do operador:** tentativa request_id 2, run `43185087484`, GATE 0 BLOCKED (`authorized_by` com 202 caracteres, máximo 200), não entrou em Ollama/GPU nem realizou navegação/inferência Qwen; aceitação NO_VERDICT, e não uma falha cognitiva do modelo. Evidência no artefacto `13928530143` e no índice `docs/evidence/work07-qwen-run43185087484/`; ZIP e 4/4 checksums verificados. O erro foi da construção do payload nesta execução ChatGPT.
+
+**Próxima execução possível:** novo pedido de uso único `request_id 3`, depois de autorização explícita do operador com o HEAD `develop` então actual e plano `44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94`. **Não autorizar nem lançar** sem aprovação. Pré-validar o ficheiro JSON completo contra `A.validate_request` antes do próximo push. Não alterar `main`.
