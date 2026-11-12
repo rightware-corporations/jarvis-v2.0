@@ -2336,3 +2336,50 @@ Não se presume superioridade nem compatibilidade sem evidência de código.
 **Restrições:** sem implementação R3-C2, sem Qwen/Ollama, sem novo pedido, sem alterações em `main`, pin, política, quotas, avaliador ou histórico, sem dependências externas.
 
 **Próxima operação:** auditoria interna e leitura do código externo; depois relatório e checkpoint de resultados.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-003 — resultados da investigação de reutilização (Claude Code, read-only)
+
+**Relatório:** `docs/research/WORK07_R3C2_003_ARCHITECTURE_REUSE.md`, com referências exactas a ficheiros e linhas.
+
+**Método:** auditoria do OpenJarvis fixado (`f21d902`) e do código RIGHTWARE; clones superficiais e esparsos, **só leitura**, sem instalar nem executar nada, de:
+- autogen `8390985` (Magentic-One, código MIT);
+- pydantic-ai `c28aafa` (MIT);
+- crewAI `ea57411` (MIT);
+- langgraph `b4cb0f1` (MIT);
+- openai-agents-python `64fbde5` (MIT);
+- OpenHands/software-agent-sdk `fb75ae9` (MIT). O repositório `All-Hands-AI/OpenHands` contém agora só o frontend.
+
+**Factos (código):**
+- O `OrchestratorAgent` termina **apenas** quando a resposta não tem chamadas de ferramenta (`orchestrator.py:390`). O `_check_continuation` só re-pede em `finish_reason == "length"` (`_stubs.py:333-366`).
+- Não há ledgers, verificadores, critics nem hooks de saída. A `task_decomposition` do `monitor_operative` é só texto de prompt. O nó de ciclo do `workflow/` termina por substring no texto do modelo.
+- **Há um ponto de intercepção existente:** o `_generate` passa a mesma lista `messages` ao motor (`_stubs.py:265-295`), e o `_GuardedEngine` da RIGHTWARE (`session.py:109`) vê a resposta final antes de o orquestrador terminar. Pode devolver uma nova resposta com ferramentas, que segue o caminho normal hook → política → ferramenta.
+- **Lacuna:** re-pedidos ao nível do motor não contam para `max_turns` nem para `AgentPolicy.calls`. Qualquer recuperação precisa de orçamento próprio e de respeitar `halt_reason`.
+- **Externos:**
+  - Magentic-One conclui por **autoavaliação do LLM** (`is_request_satisfied`), com uma chamada JSON extra por ronda e contadores de estagnação e replaneamento;
+  - PydanticAI usa validador de saída → `ModelRetry` → `max_output_retries` → erro terminal;
+  - CrewAI usa guardrail → reexecução da tarefa até `guardrail_max_retries` (3) → excepção;
+  - LangGraph tem a mesma regra de fim mais um `post_model_hook` e `remaining_steps`;
+  - o tripwire do OpenAI Agents interrompe sem repetir;
+  - OpenHands tem um critic sobre artefactos objectivos e um refinamento iterativo limitado (`max_iterations`).
+
+**Reutilizar (padrões) em vez de construir:**
+- intercepção no `_GuardedEngine` (já existe);
+- feedback limitado ao estilo PydanticAI/OpenHands, com orçamento explícito e estado terminal «incompleto»;
+- verificação determinística sobre a evidência existente (`ToolOutcome`, eventos do browser, `TaskTrace`, auditoria);
+- anti-loop R3-B, que já é sensível ao conteúdo, como o detector do OpenHands.
+
+O «Evidence Registry» proposto **duplicaria** em grande parte o que já existe; falta só ligar evidências a objectivos e o tipo de fonte. Migrar o runtime **não se justifica** com esta evidência.
+
+**Hipóteses e incógnitas:**
+- a origem dos objectivos em instruções livres: nenhum framework a resolve (developer escreve ou o LLM autoavalia);
+- se o Qwen3.5:4b retoma ferramentas após feedback estruturado;
+- a fiabilidade de um ledger JSON em 4B;
+- a posição do link original no RFC Editor real.
+
+**Riscos:** orçamento de re-pedidos fora de `max_turns`; feedback como superfície de injecção (deve ser gerado por código, sem texto de páginas); o modelo não pode remover objectivos nem certificar-se; não classificar fontes só pelo URL; não reclassificar o histórico.
+
+**Próxima decisão recomendada (operador):**
+- aprovar a Opção 1 (patch mínimo), começando **só** pelas experiências determinísticas E1 (viabilidade da intercepção com modelo FAKE) e E4 (contabilidade de orçamento);
+- decidir em paralelo a política de origem dos objectivos (E3) antes de qualquer alteração ao `_compose`.
+
+Sem implementação, Qwen, pedidos, alterações em `main`, pin, política, quotas, avaliador ou histórico.
