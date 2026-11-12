@@ -2523,3 +2523,32 @@ São resultados com modelo FAKE e nada provam sobre o Qwen3.5:4b.
 - **L1–L4:** é preciso definir que evidência prova um objectivo sem conhecer o URL de antemão (tipo de fonte, sinais de conteúdo, proveniência via links apresentados e usados do `TaskTrace`).
 
 **Próxima acção recomendada:** decisão do operador sobre o âmbito de E3 e L1–L4. Não avançar automaticamente; sem patch de produção; sem Qwen.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-013 — continuidade autónoma do HANDOFF (registo directo ChatGPT a pedido do operador)
+
+**Origem e autorização:** o operador RIGHTWARE instruiu expressamente o ChatGPT a registar directamente no repositório os checkpoints de investigação e continuidade enquanto Claude Code trabalha. Esta adenda é documental e append-only; não altera o âmbito de engenharia, nem autoriza novas experiências. Reverte-se apenas a prática anterior de exigir que Claude execute todas as escritas do HANDOFF: Claude continua responsável pelos seus checkpoints de engenharia; ChatGPT pode publicar os seus próprios checkpoints documentais quando expressamente solicitado. **Evitar escritas concorrentes:** confirmar HEAD e blob SHA actuais antes de cada actualização; nunca sobrescrever checkpoints de outro agente.
+
+**Baseline observado antes deste registo:** JARVIS `develop` `fc7b04dfdcc912e64c8cd33df08d6bb19205aab8`. O HEAD avançou após R3-C2-011. O HANDOFF já contém **R3-C2-012 INÍCIO e RESULTADOS E1/E4**; não se deve voltar a registá-los como propostas não executadas.
+
+**RESULTADOS JÁ DOCUMENTADOS PELO CLAUDE, não reproduzidos pelo ChatGPT nesta operação:**
+- Experiências E1/E4 determinísticas com FAKE model e OrchestratorAgent fixado: intercepção de final candidato e continuação dentro de orçamento possível em testes; 15 novos testes; suite venv reportada 284 OK, zero skips; mutações 5/5 detectadas.
+- Produção inalterada: `rightware/`, `AgentSession.run()`, `_compose()`, política, quotas e pin.
+- A classificação `ANSWERED_WITH_SOURCES` ainda aceita respostas incompletas no produto. As experiências E1/E4 **não** demonstram fiabilidade real do Qwen nem autorizam patch de produção.
+- Atenção ao experimento de mutação que removeu o orçamento: o teste entrou em ciclo e foi morto pelo kernel por falta de memória. Não repetir mutação sem isolamento externo e limites de CPU/memória/tempo.
+
+**INVESTIGAÇÃO CONSOLIDADA ANTERIORMENTE (R3-C2-011):**
+- Claude: o `_GuardedEngine` existente permite interceptar uma resposta candidata; OpenJarvis não fornece verificação genérica de conclusão.
+- GPT Work: Shared Intelligence tem contratos de continuidade, checkpoints e proveniência, mas componentes centrais estão acoplados a PostgreSQL; não tem completion controller local pronto. JARVIS já tem ToolOutcome, eventos, auditoria e TaskTrace que devem ser reutilizados.
+- Perplexity: padrões úteis são Task/Progress Ledger, validação/feedback limitado e persistência de estado. Não importar framework completo, nem tratar memória ou afirmação de modelo como prova de execução.
+- Orientação arquitectural recomendada: primeiro verificação de conclusão **na sessão**, depois continuidade/persistência local com invariantes do Shared, sem serviço remoto obrigatório; não há autorização de implementação dessa arquitectura.
+
+**DECISÃO PENDENTE:**
+- E3: política de origem dos objectivos explícitos, inferidos ou propostos pelo modelo; verificar preservação de requisitos obrigatórios.
+- L1–L4: ligação de objectivos a receipts confiáveis, fonte insuficiente, evidência falsa/antiga e resultado incompleto.
+- Resolver limites encontrados em E1/E4 antes de produção: contagem de turnos efectiva, recusa de browser, equivalência e identidade de documento, contexto crescente e budget global.
+- L5–L12 (persistência/recuperação) continuam posteriores e não autorizados.
+- Sem Qwen/Ollama, novo request_id, merge main, mudança de pin, alterações de quota ou reclassificação do histórico Qwen FAIL (1/3) e BLOCKED (2).
+
+**REGRA PERMANENTE HANDOFF-FIRST:** cada descoberta relevante, decisão, limite, teste ou resultado recebe checkpoint distinto com factos vs hipóteses, proveniência, estado de autorização, HEAD/CI e próximo passo. Verificar se Claude já registou antes de publicar, para evitar duplicações. Registo directo por ChatGPT é permitido neste turno por autorização explícita; não implica autorização genérica para alterar código.
+
+**Próxima acção exacta:** rever o resultado E1/E4 já publicado, verificar o HEAD/CI final e decidir se se autorizam **apenas** experiências determinísticas E3 + L1–L4. Não assumir autorização enquanto não for dada.
