@@ -2004,3 +2004,19 @@ O primeiro CI de `5ae151a` falhou por uma expectativa contraditória em `test_sw
 ### WORK-07 R2 — segunda verificação da fixture de títulos cruzados
 
 O CI `43183788838` identificou que a descrição auxiliar do caso RFC 9112 ainda incluía `HTTP/1.1`, permitindo à rubrica reconhecer legitimamente esse texto como título apesar da troca no campo «Título Oficial». A fixture foi reduzida a um enunciado neutro «define a sintaxe das mensagens», removendo a contradição. Isto corrige apenas o teste negativo, não altera a lógica do produto nem flexibiliza a validação. Dois CI anteriores do R2 documentam as falhas de teste; ficam preservados, sem ocultar os resultados. Nova suite/CI exigidos. Sem Qwen real.
+
+
+## CHECKPOINT FINAL — 12/11/2026: WORK-07 R2 — validação após falha real Qwen
+
+**HEAD de código R2 validado:** `ce1cfecb231d3dcd597062ee7294f8c79010879c`. CI GitHub Actions concluídos **SUCCESS** nos três workflows:
+- WORK-05 product `43184019825`: suite `Ran 230 tests`, `OK`, **0 saltados na venv**. Python simples `Ran 230 tests`, `OK (skipped=84)` por dependências não instaladas no Python base.
+- Foundation push `43184019857`: SUCCESS.
+- Foundation PR `43184027286`: SUCCESS.
+
+**Alterações realmente feitas:** orientação genérica, sem respostas/oráculo, em `BROWSE_PROMPT` para seguir links observados com `web_follow`, usar `web_find` e abrir documentos/fontes primárias antes de declarar sucesso; rubrica `spans()` passou a associar bullets ao cabeçalho Markdown da RFC até outra secção, preservando exigências de URLs/documentos canónicos; `tool_execution_audit` adiciona diagnóstico de aprovações sem outcome à evidência de futuras execuções. O checksum de `product-tests.txt` no índice humano de proveniência foi corrigido contra o ZIP original; artefacto original intacto. As duas primeiras tentativas CI R2 falharam por fixtures contraditórias, foram corrigidas e constam do histórico append-only.
+
+**Reconciliada a auditoria ORIGINAL do run 43161108959 sem novo modelo:** 16 entradas, **1 `web_open` aprovado sem outcome**, 0 outcomes sem aprovação. É um desvio de execução/observabilidade a investigar no motor pinned, não prova de navegação realizada. O diagnóstico novo não atribui uma causa não demonstrada e não promove retroactivamente o histórico `FAIL`.
+
+**Segurança/governança:** `main`, demo, pin OpenJarvis, modelo/digest Ollama, workflows, quotas e planos `b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4` e `44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94` inalterados. Nenhuma execução nova de Qwen/GPU ou navegação externa neste R2. Fase 4 request_id 3 continua READY histórico; Fase 5 request_id 1 permanece FAIL histórico e consumido.
+
+**Próxima acção:** depois de confirmar o HEAD final e CI da adenda documental, solicitar **nova autorização explícita** para Fase 5 `request_id: 2` com o HEAD exacto de `develop` e plano `44d96648…d94`. Não criar pedido de inferência sem a autorização.
