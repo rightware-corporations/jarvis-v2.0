@@ -2020,3 +2020,16 @@ O CI `43183788838` identificou que a descrição auxiliar do caso RFC 9112 ainda
 **Segurança/governança:** `main`, demo, pin OpenJarvis, modelo/digest Ollama, workflows, quotas e planos `b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4` e `44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94` inalterados. Nenhuma execução nova de Qwen/GPU ou navegação externa neste R2. Fase 4 request_id 3 continua READY histórico; Fase 5 request_id 1 permanece FAIL histórico e consumido.
 
 **Próxima acção:** depois de confirmar o HEAD final e CI da adenda documental, solicitar **nova autorização explícita** para Fase 5 `request_id: 2` com o HEAD exacto de `develop` e plano `44d96648…d94`. Não criar pedido de inferência sem a autorização.
+
+
+## CHECKPOINT — 12/11/2026: WORK-07 Fase 5 Qwen, request_id 2 — GATE 0 BLOCKED (sem inferência)
+
+**Pedido explícito:** uma execução real Qwen3.5:4b, `request_id: 2`, código aprovado `911d05d97c6b6a583489f705699f491bf69d7e6b`, plano `44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94`, 14 turnos, 14 chamadas, 768 tokens/resposta, 900 s, apenas `browse` em www.rfc-editor.org. Validado HEAD e 3/3 CI verdes. Commit de autorização único `8b9371247abb23a026a24ddeb49b15e13e152432`, alterou só `ops/work07_qwen_request.json`. GitHub Actions run [43185087484](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43185087484), attempt 1.
+
+**Resultado verdadeiro:** o GATE 0 rejeitou a autorização com `authorized_by must be a short single-line text`, porque o texto enviado tinha **202 caracteres**, acima dos 200 permitidos. `authorisation.ok=false`, exit 2; não chegou aos gates 1-3, ao Ollama nem ao Qwen; nenhuma navegação externa. Passo de aceitação registou `NO_VERDICT`, `accepted=false`, `technical_exit=-1`. **NÃO classificar como FAIL cognitivo de Qwen.** Erro de construção do payload nesta operação ChatGPT, o validator existente funcionou correctamente. A execução única `request_id 2` ficou consumida; não repetir nem alterar id 2.
+
+**Proveniência:** artefacto original `13928530143`, ZIP SHA256 `42e57fad78dd76db09b186546bedcbdb65e48dcf6a51e2e337e27cf481dd2422` igual ao digest GitHub; 4/4 SHA256SUMS internos confirmados. Índice `docs/evidence/work07-qwen-run43185087484/RESULT.md` e `PROVENANCE.txt`. A evidência histórica do request 1 continua `FAIL` com Qwen real; request 2 não tem inferência.
+
+**Prevenção:** teste determinístico adicionado para validar valores de `authorized_by` de 200/201/202 caracteres e linha única. Nos próximos pedidos, validar o JSON completo com `validate_request` *antes* de qualquer commit, não só HEAD/plan/CI. Novo Qwen (request_id 3) requer aprovação independente, com SHA final e plano; não foi autorizado nesta conversa.
+
+**CI da adenda:** pendente de verificação remota, sem inferência Qwen nem alterações em `main`, workflows ou planos.

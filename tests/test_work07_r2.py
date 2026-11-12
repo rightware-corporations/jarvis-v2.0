@@ -126,5 +126,33 @@ class FixedPlanAndProduct(unittest.TestCase):
             self.assertNotIn(oracle, prompt)
 
 
+
+class RequestAuthorisationBounds(unittest.TestCase):
+    def test_qwen_request_authorized_by_field_boundaries(self):
+        """Regression for blocked WORK-07 request 2: original text had 202 chars."""
+        from rightware.agent_smoke import validate_request
+        common = {
+            "experiment": "WORK07_RFC_QWEN_GATE",
+            "request_id": 3,
+            "approved_code_sha": "a" * 40,
+            "plan_sha256": G.plan_sha256("qwen"),
+            "authorized_by": "A" * 200,
+        }
+        options = {
+            "trigger_sha": "b" * 40,
+            "changed_files": ["ops/work07_qwen_request.json"],
+            "previous_request_id": 2,
+            "request_commits": 3,
+            "run_attempt": 1,
+            "approved_is_ancestor": True,
+            "experiment": "WORK07_RFC_QWEN_GATE",
+            "request_path": "ops/work07_qwen_request.json",
+            "expected_plan_sha256": G.plan_sha256("qwen"),
+        }
+        self.assertEqual(validate_request(common, **options), [])
+        for bad in ("A" * 201, "B" * 202, "hello\nworld", "  "):
+            problems = validate_request({**common, "authorized_by": bad}, **options)
+            self.assertIn("authorized_by must be a short single-line text", problems)
+
 if __name__ == "__main__":
     unittest.main()
