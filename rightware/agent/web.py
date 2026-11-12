@@ -59,6 +59,7 @@ class Page:
     text: str
     sha256: str
     truncated: bool
+    markup: str = ""          # bounded raw HTML, for the semantic browser only (never sent to the model)
 
 
 def _resolve(host: str) -> list[str]:
@@ -251,9 +252,19 @@ class HttpxFetcher:
         peer = stream.get_extra_info("server_addr")
         return bool(peer) and _global(str(peer[0]))
 
-    def fetch(self, url: str) -> Page:
+    def fetch(self, url: str, host_allowed: Callable[[str], bool] | None = None) -> Page:
+        """GET one page. ``host_allowed`` (WORK-07 browser) is enforced on the first URL AND on
+        every redirect hop, before any connection to that host."""
         import httpx
-        requested = check_url(url, self.resolver, self.ssrf)
+
+        def scoped(target: str) -> str:
+            if host_allowed is not None:
+                host = (urlsplit(target).hostname or "").rstrip(".").lower()
+                if not host or not host_allowed(host):
+                    raise WebRefused("servidor fora dos sites autorizados nesta tarefa")
+            return check_url(target, self.resolver, self.ssrf)
+
+        requested = scoped(url)
         current = requested
         kwargs = {"timeout": TIMEOUT_S, "follow_redirects": False, "trust_env": False,
                   "headers": {"User-Agent": USER_AGENT, "Accept": "text/html,text/plain"}}
@@ -269,7 +280,7 @@ class HttpxFetcher:
                         raise WebRefused("a ligação não foi a um endereço público")
                     if resp.status_code in (301, 302, 303, 307, 308):
                         location = resp.headers.get("location", "")
-                        current = check_url(urljoin(current, location), self.resolver, self.ssrf)
+                        current = scoped(urljoin(current, location))
                         continue
                     ctype = resp.headers.get("content-type", "").split(";")[0].strip().lower()
                     if ctype not in ALLOWED_TYPES:
@@ -288,5 +299,6 @@ class HttpxFetcher:
                     if len(text) > MAX_TEXT_CHARS:
                         text, truncated = text[:MAX_TEXT_CHARS], True
                     return Page(requested, current, resp.status_code, ctype, text,
-                                hashlib.sha256(raw).hexdigest(), truncated)
+                                hashlib.sha256(raw).hexdigest(), truncated,
+                                text_raw if "html" in ctype else "")
         raise WebRefused("demasiados redireccionamentos")

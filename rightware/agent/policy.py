@@ -61,6 +61,8 @@ def _safe_args(args: Any) -> dict:
         if k == "url" and isinstance(v, str):
             out[k] = {"host": (urlsplit(v).hostname or "")[:80],
                       "sha256": hashlib.sha256(v.encode("utf-8")).hexdigest()[:16]}
+        elif k == "text" and isinstance(v, str):         # typed queries: length + hash only
+            out[k] = {"chars": len(v), "sha256": hashlib.sha256(v.encode("utf-8")).hexdigest()[:16]}
         elif isinstance(v, str) and len(v) > 60:
             out[k] = f"<{len(v)} chars sha256={hashlib.sha256(v.encode()).hexdigest()[:16]}>"
         else:

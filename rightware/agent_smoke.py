@@ -132,12 +132,15 @@ def _hex(value, n) -> bool:
 
 
 def validate_request(req, *, trigger_sha: str, changed_files: list[str], previous_request_id: int,
-                     request_commits: int, run_attempt: int, approved_is_ancestor: bool) -> list[str]:
-    """Pure authorisation check. Returns the list of problems (empty = authorised)."""
+                     request_commits: int, run_attempt: int, approved_is_ancestor: bool,
+                     experiment: str = EXPERIMENT, request_path: str = REQUEST_PATH,
+                     expected_plan_sha256: str | None = None) -> list[str]:
+    """Pure authorisation check. Returns the list of problems (empty = authorised).
+    The keyword defaults are the WORK-05/06 smoke; other gates (WORK-07) pass their own."""
     if not isinstance(req, dict) or set(req) != REQUEST_KEYS:
         return ["request keys must be exactly " + ", ".join(sorted(REQUEST_KEYS))]
     problems = []
-    if req["experiment"] != EXPERIMENT:
+    if req["experiment"] != experiment:
         problems.append("wrong experiment")
     rid = req["request_id"]
     if not isinstance(rid, int) or isinstance(rid, bool) or rid < 1:
@@ -151,13 +154,13 @@ def validate_request(req, *, trigger_sha: str, changed_files: list[str], previou
         problems.append("approved_code_sha must be a full lowercase 40-hex SHA")
     elif req["approved_code_sha"] == trigger_sha:
         problems.append("the request must be a separate commit after the approved code")
-    if req["plan_sha256"] != plan_sha256():
+    if req["plan_sha256"] != (expected_plan_sha256 or plan_sha256()):
         problems.append("plan_sha256 does not match the fixed plan")
     who = req["authorized_by"]
     if not isinstance(who, str) or not who.strip() or len(who) > 200 or "\n" in who:
         problems.append("authorized_by must be a short single-line text")
-    if changed_files != [REQUEST_PATH]:
-        problems.append("the request commit may change only " + REQUEST_PATH)
+    if changed_files != [request_path]:
+        problems.append("the request commit may change only " + request_path)
     if not approved_is_ancestor:
         problems.append("approved_code_sha is not an ancestor of the request commit")
     if run_attempt != 1:
@@ -169,15 +172,16 @@ def _git(*args: str, root: Path | None = None) -> str:
     return subprocess.check_output(["git", *args], cwd=root or ROOT, text=True).strip()
 
 
-def check_request(run_attempt: int, root: Path | None = None) -> dict:
+def check_request(run_attempt: int, root: Path | None = None, *, request_path: str = REQUEST_PATH,
+                  experiment: str = EXPERIMENT, expected_plan_sha256: str | None = None) -> dict:
     """Gather the git facts for the request at HEAD and validate them (no model, no network)."""
     head = _git("rev-parse", "HEAD", root=root)
     try:
-        req = json.loads(_git("show", f"HEAD:{REQUEST_PATH}", root=root))
+        req = json.loads(_git("show", f"HEAD:{request_path}", root=root))
     except (subprocess.CalledProcessError, ValueError):
         return {"ok": False, "problems": ["request file missing or not JSON at HEAD"], "trigger_sha": head}
     try:
-        prev = json.loads(_git("show", f"HEAD^:{REQUEST_PATH}", root=root)).get("request_id", 0)
+        prev = json.loads(_git("show", f"HEAD^:{request_path}", root=root)).get("request_id", 0)
     except (subprocess.CalledProcessError, ValueError):
         prev = 0
     prev = prev if isinstance(prev, int) and not isinstance(prev, bool) else -1
@@ -190,9 +194,11 @@ def check_request(run_attempt: int, root: Path | None = None) -> dict:
             ancestor = True
         except subprocess.CalledProcessError:
             ancestor = False
-    commits = int(_git("rev-list", "--count", "HEAD", "--", REQUEST_PATH, root=root) or 0)
+    commits = int(_git("rev-list", "--count", "HEAD", "--", request_path, root=root) or 0)
     problems = validate_request(req, trigger_sha=head, changed_files=changed, previous_request_id=prev,
-                                request_commits=commits, run_attempt=run_attempt, approved_is_ancestor=ancestor)
+                                request_commits=commits, run_attempt=run_attempt, approved_is_ancestor=ancestor,
+                                experiment=experiment, request_path=request_path,
+                                expected_plan_sha256=expected_plan_sha256)
     return {"ok": not problems, "problems": problems, "trigger_sha": head,
             "approved_code_sha": approved if _hex(approved, 40) else None,
             "request_id": req.get("request_id") if isinstance(req, dict) else None}
@@ -204,13 +210,14 @@ def _local(path: str) -> dict:
         return json.load(r)
 
 
-def preflight(approved_code_sha: str, expected_digest: str = EXPECTED_DIGEST, root: Path | None = None) -> dict:
+def preflight(approved_code_sha: str, expected_digest: str = EXPECTED_DIGEST, root: Path | None = None,
+              request_path: str = REQUEST_PATH, plan_sha: str | None = None) -> dict:
     if not _hex(approved_code_sha, 40) or expected_digest != EXPECTED_DIGEST:
         raise RuntimeError("a full approved code SHA and the fixed model digest are required")
     head = _git("rev-parse", "HEAD", root=root)
     if _git("status", "--porcelain", root=root):
         raise RuntimeError("working tree modified locally")
-    if sorted(_git("diff", "--name-only", approved_code_sha, head, root=root).split()) not in ([], [REQUEST_PATH]):
+    if sorted(_git("diff", "--name-only", approved_code_sha, head, root=root).split()) not in ([], [request_path]):
         raise RuntimeError("running code differs from the approved code revision")
     gitlink = _git("ls-tree", "HEAD", "vendor/openjarvis", root=root).split()
     if len(gitlink) < 3 or gitlink[2] != PIN or \
@@ -222,7 +229,7 @@ def preflight(approved_code_sha: str, expected_digest: str = EXPECTED_DIGEST, ro
     if digest != expected_digest:
         raise RuntimeError("model digest mismatch")
     return {"approved_code_sha": approved_code_sha, "trigger_sha": head, "openjarvis_pin": PIN,
-            "ollama": OLLAMA_VERSION, "model": MODEL, "model_digest": digest, "plan_sha256": plan_sha256()}
+            "ollama": OLLAMA_VERSION, "model": MODEL, "model_digest": digest, "plan_sha256": plan_sha or plan_sha256()}
 
 
 def main(argv=None) -> int:

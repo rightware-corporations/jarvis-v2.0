@@ -1711,3 +1711,33 @@ Detalhe em `docs/research/WORK07_BROWSER_ADAPTER_DESIGN.md`.
 **Risco (INFERÊNCIA):** que a pesquisa do RFC Editor funcione sem JavaScript ainda não está verificado; confirma-se no preflight da Fase 4, que exige autorização. Se precisar de JavaScript, a alternativa Playwright isolada precisa de nova aprovação.
 
 **Não efectuado:** sem acesso a sites externos, sem Qwen, sem código ainda. **Próxima operação:** implementar o adaptador, a integração com `AgentSession`/`AgentPolicy` e os testes com fixture.
+
+## CHECKPOINT — 12/11/2026: WORK-07 Fases 2–3 — navegador semântico integrado e testes determinísticos (Claude Code)
+
+**Implementado:**
+- `rightware/agent/browser.py`: `PublicBrowser` com `web_open`, `web_type`, `web_submit`, `web_follow` e `web_find`, integrado em `AgentSession`/`AgentPolicy` através da capacidade única `browse`.
+  - limites por ferramenta: 3, 4, 4, 6 e 6 chamadas;
+  - o orçamento global e o prazo continuam na política;
+  - navegador novo a cada `run()`, sem estado entre tarefas.
+- `web.py`:
+  - `fetch(url, host_allowed=…)` aplica a allowlist **em cada salto**, incluindo redireccionamentos, antes de qualquer ligação;
+  - `Page.markup` (HTML limitado) serve só o parser; nunca é enviado ao modelo.
+- `session.py`:
+  - ferramentas `browse` e o texto de âmbito no prompt (sites autorizados e página inicial opcional `https`);
+  - fontes de qualquer leitura OK, sem duplicados;
+  - `cancel()` e relógio injectável;
+  - `browse` sem sites, ou com página inicial fora da allowlist, falha fechado.
+- `policy.py`: o texto escrito pelo modelo vai para a auditoria só como comprimento + hash.
+- `agent_smoke.py`: gate de autorização parametrizável; os valores por omissão são os do WORK-06, cujo `plan_sha256 b9be5c69…` não mudou.
+- CLI: `--site HOST` (repetível) e `--start-url`.
+
+**Testes:**
+- fixture controlada `tests/work07_site.py`: `MockTransport` com o `HttpxFetcher` real; tem pesquisa GET, resultados, dois documentos, injecção, redireccionamento externo, PDF, 500, timeout e uma página só com JavaScript;
+- respostas conhecidas apenas em `tests/`.
+- `tests/test_work07_browser.py` tem 23 testes: navegação, recusas (POST, login, credenciais, textarea, `javascript:`, `mailto:`, hosts externos, redireccionamento, download), timeouts, quotas, orçamento global, cancelamento, prazo, fontes, estados de conclusão, auditoria, contenção de injecção e ausência de oráculo no produto. O modelo é **FAKE** e actua através do `OrchestratorAgent` real.
+
+**Resultados locais:**
+- venv: **173 OK, 0 saltados**; Python simples: 173 OK, 57 saltados;
+- mutação: 5/5 mutantes detectados (allowlist, POST, credenciais, links externos, texto na auditoria).
+
+**Não efectuado:** nenhum acesso ao RFC Editor, nenhum Qwen. **Riscos:** o funcionamento sem JavaScript no RFC Editor continua por verificar (Fase 4). **Próxima operação:** avaliador e runner do gate em `labs/`, preflight do site e workflows inertes.

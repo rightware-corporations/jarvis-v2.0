@@ -3,6 +3,9 @@
 Capabilities are off unless enabled for this session:
   --allow-web      read public web pages (read-only)
   --allow-actions  ask for allow-listed Windows actions (each confirmed by you)
+  --site HOST      public research on this exact site (repeatable): open pages, type a public
+                   search query, run GET searches, follow links. No login, POST or downloads.
+  --start-url URL  optional https starting page on one of the --site hosts
 """
 from __future__ import annotations
 
@@ -19,6 +22,8 @@ def main(argv=None) -> int:
     ap.add_argument("--model", default=None)
     ap.add_argument("--allow-web", action="store_true")
     ap.add_argument("--allow-actions", action="store_true")
+    ap.add_argument("--site", action="append", default=[])
+    ap.add_argument("--start-url", default=None)
     ap.add_argument("--json", action="store_true", help="imprime também o resultado verificado em JSON")
     args = ap.parse_args(argv)
 
@@ -29,7 +34,8 @@ def main(argv=None) -> int:
     from rightware.agent.session import AgentSession, reply_json
     from rightware.windows_actions import WindowsActions
 
-    allow = ({"web"} if args.allow_web else set()) | ({"actions"} if args.allow_actions else set())
+    allow = ({"web"} if args.allow_web else set()) | ({"actions"} if args.allow_actions else set()) \
+        | ({"browse"} if args.site else set())
     logs = runtime.STATE / "logs"
 
     def confirm(question: str) -> str | None:     # the human answers, never the model
@@ -42,7 +48,8 @@ def main(argv=None) -> int:
     engine = OllamaEngine(host="http://127.0.0.1:11434", timeout=300)
     session = AgentSession(engine, model, allow=allow, confirm=confirm,
                            actions=WindowsActions(authorized=args.allow_actions, audit_dir=logs),
-                           audit_path=logs / f"agent-{dt.datetime.now(dt.timezone.utc):%Y%m%d}.jsonl")
+                           audit_path=logs / f"agent-{dt.datetime.now(dt.timezone.utc):%Y%m%d}.jsonl",
+                           sites=tuple(args.site), start_url=args.start_url)
     reply = session.run(args.instruction)
     print(f"Jarvis: {reply.text}")
     if args.json:
