@@ -2033,3 +2033,8 @@ O CI `43183788838` identificou que a descrição auxiliar do caso RFC 9112 ainda
 **Prevenção:** teste determinístico adicionado para validar valores de `authorized_by` de 200/201/202 caracteres e linha única. Nos próximos pedidos, validar o JSON completo com `validate_request` *antes* de qualquer commit, não só HEAD/plan/CI. Novo Qwen (request_id 3) requer aprovação independente, com SHA final e plano; não foi autorizado nesta conversa.
 
 **CI da adenda:** pendente de verificação remota, sem inferência Qwen nem alterações em `main`, workflows ou planos.
+
+
+### WORK-07 request_id 2 — teste estrutural adaptado ao pedido histórico bloqueado
+
+O primeiro CI após o checkpoint `db0e7ad4` falhou em `test_request_files_absent_or_structurally_valid`, pois essa suite exigia que **todos os ficheiros de pedido anteriormente commitados fossem válidos**, enquanto a execução real do `request_id 2` preservou, correctamente, o `authorized_by` inválido de 202 caracteres. O teste distingue agora EXCLUSIVAMENTE o registo histórico id 2 pelo `request_id`, SHA de código aprovado, plano e prefixo/longitude exactos do texto, exigindo `["authorized_by"]` como única anomalia. Todas as outras autorizações, incluindo a futura id 3, continuam obrigadas a ser válidas. `AgentPolicy`, `GATE 0` e `A.validate_request` não foram alterados. Nenhuma execução Qwen foi iniciada. CI do novo checkpoint pendente.
