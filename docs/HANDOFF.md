@@ -1907,3 +1907,16 @@ Foi **redigida** na cópia guardada no repositório; os hashes original e redigi
 **Limitação (INFERÊNCIA, não verificada):** não se sabe se a página `/info/rfcN/` do site actual liga para `/rfc/rfcN.html`, nem se os documentos têm o título no formato esperado. A próxima execução vai mostrá-lo; se falhar, ficam registadas as ligações candidatas.
 
 **Próxima operação:** nova autorização do operador para o preflight, com `request_id` **2**, código aprovado = este HEAD depois de o CI estar verde, e o mesmo plano `b0e4ac78…ef4`.
+
+
+## CHECKPOINT — 12/11/2026: WORK-07 R2 — redacção de parâmetros nos URLs (ChatGPT / GitHub)
+
+**Autorização do operador:** ChatGPT assume directamente correcção da exposição da chave pública de pesquisa x-typesense-api-key; Claude executará os gates 4 e 5 apenas depois das respectivas autorizações. **Não executar gates neste checkpoint.**
+
+**HEAD base:** `5fd973a23bd058425f7d35509de4b26a5b76a2db`; CI verde. Run real 43152996478 concluiu NOT_READY pelo parsing de /info/rfcN/; driver corrigido no HEAD base. Request_id 1 consumido; próximo site-preflight será request_id 2.
+
+**Código alterado neste commit:** rightware/agent/web.py adiciona redact_url e redact_text_urls para ocultar valores de parâmetros de URL com aparência de credenciais, inclusive nomes percent-encoded, nas respostas e fontes apresentadas. rightware/agent/browser.py conserva o URL verdadeiro para o HTTP GET e o estado de navegação, mas oculta requested_url, final_url e links apresentados nos eventos, fontes e texto do modelo. rightware/agent/session.py também oculta o final_url de web_read. labs/work07_rfc_gate/gate.py oculta URLs nos argumentos capturados e respostas gravadas em RecordingEngine sem mudar os argumentos enviados à ferramenta real.
+
+**Regressões:** novo tests/test_work07_url_redaction.py, com testes de URL, frame, gravação do runner e MockTransport de formulário GET com campo oculto; comprova navegação com o segredo originalmente recebido pelo site, mas sem exposição nas vistas e evidências.
+
+**Sem alterações:** pin OpenJarvis, WORK-06, planos (site b0e4ac78…ef4; Qwen 44d96648…d94), política de autorização, main, demo. **Testes e CI deste novo commit pendentes**, não declarar PASS antes da verificação. Próximo passo: validar CI e HEAD, acrescentar checkpoint de verificação; só depois solicitar autorização da Fase 4 request_id 2 com o novo HEAD.

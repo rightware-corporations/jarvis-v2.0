@@ -29,6 +29,7 @@ from pathlib import Path
 import sys
 
 from rightware import agent_smoke as A
+from rightware.agent.web import redact_url, redact_text_urls
 
 SITE = "www.rfc-editor.org"
 START_URL = "https://www.rfc-editor.org/search/"
@@ -103,9 +104,11 @@ class RecordingEngine:
                 args = json.loads(raw) if isinstance(raw, str) else dict(raw)
             except (TypeError, ValueError):
                 args = {"_unparsed_sha256": hashlib.sha256(str(raw).encode()).hexdigest()}
+            if isinstance(args, dict) and isinstance(args.get("url"), str):
+                args = {**args, "url": redact_url(args["url"])}
             calls.append({"name": tc.get("name"), "arguments": args if isinstance(args, dict) else {}})
         self.responses.append({"engine_id": self.engine_id, "tool_calls": calls,
-                               "content": (result.get("content") or "")[:4000]})
+                               "content": redact_text_urls((result.get("content") or "")[:4000])})
         return result
 
     def final_text(self) -> str:

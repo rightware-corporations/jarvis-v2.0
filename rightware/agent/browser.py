@@ -35,7 +35,7 @@ from html.parser import HTMLParser
 import re
 from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
 
-from rightware.agent.web import MAX_URL, Page, WebRefused, frame
+from rightware.agent.web import MAX_URL, Page, WebRefused, frame, redact_url
 
 MAX_VIEW_CHARS = 3500
 MAX_LINKS_SHOWN = 25
@@ -212,7 +212,7 @@ class PublicBrowser:
         return host.rstrip(".").lower() in self.sites
 
     def _load(self, url: str, op: str, extra: dict) -> Step:
-        event = {"op": op, "requested_url": url[:MAX_URL], **extra}
+        event = {"op": op, "requested_url": redact_url(url)[:MAX_URL], **extra}
         try:
             page = self.fetcher.fetch(url, host_allowed=self.allowed)
         except WebRefused as exc:
@@ -225,7 +225,7 @@ class PublicBrowser:
         if backend is not None:
             event["connections"] = [list(c) for c in getattr(backend, "connections", [])][:10]
         first = page.text.split("\n", 1)[0]
-        evidence = {"final_url": page.final_url, "status": page.status, "content_type": page.content_type,
+        evidence = {"final_url": redact_url(page.final_url), "status": page.status, "content_type": page.content_type,
                     "sha256": page.sha256, "chars": len(page.text), "truncated": page.truncated,
                     "title": first[len("Título: "):][:160] if first.startswith("Título: ") else ""}
         if not 200 <= page.status < 300:
@@ -290,7 +290,7 @@ class PublicBrowser:
                     field_lines.append(f'{fid}: campo de pesquisa "{_CONTROL.sub(" ", ctl.label)[:MAX_LABEL]}" '
                                        f"(formulário de pesquisa -> {dest.hostname}{dest.path})")
         self.current_text = page.text
-        lines = [f"Endereço: {page.final_url}"]
+        lines = [f"Endereço: {redact_url(page.final_url)}"]
         if field_lines:
             lines += ["Campos de pesquisa (usa web_type e depois web_submit):"] + field_lines
         if unsupported:
@@ -302,7 +302,7 @@ class PublicBrowser:
             shown = page_links[:MAX_LINKS_SHOWN]
             lines.append(f"Ligações ({len(shown)} de {len(page_links)}; web_find procura as restantes; "
                          "web_follow abre uma):")
-            lines += [f'{lid}: "{text[:MAX_LABEL]}" -> {url[:160]}' for lid, url, text in shown]
+            lines += [f'{lid}: "{text[:MAX_LABEL]}" -> {redact_url(url)[:160]}' for lid, url, text in shown]
         if skipped:
             lines.append(f"({skipped} ligação(ões) para servidores não autorizados foram omitidas.)")
         return "\n".join(lines)
@@ -369,7 +369,7 @@ class PublicBrowser:
                 if needle in t.casefold() or needle in url.casefold()][:MAX_FIND_RESULTS]
         lines = [l for l in self.current_text.splitlines() if needle in l.casefold()][:5]
         body = [f'Procura por "{needle}" nas ligações e na página actual desta tarefa (sem nova navegação).']
-        body += [f'{lid}: "{t[:MAX_LABEL]}" -> {url[:160]}' for lid, url, t in hits] or ["Nenhuma ligação encontrada."]
+        body += [f'{lid}: "{t[:MAX_LABEL]}" -> {redact_url(url)[:160]}' for lid, url, t in hits] or ["Nenhuma ligação encontrada."]
         if lines:
             body += ["Linhas da página actual:"] + [l[:200] for l in lines]
         url = self.current.final_url if self.current else "(nenhuma página aberta)"

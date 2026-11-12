@@ -25,7 +25,7 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
 from rightware.agent.policy import AgentPolicy, Budgets, ToolDef
-from rightware.agent.web import HttpxFetcher, WebRefused, frame
+from rightware.agent.web import HttpxFetcher, WebRefused, frame, redact_url
 from rightware.windows_actions import ACTIONS, WindowsActions, describe
 
 SYSTEM_PROMPT = (
@@ -186,7 +186,7 @@ class AgentSession:
             return ToolOutcome("web_read", "REFUSED", f"Leitura recusada: {exc}.", {})
         except Exception as exc:
             return ToolOutcome("web_read", "FAILED", f"A leitura falhou ({type(exc).__name__}).", {})
-        evidence = {"final_url": page.final_url, "status": page.status, "content_type": page.content_type,
+        evidence = {"final_url": redact_url(page.final_url), "status": page.status, "content_type": page.content_type,
                     "sha256": page.sha256, "chars": len(page.text), "truncated": page.truncated}
         if not 200 <= page.status < 300:
             # A response was received, but it is not a retrieved source (R1 F5).
