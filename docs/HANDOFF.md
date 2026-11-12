@@ -1994,3 +1994,8 @@ Após o commit base `a85a6f7ec1f55e9a8b23c0a600c01e5545cf82b8`, a suite CI do pr
 **Correcção de proveniência:** em `docs/evidence/work07-qwen-run43161108959/PROVENANCE.txt` havia erro de transcrição no checksum de `product-tests.txt`. Foi corrigido confrontando o ZIP original com SHA256SUMS (11/11 válidos, ZIP `baecf5f0bba58bf998e73ac1e3da37c4bd3b46c07bd9f8b37439250ca69cec69`). ZIP original e resultado histórico não foram alterados.
 
 **Inalterados:** `main`, pin OpenJarvis, Qwen/Ollama, política de rede, quotas, workflows e os dois digests dos planos. **Testes/CI do R2 ainda pendentes neste checkpoint**. Próxima operação: validar CI e HANDOFF remoto; se verdes, preparar pedido específico de aprovação para Fase 5 `request_id: 2`, nunca executá-la automaticamente.
+
+
+### WORK-07 R2 — Correcção da fixture do teste de títulos trocados (CI)
+
+O primeiro CI de `5ae151a` falhou por uma expectativa contraditória em `test_swapped_section_titles_still_fail`: a fixture tinha trocado o campo «Título Oficial» mas mantinha `HTTP/1.1` no próprio cabeçalho da RFC 9112. Por isso o avaliador encontrava correctamente o título no contexto da RFC 9112 e rejeitava a afirmação «missing» feita pelo teste. O teste agora usa cabeçalhos neutros `RFC N` e troca efectivamente os títulos oficiais nas respectivas linhas. O runner `test_request_commit_suite` também falhava por reproduzir esse mesmo teste. Esta é correcção de fixture, sem alteração do produto, auditoria, critérios de aceitação ou planos. CI após este checkpoint por verificar; sem novas execuções Qwen.

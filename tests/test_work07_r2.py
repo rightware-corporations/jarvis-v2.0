@@ -33,9 +33,10 @@ class MarkdownSections(unittest.TestCase):
         self.assertIn("official URL of RFC 9112 not attributed in the answer", problems)
 
     def test_swapped_section_titles_still_fail(self):
-        swapped = (REAL_SHAPE.replace("HTTP Semantics", "PLACEHOLDER")
-                   .replace('**Título Oficial:** "HTTP/1.1"', '**Título Oficial:** "HTTP Semantics"')
-                   .replace("PLACEHOLDER", "HTTP/1.1"))
+        swapped = ("**RFC 9110:**\n* **Título Oficial:** \"HTTP/1.1\"\n"
+                   "* Descrição: define a semântica do HTTP.\n"
+                   "**RFC 9112:**\n* **Título Oficial:** \"HTTP Semantics\"\n"
+                   "* Descrição: define a sintaxe das mensagens HTTP/1.1.\n")
         problems = E.answer_rubric(swapped)
         self.assertIn("official title of RFC 9110 missing or not paired with it", problems)
         self.assertIn("official title of RFC 9112 missing or not paired with it", problems)
