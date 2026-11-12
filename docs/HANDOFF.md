@@ -2552,3 +2552,38 @@ São resultados com modelo FAKE e nada provam sobre o Qwen3.5:4b.
 **REGRA PERMANENTE HANDOFF-FIRST:** cada descoberta relevante, decisão, limite, teste ou resultado recebe checkpoint distinto com factos vs hipóteses, proveniência, estado de autorização, HEAD/CI e próximo passo. Verificar se Claude já registou antes de publicar, para evitar duplicações. Registo directo por ChatGPT é permitido neste turno por autorização explícita; não implica autorização genérica para alterar código.
 
 **Próxima acção exacta:** rever o resultado E1/E4 já publicado, verificar o HEAD/CI final e decidir se se autorizam **apenas** experiências determinísticas E3 + L1–L4. Não assumir autorização enquanto não for dada.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-014 — autorização do operador para experiências E3 + L1–L4 (HANDOFF-FIRST, ChatGPT)
+
+**DECISÃO EXPLÍCITA DO OPERADOR:** em resposta à recomendação de avançar para E3 e L1–L4, o operador respondeu «vamos então». Interpretar como **AUTORIZAÇÃO LIMITADA** para investigação e experiências determinísticas E3 e L1–L4, com modelos FAKE/dados sintéticos e implementação **apenas em laboratório/testes**. **Não** é autorização para patch de produção, Qwen, GPU, testes externos contra serviços reais, persistência nova, migração de runtime, integração Shared ou outras fases.
+
+**BASELINE ANTES DESTE REGISTO:** JARVIS `develop` `b9d7f97362f9b76ea954be83d7edf76c9f03476b` (HEAD remoto consultado). Três workflows do commit anterior concluídos com `success`: 43249760744, 43249744061, 43249743712. O HEAD pode avançar em paralelo devido ao Claude; validar sempre antes de escrever. O presente checkpoint é uma alteração **documental** pelo ChatGPT, não a execução da missão de engenharia.
+
+**ESTADO FACTUAL PRÉVIO:** R3-C2-012 E1+E4 já concluídos pelo Claude (FAKE, 15 testes, 284 PASS reportados, CI success). A intercepção `_GuardedEngine` e retry limitado foram demonstrados em testes, mas `_compose()` continua a produzir `ANSWERED_WITH_SOURCES` para tarefas incompletas em produção. Os objectivos dos testes eram fornecidos explicitamente e a verificação usava correspondência literal de URL — lacunas a tratar nesta fase. Repetição de mutante sem budget causou OOM; não repetir sem sandbox com hard limits.
+
+### MISSÃO DE ENGENHARIA AUTORIZADA — SOMENTE LABORATÓRIO/TESTES
+
+**HANDOFF-FIRST:** Claude Code deve (1) revalidar HEAD remoto/local, árvore, HANDOFF e CI, (2) confirmar o presente checkpoint e criar checkpoint de início, (3) investigar/testar e produzir provas observáveis, (4) publicar relatório e checkpoint de resultados com commits, CI, limitações e próximo passo. Nunca sobrescrever commits do ChatGPT/Claude nem fazer checkout destrutivo; se houver concorrência, reconciliar e preservar.
+
+**E3 — política de origem dos objectivos.** Construir amostra sintética de pedidos com múltiplos requisitos obrigatórios, opcionais, dependências, negações, ambiguidade, intenções compostas e referências a dois documentos. Comparar:
+- (A) critérios explicitamente fornecidos por contrato confiável do operador/task preset;
+- (B) extração determinística de identificadores, enumerações e obrigações explícitas;
+- (C) propostas do FAKE model / planos não confiáveis que podem sugerir objectivos, mas **não eliminar, alterar nem auto-certificar** requisitos obrigatórios conhecidos.
+Resultados devem distinguir objectivos identificados, omissões, adições falsas, ambiguidades e necessidade de revisão. Não usar heurísticas RFC hardcoded como solução generalizada. Não prometer extração universal de linguagem livre sem prova. Definir limites e fallback `UNKNOWN/NEEDS_CLARIFICATION`; nunca sucesso por lista vazia de requisitos.
+
+**L1–L4 — correlação de evidências a objectivos.** Usar recibos de ferramentas reais existentes em fixtures do browser/`ToolOutcome`/`TaskTrace`, sem criar fonte de verdade independente:
+- L1: 2 objectivos obrigatórios, 1 receipt OK → `INCOMPLETE`; ausência de receipt não satisfaz.
+- L2: título/URL/metadados de landing, mirror no host, redireccionamento, 404, challenge page ou falso «original» → a identidade e o conteúdo **não** podem ser inferidos só do URL/título/status. Evidência inconclusiva não é PASS.
+- L3: alegação do modelo, memória ou fonte sem evento de execução → não fabricar receipt/veredicto; `REFUSED`/`NOT_EXECUTED` não prova acção.
+- L4: verificação antiga para outro task/run, hash de objecto distinto, identidade/versão obsoleta → rejeitar ou requerer revalidação, sem converter automaticamente em prova vigente.
+Separar **execução observada**, **completude operacional** e **correcção factual**. Uma verificação pode retornar `PASS/FAIL/UNKNOWN` com razões e evidências referenciadas. Fazer testes negativos e de invariantes, não só happy paths.
+
+**CONTRATO EXPERIMENTAL:** o modelo pode propor objectivos, mas o código confiável é autoridade sobre inclusão obrigatória e aceitação de evidência. Eventos só provam o que realmente executaram; hashes identificam conteúdo/representação, não autenticidade. Não confiar em texto hostil de páginas como instruções. Preservar `AgentPolicy`, quotas, consentimentos, cancelamento, deadline, auditoria, anti-loop, pin e tracing.
+
+**ENTREGÁVEIS:** matrizes de origem de objectivos e falsos PASS/FAIL, schema/contratos mínimos **propostos**, fixtures sintéticas reproduzíveis, testes isolados preferivelmente em `labs/work07_r3c2/` e `tests/`, documentação com comandos/resultados reais, baseline/commits/CI, limitações, decisões pendentes; toda nova execução rotulada FAKE. Não apresentar proof-of-concept como patch de produção. Podem ser acrescentados testes apenas; modificar ficheiros de produção requer nova autorização. Qualquer novo teste de mutação deve ter limite externo de tempo/memória e não reproduzir OOM.
+
+**FORA DO ÂMBITO:** Qwen/Ollama/GPU/embeddings; novo WORK-07 request_id; `rightware/` ou `vendor/` runtime; `_compose`, `AgentSession.run()`; alteração de quotas/policy/pin; CI workflow; `main`/merge; integrações Shared, PostgreSQL/SQLite/Mem0, L5–L12; execução remota não autorizada, side effects reais. Não alterar histórico 1/3 FAIL, 2 BLOCKED. Se requisitos forem incompatíveis com testes puros, documentar o bloqueio em vez de exceder âmbito.
+
+**GATE DE CONCLUSÃO:** só declarar E3/L1–L4 como demonstrados se os testes e respectivos falsos PASS forem rastreáveis e CI estiver confirmado. Não avançar automaticamente para patch de produto nem real Qwen. Próxima decisão do operador: seleccionar política de objectivos/verificação com base nos resultados, decidir se e como implementar num incremento separado de produção.
+
+**ESTADO DESTE CHECKPOINT:** autorização e contrato **publicados por ChatGPT**; execução E3/L1–L4 **ainda não demonstrada** nesta operação.
