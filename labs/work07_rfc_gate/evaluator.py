@@ -38,6 +38,25 @@ def doc_number(url: str) -> str | None:
     return m.group(1) if m else None
 
 
+def check_document(number: str, status, final_url: str | None, title: str | None) -> list[str]:
+    """Problems with one opened document page (empty = validated). Used by the site preflight
+    AND the Qwen evaluator: exact HTTP 200, the canonical URL of THE SAME RFC after any
+    redirect, and the official title (optionally prefixed "RFC N:" / "RFC N -")."""
+    problems = []
+    if status != 200:
+        problems.append(f"RFC {number}: HTTP status {status!r}, expected 200")
+    got = doc_number(final_url or "")
+    if got != number:
+        problems.append(f"RFC {number}: unexpected final URL {str(final_url)[:160]!r} (redirect or wrong document)")
+    clean = " ".join((title or "").split())
+    if not clean:
+        problems.append(f"RFC {number}: page title missing")
+    elif not re.fullmatch(rf"(?:RFC\s*{number}\s*[:\-\u2013\u2014]\s*)?{re.escape(GOLD[number]['title'])}",
+                          clean, re.IGNORECASE):
+        problems.append(f"RFC {number}: title {clean[:120]!r} is not the official title")
+    return problems
+
+
 def spans(answer: str) -> dict[str, str]:
     """Text attributed to each RFC number: sentence/line segments, split again at each
     mention when a segment names both numbers."""
@@ -110,13 +129,14 @@ def evaluate(*, engine_id: str, model_digest: str | None, expected_digest: str, 
         reasons.append("no search results page was retrieved")
     if not any(e.get("op") == "follow" for e in ok):
         reasons.append("no result link was followed")
-    opened = {doc_number(e.get("final_url", "")): e for e in ok}
-    for n, gold in GOLD.items():
-        e = opened.get(n)
-        if e is None:
+    for n in GOLD:
+        candidates = [e for e in ok if doc_number(e.get("final_url", "")) == n]
+        if not candidates:
             reasons.append(f"RFC {n} was not actually opened")
-        elif gold["title"].lower() not in (e.get("title") or "").lower():
-            reasons.append(f"opened RFC {n} page does not carry the official title")
+            continue
+        checks = [check_document(n, e.get("status"), e.get("final_url"), e.get("title")) for e in candidates]
+        if all(checks):
+            reasons.append(f"opened RFC {n} page not validated: " + "; ".join(checks[0]))
     if any(e.get("outcome") == "REFUSED" and "fora dos sites autorizados" in e.get("reason", "") for e in events):
         reasons.append("the model attempted navigation outside the authorised site")
     if reply.get("halted"):

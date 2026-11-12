@@ -26,7 +26,6 @@ import datetime as dt
 import hashlib
 import json
 from pathlib import Path
-import re
 import sys
 
 from rightware import agent_smoke as A
@@ -117,11 +116,15 @@ class RecordingEngine:
 
 
 # -- Phase 4: site preflight (no model) -------------------------------------------------
-_RFC_DOC = re.compile(r"/rfc/rfc(\d+)\.html$")
+READY = {"site-preflight": "READY", "qwen": "PASS"}          # the ONLY accepted verdicts
 
 
 def site_preflight(browser) -> dict:
-    """Deterministic evaluator-side driver over the REAL PublicBrowser. No model."""
+    """Deterministic evaluator-side driver over the REAL PublicBrowser. No model.
+
+    READY only if BOTH documents were opened and each one passes ``check_document``
+    (HTTP 200, canonical final URL of the same RFC after redirects, official title)."""
+    from labs.work07_rfc_gate.evaluator import check_document, doc_number
     loads = 0
     steps: list[dict] = []
 
@@ -133,15 +136,21 @@ def site_preflight(browser) -> dict:
                       "view_excerpt": step.content[:1500]})
         return step
 
+    def result_link(number):
+        return next((lid for lid, (u, _) in browser.links.items() if doc_number(u) == number), None)
+
     start = record("open", browser.open(START_URL))
-    result = {"start_status": start.status, "search_fields": [], "documents": {}, "steps": steps}
+    result = {"start_status": start.status, "start_final_url": start.evidence.get("final_url"),
+              "search_fields": [], "documents": {}, "steps": steps}
     if start.status != "OK":
-        return {**result, "verdict": "NOT_READY", "reasons": [f"start page {start.status}"]}
+        return {**result, "events": browser.events, "verdict": "NOT_READY", "reasons": [f"start page {start.status}"]}
     fields = list(browser.fields)
     result["search_fields"] = [{"id": f, "label": browser.fields[f].control.label,
                                 "name": browser.fields[f].control.name, "action": browser.fields[f].form.action}
                                for f in fields]
     reasons = []
+    if not fields:
+        reasons.append("no search field without JavaScript on the start page")
     for number in PREFLIGHT_LIMITS["queries"]:
         found = None
         for fid in fields:
@@ -151,23 +160,56 @@ def site_preflight(browser) -> dict:
                 record("type", browser.type(fid, text))
                 if record("submit", browser.submit(fid)).status != "OK":
                     continue
-                found = next((lid for lid, (u, _) in browser.links.items()
-                              if (m := _RFC_DOC.search(u)) and m.group(1) == number), None)
+                found = result_link(number)
                 if not found:
                     info = next((lid for lid, (u, _) in browser.links.items() if u.endswith(f"/info/rfc{number}")), None)
-                    if info and record("follow", browser.follow(info)).status == "OK":
-                        found = next((lid for lid, (u, _) in browser.links.items()
-                                      if (m := _RFC_DOC.search(u)) and m.group(1) == number), None)
+                    if info and loads < PREFLIGHT_LIMITS["max_loads"] \
+                            and record("follow", browser.follow(info)).status == "OK":
+                        found = result_link(number)
         if not found:
             reasons.append(f"no traversable result link to RFC {number}")
             continue
+        if loads >= PREFLIGHT_LIMITS["max_loads"]:
+            reasons.append(f"load budget exhausted before opening RFC {number}")
+            continue
+        link_url = browser.links[found][0]
         doc = record("follow", browser.follow(found))
-        result["documents"][number] = {"status": doc.status, "final_url": doc.evidence.get("final_url"),
-                                       "title": doc.evidence.get("title"), "truncated": doc.evidence.get("truncated")}
-        if doc.status != "OK":
-            reasons.append(f"RFC {number} document {doc.status}")
+        ev = doc.evidence
+        problems = [f"RFC {number}: document {doc.status}"] if doc.status != "OK" else \
+            check_document(number, ev.get("status"), ev.get("final_url"), ev.get("title"))
+        result["documents"][number] = {"link_url": link_url, "outcome": doc.status, "status": ev.get("status"),
+                                       "final_url": ev.get("final_url"), "redirected": ev.get("final_url") != link_url,
+                                       "title": ev.get("title"), "truncated": ev.get("truncated"),
+                                       "validated": not problems, "problems": problems}
+        reasons += problems
+    validated = [n for n, d in result["documents"].items() if d["validated"]]
+    if sorted(validated) != sorted(PREFLIGHT_LIMITS["queries"]) and not reasons:
+        reasons.append("not every document was validated")                    # defence in depth
     result["events"] = browser.events
     return {**result, "verdict": "NOT_READY" if reasons else "READY", "reasons": reasons}
+
+
+def acceptance(op: str, evidence_dir: Path, technical_exit: int) -> dict:
+    """Separate the TECHNICAL execution (did the runner complete?) from the ACCEPTANCE verdict.
+    Accepted only when the runner completed (exit 0) AND the recorded verdict is READY (site
+    preflight) / PASS (qwen). NOT_READY, FAIL, INCOMPLETE, a missing or unreadable verdict, or
+    a blocked runner are never accepted."""
+    name = {"site-preflight": "site_preflight.json", "qwen": "qwen_gate.json"}[op]
+    verdict, reasons = None, []
+    try:
+        data = json.loads((evidence_dir / name).read_text(encoding="utf-8"))
+        v = data.get("verdict")
+        verdict = v.get("verdict") if isinstance(v, dict) else v
+        reasons = (v.get("reasons") if isinstance(v, dict) else data.get("reasons")) or []
+    except (OSError, ValueError, AttributeError):
+        reasons = ["no readable verdict evidence"]
+    technical = "COMPLETED" if technical_exit == 0 else ("BLOCKED" if technical_exit == 2 else "ERROR")
+    if technical != "COMPLETED":
+        verdict = verdict or "NO_VERDICT"
+    accepted = technical == "COMPLETED" and verdict == READY[op]
+    return {"operation": op, "technical_execution": technical, "technical_exit": technical_exit,
+            "verdict": verdict or "NO_VERDICT", "accepted": accepted, "required_verdict": READY[op],
+            "reasons": [str(r)[:200] for r in reasons][:20]}
 
 
 def run(op: str, approved: str, out: Path) -> int:
@@ -226,6 +268,8 @@ def main(argv=None) -> int:
     g.add_argument("--plan-only", choices=sorted(OPS))
     g.add_argument("--check-request", choices=sorted(OPS))
     g.add_argument("--run", choices=sorted(OPS))
+    g.add_argument("--acceptance", choices=sorted(OPS))
+    ap.add_argument("--technical-exit", type=int, default=-1)
     ap.add_argument("--run-attempt", type=int, default=0)
     ap.add_argument("--approved-code-sha", default="")
     ap.add_argument("--evidence-dir", default="")
@@ -241,6 +285,10 @@ def main(argv=None) -> int:
     if not args.evidence_dir:
         print("--evidence-dir is required", file=sys.stderr)
         return 2
+    if args.acceptance:
+        result = acceptance(args.acceptance, Path(args.evidence_dir), args.technical_exit)
+        print(json.dumps(result, ensure_ascii=False))
+        return 0 if result["accepted"] else 1
     return run(args.run, args.approved_code_sha, Path(args.evidence_dir))
 
 

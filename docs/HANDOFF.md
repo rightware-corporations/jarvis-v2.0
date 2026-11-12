@@ -1779,3 +1779,27 @@ Detalhe em `docs/research/WORK07_BROWSER_ADAPTER_DESIGN.md`.
 **Workflows:** os novos workflows WORK-07 **não foram disparados**, porque não existe ficheiro de pedido.
 
 **Estado:** fases 1–3 concluídas e testadas com modelo FAKE; fases 4–5 preparadas e não executadas. Aguarda autorização do operador para o preflight do site (`b0e4ac78…ef4`, `request_id` 1). A Fase 5 só pode ser pedida separadamente, depois de `READY`.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R1 — correcção 1: validação dos documentos no preflight e no avaliador (Claude Code)
+
+**HEAD inicial verificado:** `cadaefc99a2b2ce0da9ba702ca7810eeb212cc69` (remoto = local).
+
+**Lacuna corrigida:** o preflight devolvia `READY` só por o documento abrir com estado OK, sem validar o URL final nem o título.
+
+**Correcção:** nova função `evaluator.check_document`, usada pelo preflight **e** pelo avaliador Qwen. Exige:
+- HTTP **200** exacto;
+- URL final canónico **do mesmo RFC** depois de qualquer redireccionamento (`https://www.rfc-editor.org/rfc/rfcN(.html|.txt)?`);
+- título oficial exacto, opcionalmente com o prefixo «RFC N:» ou «RFC N -».
+
+O preflight passa a dar `READY` apenas com os dois documentos validados. Regista também, por documento, o link seguido, se houve redireccionamento, o título e os problemas encontrados. O orçamento de cargas é respeitado também no passo final.
+
+**Separação técnico/aceitação:** nova função `gate.acceptance` e opção CLI `--acceptance`. Só se aceita runner COMPLETED (exit 0) com `READY` (preflight) ou `PASS` (Qwen). `NOT_READY`, `FAIL`, `INCOMPLETE`, a ausência de veredicto e um runner BLOCKED ou com erro nunca são aceites.
+
+**Testes:**
+- 15 novos testes negativos e de aceitação: título ausente, errado, trocado; redireccionamento para o outro documento, para uma página não-documento e para fora do site; HTTP 203 e 503; veredictos não aceites; evidência ausente ou corrompida.
+- Mutação: 4/4 mutantes detectados.
+- venv: **207 OK, 0 saltados**; Python simples: 207 OK, 71 saltados.
+
+**Inalterado:** planos `b0e4ac78…ef4` e `44d96648…d94` (as correcções são de código, cobertas pelo SHA aprovado; os planos não mudam); WORK-06 (`b9be5c69…`, `agent_smoke.py`, o seu workflow) e o pin OpenJarvis.
+
+**Próxima operação:** correcção 2, separar nos workflows WORK-07 a execução técnica do veredicto de aceitação, preservando sempre as evidências.

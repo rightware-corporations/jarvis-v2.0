@@ -41,9 +41,9 @@ def ev(op, outcome="OK", **kw):
 def good_events():
     return [ev("open", final_url=G.START_URL, title="Search RFCs"),
             ev("submit", final_url="https://www.rfc-editor.org/search/rfc_search_detail.php?rfc=9110", query="9110"),
-            ev("follow", final_url=E.GOLD["9110"]["url"], title="RFC 9110: HTTP Semantics"),
+            ev("follow", final_url=E.GOLD["9110"]["url"], status=200, title="RFC 9110: HTTP Semantics"),
             ev("submit", final_url="https://www.rfc-editor.org/search/rfc_search_detail.php?rfc=9112", query="9112"),
-            ev("follow", final_url=E.GOLD["9112"]["url"], title="RFC 9112: HTTP/1.1")]
+            ev("follow", final_url=E.GOLD["9112"]["url"], status=200, title="RFC 9112: HTTP/1.1")]
 
 
 def responses(*names, final=GOOD):
@@ -116,7 +116,11 @@ class Evaluator(unittest.TestCase):
         self.assertEqual(judge(max_tool_calls=3)["verdict"], "FAIL")
         wrong = good_events()
         wrong[2] = {**wrong[2], "title": "RFC 9110: Something Else"}
-        self.assertIn("opened RFC 9110 page does not carry the official title", judge(events=wrong)["reasons"])
+        self.assertIn("opened RFC 9110 page not validated: RFC 9110: title 'RFC 9110: Something Else' is not the "
+                      "official title", judge(events=wrong)["reasons"])
+        no_status = good_events()
+        no_status[4] = {**no_status[4], "status": 203}
+        self.assertEqual(judge(events=no_status)["verdict"], "FAIL")
 
     def test_site_or_runner_failure_is_incomplete_not_fail(self):
         for bad in (ev("open", "FAILED", error="ConnectTimeout"), ev("open", "HTTP_ERROR", status=503),
@@ -230,6 +234,169 @@ class SitePreflightDriver(unittest.TestCase):
         result = G.site_preflight(PublicBrowser([G.SITE], self.mock(search_form=False)))
         self.assertEqual(result["verdict"], "NOT_READY")
         self.assertIn("no traversable result link to RFC 9110", result["reasons"])
+
+
+class DocumentCheck(unittest.TestCase):
+    def test_official_document_pages_validate(self):
+        for n, title in (("9110", "RFC 9110: HTTP Semantics"), ("9110", "HTTP Semantics"),
+                         ("9112", "RFC 9112 - HTTP/1.1"), ("9112", " rfc 9112:  http/1.1 ")):
+            with self.subTest(title=title):
+                self.assertEqual(E.check_document(n, 200, E.GOLD[n]["url"], title), [])
+
+    def test_missing_wrong_title_status_and_url_are_rejected(self):
+        url = E.GOLD["9110"]["url"]
+        for args, expected in (
+                ((200, url, ""), "page title missing"),
+                ((200, url, None), "page title missing"),
+                ((200, url, "RFC 9110: HTTP/1.1"), "is not the official title"),
+                ((200, url, "RFC 9110: HTTP Semantics (obsoleted draft)"), "is not the official title"),
+                ((200, url, "RFC 9112: HTTP Semantics"), "is not the official title"),
+                ((200, url, "Search results"), "is not the official title"),
+                ((203, url, "RFC 9110: HTTP Semantics"), "HTTP status 203"),
+                ((None, url, "RFC 9110: HTTP Semantics"), "HTTP status None"),
+                ((200, E.GOLD["9112"]["url"], "RFC 9110: HTTP Semantics"), "unexpected final URL"),
+                ((200, "https://www.rfc-editor.org/info/rfc9110", "RFC 9110: HTTP Semantics"), "unexpected final URL"),
+                ((200, "https://rfc-editor.org/rfc/rfc9110.html", "RFC 9110: HTTP Semantics"), "unexpected final URL"),
+                ((200, "https://www.rfc-editor.org/rfc/rfc91100.html", "RFC 9110: HTTP Semantics"),
+                 "unexpected final URL")):
+            with self.subTest(args=args):
+                problems = E.check_document("9110", *args)
+                self.assertTrue(any(expected in p for p in problems), problems)
+
+
+@unittest.skipIf(httpx is None, "pinned venv (httpx) required")
+class SitePreflightNegative(unittest.TestCase):
+    """The preflight returns READY ONLY when both opened documents are validated (LOCAL MOCK)."""
+
+    def run_mock(self, doc):
+        """``doc(number, request) -> httpx.Response`` serves the /rfc/ pages; search works normally."""
+        def handler(request):
+            path = request.url.path
+            page = lambda body, title: httpx.Response(  # noqa: E731
+                200, headers={"content-type": "text/html"},
+                text=f"<html><head>{title}</head><body>{body}</body></html>")
+            if path == "/search/":
+                return page('<form method="get" action="rfc_search_detail.php"><input name="rfc"></form>',
+                            "<title>Search RFCs</title>")
+            if path == "/search/rfc_search_detail.php":
+                n = request.url.params.get("rfc", "").replace("RFC ", "")
+                return page(f'<a href="/rfc/rfc{n}.html">RFC {n}</a>', "<title>Results</title>")
+            if path.startswith(("/rfc/rfc", "/errata/rfc")):
+                return doc(path.rsplit("rfc", 1)[1][:4], request)
+            return httpx.Response(404, headers={"content-type": "text/html"}, text="<p>x</p>")
+        fetcher = W.HttpxFetcher(resolver=lambda h: ["93.184.216.34"], transport=httpx.MockTransport(handler),
+                                 peer_check=lambda r: True, ssrf=lambda u: None)
+        return G.site_preflight(PublicBrowser([G.SITE], fetcher))
+
+    @staticmethod
+    def html(title_tag, status=200, body="<pre>document</pre>"):
+        return httpx.Response(status, headers={"content-type": "text/html"},
+                              text=f"<html><head>{title_tag}</head><body>{body}</body></html>")
+
+    def official(self, n, request):
+        return self.html(f"<title>RFC {n}: {E.GOLD[n]['title']}</title>")
+
+    def assert_not_ready(self, result, fragment):
+        self.assertEqual(result["verdict"], "NOT_READY")
+        self.assertTrue(any(fragment in r for r in result["reasons"]), result["reasons"])
+
+    def test_control_both_official_documents_are_ready(self):
+        result = self.run_mock(self.official)
+        self.assertEqual(result["verdict"], "READY", result["reasons"])
+        self.assertTrue(all(d["validated"] and not d["redirected"] for d in result["documents"].values()))
+
+    def test_missing_title_is_not_ready(self):
+        result = self.run_mock(lambda n, r: self.official(n, r) if n == "9110" else self.html(""))
+        self.assert_not_ready(result, "RFC 9112: page title missing")
+        self.assertTrue(result["documents"]["9110"]["validated"])
+        self.assertFalse(result["documents"]["9112"]["validated"])
+
+    def test_wrong_title_is_not_ready(self):
+        result = self.run_mock(lambda n, r: self.html("<title>RFC 9110: HTTP Caching</title>")
+                               if n == "9110" else self.official(n, r))
+        self.assert_not_ready(result, "RFC 9110: title 'RFC 9110: HTTP Caching' is not the official title")
+
+    def test_swapped_title_is_not_ready(self):
+        other = {"9110": "9112", "9112": "9110"}
+        result = self.run_mock(lambda n, r: self.official(other[n], r))
+        self.assert_not_ready(result, "is not the official title")
+        self.assertEqual(len(result["reasons"]), 2)
+
+    def test_redirect_to_the_other_document_is_not_ready(self):
+        def doc(n, r):
+            if n == "9110":
+                return httpx.Response(302, headers={"location": "/rfc/rfc9112.html"})
+            return self.official(n, r)
+        result = self.run_mock(doc)
+        self.assert_not_ready(result, "RFC 9110: unexpected final URL 'https://www.rfc-editor.org/rfc/rfc9112.html'")
+        self.assertTrue(result["documents"]["9110"]["redirected"])
+
+    def test_redirect_to_a_non_document_page_is_not_ready(self):
+        def doc(n, r):
+            if n == "9112" and r.url.path.endswith(".html"):
+                return httpx.Response(301, headers={"location": "/errata/rfc9112"})
+            return self.official(n, r)
+        result = self.run_mock(doc)
+        self.assert_not_ready(result, "RFC 9112: unexpected final URL")
+
+    def test_redirect_off_site_is_refused_and_not_ready(self):
+        def doc(n, r):
+            if n == "9110":
+                return httpx.Response(302, headers={"location": "https://mirror.example/rfc/rfc9110.html"})
+            return self.official(n, r)
+        result = self.run_mock(doc)
+        self.assert_not_ready(result, "RFC 9110: document REFUSED")
+
+    def test_non_200_document_is_not_ready(self):
+        result = self.run_mock(lambda n, r: self.official(n, r) if n == "9110"
+                               else self.html("<title>RFC 9112: HTTP/1.1</title>", status=203))
+        self.assert_not_ready(result, "RFC 9112: HTTP status 203, expected 200")
+
+    def test_server_error_on_a_document_is_not_ready(self):
+        result = self.run_mock(lambda n, r: self.official(n, r) if n == "9112" else self.html("<title>x</title>", 503))
+        self.assert_not_ready(result, "RFC 9110: document HTTP_ERROR")
+
+
+class Acceptance(unittest.TestCase):
+    """Technical execution vs acceptance verdict: only READY / PASS with a completed runner is accepted."""
+
+    def write(self, op, verdict):
+        import tempfile
+        d = Path(tempfile.mkdtemp())
+        if op == "site-preflight":
+            (d / "site_preflight.json").write_text(json.dumps({"verdict": verdict, "reasons": ["r"]}))
+        else:
+            (d / "qwen_gate.json").write_text(json.dumps({"verdict": {"verdict": verdict, "reasons": ["r"]}}))
+        return d
+
+    def test_only_ready_or_pass_with_exit_zero_is_accepted(self):
+        self.assertTrue(G.acceptance("site-preflight", self.write("site-preflight", "READY"), 0)["accepted"])
+        self.assertTrue(G.acceptance("qwen", self.write("qwen", "PASS"), 0)["accepted"])
+        for op, verdict in (("site-preflight", "NOT_READY"), ("qwen", "FAIL"), ("qwen", "INCOMPLETE"),
+                            ("site-preflight", "PASS"), ("qwen", "READY"), ("qwen", None)):
+            with self.subTest(op=op, verdict=verdict):
+                a = G.acceptance(op, self.write(op, verdict), 0)
+                self.assertFalse(a["accepted"])
+                self.assertEqual(a["technical_execution"], "COMPLETED")
+
+    def test_blocked_or_crashed_runner_is_never_accepted_even_with_a_stale_pass_file(self):
+        for code, technical in ((2, "BLOCKED"), (1, "ERROR"), (-1, "ERROR")):
+            a = G.acceptance("qwen", self.write("qwen", "PASS"), code)
+            self.assertEqual((a["technical_execution"], a["accepted"]), (technical, False))
+
+    def test_missing_or_corrupt_evidence_is_no_verdict(self):
+        import tempfile
+        d = Path(tempfile.mkdtemp())
+        a = G.acceptance("site-preflight", d, 0)
+        self.assertEqual((a["verdict"], a["accepted"]), ("NO_VERDICT", False))
+        (d / "site_preflight.json").write_text("{not json")
+        self.assertFalse(G.acceptance("site-preflight", d, 0)["accepted"])
+
+    def test_cli_exit_code_reflects_acceptance(self):
+        self.assertEqual(G.main(["--acceptance", "site-preflight", "--technical-exit", "0", "--evidence-dir",
+                                 str(self.write("site-preflight", "READY"))]), 0)
+        self.assertEqual(G.main(["--acceptance", "site-preflight", "--technical-exit", "0", "--evidence-dir",
+                                 str(self.write("site-preflight", "NOT_READY"))]), 1)
 
 
 @unittest.skipIf(S is None or httpx is None, "pinned OpenJarvis venv required")
