@@ -2280,3 +2280,33 @@ Estados candidatos: `PENDING`, `IN_PROGRESS`, `VERIFIED`, `BLOCKED`, `UNVERIFIED
 **Próximo passo:** desenho do Task Contract e dos critérios de verificação do R3-C2, em investigação read-only. Não iniciar a implementação R3-C2, Qwen nem novo `request_id` sem autorização específica.
 
 **Operações deste checkpoint:** apenas esta adenda ao HANDOFF; sem alterações de código, testes, workflows, planos, `main` ou pin.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-002 — Task Contract: investigação e desenho, PROPOSTA sem autorização de implementação (preparado por ChatGPT; escrito por Claude Code)
+
+**Baseline verificado pelo Claude Code antes desta escrita:**
+- `develop` local = remoto = `010bd3b9abef5c55ddfa8258ad479dbc6d8082a2`, árvore limpa;
+- CI: WORK-05 product `43218332214`, foundation `43218332102` e `43218339759`, todos success;
+- R3-C2-001 e a regra HANDOFF-FIRST publicados.
+
+**Descobertas e decisões de investigação:**
+- é necessário separar os objectivos da tarefa dos resultados técnicos das ferramentas;
+- `ANSWERED_WITH_SOURCES` não prova o cumprimento integral da tarefa;
+- a decomposição de objectivos por um modelo é falível: sozinha, não pode eliminar requisitos explícitos nem certificar sucesso;
+- a classificação das fontes deve assentar na proveniência e no conteúdo; padrões de URL não são prova suficiente;
+- tarefas de produção textual e tarefas com efeitos externos precisam de critérios de conclusão diferentes.
+
+**Proposta — Task Contract (NÃO aprovada para implementação):**
+- representa os objectivos obrigatórios, os critérios de evidência, as ambiguidades e as referências aos resultados das ferramentas;
+- mantém separados três estados: (1) execução técnica, (2) objectivos, (3) nível de verificação factual da resposta;
+- a recuperação de objectivos pendentes respeita as permissões, quotas e limites de segurança existentes.
+
+**Próxima investigação — R3-C2-003, Evidence Registry:**
+- estrutura das evidências e da proveniência;
+- relação entre evidências e objectivos;
+- critérios de prova suficiente e insuficiente;
+- tratamento de resultados contraditórios;
+- limites de confiança das verificações automáticas.
+
+**Restrições mantidas:** sem alterações de código, `main`, pin OpenJarvis, quotas, avaliador RFC ou resultados históricos; sem Qwen/Ollama; sem novo pedido.
+
+**Operações deste checkpoint:** apenas esta adenda ao HANDOFF.
