@@ -1925,3 +1925,20 @@ Foi **redigida** na cópia guardada no repositório; os hashes original e redigi
 ### CHECKPOINT ADITIVO — WORK-07 R2: verificação das saídas restantes do preflight
 
 Após o commit base `a85a6f7ec1f55e9a8b23c0a600c01e5545cf82b8`, a suite CI do produto confirmou **217 testes PASS, 0 saltados na venv**, run `43155184300`. Na revisão das evidências do driver detectámos três campos adicionais que podiam guardar URLs internos completos: `search_fields[].action`, `candidate_links[]`, `documents[].link_url`. Passam agora por `redact_url` apenas ao compor o diagnóstico, preservando os originais no browser e na rede. Nova regressão `test_site_preflight_diagnostics_do_not_expose_form_action_or_candidate_link_keys` exige NOT_READY sem fuga do valor em nenhuma das áreas. **Neste commit:** nenhuma navegação externa, nenhum novo request, nenhum Qwen, planos de gate inalterados. CI desta adenda pendente até verificação remota. Próxima operação: conferir CI e registar o SHA final, solicitar aprovação separada de Fase 4 request_id 2.
+
+
+## CHECKPOINT FINAL — 12/11/2026: WORK-07 R2 — redução de exposição validada no CI, preparada para novo preflight
+
+**HEAD de código/segurança validado:** `b830bdb2c1617917877ad2fb813d4225d92a226b`. Mudanças reais já commitadas no GitHub em dois checkpoints: `a85a6f7` (redacção das vistas, fontes, eventos e RecordingEngine) e `b830bdb` (redacção também no diagnóstico do preflight: action/candidate_links/link_url). Sem tocar no URL de transporte que utiliza a chave pública de pesquisa.
+
+**Verificação independente através dos GitHub Actions do HEAD `b830bdb`:**
+- WORK-05 product `43155496464`: SUCCESS; `Ran 218 tests`, `OK` na venv fixada, **0 saltados**; Python simples `OK (skipped=82)` por dependências opcionais não instaladas.
+- Foundation push `43155496458`: SUCCESS.
+- Foundation PR `43155503507`: SUCCESS.
+- Não houve nenhum workflow WORK-07 de preflight/Qwen durante a correcção; os ficheiros de pedido continuam: WORK-05 existente e preflight WORK-07 `request_id 1` já consumido; ainda não há novo request 2.
+
+**Escopo comprovado:** os testes de regressão verificam que o valor original de `x-typesense-api-key` chega ao mesmo host por GET num `MockTransport`, enquanto URLs apresentados, eventos, fontes, registos do modelo e relatórios do preflight ocultam valores com nomes de credencial. Nenhuma validação no website externo ou com Qwen nesta fase. O filtro destina-se a parâmetros de URL; não constitui solução genérica de DLP para qualquer segredo escrito livremente numa página ou pelo modelo.
+
+**Planos inalterados:** WORK-07 site `b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4`, WORK-07 Qwen `44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94`. O WORK-06 e o pin OpenJarvis permanecem intactos.
+
+**Próxima operação, sob autorização separada:** Fase 4, Site Preflight real, `request_id 2`, código aprovado igual ao HEAD de `develop` IMEDIATAMENTE antes do commit de pedido. Não fazer mais commits de documentação antes desse pedido. Apenas após veredicto READY com os dois RFC abertos solicitar autorização independente da Fase 5, teste autónomo Qwen3.5:4b. Claude ou GitHub Actions pode executar, não há necessidade de ChatGPT Work para estes gates já automatizados.
