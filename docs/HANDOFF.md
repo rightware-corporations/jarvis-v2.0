@@ -2473,3 +2473,53 @@ Este checkpoint é só documental.
 - orçamento de continuação explícito e contagem de **todas** as gerações do modelo.
 
 Sem Qwen, sem novo `request_id`, sem alterações a pin, quotas ou políticas.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-012 — resultados E1 + E4 (Claude Code, modelo FAKE, só testes)
+
+**HEAD inicial:** `9cb5c9a6065802c635f4ecb43099da52748b4eba`; checkpoint de início `410fc54`.
+
+**Artefactos (só testes):**
+- `labs/work07_r3c2/{interception.py, scenarios.py, README.md}`;
+- `tests/test_work07_r3c2_e1e4.py` (15 testes).
+
+Produção inalterada: `rightware/`, `_compose`, `run()`, pin, quotas, política, workflows, evidências, pedidos e planos (`b0e4ac78…`, `44d96648…`).
+
+**Método:**
+- `InterceptingEngine` é uma subclasse do `_GuardedEngine` real, instalada só durante o teste por substituição do atributo do módulo (reposto e testado);
+- objectivos dados pelo teste (URLs exigidos);
+- verificação determinística sobre eventos OK do browser;
+- feedback gerado por código (IDs e rótulos, sem texto de página nem URLs);
+- `CountingEngine` conta todas as chamadas ao modelo.
+
+**Resultados reais** (tabela completa em `labs/work07_r3c2/README.md`):
+- **E1:** a resposta prematura foi interceptada; com 1 continuação, o modelo FAKE seguiu os dois originais através da política, da auditoria e dos outcomes normais → `COMPLETE_VERIFIED`, 12 chamadas ao modelo (11 do orquestrador + 1). Quando o objectivo é inalcançável (mirror REFUSED, original 404) → `INCOMPLETE_BUDGET_EXHAUSTED` terminal.
+- **E4:**
+  - orçamento 0, 1 e 2 respeitados;
+  - respostas prematuras repetidas esgotam o orçamento;
+  - prazo e cancelamento param **sem novo pedido ao modelo**;
+  - quota esgotada e recusa anti-ciclo durante a continuação ficam explícitas e não são evidência, e as quotas não são repostas;
+  - uma aprovação não executada dá `NOT_EXECUTED` + flag e não é evidência;
+  - orçamento global atingido: o modelo não volta a ser chamado (7 chamadas, 8 gerações, 1 atalho de paragem);
+  - **gerações fora de `max_turns` são contadas**: 9 chamadas com `max_turns`=8.
+- **Invariantes verificados em todos os cenários:** contabilidade exacta das gerações, `continuações ≤ orçamento`, `chamadas ≤ max_turns + orçamento`, aprovações = outcomes na auditoria, nenhuma aprovação pendente.
+- **Mutação:** 5/5 detectados. O mutante **sem orçamento** entrou num ciclo de gerações ilimitado e foi morto pelo kernel por falta de memória: prova empírica de que a intercepção exige um orçamento próprio.
+
+**Validação:**
+- venv: **284 OK, 0 saltados**, sem ocorrências de «skipped»;
+- Python simples: OK, 130 saltados;
+- R3-B e R3-C1 OK; `actionlint` OK.
+
+**Limites e falhas não resolvidas:**
+- **o produto continua a dizer `ANSWERED_WITH_SOURCES` nos casos incompletos**, porque o `_compose` não foi tocado, por decisão;
+- uma continuação no último turno é desperdiçada (`IN_PROGRESS` → HALTED por turnos), por isso uma versão de produção tem de considerar os turnos restantes;
+- recusas do browser não geram `TOOL_REFUSALS`;
+- a verificação usa igualdade de URL e não é robusta a equivalentes, mirrors no host autorizado ou páginas de catálogo disfarçadas;
+- o contexto cresce a cada continuação.
+
+São resultados com modelo FAKE e nada provam sobre o Qwen3.5:4b.
+
+**Implicações:**
+- **E3:** em produção ninguém fornece os objectivos; é a dependência crítica antes de qualquer patch.
+- **L1–L4:** é preciso definir que evidência prova um objectivo sem conhecer o URL de antemão (tipo de fonte, sinais de conteúdo, proveniência via links apresentados e usados do `TaskTrace`).
+
+**Próxima acção recomendada:** decisão do operador sobre o âmbito de E3 e L1–L4. Não avançar automaticamente; sem patch de produção; sem Qwen.
