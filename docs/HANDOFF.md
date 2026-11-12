@@ -1821,3 +1821,12 @@ A preservação e o upload continuam `always()`, depois do veredicto.
 **Inalterado:** planos `b0e4ac78…ef4` e `44d96648…d94`; WORK-06 (`b9be5c69…`, `agent_smoke.py`, `work05-qwen-smoke.yml`); pin `f21d902`.
 
 **Não efectuado:** sem navegação externa, sem Qwen, sem ficheiros de pedido, sem branches, sem alterações em `main`.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R1 — CI verde, pronto para pedido de autorização da Fase 4 (Claude Code)
+
+**CI:**
+- `a51565d` (correcção 2): WORK-05 product `43151452712`, foundation `43151452715` e `43151458737`, todos success;
+- `a4ada29` (correcção 1): WORK-05 product `43151275245`, foundation `43151275214` e `43151279896`, todos success.
+- Nenhum workflow WORK-07 foi disparado (não há ficheiro de pedido).
+
+**Estado:** as duas lacunas da revisão estão corrigidas e testadas. **Próxima operação** (depende da autorização do operador): pedido do preflight da Fase 4, com `request_id` 1, plano `b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4` e código aprovado igual ao HEAD de `develop` imediatamente antes do commit de pedido (este checkpoint, se nada mais for commitado).
