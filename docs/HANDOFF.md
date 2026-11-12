@@ -1999,3 +1999,8 @@ Após o commit base `a85a6f7ec1f55e9a8b23c0a600c01e5545cf82b8`, a suite CI do pr
 ### WORK-07 R2 — Correcção da fixture do teste de títulos trocados (CI)
 
 O primeiro CI de `5ae151a` falhou por uma expectativa contraditória em `test_swapped_section_titles_still_fail`: a fixture tinha trocado o campo «Título Oficial» mas mantinha `HTTP/1.1` no próprio cabeçalho da RFC 9112. Por isso o avaliador encontrava correctamente o título no contexto da RFC 9112 e rejeitava a afirmação «missing» feita pelo teste. O teste agora usa cabeçalhos neutros `RFC N` e troca efectivamente os títulos oficiais nas respectivas linhas. O runner `test_request_commit_suite` também falhava por reproduzir esse mesmo teste. Esta é correcção de fixture, sem alteração do produto, auditoria, critérios de aceitação ou planos. CI após este checkpoint por verificar; sem novas execuções Qwen.
+
+
+### WORK-07 R2 — segunda verificação da fixture de títulos cruzados
+
+O CI `43183788838` identificou que a descrição auxiliar do caso RFC 9112 ainda incluía `HTTP/1.1`, permitindo à rubrica reconhecer legitimamente esse texto como título apesar da troca no campo «Título Oficial». A fixture foi reduzida a um enunciado neutro «define a sintaxe das mensagens», removendo a contradição. Isto corrige apenas o teste negativo, não altera a lógica do produto nem flexibiliza a validação. Dois CI anteriores do R2 documentam as falhas de teste; ficam preservados, sem ocultar os resultados. Nova suite/CI exigidos. Sem Qwen real.

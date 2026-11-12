@@ -36,7 +36,7 @@ class MarkdownSections(unittest.TestCase):
         swapped = ("**RFC 9110:**\n* **Título Oficial:** \"HTTP/1.1\"\n"
                    "* Descrição: define a semântica do HTTP.\n"
                    "**RFC 9112:**\n* **Título Oficial:** \"HTTP Semantics\"\n"
-                   "* Descrição: define a sintaxe das mensagens HTTP/1.1.\n")
+                   "* Descrição: define a sintaxe das mensagens.\n")
         problems = E.answer_rubric(swapped)
         self.assertIn("official title of RFC 9110 missing or not paired with it", problems)
         self.assertIn("official title of RFC 9112 missing or not paired with it", problems)
