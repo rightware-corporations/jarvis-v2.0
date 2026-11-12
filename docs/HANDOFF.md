@@ -2460,3 +2460,16 @@ Sem implementação, Qwen, pedidos, alterações em `main`, pin, política, quot
 **Próxima decisão:** aprovar ou rever o âmbito das experiências determinísticas antes de entregar a missão de implementação ao Claude.
 
 Este checkpoint é só documental.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-012 — início das experiências E1 + E4 (Claude Code, modelo FAKE, sem implementação de produção)
+
+**Baseline verificado:** `develop` local = remoto = `9cb5c9a6065802c635f4ecb43099da52748b4eba`, árvore limpa; CI `43246863767`, `43246863757` e `43246876465`, todos success.
+
+**Desenho (só testes):**
+- subclasse `InterceptingEngine` do `_GuardedEngine` real em `labs/work07_r3c2/`, instalada **apenas durante os testes** por substituição do atributo do módulo;
+- `AgentSession.run()` e `_compose()` de produção ficam inalterados;
+- uma verificação determinística sobre os eventos reais do browser (objectivos dados pelo teste: a origem dos objectivos, E3, fica fora deste âmbito);
+- feedback compacto gerado por código;
+- orçamento de continuação explícito e contagem de **todas** as gerações do modelo.
+
+Sem Qwen, sem novo `request_id`, sem alterações a pin, quotas ou políticas.
