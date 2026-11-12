@@ -1920,3 +1920,8 @@ Foi **redigida** na cópia guardada no repositório; os hashes original e redigi
 **Regressões:** novo tests/test_work07_url_redaction.py, com testes de URL, frame, gravação do runner e MockTransport de formulário GET com campo oculto; comprova navegação com o segredo originalmente recebido pelo site, mas sem exposição nas vistas e evidências.
 
 **Sem alterações:** pin OpenJarvis, WORK-06, planos (site b0e4ac78…ef4; Qwen 44d96648…d94), política de autorização, main, demo. **Testes e CI deste novo commit pendentes**, não declarar PASS antes da verificação. Próximo passo: validar CI e HEAD, acrescentar checkpoint de verificação; só depois solicitar autorização da Fase 4 request_id 2 com o novo HEAD.
+
+
+### CHECKPOINT ADITIVO — WORK-07 R2: verificação das saídas restantes do preflight
+
+Após o commit base `a85a6f7ec1f55e9a8b23c0a600c01e5545cf82b8`, a suite CI do produto confirmou **217 testes PASS, 0 saltados na venv**, run `43155184300`. Na revisão das evidências do driver detectámos três campos adicionais que podiam guardar URLs internos completos: `search_fields[].action`, `candidate_links[]`, `documents[].link_url`. Passam agora por `redact_url` apenas ao compor o diagnóstico, preservando os originais no browser e na rede. Nova regressão `test_site_preflight_diagnostics_do_not_expose_form_action_or_candidate_link_keys` exige NOT_READY sem fuga do valor em nenhuma das áreas. **Neste commit:** nenhuma navegação externa, nenhum novo request, nenhum Qwen, planos de gate inalterados. CI desta adenda pendente até verificação remota. Próxima operação: conferir CI e registar o SHA final, solicitar aprovação separada de Fase 4 request_id 2.

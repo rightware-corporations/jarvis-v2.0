@@ -94,5 +94,30 @@ class BrowserMockTransport(unittest.TestCase):
         self.assertIn("token=REDACTED", exposed)
         self.assertIn("q=9110", exposed)
 
+    def test_site_preflight_diagnostics_do_not_expose_form_action_or_candidate_link_keys(self):
+        from types import SimpleNamespace
+        from labs.work07_rfc_gate.gate import site_preflight
+        from rightware.agent.browser import Step
+
+        field = SimpleNamespace(control=SimpleNamespace(label="Search", name="q"),
+                                form=SimpleNamespace(action=URL))
+        # No canonical result link: preflight must return NOT_READY, but not leak
+        # either the form action or candidate info link.
+        fake = SimpleNamespace(
+            fields={"F1": field},
+            links={"L1": ("https://" + HOST + "/info/rfc9110/?token=" + SECRET, "RFC 9110")},
+            events=[],
+            open=lambda url: Step("OK", "search", {"final_url": url, "status": 200}),
+            type=lambda field, text: Step("OK", "typed", {}),
+            submit=lambda field: Step("OK", "results", {}),
+        )
+        evidence = site_preflight(fake)
+        self.assertEqual(evidence["verdict"], "NOT_READY")
+        serialised = json.dumps(evidence)
+        self.assertNotIn(SECRET, serialised)
+        self.assertIn("x-typesense-api-key=REDACTED", serialised)
+        self.assertIn("token=REDACTED", serialised)
+
+
 if __name__ == "__main__":
     unittest.main()

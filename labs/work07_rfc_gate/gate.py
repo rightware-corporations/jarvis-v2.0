@@ -149,7 +149,7 @@ def site_preflight(browser) -> dict:
         return {**result, "events": browser.events, "verdict": "NOT_READY", "reasons": [f"start page {start.status}"]}
     fields = list(browser.fields)
     result["search_fields"] = [{"id": f, "label": browser.fields[f].control.label,
-                                "name": browser.fields[f].control.name, "action": browser.fields[f].form.action}
+                                "name": browser.fields[f].control.name, "action": redact_url(browser.fields[f].form.action)}
                                for f in fields]
     reasons = []
     if not fields:
@@ -173,12 +173,12 @@ def site_preflight(browser) -> dict:
         if not found:
             reasons.append(f"no traversable result link to RFC {number}")
             result["documents"][number] = {"validated": False, "candidate_links": sorted(
-                {u for u, _ in browser.links.values() if f"rfc{number}" in u.lower()})[:20]}
+                {redact_url(u) for u, _ in browser.links.values() if f"rfc{number}" in u.lower()})[:20]}
             continue
         if loads >= PREFLIGHT_LIMITS["max_loads"]:
             reasons.append(f"load budget exhausted before opening RFC {number}")
             continue
-        link_url = browser.links[found][0]
+        link_url = redact_url(browser.links[found][0])
         doc = record("follow", browser.follow(found))
         ev = doc.evidence
         problems = [f"RFC {number}: document {doc.status}"] if doc.status != "OK" else \
