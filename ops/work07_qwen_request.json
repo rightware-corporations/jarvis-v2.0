@@ -1,7 +1,7 @@
 {
   "experiment": "WORK07_RFC_QWEN_GATE",
-  "request_id": 2,
-  "approved_code_sha": "911d05d97c6b6a583489f705699f491bf69d7e6b",
+  "request_id": 3,
+  "approved_code_sha": "5aba773a06f3d6a81c00bb2b0ee017a463e8bbd4",
   "plan_sha256": "44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94",
-  "authorized_by": "RIGHTWARE operator, explicit chat authorization 2026-11-12: WORK-07 Phase 5 Qwen3.5:4b request_id 2, one real run, 14 turns, 14 calls, 768 tokens/response, 900 seconds, browse only on www.rfc-editor.org"
+  "authorized_by": "RIGHTWARE operator approved WORK-07 Phase 5 Qwen3.5:4b request_id 3 on 2026-11-12; one run; browse-only RFC Editor."
 }
