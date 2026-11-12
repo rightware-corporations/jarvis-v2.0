@@ -2413,3 +2413,50 @@ Sem implementação, Qwen, pedidos, alterações em `main`, pin, política, quot
 **Próximo passo:** receber e confrontar os relatórios específicos de reutilização do Shared Intelligence Core; depois definir componentes, contratos, testes e sequência de implementação.
 
 **Restrições:** sem Qwen, sem novo `request_id`, sem alteração de resultados históricos. Este checkpoint é só documental: sem alterações de código, testes, workflows, `main` ou pin.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-011 — consolidação Claude + GPT Work + Perplexity; recomendação arquitectural, SEM implementação autorizada (preparado por ChatGPT; escrito por Claude Code)
+
+**Revalidação pelo Claude Code antes desta escrita:**
+- JARVIS `develop` local = remoto = `169fac840762ebfdcdad65f0e8b4147cc5d8c68b`, árvore limpa;
+- CI: WORK-05 product `43244023292`, foundation `43244023284` e `43244035507`, todos success.
+
+**Notas de proveniência:**
+- O baseline citado na consolidação (`43a0d02`) era o HEAD **antes** do checkpoint R3-C2-010 (`169fac8`, só documental); não há diferenças de código entre os dois.
+- Shared Intelligence `develop` `e43a653b3c5999028abe4571fb9730b7f9b25dea`: **não verificado pelo Claude Code** (repositório fora do âmbito desta sessão).
+- `WORK07_R3C2_009_LOCAL_REUSE_AUDIT.md` (GPT Work) e os PDFs da Perplexity («RIGHTWARE JARVIS research dossier», «Executive conclusion»): **não estão no repositório JARVIS e não foram lidos pelo Claude Code**; entram aqui pela consolidação do ChatGPT.
+
+**Evidências:**
+1. Claude Code — `docs/research/WORK07_R3C2_003_ARCHITECTURE_REUSE.md`;
+2. GPT Work — `WORK07_R3C2_009_LOCAL_REUSE_AUDIT.md`;
+3. Perplexity — research dossier;
+4. Perplexity — executive conclusion.
+
+**Conclusões consolidadas:**
+- a conclusão prematura está reproduzida de forma determinística (R3-C1);
+- o OpenJarvis fixado não tem verificação genérica de conclusão;
+- o `_GuardedEngine` RIGHTWARE é um ponto de intercepção existente;
+- `ToolOutcome`, `TaskTrace`, eventos e auditoria já dão a base de evidências;
+- o Shared implementa contratos de continuidade, checkpoints, proveniência e verificação específica, mas **não** um completion controller genérico directamente reutilizável;
+- a persistência central do Shared está acoplada a PostgreSQL e aos respectivos contratos;
+- o uso de Mem0 não é prova de execução;
+- os relatórios externos sustentam a reutilização de padrões, não a migração do runtime;
+- a origem fiável dos objectivos continua por resolver.
+
+**Recomendação arquitectural:**
+- preservar o OpenJarvis e o `AgentPolicy`;
+- investigar uma camada local e pequena de conclusão de tarefas, reutilizando as evidências do JARVIS e adaptando os contratos e invariantes relevantes do Shared;
+- dois incrementos separados: **A**, verificação de conclusão durante a sessão; **B**, persistência e continuidade após interrupção;
+- não importar o Shared completo nem introduzir dependência obrigatória de um serviço remoto.
+
+**Experiências propostas (nenhuma executada nesta consolidação):**
+- E1: intercepção e continuação com modelo FAKE;
+- E4: orçamento de chamadas e recuperação;
+- E3: origem dos objectivos;
+- L1–L4: validade das evidências e ligação aos objectivos;
+- depois, L5–L12: persistência, crash, idempotência, autoridade e isolamento.
+
+**Restrições:** nenhuma implementação R3-C2 autorizada; sem Qwen/Ollama; sem novo `request_id`; sem alterações a pin, quotas, políticas ou histórico de FAIL; sem merge para `main`; HANDOFF-FIRST.
+
+**Próxima decisão:** aprovar ou rever o âmbito das experiências determinísticas antes de entregar a missão de implementação ao Claude.
+
+Este checkpoint é só documental.
