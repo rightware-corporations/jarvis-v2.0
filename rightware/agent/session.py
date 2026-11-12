@@ -25,6 +25,7 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
 from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
+from rightware.agent.trace import TaskTrace
 from rightware.agent.web import HttpxFetcher, WebRefused, frame, redact_url
 from rightware.windows_actions import ACTIONS, WindowsActions, describe
 
@@ -108,8 +109,8 @@ class AgentReply:
 class _GuardedEngine:
     """Stops the loop on budget/cancel and applies fail-closed batches."""
 
-    def __init__(self, engine, policy: AgentPolicy):
-        self._engine, self._policy = engine, policy
+    def __init__(self, engine, policy: AgentPolicy, trace: TaskTrace | None = None):
+        self._engine, self._policy, self._trace = engine, policy, trace
         self.halted: str | None = None
         self.engine_id = getattr(engine, "engine_id", "")
 
@@ -117,8 +118,12 @@ class _GuardedEngine:
         halt = self._policy.halt_reason
         if halt:
             self.halted = halt
+            if self._trace is not None:
+                self._trace.on_generate(kwargs.get("tools"), None, halted=halt)
             return {"content": f"[Jarvis] {halt}.", "usage": {}}
         result = self._engine.generate(messages, **kwargs)
+        if self._trace is not None:
+            self._trace.on_generate(kwargs.get("tools"), result)
         calls = result.get("tool_calls") or []
         if calls:
             self._policy.batch_guard(calls)
@@ -137,10 +142,11 @@ class _RightwareOrchestrator(OrchestratorAgent):
     returned to the model with its explicit reason.
     """
 
-    def __init__(self, *args, policy: AgentPolicy, **kwargs):
+    def __init__(self, *args, policy: AgentPolicy, trace: TaskTrace | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         self._loop_guard = None
         self._rw_policy = policy
+        self._rw_trace = trace
 
     def _check_tool_allowed(self, tc):
         denial = super()._check_tool_allowed(tc)
@@ -148,6 +154,9 @@ class _RightwareOrchestrator(OrchestratorAgent):
             reason = self._rw_policy.last_denial or "recusada pela política"
             denial.content = (f"[RIGHTWARE] A ferramenta '{tc.name}' NÃO foi executada: {reason}. "
                               "Não repitas a mesma chamada; ajusta o plano ou conclui com o que já foi verificado.")
+        if self._rw_trace is not None:
+            self._rw_trace.on_decision(tc.id, tc.name, denial is None, self._rw_policy.last_denial,
+                                       denial.content if denial is not None else "")
         return denial
 
 
@@ -155,8 +164,9 @@ class _PolicyTool(BaseTool):
     is_local = True
 
     def __init__(self, definition: ToolDef, policy: AgentPolicy, runner: Callable[[dict], ToolOutcome],
-                 outcomes: list[ToolOutcome]):
+                 outcomes: list[ToolOutcome], trace: TaskTrace | None = None, browser=None):
         self.definition, self.policy, self.runner, self.outcomes = definition, policy, runner, outcomes
+        self.trace, self.browser = trace, browser
         self.tool_id = self.tool_name = definition.name
 
     @property
@@ -177,6 +187,9 @@ class _PolicyTool(BaseTool):
         if not self.policy.note_outcome(self.definition.name, params, out.status):
             out.evidence["audit"] = "FAILED"          # reported as an error by the session
         self.outcomes.append(out)
+        if self.trace is not None:
+            view = self.browser.last_view if self.browser is not None else None
+            self.trace.on_result(self.definition.name, out.status, out.content, view)
         return ToolResult(tool_name=self.definition.name, content=out.content,
                           success=out.status in ("OK", "VERIFIED"))
 
@@ -191,7 +204,8 @@ class AgentSession:
                  fetcher=None, actions: WindowsActions | None = None, audit_path: Path | None = None,
                  budgets: Budgets | None = None, max_turns: int = 6, temperature: float = 0.2,
                  max_tokens: int = 768, sites: tuple[str, ...] = (), browser_fetcher=None,
-                 clock: Callable[[], float] | None = None, start_url: str | None = None):
+                 clock: Callable[[], float] | None = None, start_url: str | None = None,
+                 trace: bool = False):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
@@ -205,6 +219,8 @@ class AgentSession:
         self.clock = clock
         self.browser: PublicBrowser | None = None
         self._policy: AgentPolicy | None = None
+        self.trace_enabled = bool(trace)                # R3-C1: OFF by default, observation only
+        self.trace: TaskTrace | None = None
         self.actions = actions
         self.audit_path, self.budgets = audit_path, budgets
         self.max_turns, self.temperature, self.max_tokens = max_turns, temperature, max_tokens
@@ -240,6 +256,8 @@ class AgentSession:
 
     def _browse(self, name: str, op: Callable[..., object]) -> Callable[[dict], ToolOutcome]:
         def run(args: dict) -> ToolOutcome:
+            if self.browser is not None:
+                self.browser.last_view = None
             step = op(**args)
             return ToolOutcome(name, step.status, step.content, step.evidence)
         return run
@@ -277,7 +295,8 @@ class AgentSession:
         runners = {"web_read": self._web_read, "windows_action": self._windows_action}
         prompt = SYSTEM_PROMPT
         if "browse" in self.allow:
-            self.browser = b = PublicBrowser(self.sites, self.browser_fetcher)   # fresh, stateless profile
+            self.browser = b = PublicBrowser(self.sites, self.browser_fetcher,   # fresh, stateless profile
+                                             observe=self.trace_enabled)
             runners.update({"web_open": self._browse("web_open", b.open), "web_type": self._browse("web_type", b.type),
                             "web_submit": self._browse("web_submit", b.submit),
                             "web_follow": self._browse("web_follow", b.follow),
@@ -286,14 +305,16 @@ class AgentSession:
             if self.start_url:
                 prompt += f" Página inicial desta tarefa: {self.start_url}"
 
-        tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes) for n in TOOLS
+        self.trace = trace = TaskTrace() if self.trace_enabled else None
+        tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes, trace, self.browser) for n in TOOLS
                  if TOOLS[n].session_flag in self.allow]
-        guarded = _GuardedEngine(self.engine, policy)
-        agent = _RightwareOrchestrator(guarded, self.model, policy=policy, tools=tools, max_turns=self.max_turns,
-                                  temperature=self.temperature, max_tokens=self.max_tokens,
-                                  mode="function_calling", system_prompt=prompt,
-                                  parallel_tools=False, interactive=False,
-                                  before_tool_call=policy.before_tool_call)
+        guarded = _GuardedEngine(self.engine, policy, trace)
+        agent = _RightwareOrchestrator(guarded, self.model, policy=policy, trace=trace, tools=tools,
+                                       max_turns=self.max_turns,
+                                       temperature=self.temperature, max_tokens=self.max_tokens,
+                                       mode="function_calling", system_prompt=prompt,
+                                       parallel_tools=False, interactive=False,
+                                       before_tool_call=policy.before_tool_call)
         try:
             result = agent.run(instruction)
             answer = result.content or ""
@@ -305,17 +326,22 @@ class AgentSession:
                       if "Connect" in name or "Connect" in str(exc) else
                       f"Ocorreu um erro e o pedido não foi concluído ({name}).")
             self._close_pending(policy, outcomes)
-            return AgentReply(answer + "\nEstado: erro — o pedido não foi concluído.", "ERROR", outcomes, [],
-                              guarded.halted, [], _verification(outcomes, []))
-        self._close_pending(policy, outcomes)
-        return self._compose(answer, outcomes, guarded.halted, policy)
+            reply = AgentReply(answer + "\nEstado: erro — o pedido não foi concluído.", "ERROR", outcomes, [],
+                               guarded.halted, [], _verification(outcomes, []))
+        else:
+            self._close_pending(policy, outcomes)
+            reply = self._compose(answer, outcomes, guarded.halted, policy)
+        if trace is not None:
+            trace.finish(reply.completion, reply.halted, reply.flags, reply.sources, self.browser)
+        return reply
 
-    @staticmethod
-    def _close_pending(policy: AgentPolicy, outcomes: list[ToolOutcome]) -> None:
+    def _close_pending(self, policy: AgentPolicy, outcomes: list[ToolOutcome]) -> None:
         """No approval may end without an outcome: anything approved and never executed is
         closed as NOT_EXECUTED in the audit AND in the outcomes (then flagged in the reply)."""
         for name in policy.close_pending():
             outcomes.append(ToolOutcome(name, "NOT_EXECUTED", "Aprovada mas não executada.", {"anomaly": True}))
+            if self.trace is not None:
+                self.trace.on_not_executed(name)
 
     @staticmethod
     def _compose(answer: str, outcomes: list[ToolOutcome], halted: str | None, policy: AgentPolicy) -> AgentReply:

@@ -31,6 +31,7 @@ element registry and typed values. Nothing persists.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 from html.parser import HTMLParser
 import re
 from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
@@ -215,7 +216,7 @@ def _strip_fragment(url: str) -> str:
 class PublicBrowser:
     """One task's browser. ``sites`` is the operator-approved host allowlist (exact host names)."""
 
-    def __init__(self, sites, fetcher):
+    def __init__(self, sites, fetcher, observe: bool = False):
         hosts = {str(h).strip().rstrip(".").lower() for h in sites}
         if not hosts or any(not h or "/" in h or ":" in h or "*" in h for h in hosts):
             raise ValueError("a navegação exige uma lista de servidores exactos autorizados")
@@ -228,6 +229,11 @@ class PublicBrowser:
         self.current_text = ""
         self.pages = 0
         self.events: list[dict] = []
+        # R3-C1 observability (off by default; changes nothing the model sees or decides):
+        # what the LAST operation presented to the model, as ids, counts and hashes only.
+        self.observe = observe
+        self.last_view: dict | None = None
+        self._view_meta: dict = {}
 
     # -- helpers --------------------------------------------------------------
     def allowed(self, host: str) -> bool:
@@ -263,7 +269,15 @@ class PublicBrowser:
         self.current = page
         view = self._index(page)
         self.events.append({**event, **evidence, "outcome": "OK"})
-        return Step("OK", frame(dataclasses.replace(page, text=view)), evidence)
+        content = frame(dataclasses.replace(page, text=view))
+        if self.observe:
+            u = urlsplit(page.final_url)                     # no query: typed searches stay out of traces
+            self.last_view = {"op": op, "page": f"{u.scheme}://{u.hostname}{u.path}", "has_query": bool(u.query),
+                              **self._view_meta,
+                              "page_truncated": page.truncated,
+                              "view_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest()[:16],
+                              "view_chars": len(content), "followed": extra.get("link")}
+        return Step("OK", content, evidence)
 
     def _register_link(self, url: str, text: str) -> str | None:
         if url in self._link_by_url:
@@ -323,6 +337,12 @@ class PublicBrowser:
                          f"({'; '.join(sorted(set(unsupported)))[:200]}).")
         body = page.text[:MAX_VIEW_CHARS]
         lines += ["Texto visível" + (" (início)" if len(page.text) > MAX_VIEW_CHARS else "") + ":", body]
+        if self.observe:
+            self._view_meta = {"page_links": len(page_links),
+                               "shown_links": [lid for lid, _, _ in page_links[:MAX_LINKS_SHOWN]],
+                               "not_shown_links": max(0, len(page_links) - MAX_LINKS_SHOWN),
+                               "omitted_offsite_links": skipped, "fields": [l.split(":", 1)[0] for l in field_lines],
+                               "text_chars": len(page.text), "text_cut_in_view": len(page.text) > MAX_VIEW_CHARS}
         if page_links:
             shown = page_links[:MAX_LINKS_SHOWN]
             lines.append(f"Ligações ({len(shown)} de {len(page_links)}; web_find procura as restantes; "
@@ -399,4 +419,6 @@ class PublicBrowser:
             body += ["Linhas da página actual:"] + [l[:200] for l in lines]
         url = self.current.final_url if self.current else "(nenhuma página aberta)"
         page = Page(url, url, 200, "text/plain", "\n".join(body), "", False)
+        if self.observe:
+            self.last_view = {"op": "find", "find_matches": [lid for lid, _, _ in hits]}
         return Step("OK", frame(page), {"matches": len(hits)})

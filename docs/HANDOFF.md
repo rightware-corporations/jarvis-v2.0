@@ -2151,3 +2151,76 @@ O teste foi renomeado para `test_reconciliation_catches_any_future_unexecuted_ap
 Os resultados históricos FAIL dos pedidos 1 e 3 ficam preservados; a correcção não os reclassifica.
 
 **Próximo:** R3-C (controlo genérico de conclusão de tarefas), em missão separada. Qualquer novo Qwen precisa de autorização explícita com o HEAD exacto.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C1 — reconstrução determinística da conclusão prematura e observabilidade (Claude Code, sem Qwen)
+
+**HEAD inicial:** `6395ae457589e6da15b8cab2866a00e129e9d7a4`, verificado: local = remoto, árvore limpa, CI verde (`43198259669`, `43198259310`, `43198269223`). Não existe no HANDOFF nenhum checkpoint com a etiqueta «R3-A»; usei os checkpoints do pedido 3 e do R3-B.
+
+**Ficheiros:**
+- novo `rightware/agent/trace.py` (`TaskTrace`);
+- `rightware/agent/browser.py`: `observe=False` e `last_view`;
+- `rightware/agent/session.py`: `trace=False` e pontos de recolha;
+- novos `labs/work07_r3c1/{site,scenarios}.py`;
+- novo `tests/test_work07_r3c1.py`;
+- evidência sintética em `docs/evidence/work07-r3c1-synthetic/{report.json,README.md}`.
+
+Não foram alterados: `policy.py`, as quotas, o `_compose()`, o avaliador RFC, os workflows, os pedidos, as evidências históricas, o pin, nem os planos (`b0e4ac78…`, `44d96648…`, WORK-06 `b9be5c69…`).
+
+**Instrumentação (desligada por omissão, só observa):** `AgentSession(trace=True)` regista por turno:
+- número do turno, `response_id` (hash), ferramentas oferecidas;
+- propostas com `call_id` e argumentos reduzidos como na auditoria (URL → host + hash, texto → comprimento + hash);
+- decisão (APPROVED/DENIED e motivo), estado da execução (OK, REFUSED, DENIED, NOT_EXECUTED, …);
+- SHA-256 e tamanho do que o modelo recebeu;
+- nas cargas de página: página sem query, IDs das ligações mostradas na primeira vista, número de ligações registadas e não mostradas, ligações fora do site omitidas, campos, `text_cut_in_view`, `page_truncated` e hash da vista;
+- estado final.
+
+`link_visibility` distingue três factos: **registada**, **apresentada** (vista inicial ou `web_find`) e **usada** (`web_follow` executado OK). Não guarda texto de páginas, pesquisas escritas, mensagens nem segredos (testado).
+
+**Fixture sintética** (IDs fictícios AX-101 e AX-202):
+- pesquisa GET → resultados → página `/info/…/` → original `/docs/…html`;
+- `/info/ax-202/` tem 31 ligações (o original é a 31.ª, fora das 25 mostradas) e 7 282 caracteres de texto (> 3 500);
+- ligações para um mirror fora do site.
+
+**Resultados (FACTO, modelo FAKE, agente real):**
+
+| Cenário | O que se observou | Classificação do produto |
+|---|---|---|
+| A (incompleto) | só as páginas `/info/` foram abertas; os 2 originais não; resposta plausível | `ANSWERED_WITH_SOURCES`, sem flags |
+| B (integral) | os 2 originais abertos (AX-202 via `web_find`), títulos correctos | `ANSWERED_WITH_SOURCES` |
+| C (link oculto) | o link do original está registado, mas não na 1.ª vista (25 mostradas, 6 não); um `web_follow` com ID não visto é REFUSED; `web_find` encontra-o; `web_follow` abre o original | — |
+| D (recusas) | mirror fora do site REFUSED; mesma página pela 3.ª vez DENIED (anti-ciclo); quota DENIED; nenhum conta como leitura; variante com LoopGuard upstream reinjectado dá `NOT_EXECUTED` + flag, e não é fonte | `TOOL_REFUSALS` |
+| E (prematuro) | uma página `/info/` e paragem; AX-202 nem pesquisado | `ANSWERED_WITH_SOURCES`, sem flags |
+
+**Constatação central (FACTO):** em `_compose()`, qualquer leitura OK é uma «fonte», seja pesquisa, resultados, página informativa ou original. Por isso `ANSWERED_WITH_SOURCES` **não distingue** tarefa completa de incompleta (A e E = B). É a mesma forma dos pedidos Qwen 1 e 3.
+
+**Fidelidade da instrumentação (testada):**
+- os hashes do trace são iguais aos das mensagens que o modelo recebeu;
+- com o trace ligado e desligado, as decisões, os outcomes e as mensagens ao modelo são idênticos (a menos do marcador aleatório);
+- o trace está desligado por omissão.
+
+**Mutação:** 5/5 mutantes detectados (hash errado, «mostradas = todas», `observe` sempre ligado, recusa registada como OK, «usada» sem estado OK). O 5.º sobreviveu inicialmente e foi morto com um teste directo ao `TaskTrace`.
+
+**Validação:**
+- venv: **269 OK, 0 saltados**, sem ocorrências de «skipped»;
+- Python simples: OK, 115 saltados;
+- R3-B OK; `actionlint` OK;
+- relatório sintético sem termos sensíveis.
+
+**Hipóteses (não provadas):**
+- que o Qwen real parou nas páginas `/info/` porque o link do original não estava visível ou porque o produto lhe «confirma» fontes, e não por outra razão; o trace R3-C1 permitirá testá-lo num pedido futuro **se** for ligado nesse runner (hoje não está);
+- no site real, o link da página `/info/` para o original pode estar dentro ou fora das 25 primeiras ligações; não verificado.
+
+**Limitações da instrumentação:**
+- só existe em memória; o runner `labs/work07_rfc_gate` ainda não a usa;
+- os hashes de vista mudam entre execuções por causa do marcador aleatório;
+- não regista o prompt de sistema nem o texto do modelo (só o tamanho);
+- o «apresentado» cobre a 1.ª vista e o `web_find`, não o texto livre da página.
+
+**Privacidade:** o trace não guarda texto de páginas nem queries (página = esquema + host + caminho; `?…` só indica que havia query). A evidência sintética usa apenas domínios de fixture.
+
+**Dependências para o R3-C2 (não iniciado):**
+- uma noção genérica de **objectivos da tarefa** e de **tipo de fonte** (página primária vs registo/metadados), que hoje não existe no produto;
+- decidir onde o estado de conclusão deve mudar (`_compose`) sem regras RFC;
+- ligar o trace no runner real, com persistência apenas hash-only.
+
+**Próximo passo exacto:** revisão do operador/ChatGPT deste relatório; depois missão R3-C2 separada. Não executar Qwen nem novo pedido sem autorização.
