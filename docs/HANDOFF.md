@@ -2310,3 +2310,29 @@ Estados candidatos: `PENDING`, `IN_PROGRESS`, `VERIFIED`, `BLOCKED`, `UNVERIFIED
 **Restrições mantidas:** sem alterações de código, `main`, pin OpenJarvis, quotas, avaliador RFC ou resultados históricos; sem Qwen/Ollama; sem novo pedido.
 
 **Operações deste checkpoint:** apenas esta adenda ao HANDOFF.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-003 — decisão do operador: investigar e reutilizar arquitecturas existentes ANTES de construir um completion controller (Claude Code)
+
+**Baseline verificado:**
+- `develop` local = remoto = `38cad88fd979f473a18a5e5037eddf2034443fcf`, árvore limpa;
+- CI: WORK-05 product `43220305196`, foundation `43220305462` e `43220311915`, todos success;
+- R3-B, R3-C1, R3-C2-001 e R3-C2-002 lidos.
+
+**Decisão aprovada (direcção de investigação, NÃO implementação):** antes de desenhar um controlador próprio, investigar e reutilizar padrões provados:
+- Magentic-One: Task Ledger, Progress Ledger, replaneamento;
+- LangGraph: estado em grafo, persistência, continuação condicional;
+- CrewAI: `expected_output`, guardrails, repetições limitadas;
+- PydanticAI: validadores de saída, `ModelRetry`, orçamentos de repetição;
+- OpenAI Agents SDK: guardrails, resultados, tracing;
+- OpenHands e outros repositórios públicos relevantes.
+
+Não se presume superioridade nem compatibilidade sem evidência de código.
+
+**Âmbito:**
+- auditoria do código fixado do OpenJarvis e das extensões RIGHTWARE;
+- comparação com o código externo, lido sem instalar nem executar nada;
+- relatório em `docs/research/`.
+
+**Restrições:** sem implementação R3-C2, sem Qwen/Ollama, sem novo pedido, sem alterações em `main`, pin, política, quotas, avaliador ou histórico, sem dependências externas.
+
+**Próxima operação:** auditoria interna e leitura do código externo; depois relatório e checkpoint de resultados.
