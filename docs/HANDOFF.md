@@ -2091,3 +2091,42 @@ O primeiro CI após o checkpoint `db0e7ad4` falhou em `test_request_files_absent
 **3. Reprodução determinística:** a sequência exacta do pedido 3 repetida em `AgentSession` + `OrchestratorAgent` reais (modelo FAKE, fixture local, sem rede) produz uma auditoria idêntica: 15 entradas, `web_open` n.º 7 aprovado sem outcome, e a mesma mensagem de LoopGuard ao agente.
 
 **Próxima operação:** correcção mínima no código RIGHTWARE (sem tocar no pin) e regressões.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-B — correcção da aprovação sem outcome (Claude Code, sem Qwen)
+
+**Causa confirmada** (checkpoint anterior `e894f4e`): o LoopGuard Python do OpenJarvis fixado corre **depois** da aprovação RIGHTWARE e **antes** da ferramenta, e detecta ciclos só pelo **nome** das ferramentas. A 7.ª chamada de uma segunda pesquisa legítima foi bloqueada já aprovada: ficou sem outcome, a quota foi consumida e o agente recebeu uma mensagem opaca.
+
+**Correcção mínima no código RIGHTWARE (pin `f21d902` intacto):**
+1. `session._RightwareOrchestrator`, subclasse do `OrchestratorAgent`:
+   - remove o `_loop_guard` upstream mal posicionado (o construtor upstream não o deixa configurar);
+   - substitui a mensagem genérica de recusa por «[RIGHTWARE] A ferramenta 'X' NÃO foi executada: <motivo>. …».
+2. `AgentPolicy`: guarda anti-ciclo **antes da aprovação**, na mesma via única de autorização e auditada.
+   - Usa a **assinatura efectiva da acção**, fornecida pela sessão: a página efectivamente carregada (`web_open` e `web_follow` do mesmo URL contam como a mesma acção), a pesquisa efectivamente submetida (campo + texto escrito), e o campo/texto normalizado em `web_type`.
+   - Bloqueia a mesma acção pela 3.ª vez (`Budgets.max_identical=2`, permite uma repetição) e ciclos exactos A-B-A-B e A-B-C-A-B-C.
+   - Uma recusa **não consome a quota da ferramenta**; o orçamento global de propostas continua a contar todas as decisões, por desenho.
+   - Se a assinatura falhar, recusa (fail-closed).
+3. Reconciliação: no fim de cada `run()`, incluindo erro, cancelamento ou prazo, `close_pending()` fecha qualquer aprovação sem execução com outcome `NOT_EXECUTED` na auditoria e nos outcomes, e marca a flag `APPROVED_NOT_EXECUTED`. Uma aprovação fechada já não pode ser usada.
+
+**Regressões** (`tests/test_work07_r3b_loopguard.py`, 17 testes):
+- comportamento upstream documentado: backend Python; o 7.º passo da 2.ª pesquisa é bloqueado; o `poll_tool_budget` bloquearia a 6.ª chamada;
+- **replay exacto das formas dos pedidos 1 e 3**, sem nenhuma aprovação órfã;
+- três pesquisas legítimas diferentes executadas;
+- bloqueados: a mesma página pela 3.ª vez (open/follow), a mesma pesquisa submetida repetidamente, ciclos A-B-A-B e A-B-C-A-B-C;
+- quotas sem consumo indevido; recusa por quota explícita; cancelamento e prazo sem aprovações pendentes; falha de assinatura fail-closed;
+- reinjectar o LoopGuard upstream é apanhado pela reconciliação (`NOT_EXECUTED` + flag).
+
+**Mutação:** 6/6 mutantes detectados (guard upstream mantido, sem guarda na política, sem reconciliação, `web_submit` sem a pesquisa, recusa opaca, acções não registadas).
+
+**Testes:**
+- venv: **248 OK, 0 saltados**; Python simples: OK, 94 saltados;
+- `actionlint` OK.
+
+**Inalterados:** planos `b0e4ac78…ef4`, `44d96648…d94` e WORK-06 `b9be5c69…`; workflows; evidências; ficheiros de pedido; resultados históricos (Qwen 1 e 3 FAIL, 2 BLOCKED).
+
+**Riscos restantes:**
+- sem o LoopGuard upstream perde-se a compressão de contexto acima de 100 mensagens; não é atingível com 14 turnos;
+- o limiar `max_identical=2` é uma escolha de desenho;
+- a correcção não resolve o controlo de conclusão de tarefas (o modelo parou nas páginas `/info/`), que fica para o R3-C;
+- n=0 execuções reais com esta correcção.
+
+Sem Qwen, sem Ollama, sem novo pedido, sem branches, `main` intacta.

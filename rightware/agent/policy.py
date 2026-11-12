@@ -46,6 +46,15 @@ class ToolDef:
 class Budgets:
     max_calls: int = 6
     deadline_seconds: float = 180.0
+    max_identical: int = 2          # same EFFECTIVE action (tool + arguments + session state): one retry
+
+
+# Loop guard (WORK-07 R3-B). It replaces the upstream OpenJarvis LoopGuard, which ran AFTER this
+# hook had approved a call and detected cycles by tool NAME only, so a legitimate second search
+# (open, type, submit, open...) was blocked after approval: an approval without an outcome and a
+# consumed quota. Here the check runs BEFORE approval and uses the effective action signature,
+# so different queries/pages are different actions and a denied call consumes no tool quota.
+LOOP_PERIODS = (2, 3)               # A-B-A-B and A-B-C-A-B-C with identical actions (A-A: max_identical)
 
 
 def canonical(name: str, args: dict) -> str:
@@ -72,7 +81,8 @@ def _safe_args(args: Any) -> dict:
 
 class AgentPolicy:
     def __init__(self, tools: dict[str, ToolDef], *, allow: set[str], budgets: Budgets | None = None,
-                 clock: Callable[[], float] = time.monotonic, audit_path: Path | None = None):
+                 clock: Callable[[], float] = time.monotonic, audit_path: Path | None = None,
+                 signature: Callable[[str, dict], str] | None = None):
         self.tools = dict(tools)
         self.allow = set(allow)
         self.budgets = budgets or Budgets()
@@ -86,6 +96,26 @@ class AgentPolicy:
         self.log: list[dict] = []
         self.audit_path = audit_path
         self.audit_failures = 0
+        self._signature = signature or canonical         # effective action identity for the loop guard
+        self._actions: list[str] = []                   # approved action signatures, in order
+        self._pending: list[tuple[str, str, dict]] = []   # (key, name, args) approved, not yet executed
+        self.last_denial: str | None = None
+
+    # -- loop guard ------------------------------------------------------------
+    def _loop_problem(self, name: str, args: dict) -> str | None:
+        """Caller holds the lock. Different arguments or session state = a different action."""
+        try:
+            sig = self._signature(name, args)
+        except Exception:
+            return "não foi possível identificar a acção (fail-closed)"
+        if self._actions.count(sig) >= self.budgets.max_identical:
+            return (f"acção idêntica já pedida {self._actions.count(sig)} vez(es) nesta tarefa; "
+                    "repeti-la não traz informação nova")
+        seq = self._actions + [sig]
+        for period in LOOP_PERIODS:
+            if len(seq) >= 2 * period and seq[-period:] == seq[-2 * period:-period]:
+                return f"ciclo repetitivo das mesmas {period} acções com os mesmos argumentos"
+        return None
 
     # -- static validation --------------------------------------------------
     def validate(self, name: Any, args: Any) -> str | None:
@@ -166,15 +196,21 @@ class AgentPolicy:
                     reason = f"capacidade '{tool.session_flag}' não autorizada nesta sessão"
                 elif self.per_tool.get(name, 0) >= tool.max_calls:
                     reason = "limite de chamadas desta ferramenta atingido"
+                else:
+                    reason = self._loop_problem(name, args)
             # Mandatory audit (R1 F4): persist the decision BEFORE any state change;
             # if it cannot be persisted, deny and change nothing else.
             if not self._persist(self._entry(name, args, reason is None, reason)):
                 self._memory(self._entry(name, args, False, "auditoria indisponível: negado"))
                 return False
-            self.calls += 1
+            self.calls += 1                          # proposal budget: every decision counts
+            self.last_denial = reason
             if reason is None:
-                self.per_tool[name] = self.per_tool.get(name, 0) + 1
-                self._approved.append(canonical(name, args))
+                key = canonical(name, args)
+                self.per_tool[name] = self.per_tool.get(name, 0) + 1   # execution quota: approvals only
+                self._approved.append(key)
+                self._pending.append((key, name, dict(args)))
+                self._actions.append(self._signature(name, args))
             return reason is None
 
     # -- boundary --------------------------------------------------------------
@@ -191,9 +227,27 @@ class AgentPolicy:
                 reason = "chamada não aprovada ou argumentos alterados após aprovação"
             if reason is None:
                 self._approved.remove(key)
+                for i, (k, _, _) in enumerate(self._pending):
+                    if k == key:
+                        del self._pending[i]
+                        break
             else:
                 self._record(name, args, False, "fronteira: " + reason)
                 raise PermissionError(reason)
+
+    def pending(self) -> list[tuple[str, dict]]:
+        """Calls approved by the hook that never reached the tool boundary (must stay empty)."""
+        with self._lock:
+            return [(n, dict(a)) for _, n, a in self._pending]
+
+    def close_pending(self) -> list[str]:
+        """End of a run: every approval without an execution gets an explicit audited outcome
+        NOT_EXECUTED (never silently dropped). Returns the tool names closed."""
+        with self._lock:
+            pending, self._pending, self._approved = list(self._pending), [], []
+        for _, name, args in pending:
+            self._record(name, args, True, "aprovado mas não executado", outcome="NOT_EXECUTED")
+        return [n for _, n, _ in pending]
 
     def note_outcome(self, name: str, args: dict, outcome: str) -> bool:
         """Record an executed tool's outcome. False if the audit could not be persisted."""

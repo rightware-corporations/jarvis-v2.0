@@ -24,7 +24,7 @@ from openjarvis.core.types import ToolResult
 from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
-from rightware.agent.policy import AgentPolicy, Budgets, ToolDef
+from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
 from rightware.agent.web import HttpxFetcher, WebRefused, frame, redact_url
 from rightware.windows_actions import ACTIONS, WindowsActions, describe
 
@@ -125,6 +125,32 @@ class _GuardedEngine:
         return result
 
 
+class _RightwareOrchestrator(OrchestratorAgent):
+    """The pinned OrchestratorAgent with ONE enforcement path (WORK-07 R3-B).
+
+    Upstream (pin f21d902) runs its LoopGuard AFTER ``before_tool_call`` has approved a call and
+    BEFORE the tool executes, with cycle detection by tool NAME only and a per-name budget of 5.
+    In real runs 43161108959 / 43189355873 this blocked an approved, legitimate second search
+    step: approval without outcome, consumed quota, and an opaque "ping-pong" message. The
+    constructor cannot configure it, so this subclass removes that misplaced check; the loop
+    guard lives in AgentPolicy (argument-aware, before approval, audited). Every refusal is
+    returned to the model with its explicit reason.
+    """
+
+    def __init__(self, *args, policy: AgentPolicy, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._loop_guard = None
+        self._rw_policy = policy
+
+    def _check_tool_allowed(self, tc):
+        denial = super()._check_tool_allowed(tc)
+        if denial is not None:
+            reason = self._rw_policy.last_denial or "recusada pela política"
+            denial.content = (f"[RIGHTWARE] A ferramenta '{tc.name}' NÃO foi executada: {reason}. "
+                              "Não repitas a mesma chamada; ajusta o plano ou conclui com o que já foi verificado.")
+        return denial
+
+
 class _PolicyTool(BaseTool):
     is_local = True
 
@@ -218,6 +244,23 @@ class AgentSession:
             return ToolOutcome(name, step.status, step.content, step.evidence)
         return run
 
+    def _action_signature(self, name: str, args: dict) -> str:
+        """Effective action identity for the loop guard: the page actually loaded or the query
+        actually submitted, so different searches/pages are different actions."""
+        b = self.browser
+        if b is not None and name in ("web_open", "web_follow"):
+            url = args.get("url") if name == "web_open" else \
+                (b.links.get(str(args.get("link", "")).strip().upper()) or (f"<unknown {args.get('link')}>",))[0]
+            return canonical("load", {"url": url})
+        if b is not None and name == "web_submit":
+            field = str(args.get("field", "")).strip().upper()
+            f = b.fields.get(field)
+            return canonical(name, {"field": field, "query": f.typed if f else None})
+        if name == "web_type":
+            return canonical(name, {"field": str(args.get("field", "")).strip().upper(),
+                                    "text": " ".join(str(args.get("text", "")).split())})
+        return canonical(name, args)
+
     def cancel(self) -> None:
         """Cancel the running instruction: every later tool call is refused (also at the boundary)."""
         if self._policy is not None:
@@ -226,7 +269,9 @@ class AgentSession:
     # -- one instruction ----------------------------------------------------------
     def run(self, instruction: str) -> AgentReply:
         kwargs = {"clock": self.clock} if self.clock else {}
-        policy = AgentPolicy(TOOLS, allow=self.allow, budgets=self.budgets, audit_path=self.audit_path, **kwargs)
+        self.browser = None
+        policy = AgentPolicy(TOOLS, allow=self.allow, budgets=self.budgets, audit_path=self.audit_path,
+                             signature=self._action_signature, **kwargs)
         self._policy = policy
         outcomes: list[ToolOutcome] = []
         runners = {"web_read": self._web_read, "windows_action": self._windows_action}
@@ -244,7 +289,7 @@ class AgentSession:
         tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes) for n in TOOLS
                  if TOOLS[n].session_flag in self.allow]
         guarded = _GuardedEngine(self.engine, policy)
-        agent = OrchestratorAgent(guarded, self.model, tools=tools, max_turns=self.max_turns,
+        agent = _RightwareOrchestrator(guarded, self.model, policy=policy, tools=tools, max_turns=self.max_turns,
                                   temperature=self.temperature, max_tokens=self.max_tokens,
                                   mode="function_calling", system_prompt=prompt,
                                   parallel_tools=False, interactive=False,
@@ -259,9 +304,18 @@ class AgentSession:
             answer = ("Não consigo ligar ao modelo local. Confirma que o Ollama está a correr."
                       if "Connect" in name or "Connect" in str(exc) else
                       f"Ocorreu um erro e o pedido não foi concluído ({name}).")
+            self._close_pending(policy, outcomes)
             return AgentReply(answer + "\nEstado: erro — o pedido não foi concluído.", "ERROR", outcomes, [],
                               guarded.halted, [], _verification(outcomes, []))
+        self._close_pending(policy, outcomes)
         return self._compose(answer, outcomes, guarded.halted, policy)
+
+    @staticmethod
+    def _close_pending(policy: AgentPolicy, outcomes: list[ToolOutcome]) -> None:
+        """No approval may end without an outcome: anything approved and never executed is
+        closed as NOT_EXECUTED in the audit AND in the outcomes (then flagged in the reply)."""
+        for name in policy.close_pending():
+            outcomes.append(ToolOutcome(name, "NOT_EXECUTED", "Aprovada mas não executada.", {"anomaly": True}))
 
     @staticmethod
     def _compose(answer: str, outcomes: list[ToolOutcome], halted: str | None, policy: AgentPolicy) -> AgentReply:
@@ -272,6 +326,8 @@ class AgentSession:
                 seen.add(o.evidence["final_url"])
                 sources.append(o.evidence)
         http_errors = [o.evidence for o in outcomes if o.status == "HTTP_ERROR"]
+        if any(o.status == "NOT_EXECUTED" for o in outcomes):
+            flags.append("APPROVED_NOT_EXECUTED")
         actions = [o for o in outcomes if o.tool == "windows_action"]
         verified_action = any(o.status == "VERIFIED" for o in actions)
         denied = [e for e in policy.log if not e["allowed"]]
