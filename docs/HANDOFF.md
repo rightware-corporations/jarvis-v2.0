@@ -1853,3 +1853,38 @@ A preservação e o upload continuam `always()`, depois do veredicto.
 **Planos inalterados:** `b0e4ac78…ef4` e `44d96648…d94`. WORK-06 e pin inalterados.
 
 **Consequência:** o código aprovado mudou, por isso a Fase 4 precisa de **nova autorização** com o novo HEAD de `develop`, que é o SHA deste commit depois de o CI estar verde. Mantém-se o `request_id` 1 e o plano `b0e4ac78…ef4`.
+
+## CHECKPOINT — 12/11/2026: WORK-07 Fase 4 — preflight real executado: **NOT_READY** (defeito do driver, não do site) (Claude Code)
+
+**Autorização:** código `982e51dc097e485a01bbd9d7acee53c43d7edf10`, plano `b0e4ac78…ef4`, `request_id` 1, sem modelo.
+
+**Antes do push:** HEAD local = remoto = `982e51d`; árvore limpa; plano igual; GATE 2 simulado localmente com o pedido presente: OK, 0 saltados.
+
+**Execução:**
+- commit de pedido `7633dd68434db5149f2d68135063229c88130fbc`, só com `ops/work07_site_preflight_request.json`; `--check-request` local `ok: true`;
+- run [`43152996478`](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43152996478), `run_attempt` 1:
+  - GATE 0 PASS e GATE 2 PASS (suite sem saltos);
+  - **TECHNICAL EXECUTION: COMPLETED (exit 0)**;
+  - **ACCEPTANCE VERDICT: NOT_READY**, job vermelho, como previsto pelo desenho.
+- Evidência sempre preservada: artefacto `13914990111`, ZIP sha256 `3a608675…be87` igual ao digest do GitHub, 8/8 `SHA256SUMS` OK. Cópia em `docs/evidence/work07-site-preflight-run43152996478/`.
+
+**Factos observados no site real (só GET, 5 cargas, todas para `www.rfc-editor.org` → `104.18.20.81:443`):**
+- `https://www.rfc-editor.org/search/` respondeu HTTP 200 e **funciona sem JavaScript**: há um formulário GET com um campo `q` («Search by text») e destino `/api/v1/search/`;
+- a pesquisa «9110» devolve 2 resultados, o primeiro «RFC 9110: HTTP Semantics», com ligação para `https://www.rfc-editor.org/info/rfc9110/`;
+- «RFC 9110» devolve 8 277 resultados, com a RFC 9110 em segundo lugar; «9112» e «RFC 9112» também devolvem páginas de resultados com HTTP 200.
+
+**Causa do NOT_READY (defeito meu, no driver do avaliador, `labs/`):**
+- o driver só procurava `/rfc/rfcN.html` ou um link que terminasse em `/info/rfcN`;
+- o site usa `/info/rfcN/`, com barra final;
+- por isso nunca seguiu o resultado; nenhum documento foi aberto.
+
+O produto (navegador) funcionou: abriu, encontrou o campo, escreveu, submeteu e listou os resultados como ligações `L#`.
+
+**Achado de segurança:**
+- o formulário inclui um campo oculto `x-typesense-api-key`, uma chave pública de pesquisa embutida na página;
+- o navegador reenviou-a ao mesmo host, como faria um browser normal;
+- a chave fica visível no URL mostrado ao modelo e na evidência.
+
+Foi **redigida** na cópia guardada no repositório; os hashes original e redigido estão no `PROVENANCE.txt`. Recomendação (decisão pendente): redigir no produto os parâmetros com nome de credencial nas vistas do modelo e na evidência.
+
+**Estado:** `request_id` 1 do preflight consumido. Sem Qwen, sem branches, `main` inalterada. **Próxima operação:** corrigir o driver (barra final em `/info/`) com teste de regressão; uma nova execução precisa de nova autorização (`request_id` 2).
