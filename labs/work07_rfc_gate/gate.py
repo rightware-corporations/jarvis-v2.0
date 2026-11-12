@@ -162,12 +162,15 @@ def site_preflight(browser) -> dict:
                     continue
                 found = result_link(number)
                 if not found:
-                    info = next((lid for lid, (u, _) in browser.links.items() if u.endswith(f"/info/rfc{number}")), None)
+                    info = next((lid for lid, (u, _) in browser.links.items()        # real site: /info/rfcN/ (run 43152996478)
+                                 if u.rstrip("/").endswith(f"/info/rfc{number}")), None)
                     if info and loads < PREFLIGHT_LIMITS["max_loads"] \
                             and record("follow", browser.follow(info)).status == "OK":
                         found = result_link(number)
         if not found:
             reasons.append(f"no traversable result link to RFC {number}")
+            result["documents"][number] = {"validated": False, "candidate_links": sorted(
+                {u for u, _ in browser.links.values() if f"rfc{number}" in u.lower()})[:20]}
             continue
         if loads >= PREFLIGHT_LIMITS["max_loads"]:
             reasons.append(f"load budget exhausted before opening RFC {number}")
@@ -182,7 +185,7 @@ def site_preflight(browser) -> dict:
                                        "title": ev.get("title"), "truncated": ev.get("truncated"),
                                        "validated": not problems, "problems": problems}
         reasons += problems
-    validated = [n for n, d in result["documents"].items() if d["validated"]]
+    validated = [n for n, d in result["documents"].items() if d.get("validated")]
     if sorted(validated) != sorted(PREFLIGHT_LIMITS["queries"]) and not reasons:
         reasons.append("not every document was validated")                    # defence in depth
     result["events"] = browser.events

@@ -1888,3 +1888,22 @@ O produto (navegador) funcionou: abriu, encontrou o campo, escreveu, submeteu e 
 Foi **redigida** na cópia guardada no repositório; os hashes original e redigido estão no `PROVENANCE.txt`. Recomendação (decisão pendente): redigir no produto os parâmetros com nome de credencial nas vistas do modelo e na evidência.
 
 **Estado:** `request_id` 1 do preflight consumido. Sem Qwen, sem branches, `main` inalterada. **Próxima operação:** corrigir o driver (barra final em `/info/`) com teste de regressão; uma nova execução precisa de nova autorização (`request_id` 2).
+
+## CHECKPOINT — 12/11/2026: WORK-07 — driver do preflight corrigido após o run `43152996478` (Claude Code)
+
+**Bloqueio concreto revelado pela execução:** o driver não seguia ligações `/info/rfcN/` com barra final, a forma real do site.
+
+**Correcção** (`labs/work07_rfc_gate/gate.py`, só o avaliador):
+- o link `/info/rfcN` é aceite com ou sem barra final;
+- quando não encontra o documento, o driver regista as `candidate_links` que contêm `rfcN`, para diagnóstico.
+
+**Regressão:** maquete local com a forma observada (formulário GET para `/api/v1/search/` com campo oculto; resultados em `/info/rfcN/`). Dá READY. A versão antiga é detectada por mutação. Há também um teste de `candidate_links`.
+
+**Testes:**
+- venv: **213 OK, 0 saltados**, com o ficheiro de pedido real presente; Python simples: 213 OK, 73 saltados.
+
+**Inalterado:** produto `rightware/`, workflows, planos `b0e4ac78…ef4` e `44d96648…d94`, WORK-06 e pin.
+
+**Limitação (INFERÊNCIA, não verificada):** não se sabe se a página `/info/rfcN/` do site actual liga para `/rfc/rfcN.html`, nem se os documentos têm o título no formato esperado. A próxima execução vai mostrá-lo; se falhar, ficam registadas as ligações candidatas.
+
+**Próxima operação:** nova autorização do operador para o preflight, com `request_id` **2**, código aprovado = este HEAD depois de o CI estar verde, e o mesmo plano `b0e4ac78…ef4`.

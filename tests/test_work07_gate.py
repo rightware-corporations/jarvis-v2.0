@@ -470,6 +470,49 @@ class SitePreflightNegative(unittest.TestCase):
         self.assert_not_ready(result, "RFC 9110: document HTTP_ERROR")
 
 
+class SitePreflightRealShape(unittest.TestCase):
+    """Regression for run 43152996478 (LOCAL MOCK of the observed shape, not the real site):
+    the GET search form posts to /api/v1/search/ with a hidden page value, and results link
+    to /info/rfcN/ WITH a trailing slash."""
+
+    def run_mock(self, info_links_doc=True):
+        def handler(request):
+            path = request.url.path
+            page = lambda body, title: httpx.Response(  # noqa: E731
+                200, headers={"content-type": "text/html"},
+                text=f"<html><head><title>{title}</title></head><body>{body}</body></html>")
+            if path == "/search/":
+                return page('<form method="get" action="/api/v1/search/"><input name="q">'
+                            '<input type="hidden" name="x-site-key" value="k"></form>', "Search | RFC Editor")
+            if path == "/api/v1/search/":
+                q = request.url.params.get("q", "")
+                n = q.replace("RFC ", "")
+                return page(f'<a href="/info/rfc{n}/">RFC {n} : title</a>', f'Search results "{q}"')
+            if path.startswith("/info/rfc"):
+                n = path.strip("/").rsplit("rfc", 1)[1]
+                body = f'<a href="/rfc/rfc{n}.html">HTML</a>' if info_links_doc else '<a href="/rfc/rfc{n}/">x</a>'
+                return page(body, f"Information on RFC {n}")
+            if path.startswith("/rfc/rfc"):
+                n = path[8:12]
+                return page("<pre>doc</pre>", f"RFC {n}: {E.GOLD[n]['title']}")
+            return httpx.Response(404, headers={"content-type": "text/html"}, text="<p>x</p>")
+        fetcher = W.HttpxFetcher(resolver=lambda h: ["93.184.216.34"], transport=httpx.MockTransport(handler),
+                                 peer_check=lambda r: True, ssrf=lambda u: None)
+        return G.site_preflight(PublicBrowser([G.SITE], fetcher))
+
+    @unittest.skipIf(httpx is None, "pinned venv (httpx) required")
+    def test_trailing_slash_info_links_are_followed_to_the_documents(self):
+        result = self.run_mock()
+        self.assertEqual(result["verdict"], "READY", result["reasons"])
+        self.assertEqual([e["op"] for e in result["events"]].count("follow"), 4)
+
+    @unittest.skipIf(httpx is None, "pinned venv (httpx) required")
+    def test_unreachable_document_records_candidate_links(self):
+        result = self.run_mock(info_links_doc=False)
+        self.assertEqual(result["verdict"], "NOT_READY")
+        self.assertIn("https://www.rfc-editor.org/info/rfc9110/", result["documents"]["9110"]["candidate_links"])
+
+
 class Acceptance(unittest.TestCase):
     """Technical execution vs acceptance verdict: only READY / PASS with a completed runner is accepted."""
 
