@@ -1771,3 +1771,11 @@ Detalhe em `docs/research/WORK07_BROWSER_ADAPTER_DESIGN.md`.
 - o contexto cresce com cada página e pode levar a um tempo alto em CPU.
 
 **Próxima operação:** aguardar a autorização do operador para o preflight da Fase 4 (`request_id` 1). Só depois de `READY`, a autorização separada da Fase 5.
+
+## CHECKPOINT — 12/11/2026: WORK-07 — CI de `6e1c8ec` verde, entrega da missão (Claude Code)
+
+**CI em `6e1c8eccb9889f388a70bfe214e210c68bae612d`:** WORK-05 product `43149206737` success; foundation `43149206579` (push) e `43149212568` (PR) success.
+
+**Workflows:** os novos workflows WORK-07 **não foram disparados**, porque não existe ficheiro de pedido.
+
+**Estado:** fases 1–3 concluídas e testadas com modelo FAKE; fases 4–5 preparadas e não executadas. Aguarda autorização do operador para o preflight do site (`b0e4ac78…ef4`, `request_id` 1). A Fase 5 só pode ser pedida separadamente, depois de `READY`.
