@@ -2383,3 +2383,33 @@ O «Evidence Registry» proposto **duplicaria** em grande parte o que já existe
 - decidir em paralelo a política de origem dos objectivos (E3) antes de qualquer alteração ao `_compose`.
 
 Sem implementação, Qwen, pedidos, alterações em `main`, pin, política, quotas, avaliador ou histórico.
+
+## CHECKPOINT — 12/11/2026: WORK-07 R3-C2-010 — consolidação Claude + Perplexity; implementação NÃO autorizada (preparado por ChatGPT; escrito por Claude Code)
+
+**Baseline verificado pelo Claude Code antes desta escrita:**
+- `develop` local = remoto = `43a0d02081cff7084a11b9d53fc0c2861ed1eb92`, árvore limpa;
+- CI do HEAD: WORK-05 product `43232781147`, foundation `43232781232` e `43232795012`, todos success.
+
+**Evidências consideradas:**
+1. Claude Code: `docs/research/WORK07_R3C2_003_ARCHITECTURE_REUSE.md` (no repositório, commit `43a0d02`).
+2. Perplexity: «RIGHTWARE JARVIS research dossier.pdf» (13 páginas), recebido pelo operador. **Nota de proveniência:** este PDF não está no repositório e não foi lido pelo Claude Code; o seu conteúdo entra aqui apenas através da consolidação do ChatGPT.
+
+**Conclusões consolidadas:**
+- não há justificação actual para migrar do OpenJarvis;
+- o `_GuardedEngine` da RIGHTWARE permite observar a resposta candidata antes de o orquestrador concluir;
+- devem reaproveitar-se os mecanismos existentes: auditoria, autorização, anti-loop, resultados das ferramentas e tracing;
+- a verificação pode usar evidências determinísticas;
+- a recuperação exige um orçamento explícito adicional e respeita permissões, prazo, cancelamento e quotas;
+- padrões externos mais relevantes: PydanticAI (validação e retry), OpenHands (verificação de artefactos), Magentic-One (separação entre objectivos e progresso);
+- a extracção fiável de objectivos em linguagem natural continua sem solução comprovada;
+- os relatórios ainda não demonstram que componentes do RIGHTWARE Shared Intelligence Core são reutilizáveis.
+
+**Recomendação:**
+- preservar o OpenJarvis e investigar a menor correcção possível;
+- manter prioritária a auditoria cruzada JARVIS ↔ Shared Intelligence Core, com reutilização local de código e sem dependência de servidor;
+- experiências candidatas: E1 (intercepção) e E4 (orçamento), só determinísticas e com modelo FAKE;
+- **o patch de produção não está aprovado.**
+
+**Próximo passo:** receber e confrontar os relatórios específicos de reutilização do Shared Intelligence Core; depois definir componentes, contratos, testes e sequência de implementação.
+
+**Restrições:** sem Qwen, sem novo `request_id`, sem alteração de resultados históricos. Este checkpoint é só documental: sem alterações de código, testes, workflows, `main` ou pin.
