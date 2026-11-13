@@ -2821,3 +2821,30 @@ Não alterados: `run()`, `_compose`, `_GuardedEngine`, `_PolicyTool`, `ToolOutco
 - o contrato ainda não é usado por nenhuma lógica.
 
 **Estado:** A1 de produto **IMPLEMENTADO** (opt-in, default OFF; CI a confirmar no checkpoint seguinte). **A2, A3 e A4 NÃO autorizados e NÃO iniciados.**
+
+## CHECKPOINT — 13/11/2026: WORK-07 Milestone A1 — CONCLUÍDO (CI confirmado) + avaliação de viabilidade A2 (Claude Code)
+
+**HEAD do código A1:** `c6ad1f495c3e32f483f298fb76218241b19bd227`.
+- **CI:** WORK-05 product `43475717548` success (log inspeccionado: **Ran 351 tests, OK** no venv fixado; passo «no test may skip» success; Python simples success); foundation `43475717840` e `43475725671` success.
+- **Commits A1:** `0fb45d9` (início) e `c6ad1f4` (implementação, testes e checkpoint).
+
+**Implementado (A1):** catálogo de presets de código, contrato imutável, validação fail-closed e `AgentSession(task_preset=<id>)` opt-in, default OFF, com estado `NOT_EVALUATED`. Sem efeito em execução, política, quotas, respostas ou conclusão: A/B byte-idêntico e 16 testes de produto.
+
+**NÃO implementado e NÃO autorizado:** A2 (recibos), A3 (gate de conclusão e continuação), A4 (aceitação end-to-end), `operator_confirmed`, presets para sites reais, Qwen.
+
+**Avaliação de viabilidade A2 (com base no código actual, sem implementação):**
+- **Ponto de emissão real (FACTO):** `_PolicyTool.execute` (`session.py`) é o único caminho que chama `authorize_execution` → runner → `note_outcome`. Um recibo emitido aqui está na fronteira real de execução, sem tocar no vendor nem na política.
+- **Identidade da chamada (FACTO e lacuna):**
+  - `AgentPolicy` guarda as aprovações por `canonical(nome, args)`, sem ID único, e aprovações idênticas são ambíguas;
+  - `_PolicyTool.execute` não recebe o `call_id`;
+  - `_RightwareOrchestrator._check_tool_allowed(tc)` recebe `tc.id`, e o orquestrador fixado executa em sequência (`parallel_tools=False`): decisão → execução da mesma chamada.
+
+  **Viável:** atribuir em `_check_tool_allowed` um `(run_id, sequence)` gerado pelo runtime e ligado ao `tc.id`, consumido em `_PolicyTool.execute`. Uma aprovação nunca consumida é fechada em `_close_pending` como recibo `NOT_EXECUTED`, e as recusas dão recibo `authorized=False`. **Pré-condição:** afirmar em código que `parallel_tools` é False (o caminho paralelo upstream quebra a ordem), com teste.
+- **Dados do recibo já disponíveis:** `final_url`, `status`, `content_type`, `sha256` dos bytes brutos e `truncated` nos eventos do browser e no `ToolOutcome.evidence`. O hash da vista (trace) é outra representação e não deve ser confundido.
+- **Riscos:**
+  - excepções do `ToolExecutor` upstream antes de `execute` deixam a aprovação pendente (coberto por `close_pending`);
+  - recibos não podem usar o `live_receipt_adapter` (observacional) como autoridade;
+  - identidade de documento continua `NONE` (A2 prova execução, não autenticidade).
+- **Estimativa:** novo `receipts.py` e cerca de 20–30 linhas em `session.py` (decisão, execução, fecho), sem alterar `_compose`, política ou vendor. Testes: duplicados, NOT_EXECUTED, recusas, trace OFF, ordem.
+
+**Próxima acção recomendada:** decisão do operador sobre a autorização de A2 com o âmbito acima. Não iniciar automaticamente.
