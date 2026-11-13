@@ -2942,3 +2942,17 @@ Não alterados: `_compose`, `AgentReply`, `reply_json`, estados de conclusão, `
 **Estado:** A1 e A2 concluídos (opt-in, default OFF, sem alteração de comportamento). **A3 (gate de conclusão) e A4 (aceitação end-to-end) NÃO iniciados**; precisam de nova decisão. Sem Qwen.
 
 **Próxima acção recomendada:** decisão do operador sobre o A3, com base na «Análise para A3» do checkpoint anterior.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-025 — A2 verificada, proposta A3 e bug de recusa (ChatGPT)
+
+**Verificacao independente:** HEAD remoto `develop` `52d02e9dabad7376b2a1ba65bde67bf4cfc3b136`. WORK-05 product run `43482507537`, foundation runs `43482507493`, `43482518703` todos SUCCESS. Confirmada existencia de `rightware/agent/receipts.py`, alterações no `rightware/agent/session.py` opt-in `receipts=False` e `tests/test_work07_milestone_a2_receipts.py` com 21 testes. Resultados detalhados de 372 testes pinned venv e zero skips, 5 cenarios A/B byte-identicos e late timeout constam do checkpoint A2 Claude; nenhuma inferencia Qwen feita neste turno.
+
+**ACHADO CRITICO:** upstream `ToolExecutor` executa em thread com timeout, por isso vinculacao por ordem ou `current call` pode atribuir recibo falso. A2 usa caminho de decisao/dispatch/claim e representa timeout/late, recusas, NOT_EXECUTED, ORPHAN e duplicados; A2 prova fluxo operacional, nao autenticidade do publisher nem correct factual statements.
+
+**ISSUE ABERTA:** [#9 — motivo de recusa obsoleto](https://github.com/rightware-corporations/jarvis-v2.0/issues/9). O Claude identificou em A2 que argumentos JSON malformados podem levar a uma mensagem ao modelo com o motivo de recusa anterior, embora receipt represente correctamente a causa actual. Separada para correcao antes de qualquer recuperacao automatica dependente desse texto. **Ainda nao corrigida**.
+
+**PREPARACAO A3:** [issue #8 — comentario de proposta A3](https://github.com/rightware-corporations/jarvis-v2.0/issues/8#issuecomment-6861986811). Requer verificador de objectivos com A1 preset e receipts A2, estados INCOMPLETE/UNKNOWN/HALTED/ERROR, garantia de que `identity_rule=NONE` nunca vira COMPLETE_VERIFIED para documento original, continuacao com turnos efectivos e budget limitado, feedback apenas por codigo, sem relaxar policy/quotas. Testes FAKE + regressao A/B e CI. **Proposta, NAO autorizacao de patch**.
+
+**ESTADO:** A1 e A2 CONCLUIDAS; #9 defect aberto; A3 ESPECIFICADA MAS NAO INICIADA/AUTORIZADA; A4 pendente. Nenhuma mudanca ao runtime ou politica causada por este checkpoint. Kaggle demo continua em snapshot anterior, sem implicacao em CI product.
+
+**PROXIMA DECISAO:** operador autorizar separadamente correcao #9 e A3 dentro dos gates, ou primeiro uma auditoria read-only do design. Preservar HANDOFF-FIRST e commits concorrentes.
