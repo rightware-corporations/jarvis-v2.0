@@ -2860,3 +2860,24 @@ Não alterados: `run()`, `_compose`, `_GuardedEngine`, `_PolicyTool`, `ToolOutco
 **INVARIANTES:** A2 comprova apenas o estado operacional das ferramentas; nao prova que URL/HTTP 200 e um documento original, nem factual correctness. `live_receipt_adapter` e somente observacional, nao fonte autoritativa. Se a correlacao segura exigir alterar vendor/policy ou usar paralelismo, parar em BLOCKED e pedir decisao.
 
 **ESTADO:** A1 CONCLUIDA (351 pinned tests e CI anterior); A2 AUTORIZADA/PENDENTE DE IMPLEMENTACAO; A3 completion gate e A4 end-to-end NAO INICIADAS. A demonstracao Kaggle permanece independente, com snapshot A1 pinado e rotulagem correcta de testes FAKE/Qwen.
+
+## CHECKPOINT — 13/11/2026: WORK-07 Milestone A2 — início e investigação do vendor fixado (Claude Code)
+
+**Baseline:** local `c8901f6` → fast-forward para o remoto `0a9fb51e5ebe4ffb9edf6b1e5b5159b15d45f71c` (R3-C2-024), árvore limpa. CI: WORK-05 product `43480944025` success; foundation `43480943604` e `43480959030` estavam em curso na consulta (ver abaixo). PR: só o rascunho #1, que não é tocado. Lidos: R3-C2-024, ordem A2 na issue #8 (comentário 6861209764), documentos do Milestone A e checkpoints A1.
+
+**Factos do código fixado (`f21d902`):**
+1. `orchestrator.py` (caminho sequencial, linhas ~476-520): para cada `tc` corre `_check_tool_allowed(tc)` (hook `before_tool_call`) e, se aprovado, `self._executor.execute(tc)`.
+2. `tools/_stubs.py` `ToolExecutor.execute` (linhas 251-470):
+   - faz `json.loads(tc.arguments)` sem alterar as nossas ferramentas (`is_local=True`, sem boundary guard);
+   - tem **retornos antecipados sem chamar a ferramenta**: ferramenta desconhecida, JSON inválido, rate limiter, capacidades, confirmação;
+   - depois `_TOOL_RUNNER.submit(tool.execute, **params)`: **o `_PolicyTool.execute` corre noutra thread**, com timeout de 30 s;
+   - num timeout, o orquestrador recebe «timed out» e avança, mas a função pode continuar a correr (não se pode parar uma thread em Python).
+3. `_PolicyTool.execute(**params)` não recebe `call_id`. Correlacionar por ordem, ou pela «chamada actual», seria falso em timeouts.
+
+**Desenho (código RIGHTWARE, sem vendor nem política):**
+- `_RightwareOrchestrator` envolve `self._executor.execute(tc)`; o invólucro conhece o `tc` exacto e publica um **token de despacho** antes de chamar o original;
+- o `_PolicyTool.execute` reclama um registo **apenas** se o token de despacho e a identidade canónica dos argumentos coincidirem; caso contrário o recibo fica `ORPHAN`, sem atribuição;
+- no retorno do invólucro, um registo não reclamado vira `NOT_EXECUTED` e um reclamado sem fim vira `TIMED_OUT`; uma conclusão tardia fica `late=True`;
+- `parallel_tools=True` é rejeitado quando há recibos.
+
+Opt-in `receipts=False` por omissão.
