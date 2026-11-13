@@ -2601,3 +2601,15 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **Estado:** E3/L1–L4 AUTORIZADOS para laboratório e testes, mas **não executados/confirmados nesta operação**. Claude poderá consumir a matriz no próximo ciclo de execução, sem perder seu trabalho paralelo. Preservar todos os checkpoints anteriores.
 
 **Próxima acção:** Claude revalidar HEAD local/remoto/HANDOFF/CI; executar somente E3 + L1–L4 em testes FAKE e reportar resultados/limites/CI em novo checkpoint. Nenhum patch `rightware/`, Qwen, persistência, alteração de pin/policy/quotas, main ou benchmark histórico autorizado.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-015 — retoma e ticket de execução E3/L1–L4 (ChatGPT)
+
+**Retoma verificada:** JARVIS `develop` `ab099068ae7c82b6b5c110222704f8d7260a4caf`; HANDOFF termina em R3-C2-014, com contrato experimental `docs/research/WORK07_R3C2_014_E3_L1L4_TEST_CONTRACT.md`. O CI deste HEAD foi consultado com três workflows `success`: 43252523055, 43252509623 e 43252509596. **Não há resultados E3/L1–L4 publicados neste HEAD.**
+
+**Acção realizada:** foi aberta a [issue #7](https://github.com/rightware-corporations/jarvis-v2.0/issues/7) — «WORK-07 R3-C2-014: executar E3 + L1–L4 (FAKE/test-only, HANDOFF-FIRST)». A issue aponta para os 12 casos E3 e 15 casos L1–L4 já definidos e reúne os critérios de aceitação, limitações, modelo FAKE, segurança, regressões e checkpoints esperados. **Abrir a issue não inicia Claude Code, não executa testes e não altera produto.**
+
+**Estado da autorização:** o operador havia autorizado as experiências E3 e L1–L4 somente em laboratório/testes no R3-C2-014. Mantêm-se as proibições de Qwen, produção, pin, quotas, policy, alterações `rightware/` ou `vendor/`, integração Shared, persistência L5–L12 e mudanças do histórico de execução.
+
+**Próximo movimento:** Claude Code, quando retomar a sua sessão, consultar a issue #7 e o contrato experimental, revalidar HEAD/HANDOFF/CI e executar somente E3/L1–L4 com testes FAKE, incluindo casos negativos. Registar commits, resultados reais, limitações e CI no HANDOFF. O ChatGPT verifica relatórios e não inventa PASS.
+
+**Proveniência:** checkpoint documental directo do ChatGPT conforme instrução anterior do operador; nenhum teste executado neste turno.
