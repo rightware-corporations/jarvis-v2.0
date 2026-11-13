@@ -2881,3 +2881,54 @@ Não alterados: `run()`, `_compose`, `_GuardedEngine`, `_PolicyTool`, `ToolOutco
 - `parallel_tools=True` é rejeitado quando há recibos.
 
 Opt-in `receipts=False` por omissão.
+
+## CHECKPOINT — 13/11/2026: WORK-07 Milestone A2 — recibos de execução implementados (Claude Code)
+
+**Baseline:** `0a9fb51` (R3-C2-024); início A2 `b803fda`. Branch `develop`.
+
+**Ficheiros:**
+- novo `rightware/agent/receipts.py` (`ExecutionReceipt` imutável, `ReceiptLedger` thread-safe);
+- `rightware/agent/session.py`: opt-in `receipts=False`, ligação em `_RightwareOrchestrator` e `_PolicyTool.execute`, fecho em `_close_pending`, propriedade `receipts`;
+- novo `tests/test_work07_milestone_a2_receipts.py` (21 testes).
+
+Não alterados: `_compose`, `AgentReply`, `reply_json`, estados de conclusão, `_GuardedEngine`, `policy.py`, quotas, `browser.py`, `web.py`, `trace.py`, `task_contract.py`, vendor/pin, workflows, labs, evidências, `main`.
+
+**Ligação inequívoca** (sem vendor nem política; ver o checkpoint anterior com os factos do vendor):
+- `decide` cria em `_check_tool_allowed` um registo com `sequence` de runtime, `call_id` do modelo (identificador, não autenticação; `DUPLICATE`/`MISSING` assinalados) e `args_sha256` = `canonical(tool, args)` completo;
+- o motivo vem da política **só se a chamada chegou ao hook** (argumentos malformados, rejeitados pelo upstream antes do hook, não herdam um motivo antigo);
+- o invólucro de `executor.execute(tc)` publica o token de despacho desse registo;
+- o `_PolicyTool.execute` (thread de trabalho) só reclama com token actual **e** ferramenta e argumentos canónicos iguais; caso contrário cria um recibo `ORPHAN` (sequência 0, sem `call_id`, `authorized=False`);
+- no retorno do executor: não reclamado → `NOT_EXECUTED`; reclamado sem fim → `TIMED_OUT`, e uma conclusão posterior fica `late=True` com o estado real;
+- `close()` no fim do run fecha o que estiver aberto como `NOT_EXECUTED`;
+- `parallel_tools=True` com recibos → `ValueError`.
+
+**Campos do recibo:** `run_id` (por run), `sequence`, `call_id`/`call_id_status`, `tool`, `args_sha256`, `authorized`, `executed` (corpo da ferramenta iniciado), `status` (`DENIED`, `NOT_EXECUTED`, `REFUSED_AT_BOUNDARY`, `TIMED_OUT` ou o `ToolOutcome.status`), `binding`, `policy_reason`, `audit` (OK/FAILED/NOT_APPLICABLE), `late`, `final_url` (redigido), `http_status`, `content_type`, `raw_sha256` (64 hex) com `hash_scope="raw_response_bytes"` (distinto do hash da vista) e `truncated`. Sem texto de página, pesquisas, prompts nem segredos (testado).
+
+**Resultados (executados nesta sessão):**
+- **A2: 21/21 PASS.** Cobrem:
+  - regras do ledger (token e argumentos, órfãos, uma reclamação por despacho, `NOT_EXECUTED`, `TIMED_OUT`→`late`, duplicados, malformados, imutabilidade);
+  - default OFF sem invólucro; `parallel_tools` recusado;
+  - com recibos vs sem, 5 cenários: `reply_json`, texto, chamadas, pedidos e política idênticos;
+  - 1 recibo BOUND por decisão, alinhado com a auditoria e os outcomes;
+  - recusas de quota e anti-ciclo; recusa do browser;
+  - hash bruto = eventos, ≠ hash da vista; trace OFF; runs repetidos;
+  - `NOT_EXECUTED` (LoopGuard reinjectado), retorno antecipado do executor, `REFUSED_AT_BOUNDARY` (prazo entre hook e ferramenta), erro do runner, falha de auditoria após execução;
+  - cancelamento e prazo sem recibos UNKNOWN; timeout real em thread com conclusão tardia; argumentos malformados; privacidade.
+- **A/B real** (worktree em `b803fda` vs actual, 5 cenários, recibos OFF): `reply_json`, texto, chamadas ao modelo, pedidos de rede e número de outcomes **byte-idênticos**.
+- **Mutação:** 7/8 detectados. O M8 (não limpar o token após reclamar) é equivalente, porque `state == "OPEN"` já impede uma 2.ª reclamação.
+- **Suite:** venv **372 OK, 0 saltados**, sem ocorrências de «skipped»; Python simples 372 OK, 161 saltados. Por suite: R3-B 17, R3-C1 21, E1/E4 15, A1 lab 15, A1 produto 16, A2 21, todas OK. `actionlint` OK.
+
+**Limites:**
+- os recibos provam **operação**, não autenticidade do documento nem correcção factual;
+- `call_id` não autentica;
+- execução tardia após `close()` do run: a política recusa na fronteira (aprovação já fechada) e o recibo fica ORPHAN/`REFUSED_AT_BOUNDARY`;
+- recibos só em memória (sem persistência; L5–L12 fora de âmbito);
+- **falha existente detectada, não corrigida, fora do âmbito A2:** a mensagem de recusa ao modelo para argumentos malformados reutiliza `policy.last_denial`, que pode ser o motivo de uma recusa anterior; o recibo já trata isto correctamente.
+
+**Análise para A3** (não iniciado):
+- A3 pode usar recibos `BOUND` com `executed=True`, `status="OK"`, `late=False`, `audit="OK"` e `raw_sha256` como **única** evidência operacional por objectivo;
+- `ORPHAN`, `TIMED_OUT`, `NOT_EXECUTED`, `REFUSED*`, `DENIED` e `audit=FAILED` nunca contam;
+- a identidade do documento continua `NONE` (A1), por isso, sem regra de identidade confiável, A3 deve dar `UNKNOWN_IDENTITY` e não `COMPLETE_VERIFIED`;
+- A3 também precisa de contar os turnos restantes antes de uma continuação (E1/E4) e do orçamento próprio.
+
+**Estado:** A2 **IMPLEMENTADO** (opt-in; CI a confirmar). A3 e A4 **NÃO iniciados**.

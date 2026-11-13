@@ -25,6 +25,7 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
 from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
+from rightware.agent.receipts import ExecutionReceipt, ReceiptLedger
 from rightware.agent.task_contract import STATUS_NOT_EVALUATED, TaskContract, select_preset
 from rightware.agent.trace import TaskTrace
 from rightware.agent.web import HttpxFetcher, WebRefused, frame, redact_url
@@ -143,13 +144,32 @@ class _RightwareOrchestrator(OrchestratorAgent):
     returned to the model with its explicit reason.
     """
 
-    def __init__(self, *args, policy: AgentPolicy, trace: TaskTrace | None = None, **kwargs):
+    def __init__(self, *args, policy: AgentPolicy, trace: TaskTrace | None = None,
+                 ledger: ReceiptLedger | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         self._loop_guard = None
         self._rw_policy = policy
         self._rw_trace = trace
+        self._rw_ledger = ledger
+        self._rw_record = None
+        if ledger is not None:
+            # A2: receipts bind decision -> dispatch -> execution per call. That is only sound when
+            # calls run one at a time; the upstream parallel path evaluates all hooks first.
+            if self._parallel_tools:
+                raise ValueError("os recibos de execução exigem parallel_tools=False")
+            original = self._executor.execute
+
+            def execute_with_dispatch(tc, _original=original):
+                rec, self._rw_record = self._rw_record, None
+                ledger.dispatch(rec)
+                try:
+                    return _original(tc)
+                finally:
+                    ledger.end_dispatch(rec)
+            self._executor.execute = execute_with_dispatch
 
     def _check_tool_allowed(self, tc):
+        decisions_before = len(self._rw_policy.log)
         denial = super()._check_tool_allowed(tc)
         if denial is not None:
             reason = self._rw_policy.last_denial or "recusada pela política"
@@ -158,6 +178,12 @@ class _RightwareOrchestrator(OrchestratorAgent):
         if self._rw_trace is not None:
             self._rw_trace.on_decision(tc.id, tc.name, denial is None, self._rw_policy.last_denial,
                                        denial.content if denial is not None else "")
+        if self._rw_ledger is not None:
+            # The policy reason only if THIS call reached the policy hook (upstream rejects malformed
+            # arguments before the hook, so last_denial could be stale).
+            reached = len(self._rw_policy.log) > decisions_before
+            reason = self._rw_policy.last_denial if reached else "rejeitada antes da política (argumentos inválidos)"
+            self._rw_record = self._rw_ledger.decide(tc.id, tc.name, tc.arguments, denial is None, reason)
         return denial
 
 
@@ -165,9 +191,10 @@ class _PolicyTool(BaseTool):
     is_local = True
 
     def __init__(self, definition: ToolDef, policy: AgentPolicy, runner: Callable[[dict], ToolOutcome],
-                 outcomes: list[ToolOutcome], trace: TaskTrace | None = None, browser=None):
+                 outcomes: list[ToolOutcome], trace: TaskTrace | None = None, browser=None,
+                 ledger: ReceiptLedger | None = None):
         self.definition, self.policy, self.runner, self.outcomes = definition, policy, runner, outcomes
-        self.trace, self.browser = trace, browser
+        self.trace, self.browser, self.ledger = trace, browser, ledger
         self.tool_id = self.tool_name = definition.name
 
     @property
@@ -176,17 +203,26 @@ class _PolicyTool(BaseTool):
                         description=self.definition.description, parameters=self.definition.schema())
 
     def execute(self, **params) -> ToolResult:
+        rec = self.ledger.claim(self.definition.name, params) if self.ledger is not None else None
+        boundary_refused = False
         try:
             self.policy.authorize_execution(self.definition.name, params)
         except PermissionError as exc:
+            boundary_refused = True
             out = ToolOutcome(self.definition.name, "REFUSED", f"Recusado pela política: {exc}.", {})
         else:
+            if rec is not None:
+                self.ledger.started(rec)
             try:
                 out = self.runner(params)
             except Exception as exc:          # fail closed, no internals
                 out = ToolOutcome(self.definition.name, "FAILED", f"Erro da ferramenta ({type(exc).__name__}).", {})
-        if not self.policy.note_outcome(self.definition.name, params, out.status):
+        audit_ok = self.policy.note_outcome(self.definition.name, params, out.status)
+        if not audit_ok:
             out.evidence["audit"] = "FAILED"          # reported as an error by the session
+        if rec is not None:
+            self.ledger.finish(rec, "REFUSED_AT_BOUNDARY" if boundary_refused else out.status,
+                               {} if boundary_refused else out.evidence, audit_ok)
         self.outcomes.append(out)
         if self.trace is not None:
             view = self.browser.last_view if self.browser is not None else None
@@ -206,7 +242,7 @@ class AgentSession:
                  budgets: Budgets | None = None, max_turns: int = 6, temperature: float = 0.2,
                  max_tokens: int = 768, sites: tuple[str, ...] = (), browser_fetcher=None,
                  clock: Callable[[], float] | None = None, start_url: str | None = None,
-                 trace: bool = False, task_preset: str | None = None):
+                 trace: bool = False, task_preset: str | None = None, receipts: bool = False):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
@@ -222,6 +258,10 @@ class AgentSession:
         self.task_contract: TaskContract | None = (
             select_preset(task_preset, allow=self.allow, sites=self.sites) if task_preset is not None else None)
         self.task_contract_status: str | None = STATUS_NOT_EVALUATED if self.task_contract is not None else None
+        # WORK-07 A2 (opt-in, default OFF): execution receipts per run. Observational only: they
+        # change no decision, tool, reply or completion, and prove operation, never authenticity.
+        self.receipts_enabled = bool(receipts)
+        self.ledger: ReceiptLedger | None = None
         self.browser_fetcher = browser_fetcher or self.fetcher
         self.clock = clock
         self.browser: PublicBrowser | None = None
@@ -313,10 +353,11 @@ class AgentSession:
                 prompt += f" Página inicial desta tarefa: {self.start_url}"
 
         self.trace = trace = TaskTrace() if self.trace_enabled else None
-        tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes, trace, self.browser) for n in TOOLS
+        self.ledger = ledger = ReceiptLedger() if self.receipts_enabled else None
+        tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes, trace, self.browser, ledger) for n in TOOLS
                  if TOOLS[n].session_flag in self.allow]
         guarded = _GuardedEngine(self.engine, policy, trace)
-        agent = _RightwareOrchestrator(guarded, self.model, policy=policy, trace=trace, tools=tools,
+        agent = _RightwareOrchestrator(guarded, self.model, policy=policy, trace=trace, ledger=ledger, tools=tools,
                                        max_turns=self.max_turns,
                                        temperature=self.temperature, max_tokens=self.max_tokens,
                                        mode="function_calling", system_prompt=prompt,
@@ -349,6 +390,13 @@ class AgentSession:
             outcomes.append(ToolOutcome(name, "NOT_EXECUTED", "Aprovada mas não executada.", {"anomaly": True}))
             if self.trace is not None:
                 self.trace.on_not_executed(name)
+        if self.ledger is not None:
+            self.ledger.close()
+
+    @property
+    def receipts(self) -> tuple[ExecutionReceipt, ...]:
+        """Receipts of the last run (empty when receipts are off or no run happened)."""
+        return self.ledger.receipts() if self.ledger is not None else ()
 
     @staticmethod
     def _compose(answer: str, outcomes: list[ToolOutcome], halted: str | None, policy: AgentPolicy) -> AgentReply:
