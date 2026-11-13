@@ -2739,3 +2739,17 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **ESTADO:** A0 completa; A1 **VALIDACAO LAB PASS** 15/15, **ENTRYPOINT PRODUTO PENDENTE**; A2–A4 pendentes. Issue #8 actualizada com referencia. Continua a direccao de presets confiaveis/opt-in, compatibilidade no-contract, e codigo Claude responsavel pela implementacao do runtime.
 
 **PROXIMA ETAPA:** Claude Code deve consumir A0 e este teste de referencia, desenhar e implementar, apos escopo explicitamente aprovado, um opt-in minimo no `AgentSession` com validação de preset do lado de codigo confiavel. Depois provar regressao no-contract byte-compatible e auditoria de seguranca antes de A2. HANDOFF-FIRST, preservar HEAD/CI e nao alterar vendor/pin/policy/quotas/main ou historicos Qwen.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-023 — autorizacao delimitada A1 product opt-in (ChatGPT)
+
+**DECISAO DO OPERADOR:** no seguimento da recomendacao «Claude Code pode utilizar o módulo experimental como referência para implementar a entrada opt-in no AgentSession», operador respondeu «vamos então». Autorizada **somente A1 product opt-in**, nao A2–A4. Autorizacao de engenharia delimitada para Claude Code; nao significa que Claude executou ou que funcionalidade foi implementada neste turno.
+
+**BASELINE verificado:** `develop` `8c9ae65f33228828f6b5223be8865681581c2eb8`. WORK-05 product run `43474151168` success; workflows foundation do mesmo HEAD estavam em progresso na consulta inicial. O HEAD pode mudar entre execucoes de agentes: reconfirmar antes de qualquer escrita.
+
+**ORDEM DE ENGENHARIA:** [Issue #8, comentario A1](https://github.com/rightware-corporations/jarvis-v2.0/issues/8#issuecomment-6860341699) contém missao especifica: rever `docs/engineering/WORK07_MILESTONE_A_A0_IMPLEMENTATION_AUDIT.md`, `docs/engineering/WORK07_MILESTONE_A_COMPLETION_GATE_CONTRACT.md`, HANDOFF e codigo de laboratorio R3-C2-022; implementar apenas `rightware/agent/task_contract.py` (ou equivalente pequeno) e parametro opcional de preset registrado por codigo em `AgentSession.__init__`, **default OFF**, sem alteracoes em `AgentSession.run()`, `_compose`, policy/quotas ou semantica de completion nesta fase; testar compatibilidade, abuso, limites, suite venv/CI e registrar resultado.
+
+**TRUST BOUNDARY:** `PresetRegistry` de laboratorio **nao autentica** o chamador por si; apenas presets selecionados do catálogo confiavel de codigo podem receber autoridade. Rejeitar objectos/JSON/URLs de origem LLM, ambiguidades, IDs repetidos, listas vazias, expandir hosts e permissoes. `open_original` exige regra confiavel de identidade no gate futuro; A1 nao verifica execucao. Rever especificamente `urlsplit` porta invalida, IDN e canonicalizacao, paths percent-encoded, query/fragment, limites.
+
+**FORA DE AMBITO:** A2 receipts, A3 Completion Gate, A4 rollout, Qwen/Ollama/GPU, alteracoes vendor, pin, quotas/policy, main, workflows, integracao Shared/persistencia, IDs inventados, historico Qwen FAIL/BLOCKED. Sem contrato a resposta e o JSON devem ser compatíveis. Com contrato, nunca declarar `COMPLETE_VERIFIED` antes do gate.
+
+**ESTADO DESTE REGISTO:** MISSAO A1 AUTORIZADA E REGISTRADA; implementacao de produto e testes A1 integrados **ainda nao verificados/executados neste checkpoint**. Nenhum codigo alterado por ChatGPT nesta operacao. Claude deve abrir checkpoint de inicio e resultado no HANDOFF preservando commits concorrentes.
