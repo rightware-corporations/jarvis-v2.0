@@ -2666,3 +2666,24 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **GATE E SEQUENCIA:** auditoria independente da origem de objectivos e de correlacao de `ToolOutcome`/`TaskTrace` reais antes de qualquer patch; considerar primeiro tarefas com checklists/presets confiaveis e fallback `UNKNOWN`. Claude Code deve rever estes artefactos e resultados no seu proximo ciclo, mas nao foi iniciado automaticamente. L5–L12 e Qwen continuam fora do ambito. Preservar FAIL anteriores e HANDOFF-FIRST.
 
 **Estado deste checkpoint:** resultado FAKE/test-only documentado; CI do commit de documentacao separado deve ser verificado depois de concluir.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-019 — MVP por contratos explicitos e adaptador observacional (ChatGPT)
+
+**Origem da operacao:** operador pediu fechar as duas questoes apos R3-C2-018: origem dos objectivos do primeiro MVP e correlacao experimental de evidencias reais. ChatGPT realizou desenvolvimento **so em laboratorio/testes** e verificou CI. Nao foi Claude Code; nenhuma alteracao ao produto, Qwen, pin, quotas, policy, `rightware/`, `vendor/`, main ou workflows.
+
+**BASELINE:** `47db3c86a68a0ee272d9e08515f766e5a0eec8fa`, 3 CI success.
+
+**ESCOLHA RECOMENDADA PARA O PRIMEIRO MVP (NAO AUTORIZACAO DE IMPLEMENTACAO):** contratos explicitos de tarefa, fornecidos por checklist/preset confiavel, com requisitos obrigatorios imutaveis. O modelo pode propor passos, mas nunca remover/despromover/certificar T1. Extraccao de linguagem natural totalmente livre permanece nao demonstrada; fallback `UNKNOWN/NEEDS_CLARIFICATION`. Sem contrato completo e aceite, sem `COMPLETE_VERIFIED`. Avaliar separadamente proibicoes, dependencias, condicoes, resultados operacionais e correcao factual.
+
+**ARTEFACTOS R3-C2-019:**
+- `labs/work07_r3c2/live_receipt_adapter.py` no commit `d19553586714d0314ddcb268163304f73d0619cf`: correlacao **pos-execucao** de `ToolOutcome`, `TaskTrace` e `PublicBrowser.events` reais em memoria. Distingue UNKNOWN / G1 / G2_OBSERVATIONAL, sem fabricar IDs e sem promover observacoes para G3.
+- `tests/test_work07_r3c2_live_adapter.py` no commit `084e6d85b72b4a2966e80653eba508070ca8e440`: 9 testes com **AgentSession real, modelo FAKE e arquivo local**, cobrindo completo/incompleto, trace desligado, hash alterado, resultados e eventos duplicados, alegacao sem prova e NOT_EXECUTED.
+- `docs/research/WORK07_R3C2_019_MVP_POLICY_AND_RECEIPT_ADAPTER.md` no commit `9f5dd4d15516f0d5c135f635c22f945b4c7c9119`: relatorio, limites e proposta da fase seguinte.
+
+**CI OBSERVADO:** [WORK-05 product tests 43467723493](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43467723493) `success` no SHA `084e6d8`. Log lido: **9/9 novos testes PASS**; suite venv pinned **320 OK, zero skips**; Python sem dependencias pinned 320 OK, 146 skips (incluindo os 9 novos). Foundation do commit de testes consultado em execucao, verificar o resultado final separadamente. CI de commits documentais novos nao e prova de comportamento nao executado.
+
+**GAP NAO RESOLVIDO:** G2_OBSERVATIONAL usa correspondencia unica por nome/status/hash truncado 16 hex + evento browser, nao recibo transaccional duravel nem prova autenticada. Nao demonstra G3 identidade de documentos, nem factual correctness. Nao ha binding oficial de task/run/objective aos tools, nem extraccao automatica livre; `forbidden`/`after`/`condition` da fixture ainda nao sao aplicados ao historico real. `_compose` continua ANSWERED_WITH_SOURCES em respostas incompletas.
+
+**ESTADO:** duas questoes foram **delimitadas por uma proposta arquitectural e demonstracao laboratorial de correlacao**, mas NAO encerradas em producao. O primeiro incremento de producao necessita de decisao expressa: entrypoint opcional de task-contract, IDs/receipts estaveis e completion gate em modo opt-in, com gates de seguranca, para tarefas de browser read-only predefinidas. A autonomia geral e continuidade apos crash ficam fora do ambito. Sem Qwen ate deterministic product pass.
+
+**PROXIMA ACAO:** operador aprovar ou rever o escopo de Milestone A de producao; preparar contrato de engenharia com criterios e testes negativos, preservar HANDOFF-FIRST, e so depois pedir implementacao a Claude Code ou outro agente devidamente autorizado. Historicos FAIL/BLOCKED permanecem intocados.
