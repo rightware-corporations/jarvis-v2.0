@@ -2768,3 +2768,56 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 - sem tratamento de Unicode/IDN, hosts IP, `%`-encoding, `.`/`..`, barra invertida e `:443` explícito.
 
 **Âmbito:** só A1 (`rightware/agent/task_contract.py` e um parâmetro opcional em `AgentSession.__init__`, default OFF). Sem alterações a `run()`, `_compose`, `_GuardedEngine`, `ToolOutcome`, política, quotas, pin, workflows ou `main`; sem A2–A4; sem Qwen.
+
+## CHECKPOINT — 13/11/2026: WORK-07 Milestone A1 — implementação opt-in de contratos confiáveis (Claude Code)
+
+**Baseline:** `daca7f6a322bbb5e89b63e9b412de9b925bba0f7` (início A1 `0fb45d9`). Branch: `develop` (sem branches novas).
+
+**Ficheiros:**
+- novo `rightware/agent/task_contract.py`;
+- `rightware/agent/session.py`: +8 linhas, só em `__init__` (um import e o parâmetro `task_preset`);
+- novo `tests/test_work07_milestone_a1_product.py` (16 testes).
+
+Não alterados: `run()`, `_compose`, `_GuardedEngine`, `_PolicyTool`, `ToolOutcome`, `AgentReply`, `reply_json`, `policy.py`, `browser.py`, `web.py`, `trace.py`, labs, vendor/pin, workflows, `main`, evidências e pedidos.
+
+**Decisões técnicas:**
+1. **Fronteira de confiança.** A autoridade vem só do catálogo `TRUSTED_PRESETS`: um `MappingProxyType` construído e validado na importação do módulo. A entrada pública aceita **apenas um identificador `str`**. São rejeitados:
+   - dicts, JSON, objectos `TaskContract` criados pelo chamador, subclasses e `trusted=True`;
+   - ids desconhecidos, em maiúsculas ou com espaços.
+
+   Em processo, código Python pode sempre fazer monkeypatch do módulo; a fronteira protege contra dados (modelo, páginas, JSON, argumentos), não contra código hostil já em execução.
+2. **Sem concessão de permissões.** A selecção exige `browse` já autorizado e todos os hosts do preset já presentes nos `sites` da sessão (comparação exacta normalizada, sem wildcards). `AgentPolicy`, ferramentas e quotas inalterados (testado).
+3. **Contrato imutável:** dataclasses `frozen`, tuplos, `schema_version="A1"`, `origin="code_catalog"`, marca `synthetic`, `max_continuations` ∈ {0, 1} **reservado e inactivo**.
+4. **Validação fail-closed, só `TaskContractError`:**
+   - ids de preset e objectivo canónicos e únicos;
+   - 1–8 objectivos e 1–4 hosts;
+   - acções só `read_page`/`open_original`; rótulos limitados e sem controlo;
+   - objectivos repetidos ou condicionais não suportados;
+   - URLs só `https`, ASCII (IDN só em punycode listado), sem `%`, `?`, `#`, `@`, `\`, espaços ou controlo, sem porta (incluindo `:443`), autoridade = host, sem `//`, `.` ou `..`, host do contrato, ≤ 2048;
+   - hosts ASCII minúsculos, não IP, labels válidos;
+   - porta malformada (`:99999`, `:abc`, `[::1`) é rejeitada sem excepção não tratada.
+5. **Identidade:** `identity_rule="NONE"`. A1 não prova que um URL seja o original; um futuro gate terá de dar identidade desconhecida.
+6. **Estado:** `task_contract_status = "NOT_EVALUATED"`. Nenhum `COMPLETE_VERIFIED` e nenhuma alteração ao `completion`.
+7. **O preset AX-101/AX-202 é `synthetic=True`** (fixture `archive.fixture.example`), não prova nada sobre RFCs nem sites reais.
+
+**Resultados (executados nesta sessão):**
+- **A/B real sem contrato:** worktree temporária no baseline `daca7f6` contra o código actual, 5 cenários R3-C1 (`trace=False`). `reply_json` (SHA-256), chamadas ao modelo, pedidos de rede e `completion` **byte-idênticos** em 5/5.
+- **Testes A1 de produto: 16/16 PASS.** Cobrem: catálogo read-only e sintético, selecção aprovada, rejeição de 11 formas não-texto ou desconhecidas, nenhuma capacidade ou host concedido, versão/origem/limites, dicts e subclasses, ids/acções/rótulos/identidade, 33 URLs maliciosos, 14 hosts inválidos, porta malformada sem excepção, rejeição na construção antes de qualquer chamada ao modelo, e com contrato vs sem contrato em 4 cenários: `reply_json` idêntico, mesmas chamadas ao modelo, mesmo prompt de sistema, mesmos pedidos, mesma política e quotas, estado `NOT_EVALUATED`. Ferramentas, quotas e campos de `AgentReply`/`ToolOutcome`/`reply_json` inalterados.
+- **Mutação:** 9/9 detectados (sem verificação de `browse`, hosts expansíveis, dict aceite, query aceite, porta não verificada, `..` aceite, subclasse aceite, regra de identidade aceite, sessão ignora preset).
+- **Suite completa:** venv **351 OK, 0 saltados**, sem ocorrências de «skipped»; Python simples 351 OK, 144 saltados. Por suite:
+  - R3-B 17, R3-C1 21, E1/E4 15, A1 lab 15, A1 produto 16, E3/L1–L4 27, live adapter 9: todos OK;
+  - `actionlint` OK.
+- **Comandos:**
+  - `vendor/openjarvis/.venv/bin/python -m unittest discover -s tests -v`;
+  - `python3 -m unittest discover -s tests`;
+  - `actionlint`;
+  - script A/B em scratchpad com `git worktree` (removida a seguir).
+
+**Riscos e limites:**
+- a fronteira de confiança é ao nível de dados, não contra código hostil no mesmo processo;
+- só existe um preset, e é sintético;
+- não há preset para sites reais, por decisão;
+- não há confirmação de operador (`operator_confirmed` adiado);
+- o contrato ainda não é usado por nenhuma lógica.
+
+**Estado:** A1 de produto **IMPLEMENTADO** (opt-in, default OFF; CI a confirmar no checkpoint seguinte). **A2, A3 e A4 NÃO autorizados e NÃO iniciados.**

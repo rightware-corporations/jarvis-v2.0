@@ -25,6 +25,7 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
 from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
+from rightware.agent.task_contract import STATUS_NOT_EVALUATED, TaskContract, select_preset
 from rightware.agent.trace import TaskTrace
 from rightware.agent.web import HttpxFetcher, WebRefused, frame, redact_url
 from rightware.windows_actions import ACTIONS, WindowsActions, describe
@@ -205,7 +206,7 @@ class AgentSession:
                  budgets: Budgets | None = None, max_turns: int = 6, temperature: float = 0.2,
                  max_tokens: int = 768, sites: tuple[str, ...] = (), browser_fetcher=None,
                  clock: Callable[[], float] | None = None, start_url: str | None = None,
-                 trace: bool = False):
+                 trace: bool = False, task_preset: str | None = None):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
@@ -215,6 +216,12 @@ class AgentSession:
                                       {h.lower() for h in self.sites} or urlsplit(start_url).scheme != "https"):
             raise ValueError("a página inicial tem de ser https num site autorizado")
         self.start_url = start_url
+        # WORK-07 A1 (opt-in, default OFF): a trusted catalog preset, selected by id and validated
+        # BEFORE any run. Stored only: it changes no tool, policy, run or completion behaviour, and
+        # its status stays NOT_EVALUATED (no completion gate exists yet).
+        self.task_contract: TaskContract | None = (
+            select_preset(task_preset, allow=self.allow, sites=self.sites) if task_preset is not None else None)
+        self.task_contract_status: str | None = STATUS_NOT_EVALUATED if self.task_contract is not None else None
         self.browser_fetcher = browser_fetcher or self.fetcher
         self.clock = clock
         self.browser: PublicBrowser | None = None
