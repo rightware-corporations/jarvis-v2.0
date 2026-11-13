@@ -2702,3 +2702,24 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **LIMITE E GATE:** issue #8 **não** implica que Claude Code começou ou que produção foi alterada. Nenhum Qwen/Ollama/GPU, alteracao vendor, pin, main, quota, policy, Shared service, persistencia/crash recovery ou reclassificacao historica aprovada. Nao misturar prova G2_OBSERVATIONAL com comprovativo criptografico/duravel nem assumir autenticidade documental pelo URL/HTTP 200. Os 18 cenarios sao critérios, não testes ja executados.
 
 **PROXIMA OPERACAO:** validar a especificacao com auditoria A0 e plano de diff, só depois autorizar/implementar A1–A4 em commits discretos, com CI e HANDOFF-FIRST. Confirmar HEAD remoto e CI em cada checkpoint; preservar historicos e outros agentes. Estado desta entrada: SPECIFICATION PUBLISHED / IMPLEMENTATION NOT STARTED.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-021 — A0 auditoria de implementacao (ChatGPT, read-only)
+
+**Pedido e autorizacao:** operador «vamos» na sequencia de Milestone A e recomendacao de comecar pela **A0**; nenhuma autorizacao de alterar produto presumida. ChatGPT executou **apenas auditoria estatica read-only e documentacao**. Nao foi executado Claude Code, Qwen ou testes novos neste checkpoint.
+
+**BASELINE ANTES DA A0:** `develop` `e71dba3155eadc99c9bdba1a875a1c35bcc323b2`, CI 3/3 SUCCESS (runs `43469800180`, `43469788657`, `43469788763`). HANDOFF tinha R3-C2-020, com contrato A1–A4 e issue #8.
+
+**ARTEFACTOS A0:** `docs/engineering/WORK07_MILESTONE_A_A0_IMPLEMENTATION_AUDIT.md` no commit `e9baaa2a455a176d0a50de46108e32b6184a84d5`. A mesma auditoria foi ligada a [issue #8, comentario A0](https://github.com/rightware-corporations/jarvis-v2.0/issues/8#issuecomment-6860028191).
+
+**FINDINGS REAIS:**
+- `rightware/agent/session.py`: `ToolOutcome`/AgentReply sem contrato/receipt; `run()` instancia policy/trace/browser, `_PolicyTool.execute()` e fronteira de emissao; `_compose()` pode marcar `ANSWERED_WITH_SOURCES` com tarefa incompleta. Sem contrato, comportamento existente deve continuar identico.
+- `rightware/agent/policy.py`: aprovacao/execucao vinculadas ao hash canonico de ferramenta+argumentos, sem um ID unico transaccional de aprovacao. Nao enfraquecer nem contornar `before_tool_call/authorize_execution/note_outcome`.
+- `rightware/agent/trace.py`: call_id, decisao e resultado em memoria opt-in, com hash truncado de resultado. Nao assumir proveniencia criptografica nem operacional se trace desactivado.
+- `rightware/agent/browser.py` e `web.py`: browser regista URL final/status/SHA-256 do corpo raw; trace pode guardar digest da vista. URLs, titulos e HTTP 200 nao provam documento original. Truncation impede prova de documento completo; publisher/redirect provenance incompleta.
+- E1/E4 atestaram interceptacao FAKE, mas existe continuacao desperdicada no ultimo turno; nao repetir mutante sem limite que causou OOM.
+
+**PLANO PROPOSTO E DELIMITADO:** A1 `task_contract.py` + entrada opcional na session; A2 `receipts.py` + correlacao ao boundary; A3 `completion.py` + status fiel e recuperacao limitada; A4 suite end-to-end com 18 cenarios, regressao, CI. Este plano e **proposta**, nao codigo de producao existente. Fontes confiaveis iniciais devem ser presets aprovados; operator_confirmed so com confirmacao realmente autenticada. AX-101/AX-202 sao fixtures de teste, nao garantia sobre documentos reais.
+
+**ESTADO:** A0 CONCLUIDA (auditoria e plano exacto). A1–A4 NAO INICIADAS/NEM APROVADAS para patch; Qwen, vendor, main, pin, policy quotas, Shared service, persistencia L5–L12 fora de ambito. Sem alteracao de comportamento do JARVIS, sem novos testes.
+
+**PROXIMO PASSO:** decisao delimitada para A1, depois Claude Code poder implementar em branch/checkpoint separado, com validacao fail-closed e compatibilidade do modo sem contrato. Antes de escrever, reconfirmar HEAD/CI e reconciliar trabalho concorrente. Preservar todos os historicos FAIL/BLOCKED e HANDOFF-FIRST.
