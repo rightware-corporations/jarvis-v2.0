@@ -2645,3 +2645,24 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **Estado externo:** [issue #7](https://github.com/rightware-corporations/jarvis-v2.0/issues/7) continua a ser a missão de engenharia; o HEAD de base ainda não continha commits de resultados E3/L1–L4. Esta operação só acrescentou documentação, sem Qwen, alterações `rightware/`/`vendor/`, testes, pin, quotas ou produção.
 
 **Próxima operação exacta:** Claude Code revalidar HEAD e ler a matriz R3-C2-014, a auditoria R3-C2-016 e o Gold Oracle R3-C2-017; implementar apenas fixtures/testes E3 e L1–L4, fornecer resultados de 27 casos reais de teste (sem inventar PASS), regressões, CI e checkpoint de resultados. Não avançar para patch de produção nem L5–L12 sem decisão do operador.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-018 — 27 testes sinteticos executados (ChatGPT, test-only)
+
+**AUTORIZACAO:** R3-C2-014 para experiencias FAKE/laboratorio E3 + L1–L4. Esta operacao de testes foi executada directamente por ChatGPT sem invocar Claude Code, e esta autoria deve ser preservada. Nenhuma alteracao ao produto, pin, policy, quotas, CI workflow, main ou Qwen.
+
+**BASELINE:** `05ad0243bf8f0c08be8218aa669ad3ddadbb9f85`, 3/3 CI success.
+
+**ARTEFACTOS:**
+- `labs/work07_r3c2/contracts_e3_l1l4.py` (commit `46b2a3e752dfa7f0b405034f2aa196bdc75cf697`): contratos e verificador **experimentais**, com IDs e recibos sinteticos. Nao integrado ao runtime.
+- `tests/test_work07_r3c2_e3_l1l4.py` (commit `092b02edb75568d64ea87814b8f798481acb3e59`): 27 testes (E3=12, L1=3, L2=5, L3=3, L4=4).
+- `docs/research/WORK07_R3C2_018_E3_L1L4_FAKE_EXECUTION_REPORT.md` (commit `554e34c33f330c9d859f6d61d85a0d6126417cba`): relatorio completo com evidencias, classificacoes e lacunas.
+
+**RESULTADOS REAIS DO CI** no SHA `092b02e`: `RIGHTWARE WORK-05 product agent tests` run [43466492940](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43466492940) `success`. Log inspecionado: **27/27 novos testes OK**; suite plain Python **311 OK com 137 skips** (ambiente sem dependencias pinned); suite **venv pinned 311 OK, zero skips**. Workflow foundation run `43466493010` `success`; o run foundation adicional `43466504125` permanecia em progresso na ultima consulta. Estes resultados sao especificos desse commit e nao provam futuras alteracoes.
+
+**LIMITE PRINCIPAL / SEM FALSO SUCESSO:** estes 27 PASS validam **contratos explicitamente fornecidos por fixtures** e **recibos sinteticos**, nao extracção automatica de objectivos em linguagem natural, nem identidade de documentos comprovada em conteudo real, nem correlação autenticada de `task_id/run_id/call_id/outcome_id` emitida por `AgentSession`. `_compose()` continua a poder produzir `ANSWERED_WITH_SOURCES` com tarefa incompleta.
+
+**LACUNAS ADICIONAIS:** `forbidden`, `after` e `condition` sao preservados pelo schema de laboratorio mas nao avaliados sobre historico real; `trusted=True` e `Receipt(executed=True)` sao inputs simulados e nao verificacao de autoridade. Hashes de fixtures nao sao digests criptograficos. Por isso E3 extraction e L1–L4 provenance real continuam **NOT DEMONSTRATED**; patch de producao nao autorizado.
+
+**GATE E SEQUENCIA:** auditoria independente da origem de objectivos e de correlacao de `ToolOutcome`/`TaskTrace` reais antes de qualquer patch; considerar primeiro tarefas com checklists/presets confiaveis e fallback `UNKNOWN`. Claude Code deve rever estes artefactos e resultados no seu proximo ciclo, mas nao foi iniciado automaticamente. L5–L12 e Qwen continuam fora do ambito. Preservar FAIL anteriores e HANDOFF-FIRST.
+
+**Estado deste checkpoint:** resultado FAKE/test-only documentado; CI do commit de documentacao separado deve ser verificado depois de concluir.
