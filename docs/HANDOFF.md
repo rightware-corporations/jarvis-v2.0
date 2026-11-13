@@ -2723,3 +2723,19 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **ESTADO:** A0 CONCLUIDA (auditoria e plano exacto). A1–A4 NAO INICIADAS/NEM APROVADAS para patch; Qwen, vendor, main, pin, policy quotas, Shared service, persistencia L5–L12 fora de ambito. Sem alteracao de comportamento do JARVIS, sem novos testes.
 
 **PROXIMO PASSO:** decisao delimitada para A1, depois Claude Code poder implementar em branch/checkpoint separado, com validacao fail-closed e compatibilidade do modo sem contrato. Antes de escrever, reconfirmar HEAD/CI e reconciliar trabalho concorrente. Preservar todos os historicos FAIL/BLOCKED e HANDOFF-FIRST.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-022 — A1 validacao de presets confiaveis (ChatGPT, laboratorio)
+
+**PONTO DE PARTIDA:** `develop` `96f66ca7e12ba93c37dd932e6f73ef79d0e95575`, CI 3/3 success (runs 43472257981, 43472247696, 43472248015). O utilizador autorizou continuar apos A0. O trabalho permaneceu estritamente em laboratorio/testes; **Claude Code nao foi iniciado**, `rightware/` e `AgentSession` nao sofreram alteracoes.
+
+**ARTEFACTOS EXECUTAVEIS:**
+1. `labs/work07_r3c2/a1_contract_validation.py`, commit `efc72aa9bf48c90977dc1c81d1c608110e3b360b`: `Preset`, `Objective`, `PresetRegistry`, validacao fail-closed de contrato/preset e dois documentos AX sinteticos; nao e registro de presets aprovado para websites reais. Sem novo grant de browse nem ferramentas.
+2. `tests/test_work07_milestone_a1_contract.py`, commit `59c734829aa1032bb9daf017fa29c2e46764ee0f`: 15 testes novos de registry, provenance, IDs, required objectives, hosts/allowlist, HTTPS URL, side effects rejeitados, max_continuations, sem permissao browse, raw dict/model rejected.
+
+**PROVAS REAIS:** WORK-05 product CI run [43473870068](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43473870068), commit `59c7348`, `success`. Log inspectado: **15/15 novos testes OK**; venv pinned **335 tests, OK, 0 skipped**; Python simples 335 OK, 146 skipped (testes anteriores dependentes do venv). Outros workflows foundation do mesmo commit foram observados em progresso na ultima consulta e nao devem ser declarados success antes de verificar.
+
+**LIMITES E RISCOS:** este `PresetRegistry` e uma referencia experimental, nao autentica a origem por si so; codigo nao confiavel que o construa nao se torna confiavel. Os URLs AX-101 e AX-202 sao apenas fixtures. Ainda nao ha `task_contract` em `AgentSession`, nao ha receipt G2 emitido pela fronteira, nem completion gate de producao. Nenhuma geracao Qwen. A1 production **NAO EXECUTADA**, e nem autorizada por este checkpoint. Nao confundir validacao de dados com trust bootstrap ou prova de documentos originais.
+
+**ESTADO:** A0 completa; A1 **VALIDACAO LAB PASS** 15/15, **ENTRYPOINT PRODUTO PENDENTE**; A2–A4 pendentes. Issue #8 actualizada com referencia. Continua a direccao de presets confiaveis/opt-in, compatibilidade no-contract, e codigo Claude responsavel pela implementacao do runtime.
+
+**PROXIMA ETAPA:** Claude Code deve consumir A0 e este teste de referencia, desenhar e implementar, apos escopo explicitamente aprovado, um opt-in minimo no `AgentSession` com validação de preset do lado de codigo confiavel. Depois provar regressao no-contract byte-compatible e auditoria de seguranca antes de A2. HANDOFF-FIRST, preservar HEAD/CI e nao alterar vendor/pin/policy/quotas/main ou historicos Qwen.
