@@ -2687,3 +2687,18 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **ESTADO:** duas questoes foram **delimitadas por uma proposta arquitectural e demonstracao laboratorial de correlacao**, mas NAO encerradas em producao. O primeiro incremento de producao necessita de decisao expressa: entrypoint opcional de task-contract, IDs/receipts estaveis e completion gate em modo opt-in, com gates de seguranca, para tarefas de browser read-only predefinidas. A autonomia geral e continuidade apos crash ficam fora do ambito. Sem Qwen ate deterministic product pass.
 
 **PROXIMA ACAO:** operador aprovar ou rever o escopo de Milestone A de producao; preparar contrato de engenharia com criterios e testes negativos, preservar HANDOFF-FIRST, e so depois pedir implementacao a Claude Code ou outro agente devidamente autorizado. Historicos FAIL/BLOCKED permanecem intocados.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-020 — Milestone A contrato de engenharia (ChatGPT)
+
+**Origem:** operador pediu fornecer a proposta Milestone A e continuar o trabalho. **FACTO:** o ChatGPT elaborou e publicou um **contrato documental** de engenharia, não uma implementação de produto. Não se assume, por essa frase, autorização para activar comportamento de producao. HEAD anterior verificado `906e92c9dfebbbf9e5ea8c7ed51854ef3aefc18b` com 3 workflows SUCCESS: 43468240063, 43468227303 e 43468227522.
+
+**Artefactos e refs:**
+- `docs/engineering/WORK07_MILESTONE_A_COMPLETION_GATE_CONTRACT.md`, commit `f289e5cf970ecd10ac663212a8c3cb830ae57005`. Define schema candidato `TaskContract/BrowserObjective`, contrato candidato `ExecutionReceipt`, proposta de `COMPLETE_VERIFIED/INCOMPLETE/UNKNOWN/HALTED/ERROR`, separação da correção factual, budget, compatibilidade sem contrato, fases A0–A4, 18 cenários de aceitação e gates de segurança.
+- [Issue #8](https://github.com/rightware-corporations/jarvis-v2.0/issues/8) — missão A0–A4 organizada, com dependências e verificação de autorização antes de modificar runtime.
+- Fontes: HANDOFF R3-C2-012–019, [issue #7](https://github.com/rightware-corporations/jarvis-v2.0/issues/7), relatórios experimentais e CI previamente verificados.
+
+**DIRECÇÃO RECOMENDADA / AINDA NÃO IMPLEMENTADA:** A1 usar presets/listas confiáveis de objectivos, opt-in; o modelo nao define autoridade nem valida sozinho. A2 gerar receipts fiáveis no ponto real de execucao em vez de juntar hashes truncados retrospectivamente. A3 avaliar completude operacional e emitir INCOMPLETE/UNKNOWN sem falso COMPLETE; preservar comportamento sem contrato. A4 executar fixtures FAKE com AgentSession real. A0 requer revisão dos caminhos/contratos exactos antes do primeiro patch.
+
+**LIMITE E GATE:** issue #8 **não** implica que Claude Code começou ou que produção foi alterada. Nenhum Qwen/Ollama/GPU, alteracao vendor, pin, main, quota, policy, Shared service, persistencia/crash recovery ou reclassificacao historica aprovada. Nao misturar prova G2_OBSERVATIONAL com comprovativo criptografico/duravel nem assumir autenticidade documental pelo URL/HTTP 200. Os 18 cenarios sao critérios, não testes ja executados.
+
+**PROXIMA OPERACAO:** validar a especificacao com auditoria A0 e plano de diff, só depois autorizar/implementar A1–A4 em commits discretos, com CI e HANDOFF-FIRST. Confirmar HEAD remoto e CI em cada checkpoint; preservar historicos e outros agentes. Estado desta entrada: SPECIFICATION PUBLISHED / IMPLEMENTATION NOT STARTED.
