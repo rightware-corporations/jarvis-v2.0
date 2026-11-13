@@ -2631,3 +2631,17 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **DECISÃO / AUTORIZAÇÃO:** sem alteração: operador autorizou E3 + L1–L4 exclusivamente FAKE e testes/lab. Claude responsável pela implementação de testes e publicação dos resultados; issue não executa o Claude automaticamente. Patch de produto, Qwen, persistência, integration Shared, main/pin/policy/quotas não autorizados.
 
 **PRÓXIMA OPERAÇÃO EXACTA:** Claude revalidar HEAD/HANDOFF/CI, consumir contrato E3/L1–L4 e nota issue #7, testar 12+15 casos e distinguir resultados de fixtures de evidência real do runtime; registar testes, CI e limitações. Sem execução confirmada até novo checkpoint.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-017 — gold oracle E3 e niveis de evidencia (ChatGPT)
+
+**Estado:** SPECIFICATION/RESEARCH, **nenhum teste E3/L1–L4 executado nesta entrega**. Autorização de engenharia mantém-se limitada a laboratório com modelo FAKE. HEAD de base verificado `2e39d2aad02402e59b2456db3725a155e44921e1`, CI 3/3 success (runs 43464152504, 43464142040 e 43464143202).
+
+**Novo artefacto:** `docs/research/WORK07_R3C2_017_E3_GOLD_ORACLE.md` criado no commit `f14b190121f0c92c8b2abf3b290139b175955294`. Define explicitamente **gold labels de cada um dos 12 casos E3**, diferenciando objectivos obrigatórios (M), opcionais/condicionais (O), acções proibidas (F), dependências (D) e ambiguidades (U). Não declara funcionamento de extractor nem fornece código de produto.
+
+**Decisão metodológica recomendada (não aprovação de produção):** aferir recall de requisitos obrigatórios, violações de negação, promoção indevida de opcionais, perda de ordem/condições, cobertura de ambiguidades e taxa de falso `COMPLETE_VERIFIED` em métricas separadas. Casos de lista de objectivos vazia devem ser `UNKNOWN/NEEDS_CLARIFICATION`, não PASS. T3 (FAKE/modelo) não pode remover/enfraquecer T1.
+
+**Escala de evidência definida:** G0 afirmação/memória (sem prova); G1 evento/outcome real de ferramenta, sem garantia automática de identidade do documento; G2 recibo correlacionado inequivocamente por tarefa/run/call — a cadeia completa ainda não existe universalmente no produto; G3 aceitação por regra específica de objectivo, não equivalente a veracidade factual. IDs inventados nas fixtures apenas testam lógica, não emissão real no runtime.
+
+**Estado externo:** [issue #7](https://github.com/rightware-corporations/jarvis-v2.0/issues/7) continua a ser a missão de engenharia; o HEAD de base ainda não continha commits de resultados E3/L1–L4. Esta operação só acrescentou documentação, sem Qwen, alterações `rightware/`/`vendor/`, testes, pin, quotas ou produção.
+
+**Próxima operação exacta:** Claude Code revalidar HEAD e ler a matriz R3-C2-014, a auditoria R3-C2-016 e o Gold Oracle R3-C2-017; implementar apenas fixtures/testes E3 e L1–L4, fornecer resultados de 27 casos reais de teste (sem inventar PASS), regressões, CI e checkpoint de resultados. Não avançar para patch de produção nem L5–L12 sem decisão do operador.
