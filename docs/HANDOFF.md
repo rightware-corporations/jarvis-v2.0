@@ -2932,3 +2932,13 @@ Não alterados: `_compose`, `AgentReply`, `reply_json`, estados de conclusão, `
 - A3 também precisa de contar os turnos restantes antes de uma continuação (E1/E4) e do orçamento próprio.
 
 **Estado:** A2 **IMPLEMENTADO** (opt-in; CI a confirmar). A3 e A4 **NÃO iniciados**.
+
+## CHECKPOINT — 13/11/2026: WORK-07 Milestone A2 — CONCLUÍDO (CI confirmado) (Claude Code)
+
+**HEAD do código A2:** `e1000863eb33fd5a7a62eead0afcd450061fba55`.
+- **CI:** WORK-05 product `43482113906` success; log inspeccionado: **Ran 372 tests, OK** no venv fixado, passo «no test may skip» success, Python simples success. Foundation `43482113971` e `43482125289` success.
+- **Commits A2:** `b803fda` (início e investigação do vendor) e `e1000863` (implementação, testes e checkpoint).
+
+**Estado:** A1 e A2 concluídos (opt-in, default OFF, sem alteração de comportamento). **A3 (gate de conclusão) e A4 (aceitação end-to-end) NÃO iniciados**; precisam de nova decisão. Sem Qwen.
+
+**Próxima acção recomendada:** decisão do operador sobre o A3, com base na «Análise para A3» do checkpoint anterior.
