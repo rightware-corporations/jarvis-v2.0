@@ -2613,3 +2613,21 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **Próximo movimento:** Claude Code, quando retomar a sua sessão, consultar a issue #7 e o contrato experimental, revalidar HEAD/HANDOFF/CI e executar somente E3/L1–L4 com testes FAKE, incluindo casos negativos. Registar commits, resultados reais, limitações e CI no HANDOFF. O ChatGPT verifica relatórios e não inventa PASS.
 
 **Proveniência:** checkpoint documental directo do ChatGPT conforme instrução anterior do operador; nenhum teste executado neste turno.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-016 — auditoria de correlacao de evidencias (ChatGPT, read-only)
+
+**HEAD inspecionado:** `ac9ca46382b168de43e130674562318746ca2b26`; CI do HEAD anterior 3/3 SUCCESS (runs 43463510648, 43463499903, 43463500184). Issue #7 aberta, inicialmente sem comentários. O trabalho nesta entrada foi uma auditoria **estática read-only**, sem testes, inferência ou código modificado.
+
+**Evidência primaria no codigo:**
+- `rightware/agent/session.py`: `ToolOutcome` inclui tool/status/content/evidence, **não** IDs task/run/call/outcome; `_compose()` ainda classifica por qualquer source OK.
+- `rightware/agent/browser.py`: os eventos de carregamento registam resultado/URL/status/hash, mas não fornecem por si sós uma cadeia correlacionada com identificadores de task/run/call.
+- `rightware/agent/trace.py`: `TaskTrace` opt-in em memória guarda propostas/decisões/resultados por call_id (quando disponível); certos hashes são truncados e `on_result` usa o estado `_current`. Não é recibo transaccional durável.
+- `labs/work07_r3c2/interception.py`: objectivos E1/E4 eram dados por fixture e o verificador usa URL exacto.
+
+**NOVA LACUNA CONCRETA L1–L4:** o `EvidenceLink(task_id, run_id, tool_call_id, outcome_id,...)` definido no contrato R3-C2-014 é um **schema experimental proposto**. O código actual não emite todos esses IDs nos receipts. Testes com IDs injectados em fixtures demonstram apenas regras lógicas, não correlacao de execução real. Não inventar identificadores nem tratar matching temporal como prova inequívoca.
+
+**ACÇÃO:** publicada nota de revisão técnica na [issue #7](https://github.com/rightware-corporations/jarvis-v2.0/issues/7#issuecomment-6858928867) especificando três níveis de evidência: (1) campos observados reais, (2) correlação ambígua não promovida a PASS, (3) IDs/versões hipotéticos só em fixtures; e quarto conjunto reservado a patch futuro.
+
+**DECISÃO / AUTORIZAÇÃO:** sem alteração: operador autorizou E3 + L1–L4 exclusivamente FAKE e testes/lab. Claude responsável pela implementação de testes e publicação dos resultados; issue não executa o Claude automaticamente. Patch de produto, Qwen, persistência, integration Shared, main/pin/policy/quotas não autorizados.
+
+**PRÓXIMA OPERAÇÃO EXACTA:** Claude revalidar HEAD/HANDOFF/CI, consumir contrato E3/L1–L4 e nota issue #7, testar 12+15 casos e distinguir resultados de fixtures de evidência real do runtime; registar testes, CI e limitações. Sem execução confirmada até novo checkpoint.
