@@ -2848,3 +2848,15 @@ Não alterados: `run()`, `_compose`, `_GuardedEngine`, `_PolicyTool`, `ToolOutco
 - **Estimativa:** novo `receipts.py` e cerca de 20–30 linhas em `session.py` (decisão, execução, fecho), sem alterar `_compose`, política ou vendor. Testes: duplicados, NOT_EXECUTED, recusas, trace OFF, ordem.
 
 **Próxima acção recomendada:** decisão do operador sobre a autorização de A2 com o âmbito acima. Não iniciar automaticamente.
+
+## CHECKPOINT — 13/11/2026: WORK-07 R3-C2-024 — autorizacao delimitada A2 execution receipts (ChatGPT)
+
+**DECISAO:** operador determinou continuar o trabalho de engenharia independentemente da demonstracao Kaggle. A2 — recibos de execucao do JARVIS — **AUTORIZADA COMO MISSAO ISOLADA**; A3/A4 NAO autorizadas. Esta entrada e o comentario na issue documentam a ordem de execucao para Claude Code; nenhuma sessao Claude foi automaticamente iniciada nem A2 implementada por este checkpoint.
+
+**HEAD de partida verificado:** `develop` `c8901f692b7ccf8620a495ac6e3ae55c80940f82` (A1 concluida). CI 3/3 SUCCESS para mesmo SHA: WORK-05 `43476169814`, foundation `43476169805` e `43476181471`. HANDOFF A1 final e auditorias consultados. Repo real pode mudar antes da execucao: verificar HEAD, worktree, PR #1 draft e CI novamente.
+
+**ORDEM A2:** [issue #8, comentario de autorizacao A2](https://github.com/rightware-corporations/jarvis-v2.0/issues/8#issuecomment-6861209764). Engenharia: rever a sequencia real do orchestrator pin, provar serialidade `parallel_tools=False`, vincular `tc.id` a aprovacao/execucao sem heuristicas de hash truncado, emitir recibos imutaveis com `run_id` runtime, sequence, autorizacao, execucao, status, outcome, scope de hash e metadados seguros; tratar DENIED, NOT_EXECUTED, falhas, duplicados, trace OFF e audit failure, zero falsa correlacao. Preservar security policy, quotas, `_compose()`, `reply_json` default-off, pin e vendor. Executar testes FAKE controlados e regressao com comparacao A/B antes/depois, CI e evidencia exacta. Nao executar Qwen.
+
+**INVARIANTES:** A2 comprova apenas o estado operacional das ferramentas; nao prova que URL/HTTP 200 e um documento original, nem factual correctness. `live_receipt_adapter` e somente observacional, nao fonte autoritativa. Se a correlacao segura exigir alterar vendor/policy ou usar paralelismo, parar em BLOCKED e pedir decisao.
+
+**ESTADO:** A1 CONCLUIDA (351 pinned tests e CI anterior); A2 AUTORIZADA/PENDENTE DE IMPLEMENTACAO; A3 completion gate e A4 end-to-end NAO INICIADAS. A demonstracao Kaggle permanece independente, com snapshot A1 pinado e rotulagem correcta de testes FAKE/Qwen.
