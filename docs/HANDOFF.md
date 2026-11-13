@@ -2753,3 +2753,18 @@ Separar **execução observada**, **completude operacional** e **correcção fac
 **FORA DE AMBITO:** A2 receipts, A3 Completion Gate, A4 rollout, Qwen/Ollama/GPU, alteracoes vendor, pin, quotas/policy, main, workflows, integracao Shared/persistencia, IDs inventados, historico Qwen FAIL/BLOCKED. Sem contrato a resposta e o JSON devem ser compatíveis. Com contrato, nunca declarar `COMPLETE_VERIFIED` antes do gate.
 
 **ESTADO DESTE REGISTO:** MISSAO A1 AUTORIZADA E REGISTRADA; implementacao de produto e testes A1 integrados **ainda nao verificados/executados neste checkpoint**. Nenhum codigo alterado por ChatGPT nesta operacao. Claude deve abrir checkpoint de inicio e resultado no HANDOFF preservando commits concorrentes.
+
+## CHECKPOINT — 13/11/2026: WORK-07 Milestone A1 — início da integração opt-in de contratos confiáveis (Claude Code)
+
+**Verificação inicial:**
+- local estava em `fc7b04d` (sessão anterior); fast-forward limpo para o remoto `daca7f6a322bbb5e89b63e9b412de9b925bba0f7` (24 commits concorrentes preservados, sem conflitos);
+- árvore limpa; CI do HEAD: WORK-05 product `43474555593`, foundation `43474555647` e `43474564608`, todos success;
+- PR aberto: só o rascunho #1 `develop`→`main`, «DO NOT MERGE», que não é tocado;
+- lidos: R3-C2-019 a 023, issue #8 (3 comentários, incluindo a ordem A1), contrato do Milestone A, auditoria A0, `a1_contract_validation.py` e o seu teste.
+
+**Lacunas do protótipo de laboratório a corrigir no produto:**
+- o `PresetRegistry` pode ser construído por qualquer chamador, por isso não é fronteira de confiança;
+- `urlsplit().port` com porta inválida lança excepção sem tratamento;
+- sem tratamento de Unicode/IDN, hosts IP, `%`-encoding, `.`/`..`, barra invertida e `:443` explícito.
+
+**Âmbito:** só A1 (`rightware/agent/task_contract.py` e um parâmetro opcional em `AgentSession.__init__`, default OFF). Sem alterações a `run()`, `_compose`, `_GuardedEngine`, `ToolOutcome`, política, quotas, pin, workflows ou `main`; sem A2–A4; sem Qwen.
