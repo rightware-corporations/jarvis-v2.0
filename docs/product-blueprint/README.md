@@ -30,7 +30,7 @@ Make RIGHTWARE's intended JARVIS product, behaviours, architecture and engineeri
 | JRV-003 | Behaviour contracts & acceptance criteria | PROPOSED — authored, pending approval | [JRV-003_BEHAVIOUR_CONTRACTS.md](JRV-003_BEHAVIOUR_CONTRACTS.md) |
 | JRV-004 | System architecture & technical interfaces | PROPOSED — authored, pending approval | [JRV-004_SYSTEM_ARCHITECTURE.md](JRV-004_SYSTEM_ARCHITECTURE.md) |
 | JRV-005 | Verified current implementation audit | AUTHORED — read-only evidence audit, review pending | [JRV-005_IMPLEMENTATION_AUDIT.md](JRV-005_IMPLEMENTATION_AUDIT.md) |
-| JRV-006 | Gap analysis & dependency graph | PLANNED — not authored | To be created |
+| JRV-006 | Gap analysis & dependency graph | PROPOSED — authored, review pending | [JRV-006_GAP_ANALYSIS.md](JRV-006_GAP_ANALYSIS.md) |
 | JRV-007 | Engineering roadmap & release gates | PLANNED — not authored | To be created |
 
 The sequence can be revised with a documented decision; JRV-005 must inspect the **actual repository** at a recorded SHA before claiming implementation.
