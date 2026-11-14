@@ -3257,3 +3257,15 @@ Nada disto foi iniciado.
 **EVIDENCE:** WP-03 fixtures are MANUALLY AUTHORED, NOT TESTED. WP-04 INT-001–014 are PROPOSED acceptance tests, NOT RUN. No Qwen invocation, Windows action, package installation, tests execution, source-code modification, vendor upgrade, A4, main merge or release occurred in this increment. Earlier green CI is not evidence that these future tests pass.
 
 **NEXT DECISION:** Operator review of WP-03 corpus and WP-04 interface design, including IF-01–10; separate authorization for a very narrow implementation slice WP-04/D01–D02 (trusted request/result façade and no-tool text path only), or separate focused read-only upstream GUI/memory validation. Preserve A1–A3 default-OFF and issue #9; no unsafe or destructive refactoring without explicit approval.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-011 — WP04 D01 D02 Claude implementation mission (ChatGPT)
+
+**OPERATOR INSTRUCTION:** "vamos entao continuar a trabalhar", in context immediately after the offered next move WP-04/D01–D02. Prepared **a strictly bounded implementation mission for Claude**, not product code in this turn. This is the first planned step toward E0; D03–D08 and A4 remain outside scope.
+
+**PREFLIGHT:** `develop` `fbff501644621162fa0ec56059426f8d8506d00e` before this documentation increment. CI 3/3 SUCCESS on that SHA: `43607237831`, `43607232190`, `43607232182`. Open PR #1 `develop → main` DRAFT / DO NOT MERGE. Inspected current `runtime.py`, `session.py`, `voice.py`, `test_runtime.py`, A3 unit tests, WP03/PTX corpus and WP04 design. Revalidate before implementation.
+
+**CREATED:** [Bounded Claude mission](engineering/WP04_D01_D02_CLAUDE_IMPLEMENTATION_MISSION_2026-11-14.md), commit `e5609a33cce35bdf11d81f0f9567b1490d911194`; [Issue #10](https://github.com/rightware-corporations/jarvis-v2.0/issues/10), D01 trusted host request/result facade + D02 text-only no-tool SimpleAgent adapter; index updated commit `fa991628d1f3afd6e49f7c221a2c4e261f7fd2b8`.
+
+**RESTRICTIONS:** Implementation must be performed by Claude on a safe topic branch after fresh baseline check. No code has yet been changed for D01–D02 and no new tests have been run. The issue and prompt are NOT evidence that a working unified controller exists. No vendor pin/lockfile changes, no A1/A2/A3 or policy refactor, WindowsActions, voice, durable memory, new tooling, external APIs, live Qwen/Windows test, A4, main merge or release. Mandatory tests are specified in mission, including FAKE isolated, no tool effect and A1–A3 negative regressions, and exact-SHA pinned CI.
+
+**NEXT:** Claude implements D01–D02 only, produces topic-branch Draft PR and append-only HANDOFF checkpoint with exact tests and CI. ChatGPT then audits the delivered code/evidence and user-visible behavior before a separate D03 implementation decision.
