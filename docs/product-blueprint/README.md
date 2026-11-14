@@ -71,3 +71,13 @@ Seven initial matrices (JRV-001–007) are authored. A separate [JRV-008 formal 
 ### Status interpretation
 
 The **Blueprint as an architectural reference** is approved, but its contents are not blanket implementation permission; each release scope, integration architecture, technology choice and measurable gate must still be decided within the approved process. When a future report contradicts an earlier proposed assumption (e.g. upstream module availability), attach the explicit follow-up instead of hiding/replacing earlier evidence.
+
+
+## Subsequent approved specification work (2026-11-14)
+
+Following the operator's instruction to continue WP-03 and **WP-04 interface design only**, the following documents were authored as proposed specifications:
+
+- [WP-03 — Portuguese Intent/Context Evaluation Contract](WP-03_PORTUGUESE_CONTEXT_EVALUATION_CONTRACT.md): 36 manually labeled [synthetic Portuguese test cases](fixtures/WP03_PT_CONTEXT_CORPUS_v1.csv); **not executed against any model**, numerical thresholds pending.
+- [WP-04/D01 — Unified Control Plane Interface Design](WP-04_UNIFIED_CONTROL_PLANE_INTERFACE_DESIGN.md): six conceptual contracts, request/route/authorization/result/context/adapters, 14 proposed integration tests and a safe staged migration proposal.
+
+These docs are NOT authorization for source-code changes, an A4 milestone, real-Qwen/Windows tests, vendor upgrades, installing dependencies or enabling persistent memory. The operator's earlier official approval of the JRV architectural reference remains intact.
