@@ -3193,3 +3193,15 @@ Nada disto foi iniciado.
 **GUARDRAILS:** Distinguish current scoped CI evidence from user acceptance; do not describe FAKE tests as real Qwen/Windows proof. No feature implementation, A4, Qwen runs, main merge, new dependencies, memory data retention policy, external provider permissions or release authorized by this documentation. No fictional numeric completion scores, prices, estimates or deadlines.
 
 **NEXT:** JRV-007 — Engineering Roadmap & Release Gates, mapping E0/E1/E2 proposed slices to WP/GAP/UC/CT and measurable acceptance. Operator to approve/revise JRV-001–007 and specific release scope before initiating new implementation tasks.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-007 — seven-matrix Blueprint authored (ChatGPT)
+
+**REQUEST:** Continue with JRV-007 after JRV-001–006, publishing a complete, scoped Engineering Roadmap & Release Gates in the existing RIGHTWARE JARVIS repository and updating the registry and HANDOFF.
+
+**START BASELINE:** Remote `develop` HEAD `bd435a720b1f609d92ac52a59dfcdb19b4038bc5`. Product/foundation CI on same SHA: `43604355369`, `43604355377`, `43604362801`, all SUCCESS. Read JRV-006 gap matrix and current Blueprint registry; prior JRV-005 audited source SHA `f4a50e5075d0b94f635b1540885a0f2bd5258bc8`. No new product source changes or model/hardware tests performed by this documentation step.
+
+**DELIVERED:** [JRV-007 — Engineering Roadmap, Release Gates & Execution Governance](product-blueprint/JRV-007_ENGINEERING_ROADMAP.md), commit `2cbc1fbe4fb57f2f632ec655d9d5d2b8f421d84d`; [Blueprint register](product-blueprint/README.md) updated in commit `38ec56b6f698717af2a8d6dde4709b867c92fd1f`. Includes four provisional release envelopes (E0 internal text alpha, E1 Issa Windows pilot, E2 operational assistant, E3 strategic expansion), fourteen WP-01–14 packages linked to GAP/UC/CT, thirteen release/security/integration controls RG-00–12, seven-plus evidence tiers, twelve open DEC-01–12 decisions, milestone dependency graph, exact negative test principles, mission template, architecture approval protocol and separate A4 gate.
+
+**CRITICAL DISTINCTION:** The **seven Blueprint documents are authored** but remain **PROPOSED / pending operator approval**. Their compilation does NOT authorize code implementation, real-Qwen runs, Windows installation, A4 end-to-end mission, vendor updates, memory retention policy, paid APIs, product release, merge main or broad autonomy. An internal E0 alpha is not the Issa E1 product acceptance. The JRV-005 findings note that chat, voice and RIGHTWARE AgentSession are split; A1–A3 constructor opt-ins are not wired through the ordinary CLI. A3 tests are FAKE model; real Windows/voice/user acceptance remain unverified.
+
+**NEXT DECISION:** Review/approve or revise JRV-001–007 as a conceptual baseline and approve exact E0/E1 release scope, hardware and privacy/security constraints (DG-01/02, DEC-01–). Only then issue a **separate, bounded** WP-01/02 implementation/research authorization, with HANDOFF-FIRST and exact CI/test requirements. JRV-007's roadmap itself is NOT a blanket authorization.
