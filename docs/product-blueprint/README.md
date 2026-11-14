@@ -32,6 +32,7 @@ Make RIGHTWARE's intended JARVIS product, behaviours, architecture and engineeri
 | JRV-005 | Verified current implementation audit | AUTHORED — read-only evidence audit, review pending | [JRV-005_IMPLEMENTATION_AUDIT.md](JRV-005_IMPLEMENTATION_AUDIT.md) |
 | JRV-006 | Gap analysis & dependency graph | PROPOSED — authored, review pending | [JRV-006_GAP_ANALYSIS.md](JRV-006_GAP_ANALYSIS.md) |
 | JRV-007 | Engineering roadmap & release gates | PROPOSED — authored, awaiting approval | [JRV-007_ENGINEERING_ROADMAP.md](JRV-007_ENGINEERING_ROADMAP.md) |
+| JRV-008 | Formal review & decision register | REVIEWED — recommendations pending operator decision | [JRV-008_BLUEPRINT_REVIEW_AND_DECISION_REGISTER.md](JRV-008_BLUEPRINT_REVIEW_AND_DECISION_REGISTER.md) |
 
 The sequence can be revised with a documented decision; JRV-005 must inspect the **actual repository** at a recorded SHA before claiming implementation.
 
@@ -53,3 +54,7 @@ Read [HANDOFF](../HANDOFF.md), [ARCHITECTURE](../ARCHITECTURE.md) and the WORK-0
 **Product intent → capabilities → use cases → behaviour contracts → architecture → current-code audit → gaps/dependencies → implementation → integrated verification → release acceptance.**
 
 Each capability should be traceable through \`JRV-SYSTEM.CAPABILITY\` identifiers to use cases, tests, code and release gates.
+
+## Blueprint v1.0 formal review
+
+Seven initial matrices (JRV-001–007) are authored. A separate [JRV-008 formal review and decision register](JRV-008_BLUEPRINT_REVIEW_AND_DECISION_REGISTER.md) supplies proposed approval language, narrower E0/E1 scope and open decisions. **No official architecture approval, implementation authority, A4 or release follows automatically from JRV-008.**
