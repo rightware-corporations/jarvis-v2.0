@@ -3096,3 +3096,17 @@ Não alterados: `_compose`, `policy.py`, quotas, `receipts.py`, `browser.py`, `w
 - só em memória.
 
 **Estado:** issue #9 RESOLVIDA e fechada; A3 IMPLEMENTADO (opt-in; CI a confirmar). **A4 NÃO iniciado.**
+
+## CHECKPOINT — 14/11/2026: WORK-07 Milestone A3 — CONCLUÍDO (CI confirmado) (Claude Code)
+
+**HEAD do código A3:** `41ff2ecd4f60424d9da10bbd23b3b3d819b38b10`.
+- **CI:** WORK-05 product [43595848259](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43595848259) success; log com **Ran 408 tests, OK** e passo «no test may skip» success. Foundation 43595848238 e 43595851309 success.
+- **Commits desta missão:** `0ae05aa` (fase 0), `0215cd1` (correcção #9), `d518ee5` (gate #9), `41ff2ec` (A3).
+
+**Estado:** issue #9 fechada; A1, A2 e A3 concluídos, todos opt-in e default OFF. O problema original fica resolvido **para tarefas contratadas**: só páginas informativas → `INCOMPLETE` em vez de `ANSWERED_WITH_SOURCES`; originais abertos → `UNKNOWN_IDENTITY`, nunca `COMPLETE_VERIFIED` sem regra de identidade. Evidência apenas com modelo FAKE.
+
+**Próxima acção recomendada (decisão do operador):**
+1. Decidir se e como existirá uma regra de identidade confiável (por exemplo digest publicado pelo operador num preset), que é o único caminho para `COMPLETE_VERIFIED`.
+2. A4 (aceitação end-to-end) e, separadamente, uma futura execução Qwen autorizada para medir se o modelo real responde ao feedback de recuperação.
+
+Nada disto foi iniciado.
