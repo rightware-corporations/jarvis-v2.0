@@ -3219,3 +3219,23 @@ Nada disto foi iniciado.
 **CRITICAL GUARDRails:** A1–A3 existing code is opt-in and verified in scoped tests; product chat, voice, agent remain distinct; production CLI does not wire A1–A3 flags; real-Qwen/Windows user acceptance not demonstrated. A4, new code, vendor changes, cloud/paid APIs, Windows actions, data retention policy, release and main merge **NOT AUTHORIZED** by this checkpoint.
 
 **NEXT:** Operator review/explicit endorsement or amendments to JRV-008 proposed decision wording. On approval, publish a separate official decision record and only then bounded WP-01/WP-02 authorization (unless operator explicitly grants those directly). Preserve HANDOFF-FIRST, PR #1 and non-destructive Git workflow.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-009 — operator approval and WP-01/WP-02 read-only investigations (ChatGPT)
+
+**EXPLICIT OPERATOR DECISION:** The user replied "eu aprovo, vamos entao continuar" to the immediately previous proposal: approve RIGHTWARE JARVIS Blueprint v1.0 as architectural reference, E0 and E1 as first planning envelopes, and authorize **WP-01 and WP-02 for READ-ONLY research/specification only**. This is an **OFFICIAL DECISION** for architectural reference and limited read-only work; does NOT approve every technical candidate, production release, source implementation, A4, real Qwen/Windows tests or memory retention.
+
+**START BASELINE:** Remote `develop` `791f409a2de5268ab074044dc42b2b438c99e6a8`. CI on that SHA: `43605618223`, `43605618229`, `43605623392` SUCCESS. No source-code changes made in this WP work.
+
+**OFFICIAL RECORD:** [JRV-DEC-2026-11-14-001](product-blueprint/DECISION_2026-11-14_BLUEPRINT_V1_APPROVAL.md), commit `9a6c3fd253bdaa56f54d57da4ffee801724cdd42`.
+
+**WP-01 READ-ONLY REPORT:** [Release scope and target-device specification](product-blueprint/WP-01_RELEASE_SCOPE_AND_DEVICE_SPECIFICATION.md), commit `991f5dc642af9ee47a375120491e519593f2feb8`. Outlines E0 internal text alpha and E1 Issa Windows pilot exact candidate UC manifest, excluded capabilities, acceptance fixtures and missing hardware/privacy/wake/UX decisions. Detailed acceptance/scope remains under review: no invented Issa machine specifications or model metrics.
+
+**WP-02 READ-ONLY REPORT:** [Pinned OpenJarvis reuse and integration investigation](product-blueprint/WP-02_VENDOR_AND_INTEGRATION_INVESTIGATION.md), commit `75c7053782be34b5bfac6b85c3f377949c7e944d`. Confirmed Git submodule gitlink and RIGHTWARE runtime PIN both at `f21d902f4d3bd7f0f3f138f1a4613019a394b549`. Independently fetched `open-jarvis/OpenJarvis` pinned Git tree (2461 entries, no truncation), selected upstream source for `memory/store.py` (`LocalFactStore` JSONL provenance/Windows locks), `memory/service.py` (`MemoryService`, auto fact extraction), `cli/gui_cmd.py`, `scheduler/store.py` (SQLite schedule/log), `tools/file_read.py`, `tools/file_write.py`, `agents/orchestrator.py`, `agents/simple.py`, and upstream `pyproject.toml`. Top-level upstream Apache-2.0 signal confirmed; transitive/weights/frontend licences not certified.
+
+**MATERIAL CORRECTION TO JRV-005–007 INFERENCE:** Absence of integrated RIGHTWARE personal memory, GUI, scheduler and broad file tools is **not** absence in pinned OpenJarvis upstream. Existing upstream modules are candidate REUSE, requiring separate consent/authorization/security and target-device tests before selection. Upstream automatically extracted persistent facts are NOT equivalent to RIGHTWARE's proposed explicit opt-in user memory. Upstream scheduler storage is NOT a durable A2 task event ledger. Upstream generic file tools may support write/overwrite but are NOT granted by RIGHTWARE's protected AgentSession, and should not be enabled without review. GUI reuse vs building new UI is undecided.
+
+**EXECUTION BOUNDARIES:** No product source/test/runtime files modified; no A4, no model inference, no package install, no Windows actions, no vendor upgrades, no main merge. Only decision, research reports, index and HANDOFF documentation modified. No test runs made in this investigation; prior CI remains historical.
+
+**DECISIONS PENDING:** exact E0/E1 UC acceptance set, target Windows hardware, first useful approved actions, local memory consent/retention/deletion, wake word scope, GUI option, empirical model quality, upstream licence/dependency/GUI/memory tests, full integration architecture, separate WP-04 implementation authorization.
+
+**NEXT:** Review WP-01/WP-02 findings. Request a new bounded approval for the next appropriate investigation/contract-design increment (e.g. WP-03 Portuguese context corpus or WP-04 interface design only). Do not permit Claude to change product code based solely on Blueprint approval. Maintain HANDOFF-FIRST and exact CI SHA.
