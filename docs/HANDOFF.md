@@ -3153,3 +3153,15 @@ Nada disto foi iniciado.
 **GOVERNANCE:** JRV-001–003 are **PROPOSED and pending operator approval**. They do not authorize source code, new vendor dependencies, model inference, A4, memory persistence, main branch merge or release. No specific product release scope or numerical targets approved. Do not conflate FAKE A3 tests with real user/Windows/Qwen behaviour.
 
 **NEXT:** JRV-004 — system architecture, interface contracts, data flows, local deployment architecture and stack decision options. JRV-005 will separately audit actual code/test implementation against the Blueprint at a pinned SHA. Review operator feedback before treating any blueprint as official approved baseline.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-004 — proposed modular architecture and interfaces authored (ChatGPT)
+
+**REQUEST:** Continue RIGHTWARE JARVIS Blueprint after JRV-001/002/003; develop and version JRV-004 technical architecture, interfaces, data flows and deployment options without product code changes.
+
+**BASELINE:** Remote `develop` HEAD `397b631332825f213f9e66135e6dc569e35a75d4` confirmed at work start. JRV-001/002/003 and `docs/ARCHITECTURE.md` read; they remain proposed or historical, not approved architecture.
+
+**DELIVERED:** [JRV-004 System Architecture, Interfaces & Deployment Options](product-blueprint/JRV-004_SYSTEM_ARCHITECTURE.md), commit `a7707352336d6c61df0db3938b56883bcaf272f2`; index updated in commit `c75851cb93cd388cd86aecf9fefa75da58c826d1`. Document includes 15 sections: architecture drivers, context/trust diagrams, 10 logical modules MOD-01–10, ports and data envelopes, model/provider, proposed local durable data families, security, executor/receipt/timeout/recovery design, 12 candidate ADRs, runtime/deployment modes, 12 NFRs, 8 integration slices, dependency/reuse constraints and explicit handoff to JRV-005.
+
+**IMPORTANT STATUS:** MODs, proposed interfaces, memory schema, SQLite, provider adaptation, modular monolith, UI, voice, task journal and release slices are **architecture proposals**, not claims that code exists or that operator approved them. Only A1/A2/A3 historical implementation evidence and issue #9 closure are referenced, with test scope FAKE and constraints. Existing `docs/ARCHITECTURE.md` is retained as historical startup architecture, not overwritten. No code, version pins, vendor, policy, A4, Qwen validation, Shared Intelligence Core implementation or main branch modified.
+
+**NEXT:** JRV-005 — inspect actual GitHub source/test tree at exact recorded HEAD, classify VERIFIED/IMPLEMENTED_UNVERIFIED/PARTIAL/ABSENT/UNKNOWN per proposed module, map each UC/CT to file and test, and build precise evidence-led implementation inventory. JRV-001–004 remain PROPOSED pending explicit approval.
