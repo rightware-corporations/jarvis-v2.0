@@ -3139,3 +3139,17 @@ Nada disto foi iniciado.
 **EVIDENCE LIMITATION:** A1–A3 are implemented opt-in within their tested scope; 408 pinned tests and 3 green workflows recorded at engineering HEAD `65dad56f73b872017ef5c2d1c8717909d7c0106e`. This does not demonstrate complete real-Qwen recovery, durable memory, Windows voice, authenticated document original identity, recurring automation or user acceptance.
 
 **NEXT:** Review/approve JRV-001/JRV-002 explicitly; author JRV-003 Behaviour Contracts & measurable Acceptance Criteria, matching every major use-case class. Keep HANDOFF-FIRST and propose no code implementation without separate authorization.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-003 — behaviour contracts and acceptance criteria authored (ChatGPT)
+
+**REQUEST:** Continue the versioned RIGHTWARE JARVIS blueprint following JRV-001/JRV-002; produce JRV-003 as a full, testable contractual matrix and publish each finished matrix immediately.
+
+**INPUT:** Verified `develop` HEAD `cac2d2af6086c250afcdfe0ea3a5cba77d1c638d` at beginning, with JRV-001/JRV-002 proposed and indexed. No change to approved product behaviour.
+
+**DELIVERY:** [JRV-003 Behaviour Contracts & Acceptance Criteria](product-blueprint/JRV-003_BEHAVIOUR_CONTRACTS.md), commit `29dd067106b30c42042a5b427e60faa34928d141`. Contains 10 cross-cutting normative contracts (CT-01–CT-10), **33 individually enumerated use-case contracts (UC-001–UC-033)**, **24 acceptance fixtures (AT-001–AT-024)**, **14 candidate quality metrics (KPI-01–KPI-14)**, lifecycle/state rules, permission-risk tiers, evidence/provenance invariants, open decisions and JRV-004 dependencies. Blueprint register updated in commit `d115235e8dc230248291438c69615cbb52959fb0`.
+
+**VERIFICATION:** Authored content explicitly distinguishes normative *proposed* requirements from tested implementation. Existing A1/A2/A3 milestones and issue #9 remain as in previous HANDOFF. Proposed safety fixture or numeric metric is **not a measurement**; 408 tests from A3 are historical evidence for the earlier exact code SHA, not a current JRV-003 acceptance run. No tests or live model runs performed for JRV-003.
+
+**GOVERNANCE:** JRV-001–003 are **PROPOSED and pending operator approval**. They do not authorize source code, new vendor dependencies, model inference, A4, memory persistence, main branch merge or release. No specific product release scope or numerical targets approved. Do not conflate FAKE A3 tests with real user/Windows/Qwen behaviour.
+
+**NEXT:** JRV-004 — system architecture, interface contracts, data flows, local deployment architecture and stack decision options. JRV-005 will separately audit actual code/test implementation against the Blueprint at a pinned SHA. Review operator feedback before treating any blueprint as official approved baseline.
