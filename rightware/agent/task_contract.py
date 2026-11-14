@@ -71,7 +71,7 @@ class TaskContract:
     synthetic: bool               # True = test fixture only, never a claim about real publishers
     hosts: tuple[str, ...]
     objectives: tuple[BrowserObjective, ...]
-    max_continuations: int = 0    # reserved for A3; NOT active in A1 (must be 0 or 1)
+    max_continuations: int = 0    # A3 completion-gate continuation budget (0 or 1); used only with the gate
 
     @property
     def objective_ids(self) -> tuple[str, ...]:
@@ -178,6 +178,17 @@ TRUSTED_PRESETS = _build_catalog((
     TaskContract(
         preset_id="synthetic-archive-two-originals",
         schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=True,
+        hosts=("archive.fixture.example",),
+        objectives=(
+            BrowserObjective("AX101", "open_original", "https://archive.fixture.example/docs/ax-101.html",
+                             "abrir o documento original AX-101 (fixture sintética)"),
+            BrowserObjective("AX202", "open_original", "https://archive.fixture.example/docs/ax-202.html",
+                             "abrir o documento original AX-202 (fixture sintética)"),
+        )),
+    # Same SYNTHETIC fixture, allowing ONE bounded completion-gate continuation (A3).
+    TaskContract(
+        preset_id="synthetic-archive-two-originals-recovery",
+        schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=True, max_continuations=1,
         hosts=("archive.fixture.example",),
         objectives=(
             BrowserObjective("AX101", "open_original", "https://archive.fixture.example/docs/ax-101.html",

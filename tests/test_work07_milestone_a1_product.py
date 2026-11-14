@@ -35,7 +35,10 @@ def contract(**kw):
 
 class Catalog(unittest.TestCase):
     def test_catalog_is_code_owned_read_only_and_marks_the_fixture_synthetic(self):
-        self.assertEqual(list(TC.TRUSTED_PRESETS), [PRESET])
+        # A3 added one more SYNTHETIC preset (same fixture, max_continuations=1); all entries stay synthetic
+        self.assertEqual(list(TC.TRUSTED_PRESETS), [PRESET, PRESET + "-recovery"])
+        self.assertTrue(all(c.synthetic for c in TC.TRUSTED_PRESETS.values()))
+        self.assertEqual((BASE.max_continuations, TC.TRUSTED_PRESETS[PRESET + "-recovery"].max_continuations), (0, 1))
         self.assertTrue(BASE.synthetic)
         self.assertEqual(BASE.origin, "code_catalog")
         self.assertEqual(BASE.objective_ids, ("AX101", "AX202"))
@@ -221,8 +224,11 @@ class SessionIntegration(unittest.TestCase):
                          {"web_read": ("web", 3), "windows_action": ("actions", 1), "web_open": ("browse", 3),
                           "web_type": ("browse", 4), "web_submit": ("browse", 4), "web_follow": ("browse", 6),
                           "web_find": ("browse", 6)})
-        self.assertEqual([f.name for f in dataclasses.fields(S.AgentReply)],
+        fields = dataclasses.fields(S.AgentReply)
+        self.assertEqual([f.name for f in fields][:7],
                          ["text", "completion", "outcomes", "sources", "halted", "flags", "verification"])
+        # the only later addition is the A3 opt-in field, defaulting to None (absent from reply_json)
+        self.assertEqual([(f.name, f.default) for f in fields[7:]], [("task_completion", None)])
         self.assertEqual([f.name for f in dataclasses.fields(S.ToolOutcome)], ["tool", "status", "content", "evidence"])
         (_, r0, _, _), (_, r1, _, _) = self.run_pair("A_incomplete")
         self.assertEqual(set(json.loads(S.reply_json(r1))), {"completion", "halted", "flags", "verification",

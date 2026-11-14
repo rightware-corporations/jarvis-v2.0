@@ -20,10 +20,11 @@ from typing import Callable
 from urllib.parse import urlsplit
 
 from openjarvis.agents.orchestrator import OrchestratorAgent
-from openjarvis.core.types import ToolResult
+from openjarvis.core.types import Message, Role, ToolResult
 from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
+from rightware.agent.completion import evaluate as evaluate_completion, recovery_feedback
 from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
 from rightware.agent.receipts import ExecutionReceipt, ReceiptLedger
 from rightware.agent.task_contract import STATUS_NOT_EVALUATED, TaskContract, select_preset
@@ -106,6 +107,7 @@ class AgentReply:
     halted: str | None
     flags: list[str]
     verification: dict = dataclasses.field(default_factory=dict)
+    task_completion: dict | None = None     # A3 completion gate only (opt-in); None otherwise
 
 
 class _GuardedEngine:
@@ -129,6 +131,63 @@ class _GuardedEngine:
         calls = result.get("tool_calls") or []
         if calls:
             self._policy.batch_guard(calls)
+        return result
+
+
+class _CompletionEngine(_GuardedEngine):
+    """A3 bounded recovery (opt-in): when the model gives a final answer while mandatory contract
+    objectives still lack receipt evidence, ask ONCE more (contract ``max_continuations``) with
+    code-generated feedback, and only if that request can actually be acted upon:
+    * a useful orchestrator turn remains;
+    * no halt (cancel, deadline, budget);
+    * proposal budget is left;
+    * no timed-out tool is still pending;
+    * the latest decision was not a denial.
+
+    Quotas and policy are never reset. Every extra generation is counted."""
+
+    def __init__(self, engine, policy: AgentPolicy, trace, *, contract, ledger, max_turns: int, max_calls: int):
+        super().__init__(engine, policy, trace)
+        self._contract, self._ledger = contract, ledger
+        self._max_turns, self._max_calls = max_turns, max_calls
+        self.orchestrator_generations = 0
+        self.continuations = 0
+        self.recovery: list[str] = []
+
+    def _blocked(self) -> str | None:
+        if self.continuations >= self._contract.max_continuations:
+            return "orçamento de continuação esgotado" if self._contract.max_continuations else \
+                "o contrato não permite continuação"
+        if self.orchestrator_generations >= self._max_turns:
+            return "sem turno útil restante no orquestrador"
+        if self._policy.halt_reason:
+            return f"interrompido ({self._policy.halt_reason})"
+        if self._policy.calls >= self._max_calls:
+            return "sem chamadas de ferramenta restantes"
+        receipts = self._ledger.receipts()
+        if any(r.status == "TIMED_OUT" for r in receipts):
+            return "há uma ferramenta com timeout pendente"
+        decisions = [e for e in self._policy.log if "outcome" not in e and e.get("tool") != "<batch>"]
+        if decisions and not decisions[-1]["allowed"]:
+            return "a última chamada foi recusada pela política"
+        return None
+
+    def generate(self, messages, **kwargs):
+        self.orchestrator_generations += 1
+        result = super().generate(messages, **kwargs)
+        while not result.get("tool_calls") and self.halted is None:
+            partial = evaluate_completion(self._contract, self._ledger.receipts())
+            if not partial.missing:
+                return result
+            blocked = self._blocked()
+            if blocked:
+                self.recovery.append(f"sem continuação: {blocked}")
+                return result
+            self.continuations += 1
+            self.recovery.append("continuação pedida: " + ", ".join(partial.missing))
+            messages.append(Message(role=Role.ASSISTANT, content=result.get("content", "") or ""))
+            messages.append(Message(role=Role.USER, content=recovery_feedback(self._contract, partial)))
+            result = super().generate(messages, **kwargs)
         return result
 
 
@@ -255,7 +314,8 @@ class AgentSession:
                  budgets: Budgets | None = None, max_turns: int = 6, temperature: float = 0.2,
                  max_tokens: int = 768, sites: tuple[str, ...] = (), browser_fetcher=None,
                  clock: Callable[[], float] | None = None, start_url: str | None = None,
-                 trace: bool = False, task_preset: str | None = None, receipts: bool = False):
+                 trace: bool = False, task_preset: str | None = None, receipts: bool = False,
+                 completion_gate: bool = False):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
@@ -275,6 +335,11 @@ class AgentSession:
         # change no decision, tool, reply or completion, and prove operation, never authenticity.
         self.receipts_enabled = bool(receipts)
         self.ledger: ReceiptLedger | None = None
+        # WORK-07 A3 (opt-in, default OFF): judge the run against the trusted contract using ONLY
+        # bound receipts. Requires both a trusted preset and receipts (fail-closed configuration).
+        self.completion_gate = bool(completion_gate)
+        if self.completion_gate and (self.task_contract is None or not self.receipts_enabled):
+            raise ValueError("o completion gate exige um preset confiável (task_preset) e recibos (receipts=True)")
         self.browser_fetcher = browser_fetcher or self.fetcher
         self.clock = clock
         self.browser: PublicBrowser | None = None
@@ -369,7 +434,12 @@ class AgentSession:
         self.ledger = ledger = ReceiptLedger() if self.receipts_enabled else None
         tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes, trace, self.browser, ledger) for n in TOOLS
                  if TOOLS[n].session_flag in self.allow]
-        guarded = _GuardedEngine(self.engine, policy, trace)
+        if self.completion_gate:
+            budgets = self.budgets or Budgets()
+            guarded = _CompletionEngine(self.engine, policy, trace, contract=self.task_contract, ledger=ledger,
+                                        max_turns=self.max_turns, max_calls=budgets.max_calls)
+        else:
+            guarded = _GuardedEngine(self.engine, policy, trace)
         agent = _RightwareOrchestrator(guarded, self.model, policy=policy, trace=trace, ledger=ledger, tools=tools,
                                        max_turns=self.max_turns,
                                        temperature=self.temperature, max_tokens=self.max_tokens,
@@ -392,9 +462,38 @@ class AgentSession:
         else:
             self._close_pending(policy, outcomes)
             reply = self._compose(answer, outcomes, guarded.halted, policy)
+        if self.completion_gate:
+            reply = self._apply_completion_gate(reply, guarded)
         if trace is not None:
             trace.finish(reply.completion, reply.halted, reply.flags, reply.sources, self.browser)
         return reply
+
+    def _apply_completion_gate(self, reply: AgentReply, guarded: "_CompletionEngine") -> AgentReply:
+        """Replace the product classification by the contract verdict (contracted runs only)."""
+        if reply.completion == "ERROR":
+            from rightware.agent.completion import CompletionResult
+            result = CompletionResult("ERROR", self.task_contract.preset_id, (), "erro do motor ou da auditoria")
+        else:
+            halted = reply.halted or ("tarefa cancelada" if self._policy is not None and self._policy.cancelled else None)
+            result = evaluate_completion(self.task_contract, self.receipts, halted=halted,
+                                         audit_failed="AUDIT_FAILED" in reply.flags)
+        observed = [o.oid for o in result.objectives if o.state == "PAGE_OBSERVED"]
+        line = {
+            "INCOMPLETE": f"objectivos sem evidência de execução: {', '.join(result.missing)}",
+            "UNKNOWN_IDENTITY": (f"páginas observadas ({', '.join(observed)}), mas a identidade dos originais "
+                                 "não foi verificada"),
+            "UNKNOWN": "evidência ambígua; a conclusão não pode ser confirmada",
+            "HALTED": result.reason,
+            "ERROR": result.reason,
+            "COMPLETE_VERIFIED": "todos os objectivos verificados",
+        }[result.state]
+        text = (reply.text + f"\nEstado da tarefa ({result.contract_id}): {result.state}: {line}. "
+                "A correcção factual da resposta não foi verificada.")
+        detail = {**result.as_dict(), "product_completion": reply.completion,
+                  "continuations": guarded.continuations,
+                  "continuation_budget": self.task_contract.max_continuations,
+                  "recovery": list(guarded.recovery), "orchestrator_generations": guarded.orchestrator_generations}
+        return dataclasses.replace(reply, completion=result.state, text=text, task_completion=detail)
 
     def _close_pending(self, policy: AgentPolicy, outcomes: list[ToolOutcome]) -> None:
         """No approval may end without an outcome: anything approved and never executed is
@@ -479,7 +578,9 @@ def _verification(outcomes: list[ToolOutcome], sources: list[dict]) -> dict:
 
 def reply_json(reply: AgentReply) -> str:
     """Machine-readable outcome (no conversation text besides the final reply)."""
-    return json.dumps({"completion": reply.completion, "halted": reply.halted, "flags": reply.flags,
-                       "verification": reply.verification, "sources": reply.sources,
-                       "outcomes": [{"tool": o.tool, "status": o.status, "evidence": o.evidence}
-                                    for o in reply.outcomes]}, ensure_ascii=False)
+    out = {"completion": reply.completion, "halted": reply.halted, "flags": reply.flags,
+           "verification": reply.verification, "sources": reply.sources,
+           "outcomes": [{"tool": o.tool, "status": o.status, "evidence": o.evidence} for o in reply.outcomes]}
+    if reply.task_completion is not None:            # A3 gate only: absent otherwise (unchanged JSON)
+        out["task_completion"] = reply.task_completion
+    return json.dumps(out, ensure_ascii=False)

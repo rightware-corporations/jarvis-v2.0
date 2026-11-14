@@ -3019,3 +3019,80 @@ A expectativa do teste A2 de argumentos malformados foi actualizada para o motiv
 **Issue #9:** comentário de resolução [6877284168](https://github.com/rightware-corporations/jarvis-v2.0/issues/9#issuecomment-6877284168) e issue **fechada (completed)**.
 
 **Gate R3-C2-026 satisfeito:** começa o A3 (autorização na issue #8, comentário 6877184622).
+
+## CHECKPOINT — 14/11/2026: WORK-07 Milestone A3 — Completion Gate e recuperação limitada implementados (Claude Code)
+
+**Baseline:** `d518ee5` (gate #9 PASS, CI 379 OK). Branch `develop`.
+
+**Ficheiros:**
+- novo `rightware/agent/completion.py` (verificador puro);
+- `rightware/agent/session.py`: opt-in `completion_gate=False`, `_CompletionEngine` (subclasse do `_GuardedEngine`), `_apply_completion_gate`, campo `AgentReply.task_completion=None`, `reply_json` com `task_completion` só quando o gate existe;
+- `rightware/agent/task_contract.py`: novo preset **sintético** `synthetic-archive-two-originals-recovery` com `max_continuations=1`; o original fica com 0;
+- novo `tests/test_work07_milestone_a3_completion.py` (29 testes);
+- `tests/test_work07_milestone_a1_product.py`: asserções de interface actualizadas e documentadas — os 7 campos históricos de `AgentReply` continuam exigidos pela mesma ordem, e o único acréscimo permitido é `task_completion` com valor por omissão None; catálogo com 2 presets, todos sintéticos.
+
+Não alterados: `_compose`, `policy.py`, quotas, `receipts.py`, `browser.py`, `web.py`, vendor/pin, workflows, labs, evidências, `main`.
+
+**Decisões:**
+1. **Configuração fail-closed:** `completion_gate=True` exige `task_preset` e `receipts=True` (ValueError caso contrário). Sem gate, nada muda.
+2. **Evidência:** um recibo só conta se for `BOUND` com `call_id` SUPPLIED, autorizado, executado, `status` OK, `audit` OK, não `late`, ferramenta de página, URL final exacto, HTTP 200, html/plain, `raw_sha256` com âmbito `raw_response_bytes` e `truncated=False`. Um recibo serve um único objectivo. O texto do modelo nunca é entrada.
+3. **Por objectivo:**
+   - falha comprovada no URL (404, conteúdo vazio, recusa, falha, não executado) → `MISSING`;
+   - evidência ambígua (órfão, id duplicado ou em falta, tardio, timeout pendente, truncado, sem hash, outro tipo, auditoria não confirmada) → `UNKNOWN`;
+   - válida → `PAGE_OBSERVED` (`identity_rule="NONE"`), **nunca verificada**.
+4. **Estado da tarefa, por prioridade:**
+   - `ERROR` (auditoria, motor, runs misturados) > `HALTED` (paragem ou cancelamento) > `INCOMPLETE` > `UNKNOWN` > `UNKNOWN_IDENTITY` > `COMPLETE_VERIFIED`;
+   - `COMPLETE_VERIFIED` é **inalcançável** com contratos A1 (testado, incluindo contrato forjado);
+   - `answer_factually_verified` é sempre False.
+5. **Resposta com gate:** `completion` = estado do gate; `task_completion` inclui `product_completion` (por exemplo `ANSWERED_WITH_SOURCES`), objectivos, continuações, orçamento, motivos de recuperação e gerações. O texto ganha a linha «Estado da tarefa (…): <estado>: … A correcção factual da resposta não foi verificada.».
+6. **Recuperação limitada** (`_CompletionEngine`):
+   - só se o modelo responder sem ferramentas com objectivos `MISSING` e se se verificarem todas as condições seguintes:
+     - há orçamento do contrato (`max_continuations`);
+     - há turno útil no orquestrador (`orchestrator_generations < max_turns`);
+     - não há paragem, cancelamento ou prazo, e há orçamento de propostas;
+     - não há timeout pendente;
+     - a última decisão não foi recusa;
+   - o feedback é gerado por código só com ids e rótulos do contrato;
+   - quotas e política nunca são repostas;
+   - cada geração extra é contada.
+
+   **Não foi preciso alterar o vendor nem a política:** recuperação NÃO bloqueada.
+
+**Testes (executados nesta sessão):**
+- **A3: 29/29 PASS.** Verificador (13 unitários) e ponta-a-ponta com `AgentSession` real e modelo FAKE: só páginas informativas → `INCOMPLETE`; original em falta / fim prematuro → `INCOMPLETE`; ambos abertos → `UNKNOWN_IDENTITY`; HTTP 404 → `INCOMPLETE`; fonte errada / mirror externo → `INCOMPLETE`; `call_id` duplicado → `UNKNOWN`; aprovado e não executado → `INCOMPLETE` + flag; timeout e resultado tardio → `UNKNOWN`, também depois de terminar tarde; falha de auditoria → `ERROR`; trace ON = OFF; cancelamento e prazo → `HALTED`; injecção de instruções na página → `INCOMPLETE`, sem texto da página no feedback; modelo a declarar sucesso sem provas → `INCOMPLETE`; configuração fail-closed; sessões sem contrato inalteradas. Recuperação: 1 continuação com evidência subsequente → `UNKNOWN_IDENTITY`, contabilidade exacta e quotas não repostas; resposta prematura repetida → orçamento esgotado; contrato com 0 continuações → sem novo pedido; último turno → sem geração desperdiçada; orçamento de propostas → `HALTED` sem geração; recusa → sem continuação; cancelamento → `HALTED`; timeout pendente bloqueia.
+- **Mutação (limitada por timeout e memória):** 10/10 detectados. O M6 (sem orçamento de continuação) fez cair o processo no limite de memória: ciclo ilimitado, como no E4.
+- **A/B sem contrato** contra `d518ee5` (worktree, 5 cenários): `reply_json`, texto, chamadas, pedidos e outcomes **byte-idênticos**.
+- **Suite:** venv **408 OK, 0 saltados**, sem ocorrências de «skipped»; Python simples 408 OK, 189 saltados. Por suite: R3-B 17, R3-C1 21, E1/E4 15, A1 lab 15, A1 produto 16, A2 21, A3 29, issue #9 7, todas OK. `actionlint` OK.
+
+**Critérios A-01 a A-18** (FAKE; nenhum é evidência sobre o Qwen):
+
+| Critério | Resultado |
+|---|---|
+| A-01 sem contrato inalterado | PASS (A/B e teste) |
+| A-02 só páginas informativas | PASS (`INCOMPLETE`) |
+| A-03 originais com identidade confiável → `COMPLETE_VERIFIED` | **NÃO APLICÁVEL**: não existe regra de identidade confiável; o resultado correcto é `UNKNOWN_IDENTITY` e `COMPLETE_VERIFIED` é inalcançável (testado) |
+| A-04 404/REFUSED/NOT_EXECUTED | PASS |
+| A-05 página 200 de catálogo | PASS para outro URL (`INCOMPLETE`). No URL exacto daria `UNKNOWN_IDENTITY` (nunca completo); o conteúdo não é inspeccionado, por isso não é uma rejeição positiva |
+| A-06 id de chamada ou run em falta, alheio ou duplicado | PASS (`UNKNOWN`/`ERROR`) |
+| A-07 duas execuções iguais obrigatórias com um só recibo | **NÃO APLICÁVEL**: o A1 rejeita objectivos repetidos; um recibo serve um único objectivo (testado) |
+| A-08 e A-09 contratos não suportados, vazios, duplicados | PASS (testes A1) |
+| A-10 injecção | PASS |
+| A-11 quota, cancelamento, prazo | PASS (`HALTED`, sem chamadas extra) |
+| A-12 último turno | PASS (sem geração desperdiçada) |
+| A-13 ampliar hosts ou permissões | PASS (A1, política inalterada) |
+| A-14 hash, truncagem, versão | PASS para truncagem e âmbito do hash (`UNKNOWN`); a parte de versão ou digest de conteúdo **não é aplicável** (preset sem digest) |
+| A-15 JSON = resposta | PASS |
+| A-16 trace desligado | PASS |
+| A-17 factual não verificado | PASS |
+| A-18 sem verificador de identidade | PASS (`UNKNOWN_IDENTITY`) |
+
+**Limitações e riscos:**
+- sem regra de identidade, o máximo alcançável é `UNKNOWN_IDENTITY`;
+- só existem presets sintéticos;
+- o conteúdo das páginas não é inspeccionado (uma página de catálogo no URL exacto daria `UNKNOWN_IDENTITY`);
+- a recuperação depende de o modelo agir sobre o feedback (só FAKE testado; o Qwen real fica por medir);
+- o feedback e a resposta prematura ficam no contexto da conversa (cresce);
+- o `max_calls` do `_blocked` é redundante com o `halt_reason` da política (defesa);
+- só em memória.
+
+**Estado:** issue #9 RESOLVIDA e fechada; A3 IMPLEMENTADO (opt-in; CI a confirmar). **A4 NÃO iniciado.**
