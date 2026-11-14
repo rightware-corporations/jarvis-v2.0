@@ -2980,3 +2980,34 @@ Não alterados: `_compose`, `AgentReply`, `reply_json`, estados de conclusão, `
 - lidos R3-C2-025/026, a issue #9 (ordem 6877174649) e a issue #8 (A3 condicionada, 6877184622).
 
 **Sequência obrigatória:** primeiro a correcção #9 com testes, CI e checkpoint; só depois A3. Sem A4, Qwen, vendor, política ou quotas.
+
+## CHECKPOINT — 14/11/2026: WORK-07 issue #9 — motivo de recusa obsoleto CORRIGIDO (Claude Code)
+
+**Reprodução (antes da correcção, código `e748cfe`):** 3 `web_open` iguais (o 3.º é recusado pelo anti-ciclo) seguidos de `web_find` com `"{not json"`. O modelo recebia para a chamada malformada «acção idêntica já pedida 2 vez(es)…», o motivo **da chamada anterior**, com recibos ligados e desligados. A trace também recebia `last_denial` obsoleto.
+
+**Causa (FACTO):** o upstream (`orchestrator.py` `_check_tool_allowed`) recusa argumentos não-JSON ou não-objecto **antes** de chamar o hook; a mensagem RIGHTWARE usava `AgentPolicy.last_denial`, que é estado da chamada anterior.
+
+**Correcção** (`rightware/agent/session.py`, só `_RightwareOrchestrator`):
+- novo `_denial_reason(tc, decisions_before)`, que usa **apenas** a entrada de decisão que esta chamada acrescentou ao log da política;
+- se a chamada nunca chegou à política, a classificação é verdadeira e genérica: «os argumentos não são JSON válido», «… não são um objecto JSON», ou «motivo exacto não disponível»;
+- o mesmo motivo alimenta a mensagem ao modelo, a trace e o recibo A2;
+- política, quotas, aprovações e execução inalteradas.
+
+**Testes (`tests/test_issue9_refusal_reason.py`, 7, todos PASS):**
+- recusa anterior seguida de JSON malformado, com trace e recibos ON/OFF (4 combinações);
+- argumentos não-objecto, vazios e truncados;
+- recusas da política mantêm o motivo exacto (quota, capacidade não autorizada);
+- cancelamento; lote fail-closed;
+- retorno antecipado do executor (texto upstream da chamada actual, recibo `NOT_EXECUTED`);
+- nada muda em execuções válidas, e a chamada malformada nunca é executada nem gera pedido de rede.
+
+A expectativa do teste A2 de argumentos malformados foi actualizada para o motivo novo, mais preciso.
+
+**Mutação:** M1 (voltar a `last_denial`) e M3 (procurar no log inteiro) detectados; M2 (filtro por ferramenta) é equivalente, porque dentro de `_check_tool_allowed` só a decisão desta chamada entra no log.
+
+**Validação:**
+- A/B contra `e748cfe` (worktree, 5 cenários): `reply_json`, texto, chamadas, pedidos e outcomes **byte-idênticos**;
+- venv **379 OK, 0 saltados**, sem ocorrências de «skipped»; Python simples 379 OK, 168 saltados;
+- `actionlint` OK; vendor, política, workflows e labs intactos.
+
+**Estado:** #9 resolvida localmente; CI e fecho da issue a confirmar a seguir. **Gate para A3:** só depois de CI verde no SHA desta correcção.

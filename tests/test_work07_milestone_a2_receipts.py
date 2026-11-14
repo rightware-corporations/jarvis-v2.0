@@ -338,7 +338,7 @@ class SessionReceipts(unittest.TestCase):
         s, _, _, _ = run(steps)
         last = s.receipts[-1]
         self.assertEqual((last.call_id, last.status, last.args_sha256), ("bad1", "DENIED", None))
-        self.assertEqual(last.policy_reason, "rejeitada antes da política (argumentos inválidos)")
+        self.assertEqual(last.policy_reason, "os argumentos não são JSON válido (recusada antes da política)")
         self.assertIn("acção idêntica", s.receipts[-2].policy_reason)
 
     def test_receipts_hold_no_page_text_typed_text_or_secrets(self):

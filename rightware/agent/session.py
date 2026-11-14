@@ -171,20 +171,33 @@ class _RightwareOrchestrator(OrchestratorAgent):
     def _check_tool_allowed(self, tc):
         decisions_before = len(self._rw_policy.log)
         denial = super()._check_tool_allowed(tc)
+        reason = None
         if denial is not None:
-            reason = self._rw_policy.last_denial or "recusada pela política"
+            reason = self._denial_reason(tc, decisions_before)
             denial.content = (f"[RIGHTWARE] A ferramenta '{tc.name}' NÃO foi executada: {reason}. "
                               "Não repitas a mesma chamada; ajusta o plano ou conclui com o que já foi verificado.")
         if self._rw_trace is not None:
-            self._rw_trace.on_decision(tc.id, tc.name, denial is None, self._rw_policy.last_denial,
+            self._rw_trace.on_decision(tc.id, tc.name, denial is None, reason,
                                        denial.content if denial is not None else "")
         if self._rw_ledger is not None:
-            # The policy reason only if THIS call reached the policy hook (upstream rejects malformed
-            # arguments before the hook, so last_denial could be stale).
-            reached = len(self._rw_policy.log) > decisions_before
-            reason = self._rw_policy.last_denial if reached else "rejeitada antes da política (argumentos inválidos)"
             self._rw_record = self._rw_ledger.decide(tc.id, tc.name, tc.arguments, denial is None, reason)
         return denial
+
+    def _denial_reason(self, tc, decisions_before: int) -> str:
+        """The refusal reason of THIS call (issue #9). Only a decision entry that this call appended to
+        the policy log is used; ``AgentPolicy.last_denial`` may belong to an earlier call when the
+        upstream orchestrator rejects malformed arguments before invoking the policy hook."""
+        new_entries = self._rw_policy.log[decisions_before:]
+        for entry in reversed(new_entries):
+            if not entry.get("allowed") and "outcome" not in entry and entry.get("tool") == str(tc.name)[:60]:
+                return entry.get("reason") or "recusada pela política"
+        try:                                         # never reached the policy: classify truthfully
+            args = json.loads(tc.arguments) if tc.arguments else {}
+        except (TypeError, ValueError):
+            return "os argumentos não são JSON válido (recusada antes da política)"
+        if not isinstance(args, dict):
+            return "os argumentos não são um objecto JSON (recusada antes da política)"
+        return "recusada antes da política (motivo exacto não disponível)"
 
 
 class _PolicyTool(BaseTool):
