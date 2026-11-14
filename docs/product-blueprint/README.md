@@ -81,3 +81,10 @@ Following the operator's instruction to continue WP-03 and **WP-04 interface des
 - [WP-04/D01 — Unified Control Plane Interface Design](WP-04_UNIFIED_CONTROL_PLANE_INTERFACE_DESIGN.md): six conceptual contracts, request/route/authorization/result/context/adapters, 14 proposed integration tests and a safe staged migration proposal.
 
 These docs are NOT authorization for source-code changes, an A4 milestone, real-Qwen/Windows tests, vendor upgrades, installing dependencies or enabling persistent memory. The operator's earlier official approval of the JRV architectural reference remains intact.
+
+
+## WP-04 D01–D02 implementation handoff (2026-11-14)
+
+- [Claude bounded implementation brief](../engineering/WP04_D01_D02_CLAUDE_IMPLEMENTATION_MISSION_2026-11-14.md), developed from WP-03 and WP-04 specifications; no product code has been implemented by this task.
+- [GitHub Issue #10](https://github.com/rightware-corporations/jarvis-v2.0/issues/10) tracks the narrowly scoped D01 request/result facade and D02 text-only no-tool adapter, with tests and review conditions.
+- Existing A1–A3, upstream pin, Windows actions, voice, memory persistence, live Qwen tests and A4 remain unaffected. An open issue does not prove an implementation or CI pass.
