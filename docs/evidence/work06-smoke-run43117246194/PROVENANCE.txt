@@ -1,0 +1,3 @@
+GitHub Actions run 43117246194 (work05-qwen-smoke.yml), run_attempt 1, trigger commit 173224f009bf146afd0ee6186616c3f316873df9, approved code 95b238de8ee5b3232107926240ff383730987e90, request_id 2
+artifact 13898932605 sha256:02e8a2ae870fef23613927b3e27f97e1a92f736359fbf808de35951f2d0f3427 (downloaded ZIP sha256 matched; 9/9 SHA256SUMS OK)
+result: PASS — gates 0-3 PASS; real Qwen3.5:4b (digest d8b0f5e9...) via Ollama 0.40.15 on a GitHub CPU runner proposed web_read for https://example.com/ (1 call), completion ANSWERED_WITH_SOURCES, no flags. Single run (n=1). answer_factually_verified=false. The model's own text did not contain the URL; the source line is appended by the product.

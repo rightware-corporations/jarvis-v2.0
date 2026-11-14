@@ -1,0 +1,7 @@
+GitHub Actions run 42774675819 (workflow WORK-04 cognitive benchmark (manual), id 412994674, job 129690297330)
+dispatch: ref develop, sha dcc23f365aedf741018b4af6ffa3d721c4c07a46, run_benchmark=no, benchmark_authorization empty,
+expected_digest d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04
+artifact work04-evidence-42774675819 id 13743775889 sha256:1a3d6822edaf89cb836f1afcb638353761dae773e311e7b109d8e5ffa8fa23ff (downloaded ZIP sha256 matched)
+OpenJarvis pin f21d902f4d3bd7f0f3f138f1a4613019a394b549; workflow blob 01cec5ab626dd00100f0af18d1637a58a72f3cef (main 0cac8e8 = develop)
+result: GATES PASSED (WORK-04 BENCHMARK NOT RUN). Gate 3 = one 4-token real generation ("pronto."), not a WORK-04 result.
+excluded from this copy: ollama-server.tail.log, ollama-libs.txt (kept in the GitHub artifact)

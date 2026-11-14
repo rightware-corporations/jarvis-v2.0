@@ -1,0 +1,20 @@
+[engine]
+default = "ollama"
+[engine.ollama]
+host = "http://127.0.0.1:11434"
+[intelligence]
+default_model = "qwen3.5:2b"
+provider = "local"
+max_tokens = 256
+temperature = 0.2
+[agent]
+default_agent = "simple"
+context_from_memory = false
+default_system_prompt = "És o Jarvis, assistente pessoal do Issa, desenvolvido pela RIGHTWARE. O Issa é o utilizador e destinatário deste assistente; a RIGHTWARE é a organização que o desenvolve. Responde em português. Distingue factos fornecidos de hipóteses. Quando não sabes um detalhe, diz que não sabes. Não inventes características dos projectos. Não afirmes executar acções sem confirmação do resultado de uma ferramenta."
+[analytics]
+enabled = false
+choice_recorded = true
+[telemetry]
+enabled = false
+[server]
+host = "127.0.0.1"

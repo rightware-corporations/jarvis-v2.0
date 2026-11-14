@@ -1,0 +1,148 @@
+# WORK-07 Phase 5: ONE real Qwen3.5:4b run of the product agent on the RFC Editor task. INERT.
+# Runs only when a push to `develop` changes ops/work07_qwen_request.json (WORK-06 protocol: approved
+# code SHA, request-only commit, single-use request_id, no re-runs, fixed plan digest). Browse
+# capability only (www.rfc-editor.org), no Windows effects, no shell/filesystem tool. The evaluator
+# (labs/work07_rfc_gate/evaluator.py) runs AFTER the model; the model never receives the reference.
+name: WORK-07 RFC Editor real Qwen gate (request-triggered)
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - ops/work07_qwen_request.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: work07-qwen-rfc
+  cancel-in-progress: false
+
+env:
+  BRANCH: develop
+  PIN: f21d902f4d3bd7f0f3f138f1a4613019a394b549
+  OLLAMA_VERSION: "0.40.15"
+  OLLAMA_SHA256: 628c018404a4206493efd38e46251c154ede5141b8b8dc85c659b3b027c47379
+  MODEL: "qwen3.5:4b"
+  EXPECTED_DIGEST: d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04
+  UV_VERSION: "0.11.32"
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - name: Checkout the pushed revision (pinned submodule)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: GATE 0 — authorisation (approved code SHA, request-only diff, single use, no re-run), ref, pin
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/$BRANCH" ] || { echo "unexpected ref"; exit 1; }
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" "origin/$BRANCH"
+          test "$(git ls-tree HEAD vendor/openjarvis | awk '{print $3}')" = "$PIN"
+          test "$(git -C vendor/openjarvis rev-parse HEAD)" = "$PIN"
+          test -z "$(git status --porcelain)"
+          EVID="$RUNNER_TEMP/qwen-evidence"; mkdir -p "$EVID"
+          cp ops/work07_qwen_request.json "$EVID/request.json"
+          python3 -E -s -m labs.work07_rfc_gate.gate --check-request qwen --run-attempt "$GITHUB_RUN_ATTEMPT" > "$EVID/authorisation.json"
+          APPROVED=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["approved_code_sha"])' "$EVID/authorisation.json")
+          { echo "EVID=$EVID"; echo "APPROVED_SHA=$APPROVED"
+            echo "OLLAMA_DIR=$RUNNER_TEMP/ollama"; echo "OLLAMA_MODELS=$RUNNER_TEMP/ollama-models"; } >> "$GITHUB_ENV"
+          printf '{"gate":"0","status":"PASS","trigger_sha":"%s","approved_code_sha":"%s"}\n' "$GITHUB_SHA" "$APPROVED" >> "$EVID/gates.jsonl"
+
+      - name: GATE 1 — resources
+        run: |
+          set -euo pipefail
+          RAM=$(awk '/MemTotal/ {printf "%d", $2/1048576}' /proc/meminfo)
+          [ "$RAM" -ge 14 ] && [ "$(nproc)" -ge 4 ]
+          printf '{"gate":"1","status":"PASS","vcpu":%s,"ram_gib":%s}\n' "$(nproc)" "$RAM" >> "$EVID/gates.jsonl"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: '3.12'
+
+      - name: GATE 2 — pinned OpenJarvis venv and the full product suite (no skips)
+        env:
+          HOME: ${{ runner.temp }}/home
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check "uv==${UV_VERSION}"
+          uv sync --project vendor/openjarvis --frozen --no-dev --python "$(which python)" 2>&1 | tail -3
+          vendor/openjarvis/.venv/bin/python -m unittest discover -s tests -v > "$EVID/product-tests.txt" 2>&1
+          ! grep -q " skipped" "$EVID/product-tests.txt"
+          printf '{"gate":"2","status":"PASS"}\n' >> "$EVID/gates.jsonl"
+
+      - name: GATE 3 — official Ollama (SHA-256), loopback only, pinned model digest
+        run: |
+          set -euo pipefail
+          ARCHIVE="$RUNNER_TEMP/ollama.tar.zst"
+          curl -fsSL --retry 3 -o "$ARCHIVE" "https://github.com/ollama/ollama/releases/download/v${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst"
+          echo "${OLLAMA_SHA256}  ${ARCHIVE}" | sha256sum -c -
+          mkdir -p "$OLLAMA_DIR" "$OLLAMA_MODELS"
+          tar -I zstd -xf "$ARCHIVE" -C "$OLLAMA_DIR"; rm -f "$ARCHIVE"
+          OLLAMA_HOST=127.0.0.1:11434 OLLAMA_NO_CLOUD=1 nohup "$OLLAMA_DIR/bin/ollama" serve > "$EVID/ollama-server.log" 2>&1 &
+          for i in $(seq 1 60); do curl -fs --noproxy '*' http://127.0.0.1:11434/api/version && break; sleep 2; done
+          if ss -ltn | grep ':11434' | grep -vq '127.0.0.1:11434'; then echo "Ollama beyond loopback"; exit 1; fi
+          "$OLLAMA_DIR/bin/ollama" pull "$MODEL" 2>&1 | tail -2
+          curl -fs --noproxy '*' http://127.0.0.1:11434/api/tags > "$EVID/ollama-tags.json"
+          GOT=$(python3 -c 'import json,sys,os;m=[x for x in json.load(open(sys.argv[1]))["models"] if x["name"]==os.environ["MODEL"]];print(m[0]["digest"] if m else "")' "$EVID/ollama-tags.json")
+          [ "$GOT" = "$EXPECTED_DIGEST" ] || { echo "digest mismatch"; exit 1; }
+          printf '{"gate":"3","status":"PASS","digest":"%s"}\n' "$GOT" >> "$EVID/gates.jsonl"
+
+      - name: "TECHNICAL EXECUTION — Qwen run runner (green = the runner completed; NOT an acceptance verdict)"
+        run: |
+          set -euo pipefail
+          set +e
+          vendor/openjarvis/.venv/bin/python -m labs.work07_rfc_gate.gate --run qwen --approved-code-sha "$APPROVED_SHA" \
+            --evidence-dir "$EVID/gate" > "$EVID/gate-console.log" 2>&1
+          RC=$?
+          set -e
+          echo "$RC" > "$EVID/technical-exit.txt"
+          tail -5 "$EVID/gate-console.log"
+          printf '{"gate":"technical","technical_exit":%s}\n' "$RC" >> "$EVID/gates.jsonl"
+          exit $RC
+
+      - name: "ACCEPTANCE VERDICT — fails unless the verdict is PASS (NOT_READY / FAIL / INCOMPLETE are never accepted)"
+        if: always()
+        run: |
+          set +e -uo pipefail   # the runner shell is "bash -e": keep going to record the verdict, then exit $ACC
+          EVID="${EVID:-$RUNNER_TEMP/qwen-evidence}"; mkdir -p "$EVID"
+          TECH=$(cat "$EVID/technical-exit.txt" 2>/dev/null || echo -1)
+          python3 -E -s -m labs.work07_rfc_gate.gate --acceptance qwen --technical-exit "$TECH" \
+            --evidence-dir "$EVID/gate" > "$EVID/acceptance.json"
+          ACC=$?
+          if [ ! -s "$EVID/acceptance.json" ]; then
+            printf '{"operation":"qwen","technical_exit":%s,"verdict":"NO_VERDICT","accepted":false}\n' "$TECH" > "$EVID/acceptance.json"
+            ACC=1
+          fi
+          cat "$EVID/acceptance.json"
+          { echo "## WORK-07 Qwen run: technical execution vs acceptance"
+            echo '```json'; cat "$EVID/acceptance.json"; echo '```'
+            echo "Accepted only if technical_execution = COMPLETED and verdict = PASS. The evidence artifact is uploaded in every case."
+          } >> "$GITHUB_STEP_SUMMARY"
+          printf '{"gate":"acceptance","accepted_exit":%s}\n' "$ACC" >> "$EVID/gates.jsonl"
+          exit $ACC
+
+      - name: Preserve evidence (always)
+        if: always()
+        run: |
+          EVID="${EVID:-$RUNNER_TEMP/qwen-evidence}"; mkdir -p "$EVID"
+          if [ -f "$EVID/ollama-server.log" ]; then tail -n 200 "$EVID/ollama-server.log" > "$EVID/ollama-server.tail.log"; rm -f "$EVID/ollama-server.log"; fi
+          pkill -f "ollama serve" || true
+          ( cd "$EVID" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS ) || true
+
+      - name: Upload evidence (always)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: work07-qwen-rfc-${{ github.run_id }}
+          path: ${{ runner.temp }}/qwen-evidence
+          if-no-files-found: warn
+          retention-days: 30

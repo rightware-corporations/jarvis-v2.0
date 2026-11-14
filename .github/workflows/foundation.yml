@@ -1,0 +1,108 @@
+name: RIGHTWARE foundation
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  launcher:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -v
+
+  # Windows compatibility only. A GitHub runner has no microphone, speakers or
+  # interactive desktop: this is NOT the real voice/actions acceptance on the
+  # recipient's PC (docs/WINDOWS_VOICE.md, V1-V12).
+  windows-compat:
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: '1'   # same as rightware.runtime.voice_environment()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests on Windows
+        run: python -m unittest discover -s tests -v
+      - name: Parse Jarvis-Issa.ps1 (Windows PowerShell 5.1 and PowerShell 7)
+        shell: pwsh
+        run: |
+          $path = 'rightware/windows/Jarvis-Issa.ps1'
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path), [ref]$null, [ref]$errors)
+          if ($errors.Count) { $errors | Format-List; exit 1 }
+          powershell.exe -NoProfile -Command "`$e=`$null; [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '$path'), [ref]`$null, [ref]`$e); if (`$e.Count) { `$e | Format-List; exit 1 }; 'PS ' + `$PSVersionTable.PSVersion + ' parse OK'"
+          if ($LASTEXITCODE) { exit 1 }
+      - name: Read-only check mode in Windows PowerShell 5.1 (no Ollama/venv expected)
+        shell: cmd
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File rightware\windows\Jarvis-Issa.ps1 -Mode check
+          if errorlevel 1 exit /b 1
+          powershell.exe -NoProfile -Command "$l = Get-ChildItem .runtime\logs\windows-check-*.log | Select-Object -Last 1; Get-Content $l.FullName -Encoding UTF8; if (-not (Select-String -Path $l.FullName -Pattern 'RESUMO:' -Quiet)) { exit 1 }; if (Select-String -Path $l.FullName -Pattern $env:USERNAME -SimpleMatch -Quiet) { 'log not sanitized'; exit 1 }"
+      - name: Diagnose report (read-only)
+        shell: pwsh
+        run: |
+          python jarvis.py diagnose
+          $report = Get-ChildItem .runtime/logs/diagnostic-*.json | Select-Object -Last 1
+          $data = Get-Content $report.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+          $data.results | Format-Table check, status, detail -AutoSize -Wrap
+          if (($data.results | Where-Object check -eq 'action_executables').status -ne 'PASS') { exit 1 }
+          exit 0
+      - name: Real SAPI synthesis to WAV (any installed voice; runner has no audio device)
+        run: |
+          python -c "from rightware.voice import SapiTTS; import os; t = SapiTTS(wav_path='sapi.wav', any_voice=True); print('voices:', t.voices()); t.speak('Olá Issa, sou o Jarvis. Ação concluída.'); size = os.path.getsize('sapi.wav'); print('wav bytes:', size); assert size > 10000"
+      - name: Runner-only action smoke (NOT acceptance; headless service session)
+        continue-on-error: true
+        run: |
+          python -c "import subprocess, tempfile; from rightware.windows_actions import WindowsActions, describe; a = WindowsActions(authorized=True, audit_dir=tempfile.mkdtemp()); rs = [a.run(x, lambda q: 'sim') for x in ('notepad', 'calculator')]; [print(r.action_id, r.outcome, r.pid, r.detail, '|', describe(r)) for r in rs]; [subprocess.run(['taskkill', '/PID', str(r.pid), '/F']) for r in rs if r.pid]"
+
+  # Lab FAKE suites (WORK-02 + WORK-04): pinned OpenJarvis core from the frozen
+  # lockfile, scripted engines only — no model, no Ollama, no inference.
+  lab-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned OpenJarvis core (frozen lockfile)
+        run: |
+          python -m pip install --disable-pip-version-check "uv==0.11.32"
+          uv sync --project vendor/openjarvis --frozen --no-dev --python "$(which python)"
+          vendor/openjarvis/.venv/bin/python -c "import yaml, openjarvis.agents.orchestrator"   # pyyaml 6.0.3 is in the frozen core
+      - name: WORK-02 FAKE suite (S0-S11, variability, WORK-03 workflow contract)
+        working-directory: labs/work02_active_agent/tests
+        env:
+          HOME: ${{ runner.temp }}/home
+        run: ../../../vendor/openjarvis/.venv/bin/python -m unittest -v test_security_fake test_variability_fake test_work03_workflow
+      - name: WORK-04 FAKE suite (semantic evaluators, harness, criteria, workflow contract)
+        working-directory: labs/work04_cognitive/tests
+        env:
+          HOME: ${{ runner.temp }}/home
+        run: ../../../vendor/openjarvis/.venv/bin/python -m unittest -v test_w04_fake test_w04_workflow test_w04_r2_completion test_w04_r2_source_guard test_w04_r2_semantics test_w04_r2_classification test_w04_r2_adversarial test_w04_r2_fixtures test_w04_r2_smoke test_w04_r2_baseline test_w04_r2_claims test_w04_r2_metrics test_w04_r2_source_precision test_w04_r2_recovery test_w04_r2_cpu_workflow test_w04_r2_write_guard test_w04_r2_hardening test_w04_r2_continuity test_w04_r2_final
+
+  # WORK-03: read-only capacity probe of the same runner image the manual
+  # inference workflow uses. Downloads nothing, installs nothing, no model.
+  runner-capacity:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Measure disk, RAM, CPU and tools (read-only)
+        run: |
+          echo "## filesystems used by work03 (RUNNER_TEMP, workspace, HOME cache)"
+          df -BG --output=target,size,used,avail / "$RUNNER_TEMP" "$GITHUB_WORKSPACE" "$HOME"
+          findmnt -no SOURCE,TARGET -T "$RUNNER_TEMP"; findmnt -no SOURCE,TARGET -T "$HOME"
+          echo "## memory"; free -b; grep MemTotal /proc/meminfo
+          echo "## cpu"; nproc; lscpu | grep -E 'Model name|Flags' | cut -c1-160
+          echo "## tools"; command -v zstd && zstd --version || echo "zstd: absent"
+          python3 --version; lsb_release -ds
+

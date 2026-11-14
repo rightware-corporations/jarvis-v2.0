@@ -1,0 +1,497 @@
+/home/user/jarvis-v2.0/labs/work04_cognitive/w04lab/verifier_v2.py:118: DeprecationWarning: 'maxsplit' is passed as positional argument
+  field = canonical_field(re.split(r"[:—–]", rest, 1)[0]) if rest.strip() else None
+test_canned_report_is_rejected_on_varied_inputs (test_w04_fake.AssessFake.test_canned_report_is_rejected_on_varied_inputs) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmptmgsv4g6'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpehee009i'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp5xob5kv9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpay0ykqdd'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp0ye__epu'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphm1m7l2h'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpzqzuu32e'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpovg53tqx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpu_t__pvj'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpm_nchim6'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpihm5lp_y'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpcsl55_n9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpd70oqt4i'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpqgwva8gh'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp_ya14mok'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpsdanaeof'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpor47ma52'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp3q3pd60w'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpggb_3rbx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpfnch5fzd'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpich6kot7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpy_pyxuxm'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpyfeo195g'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpkh7zc0l7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpmomqyoq1'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmps8c1yvlb'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmprztbrsxj'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpa0qy4rit'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpxfaebfk9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpgzdjw1tt'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpxgu_ethh'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpjr598c9x'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphwqlxgna'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpcg_92zvu'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphifrgbbo'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpjjzzdk6p'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_hard_gates_flip_acceptance (test_w04_fake.AssessFake.test_hard_gates_flip_acceptance) ... ok
+test_honest_fake_batch_meets_every_gate (test_w04_fake.AssessFake.test_honest_fake_batch_meets_every_gate) ... ok
+test_thresholds_are_the_published_spec (test_w04_fake.CriteriaFixed.test_thresholds_are_the_published_spec) ... ok
+test_work02_lab_code_untouched (test_w04_fake.CriteriaFixed.test_work02_lab_code_untouched) ... ok
+test_correct_numbers_and_keywords_are_not_enough (test_w04_fake.EvaluatorRules.test_correct_numbers_and_keywords_are_not_enough) ... /home/user/jarvis-v2.0/labs/work04_cognitive/w04lab/verifier_v2.py:118: DeprecationWarning: 'maxsplit' is passed as positional argument
+  field = canonical_field(re.split(r"[:—–]", rest, 1)[0]) if rest.strip() else None
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpptoo8oa6'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_distractor_values_rejected_by_both (test_w04_fake.EvaluatorRules.test_distractor_values_rejected_by_both) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp4ptrq2ka'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp5gsp3e4c'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp5h0ihxj5'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmplsayxb1q'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpdibqygt9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpbd0s2pkl'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpf9l7ioix'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpaep1jzpv'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpm32ozbkm'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp8fjmismn'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpn83chvin'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp_3233l0b'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpt679m7_m'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpjtyomwc9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp4d3sgbdx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphdejpb6y'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpan5asszs'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp20aa2udf'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphr78i1d_'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpwt0y4jr9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpjb87hqjo'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpf22z9s88'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpl8kk05hr'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpoq5hz2c2'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpvdto96xj'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp_xk3tdk7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpzb9x7kz7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp1qgsqp67'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpfayg6xp8'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpjx9imrpw'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpjtcf4pup'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpyc73ngog'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp67m2e6mb'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpur6pvvvh'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphl5myf9w'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_format_defects_rejected_by_v2 (test_w04_fake.EvaluatorRules.test_format_defects_rejected_by_v2) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpetglvky2'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpqy2xikb1'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpak18s5le'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp5cs14yu1'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpl5evi4t5'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpz16vcqde'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpnvacc1ip'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpi9eykg50'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpfvxggwyk'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpbttbt9mz'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphtp41bfb'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpr349kvpa'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpcokv1ux7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpk41nglz0'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_honest_reports_pass_both_evaluators (test_w04_fake.EvaluatorRules.test_honest_reports_pass_both_evaluators) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpx8g1jbuk'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpnmnfehqn'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp0rqhssna'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpi2lwofo9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpb4s78bke'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpkfrvcv2n'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp3q9zmfr_'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp9x2i15eq'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpuvtsdg49'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp_rxnd1kp'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmprxsjqkh6'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpnp4p5i_l'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmptxw2hmuc'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpkc2kgfzx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpjc5op2bi'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpyuqqdd7o'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmppanef1tw'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp166ftorq'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp1peilf4q'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp6cr4by6z'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpaokgrf_p'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp03ozu1px'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpp_wcwsz_'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpxyijbebe'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpafs_crrh'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpkdlaxd0h'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpyxsbf6tj'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpl51y1oxm'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmppplgy52u'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpf0wtxgif'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpnqqqd7fx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp14bas3x9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpryhpm_f5'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpy561650o'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpxp7zhakl'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphdy3x_2j'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp1l5u7dxe'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpb2d_s0ho'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpg62rzxl0'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp5m502xgw'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpq2u9w4sp'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp9380btgj'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_polarity_unit_cases (test_w04_fake.EvaluatorRules.test_polarity_unit_cases) ... ok
+test_semantic_defects_rejected_by_both (test_w04_fake.EvaluatorRules.test_semantic_defects_rejected_by_both) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpairehtq7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp3k7quy80'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpg0cgh08u'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphtrnp05i'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmps8vzuw1z'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpi1pq73mg'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp4f1m1y64'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpkaoz9ip3'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpcwdlh2lf'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpwqey8pl_'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpv8gth7vg'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp_ckmjj5l'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpv7vg16x3'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpywbzyri2'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp8pgfjel3'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmptx4sp2yg'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpmbfqjnki'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpm435i2o8'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp40qmxzhd'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpamttd02t'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp544sogq8'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpwk36evgq'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp4aey12tk'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp9cbnboih'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpvaun1sk9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpcxad9_ct'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpq2dn3ywu'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpb32prja0'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp1bejaseo'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpvsb71wlh'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpvt5rd4__'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphuw63qlx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp2u4fjsqh'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpch87_fnp'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpyydkkxny'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp4641m4v0'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpx5x6ax98'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpksrqxyxv'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpt762el5t'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp679be8pp'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpee464r3z'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpj0k53lk0'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpn1e9oyhe'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpbdnv_3r4'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpc4df67r5'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpxet34vi7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmppjiuvaex'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp2czgwoad'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpu08cgxb9'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpmt6h0skt'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpqyoven_e'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp6g_9ai91'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmptrhpwqww'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpteicz8or'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp157njau5'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpxsfwzuf0'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_verify_tool_feedback_never_leaks_truth_values (test_w04_fake.EvaluatorRules.test_verify_tool_feedback_never_leaks_truth_values) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpaqq2k4li'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_work03_phrasing_is_right_for_evolution_and_wrong_for_contradiction (test_w04_fake.EvaluatorRules.test_work03_phrasing_is_right_for_evolution_and_wrong_for_contradiction) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpq7djj3ub'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp6pheqjlz'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_corrected_v2_version_is_accepted_within_budget (test_w04_fake.HarnessFake.test_corrected_v2_version_is_accepted_within_budget) ... ok
+test_false_success_claim_is_caught (test_w04_fake.HarnessFake.test_false_success_claim_is_caught) ... ok
+test_honest_agent_passes_every_family_through_real_orchestrator (test_w04_fake.HarnessFake.test_honest_agent_passes_every_family_through_real_orchestrator) ... ok
+test_injection_obeying_agent_is_contained (test_w04_fake.HarnessFake.test_injection_obeying_agent_is_contained) ... ok
+test_overwrite_refused_and_not_counted_as_success (test_w04_fake.HarnessFake.test_overwrite_refused_and_not_counted_as_success) ... ok
+test_canary_outside_sandbox (test_w04_fake.Scenarios.test_canary_outside_sandbox) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp9j90f884'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_family_ground_truth_semantics (test_w04_fake.Scenarios.test_family_ground_truth_semantics) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpfx4mtw94'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpk35zxh5g'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp69j0zheq'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpb790ab_e'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpi4cs51gr'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp76m_z_pd'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp8euc2g4d'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_plan_has_35_distinct_inputs_across_7_families (test_w04_fake.Scenarios.test_plan_has_35_distinct_inputs_across_7_families) ... ok
+test_variety_of_layouts_names_requests_and_distractors (test_w04_fake.Scenarios.test_variety_of_layouts_names_requests_and_distractors) ... /usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp4f_lx_23'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpqllbsy3z'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp4n70bp_v'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpzdestb3u'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp1c2xd7k0'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp2kygu664'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmprsjjdg0k'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpsgho64oy'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpn4hpjkws'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpqljx8pdn'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmposzpe_7r'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpfk163acz'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpr64l13za'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmppjus66t7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp6d2nywgq'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpepmyfz30'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp0qgu9_0q'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpda2quwpx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmphgr56inf'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpz6w5nexy'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpod_a2rwx'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpryns6lrt'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpormtg05j'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp_qcpmn76'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp06n5c012'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpmm4sc0e4'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpch1gvy1k'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpg9mz2x9b'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpa9e6da83'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp_399955i'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp0u6uyyut'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp0sd98ytv'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp2xvrlqbq'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpctzofujv'>
+  _warnings.warn(warn_message, ResourceWarning)
+/usr/local/lib/python3.13/tempfile.py:1021: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpvrg641eg'>
+  _warnings.warn(warn_message, ResourceWarning)
+ok
+test_benchmark_needs_typed_authorization_and_fixed_n (test_w04_workflow.Work04Workflow.test_benchmark_needs_typed_authorization_and_fixed_n) ... ok
+test_digest_checked_in_job_before_benchmark (test_w04_workflow.Work04Workflow.test_digest_checked_in_job_before_benchmark) ... ok
+test_evidence_always_uploaded_and_job_limited (test_w04_workflow.Work04Workflow.test_evidence_always_uploaded_and_job_limited) ... ok
+test_infrastructure_gates_identical_to_the_real_work03_run (test_w04_workflow.Work04Workflow.test_infrastructure_gates_identical_to_the_real_work03_run) ... ok
+test_inputs_never_interpolated_in_shell_and_actions_pinned (test_w04_workflow.Work04Workflow.test_inputs_never_interpolated_in_shell_and_actions_pinned) ... ok
+test_manual_only_minimal_permissions_no_secrets (test_w04_workflow.Work04Workflow.test_manual_only_minimal_permissions_no_secrets) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 6.509s
+
+OK

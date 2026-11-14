@@ -1,0 +1,12 @@
+WORK-07 Qwen Phase 5 / request_id 2 / GATE 0 blocked
+Date: 2026-11-12
+GitHub run: https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43185087484
+Artifact: https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43185087484/artifacts/13928530143
+Original ZIP SHA256: 42e57fad78dd76db09b186546bedcbdb65e48dcf6a51e2e337e27cf481dd2422
+Original GitHub artifact digest: sha256:42e57fad78dd76db09b186546bedcbdb65e48dcf6a51e2e337e27cf481dd2422
+4/4 original internal SHA256SUMS verified:
+5c47d596d68294c5e4209bf9c3e01d3e3280902f60b5d000404216fa4d232359  ./acceptance.json
+6ed07631729104f3e5cd85f15ca80bdb69039d8caec92ef74eb70b7d0030c876  ./authorisation.json
+dac6b066d376595c2f142a2404ea05ef8c42afab68d6c0ac6985e2245f373c49  ./gates.jsonl
+22bcdd04bd51c9855d3657e37b4b11aebef7a9932ff52b116b05d647f3c74a2f  ./request.json
+Original artifact retained by GitHub Actions; this is an index, not a byte copy.

@@ -1,0 +1,1924 @@
+{
+  "note": "Synthetic WORK-07 R3-C1 reconstruction with a FAKE model on a local fixture archive. Contains ids, counts and hashes only. NOT evidence about Qwen or any real website.",
+  "scenarios": [
+    {
+      "scenario": "A_incomplete",
+      "model": "FAKE (scripted, reacts only to presented ids) - not Qwen",
+      "model_answer": "O AX-101 (Widget Framing) trata do enquadramento dos widgets e o AX-202 (Widget Transport) trata do transporte. Fontes: https://archive.fixture.example/info/ax-101/ e https://archive.fixture.example/info/ax-202/",
+      "completion": "ANSWERED_WITH_SOURCES",
+      "flags": [],
+      "halted": null,
+      "pages_consulted": [
+        "https://archive.fixture.example/search/",
+        "https://archive.fixture.example/search/results?q=AX-101",
+        "https://archive.fixture.example/info/ax-101/",
+        "https://archive.fixture.example/search/results?q=AX-202",
+        "https://archive.fixture.example/info/ax-202/"
+      ],
+      "not_executed_or_refused": [],
+      "originals_not_opened": [
+        "https://archive.fixture.example/docs/ax-101.html",
+        "https://archive.fixture.example/docs/ax-202.html"
+      ],
+      "objectives_unproven": [
+        "AX-101: original not opened",
+        "AX-202: original not opened"
+      ],
+      "trace": {
+        "turns": [
+          {
+            "turn": 1,
+            "response_id": "d2de68834d124be5",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-f7976aeb",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "archive.fixture.example",
+                    "sha256": "ba7b83ded8c5f459"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "525ae215ee6edfa3",
+                "result_chars": 530,
+                "view": {
+                  "op": "open",
+                  "page": "https://archive.fixture.example/search/",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [
+                    "F1"
+                  ],
+                  "text_chars": 48,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "525ae215ee6edfa3",
+                  "view_chars": 530,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 2,
+            "response_id": "e922e15e70a8fc17",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_type-6071f9e4",
+                "name": "web_type",
+                "args": {
+                  "field": "F1",
+                  "text": {
+                    "chars": 6,
+                    "sha256": "4604945d9cdbdb13"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "2e5c567977bec359",
+                "result_chars": 75
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 3,
+            "response_id": "51e99e48a6f2dbf9",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_submit-ca2fdfe2",
+                "name": "web_submit",
+                "args": {
+                  "field": "F1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "16ab65a4c1ca2666",
+                "result_chars": 541,
+                "view": {
+                  "op": "submit",
+                  "page": "https://archive.fixture.example/search/results",
+                  "has_query": true,
+                  "page_links": 1,
+                  "shown_links": [
+                    "L1"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 47,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "16ab65a4c1ca2666",
+                  "view_chars": 541,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 4,
+            "response_id": "6b12a281a06b23e2",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-c5d665b4",
+                "name": "web_follow",
+                "args": {
+                  "link": "L1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "c75b59cd490896ba",
+                "result_chars": 827,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/info/ax-101/",
+                  "has_query": false,
+                  "page_links": 3,
+                  "shown_links": [
+                    "L2",
+                    "L3",
+                    "L4"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 185,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "c75b59cd490896ba",
+                  "view_chars": 827,
+                  "followed": "L1"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 5,
+            "response_id": "152089846e04b73b",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_type-e40253b6",
+                "name": "web_type",
+                "args": {
+                  "field": "F1",
+                  "text": {
+                    "chars": 6,
+                    "sha256": "9a918b95a5ede0b2"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "6aa3f7ab7825876c",
+                "result_chars": 75
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 6,
+            "response_id": "51e99e48a6f2dbf9",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_submit-ca2fdfe2",
+                "name": "web_submit",
+                "args": {
+                  "field": "F1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "a87fcaf32cdd5acf",
+                "result_chars": 541,
+                "view": {
+                  "op": "submit",
+                  "page": "https://archive.fixture.example/search/results",
+                  "has_query": true,
+                  "page_links": 1,
+                  "shown_links": [
+                    "L5"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 47,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "a87fcaf32cdd5acf",
+                  "view_chars": 541,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 7,
+            "response_id": "a0fa1cd19c9d4a7e",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-3b319641",
+                "name": "web_follow",
+                "args": {
+                  "link": "L5"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "2c7f3edb5e9507a0",
+                "result_chars": 5524,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/info/ax-202/",
+                  "has_query": false,
+                  "page_links": 31,
+                  "shown_links": [
+                    "L6",
+                    "L7",
+                    "L8",
+                    "L9",
+                    "L10",
+                    "L11",
+                    "L12",
+                    "L13",
+                    "L14",
+                    "L15",
+                    "L16",
+                    "L17",
+                    "L18",
+                    "L19",
+                    "L20",
+                    "L21",
+                    "L22",
+                    "L23",
+                    "L24",
+                    "L25",
+                    "L26",
+                    "L27",
+                    "L28",
+                    "L29",
+                    "L30"
+                  ],
+                  "not_shown_links": 6,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 7282,
+                  "text_cut_in_view": true,
+                  "page_truncated": false,
+                  "view_sha256": "2c7f3edb5e9507a0",
+                  "view_chars": 5524,
+                  "followed": "L5"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 8,
+            "response_id": "133f48426b1b6a68",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [],
+            "text_chars": 211
+          }
+        ],
+        "final": {
+          "completion": "ANSWERED_WITH_SOURCES",
+          "halted": null,
+          "flags": [],
+          "sources": [
+            "https://archive.fixture.example/search/",
+            "https://archive.fixture.example/search/results?…",
+            "https://archive.fixture.example/info/ax-101/",
+            "https://archive.fixture.example/search/results?…",
+            "https://archive.fixture.example/info/ax-202/"
+          ],
+          "turns": 8,
+          "links": {
+            "registered": 36,
+            "presented": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7",
+              "L8",
+              "L9",
+              "L10",
+              "L11",
+              "L12",
+              "L13",
+              "L14",
+              "L15",
+              "L16",
+              "L17",
+              "L18",
+              "L19",
+              "L20",
+              "L21",
+              "L22",
+              "L23",
+              "L24",
+              "L25",
+              "L26",
+              "L27",
+              "L28",
+              "L29",
+              "L30"
+            ],
+            "registered_not_presented": 6,
+            "used": [
+              "L1",
+              "L5"
+            ],
+            "used_without_presentation": []
+          }
+        }
+      }
+    },
+    {
+      "scenario": "B_complete",
+      "model": "FAKE (scripted, reacts only to presented ids) - not Qwen",
+      "model_answer": "O AX-101 (Widget Framing) trata do enquadramento e o AX-202 (Widget Transport) do transporte. Fontes: https://archive.fixture.example/docs/ax-101.html e https://archive.fixture.example/docs/ax-202.html",
+      "completion": "ANSWERED_WITH_SOURCES",
+      "flags": [],
+      "halted": null,
+      "pages_consulted": [
+        "https://archive.fixture.example/search/",
+        "https://archive.fixture.example/search/results?q=AX-101",
+        "https://archive.fixture.example/info/ax-101/",
+        "https://archive.fixture.example/docs/ax-101.html",
+        "https://archive.fixture.example/search/results?q=AX-202",
+        "https://archive.fixture.example/info/ax-202/",
+        "https://archive.fixture.example/docs/ax-202.html"
+      ],
+      "not_executed_or_refused": [],
+      "originals_not_opened": [],
+      "objectives_unproven": [],
+      "trace": {
+        "turns": [
+          {
+            "turn": 1,
+            "response_id": "d2de68834d124be5",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-f7976aeb",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "archive.fixture.example",
+                    "sha256": "ba7b83ded8c5f459"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "efa5b0ddbf98539c",
+                "result_chars": 530,
+                "view": {
+                  "op": "open",
+                  "page": "https://archive.fixture.example/search/",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [
+                    "F1"
+                  ],
+                  "text_chars": 48,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "efa5b0ddbf98539c",
+                  "view_chars": 530,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 2,
+            "response_id": "e922e15e70a8fc17",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_type-6071f9e4",
+                "name": "web_type",
+                "args": {
+                  "field": "F1",
+                  "text": {
+                    "chars": 6,
+                    "sha256": "4604945d9cdbdb13"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "2e5c567977bec359",
+                "result_chars": 75
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 3,
+            "response_id": "51e99e48a6f2dbf9",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_submit-ca2fdfe2",
+                "name": "web_submit",
+                "args": {
+                  "field": "F1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "f07fcc08e6925f1c",
+                "result_chars": 541,
+                "view": {
+                  "op": "submit",
+                  "page": "https://archive.fixture.example/search/results",
+                  "has_query": true,
+                  "page_links": 1,
+                  "shown_links": [
+                    "L1"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 47,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "f07fcc08e6925f1c",
+                  "view_chars": 541,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 4,
+            "response_id": "6b12a281a06b23e2",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-c5d665b4",
+                "name": "web_follow",
+                "args": {
+                  "link": "L1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "e76cc25005507003",
+                "result_chars": 827,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/info/ax-101/",
+                  "has_query": false,
+                  "page_links": 3,
+                  "shown_links": [
+                    "L2",
+                    "L3",
+                    "L4"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 185,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "e76cc25005507003",
+                  "view_chars": 827,
+                  "followed": "L1"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 5,
+            "response_id": "14f61754839983b3",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-292fd30b",
+                "name": "web_follow",
+                "args": {
+                  "link": "L4"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "a9d5be46718df5a7",
+                "result_chars": 454,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/docs/ax-101.html",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 122,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "a9d5be46718df5a7",
+                  "view_chars": 454,
+                  "followed": "L4"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 6,
+            "response_id": "152089846e04b73b",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_type-e40253b6",
+                "name": "web_type",
+                "args": {
+                  "field": "F1",
+                  "text": {
+                    "chars": 6,
+                    "sha256": "9a918b95a5ede0b2"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "6aa3f7ab7825876c",
+                "result_chars": 75
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 7,
+            "response_id": "51e99e48a6f2dbf9",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_submit-ca2fdfe2",
+                "name": "web_submit",
+                "args": {
+                  "field": "F1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "5ea81c3111c79a65",
+                "result_chars": 541,
+                "view": {
+                  "op": "submit",
+                  "page": "https://archive.fixture.example/search/results",
+                  "has_query": true,
+                  "page_links": 1,
+                  "shown_links": [
+                    "L5"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 47,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "5ea81c3111c79a65",
+                  "view_chars": 541,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 8,
+            "response_id": "a0fa1cd19c9d4a7e",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-3b319641",
+                "name": "web_follow",
+                "args": {
+                  "link": "L5"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "f6b9ffed9d897d1b",
+                "result_chars": 5524,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/info/ax-202/",
+                  "has_query": false,
+                  "page_links": 31,
+                  "shown_links": [
+                    "L6",
+                    "L7",
+                    "L8",
+                    "L9",
+                    "L10",
+                    "L11",
+                    "L12",
+                    "L13",
+                    "L14",
+                    "L15",
+                    "L16",
+                    "L17",
+                    "L18",
+                    "L19",
+                    "L20",
+                    "L21",
+                    "L22",
+                    "L23",
+                    "L24",
+                    "L25",
+                    "L26",
+                    "L27",
+                    "L28",
+                    "L29",
+                    "L30"
+                  ],
+                  "not_shown_links": 6,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 7282,
+                  "text_cut_in_view": true,
+                  "page_truncated": false,
+                  "view_sha256": "f6b9ffed9d897d1b",
+                  "view_chars": 5524,
+                  "followed": "L5"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 9,
+            "response_id": "3665cac79a52ae15",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_find-03545e15",
+                "name": "web_find",
+                "args": {
+                  "text": {
+                    "chars": 13,
+                    "sha256": "7bc4361e435b9bef"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "0a76ecabb91c0977",
+                "result_chars": 574,
+                "view": {
+                  "op": "find",
+                  "find_matches": [
+                    "L4",
+                    "L36"
+                  ]
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 10,
+            "response_id": "97a969538a5c835e",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-a1c9bf02",
+                "name": "web_follow",
+                "args": {
+                  "link": "L36"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "38d648bf2a87747d",
+                "result_chars": 460,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/docs/ax-202.html",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 128,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "38d648bf2a87747d",
+                  "view_chars": 460,
+                  "followed": "L36"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 11,
+            "response_id": "652021eb4f5f3ea7",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [],
+            "text_chars": 201
+          }
+        ],
+        "final": {
+          "completion": "ANSWERED_WITH_SOURCES",
+          "halted": null,
+          "flags": [],
+          "sources": [
+            "https://archive.fixture.example/search/",
+            "https://archive.fixture.example/search/results?…",
+            "https://archive.fixture.example/info/ax-101/",
+            "https://archive.fixture.example/docs/ax-101.html",
+            "https://archive.fixture.example/search/results?…",
+            "https://archive.fixture.example/info/ax-202/",
+            "https://archive.fixture.example/docs/ax-202.html"
+          ],
+          "turns": 11,
+          "links": {
+            "registered": 36,
+            "presented": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7",
+              "L8",
+              "L9",
+              "L10",
+              "L11",
+              "L12",
+              "L13",
+              "L14",
+              "L15",
+              "L16",
+              "L17",
+              "L18",
+              "L19",
+              "L20",
+              "L21",
+              "L22",
+              "L23",
+              "L24",
+              "L25",
+              "L26",
+              "L27",
+              "L28",
+              "L29",
+              "L30",
+              "L36"
+            ],
+            "registered_not_presented": 5,
+            "used": [
+              "L1",
+              "L4",
+              "L5",
+              "L36"
+            ],
+            "used_without_presentation": []
+          }
+        }
+      }
+    },
+    {
+      "scenario": "C_hidden_link",
+      "model": "FAKE (scripted, reacts only to presented ids) - not Qwen",
+      "model_answer": "O original do AX-202 trata do transporte.",
+      "completion": "ANSWERED_WITH_SOURCES",
+      "flags": [],
+      "halted": null,
+      "pages_consulted": [
+        "https://archive.fixture.example/search/",
+        "https://archive.fixture.example/search/results?q=AX-202",
+        "https://archive.fixture.example/info/ax-202/",
+        "https://archive.fixture.example/docs/ax-202.html"
+      ],
+      "not_executed_or_refused": [
+        [
+          "web_follow",
+          "REFUSED"
+        ]
+      ],
+      "originals_not_opened": [
+        "https://archive.fixture.example/docs/ax-101.html"
+      ],
+      "objectives_unproven": [
+        "AX-101: original not opened"
+      ],
+      "trace": {
+        "turns": [
+          {
+            "turn": 1,
+            "response_id": "d2de68834d124be5",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-f7976aeb",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "archive.fixture.example",
+                    "sha256": "ba7b83ded8c5f459"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "24ff576e8741a65f",
+                "result_chars": 530,
+                "view": {
+                  "op": "open",
+                  "page": "https://archive.fixture.example/search/",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [
+                    "F1"
+                  ],
+                  "text_chars": 48,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "24ff576e8741a65f",
+                  "view_chars": 530,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 2,
+            "response_id": "152089846e04b73b",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_type-e40253b6",
+                "name": "web_type",
+                "args": {
+                  "field": "F1",
+                  "text": {
+                    "chars": 6,
+                    "sha256": "9a918b95a5ede0b2"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "6aa3f7ab7825876c",
+                "result_chars": 75
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 3,
+            "response_id": "51e99e48a6f2dbf9",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_submit-ca2fdfe2",
+                "name": "web_submit",
+                "args": {
+                  "field": "F1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "dca2ce71688e8828",
+                "result_chars": 541,
+                "view": {
+                  "op": "submit",
+                  "page": "https://archive.fixture.example/search/results",
+                  "has_query": true,
+                  "page_links": 1,
+                  "shown_links": [
+                    "L1"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 47,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "dca2ce71688e8828",
+                  "view_chars": 541,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 4,
+            "response_id": "6b12a281a06b23e2",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-c5d665b4",
+                "name": "web_follow",
+                "args": {
+                  "link": "L1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "a43e6cbf568b5ec9",
+                "result_chars": 5520,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/info/ax-202/",
+                  "has_query": false,
+                  "page_links": 31,
+                  "shown_links": [
+                    "L2",
+                    "L3",
+                    "L4",
+                    "L5",
+                    "L6",
+                    "L7",
+                    "L8",
+                    "L9",
+                    "L10",
+                    "L11",
+                    "L12",
+                    "L13",
+                    "L14",
+                    "L15",
+                    "L16",
+                    "L17",
+                    "L18",
+                    "L19",
+                    "L20",
+                    "L21",
+                    "L22",
+                    "L23",
+                    "L24",
+                    "L25",
+                    "L26"
+                  ],
+                  "not_shown_links": 6,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 7282,
+                  "text_cut_in_view": true,
+                  "page_truncated": false,
+                  "view_sha256": "a43e6cbf568b5ec9",
+                  "view_chars": 5520,
+                  "followed": "L1"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 5,
+            "response_id": "f3dafa7f40c67ded",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-a7e39a3f",
+                "name": "web_follow",
+                "args": {
+                  "link": "L0"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "REFUSED",
+                "result_sha256": "29c6d3d0bff95351",
+                "result_chars": 80
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 6,
+            "response_id": "3665cac79a52ae15",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_find-03545e15",
+                "name": "web_find",
+                "args": {
+                  "text": {
+                    "chars": 13,
+                    "sha256": "7bc4361e435b9bef"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "dbafad988375ac73",
+                "result_chars": 495,
+                "view": {
+                  "op": "find",
+                  "find_matches": [
+                    "L32"
+                  ]
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 7,
+            "response_id": "5059428903269f50",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-6d938f7e",
+                "name": "web_follow",
+                "args": {
+                  "link": "L32"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "8311a004c2709ba6",
+                "result_chars": 460,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/docs/ax-202.html",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 128,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "8311a004c2709ba6",
+                  "view_chars": 460,
+                  "followed": "L32"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 8,
+            "response_id": "2359c2081d7f4102",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [],
+            "text_chars": 41
+          }
+        ],
+        "final": {
+          "completion": "ANSWERED_WITH_SOURCES",
+          "halted": null,
+          "flags": [],
+          "sources": [
+            "https://archive.fixture.example/search/",
+            "https://archive.fixture.example/search/results?…",
+            "https://archive.fixture.example/info/ax-202/",
+            "https://archive.fixture.example/docs/ax-202.html"
+          ],
+          "turns": 8,
+          "links": {
+            "registered": 32,
+            "presented": [
+              "L1",
+              "L2",
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7",
+              "L8",
+              "L9",
+              "L10",
+              "L11",
+              "L12",
+              "L13",
+              "L14",
+              "L15",
+              "L16",
+              "L17",
+              "L18",
+              "L19",
+              "L20",
+              "L21",
+              "L22",
+              "L23",
+              "L24",
+              "L25",
+              "L26",
+              "L32"
+            ],
+            "registered_not_presented": 5,
+            "used": [
+              "L1",
+              "L32"
+            ],
+            "used_without_presentation": []
+          }
+        }
+      }
+    },
+    {
+      "scenario": "D_refused",
+      "model": "FAKE (scripted, reacts only to presented ids) - not Qwen",
+      "model_answer": "O AX-101 (Widget Framing) trata do enquadramento dos widgets e o AX-202 (Widget Transport) trata do transporte. Fontes: https://archive.fixture.example/info/ax-101/ e https://archive.fixture.example/info/ax-202/",
+      "completion": "ANSWERED_WITH_SOURCES",
+      "flags": [
+        "TOOL_REFUSALS"
+      ],
+      "halted": null,
+      "pages_consulted": [
+        "https://archive.fixture.example/search/",
+        "https://archive.fixture.example/search/results?q=AX-101",
+        "https://archive.fixture.example/info/ax-101/",
+        "https://archive.fixture.example/info/ax-101/"
+      ],
+      "not_executed_or_refused": [
+        [
+          "web_open",
+          "REFUSED"
+        ]
+      ],
+      "originals_not_opened": [
+        "https://archive.fixture.example/docs/ax-101.html",
+        "https://archive.fixture.example/docs/ax-202.html"
+      ],
+      "objectives_unproven": [
+        "AX-101: original not opened",
+        "AX-202: original not opened"
+      ],
+      "trace": {
+        "turns": [
+          {
+            "turn": 1,
+            "response_id": "d2de68834d124be5",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-f7976aeb",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "archive.fixture.example",
+                    "sha256": "ba7b83ded8c5f459"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "bca75ae000838a27",
+                "result_chars": 530,
+                "view": {
+                  "op": "open",
+                  "page": "https://archive.fixture.example/search/",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [
+                    "F1"
+                  ],
+                  "text_chars": 48,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "bca75ae000838a27",
+                  "view_chars": 530,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 2,
+            "response_id": "e922e15e70a8fc17",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_type-6071f9e4",
+                "name": "web_type",
+                "args": {
+                  "field": "F1",
+                  "text": {
+                    "chars": 6,
+                    "sha256": "4604945d9cdbdb13"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "2e5c567977bec359",
+                "result_chars": 75
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 3,
+            "response_id": "51e99e48a6f2dbf9",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_submit-ca2fdfe2",
+                "name": "web_submit",
+                "args": {
+                  "field": "F1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "2f383e2d538dd8db",
+                "result_chars": 541,
+                "view": {
+                  "op": "submit",
+                  "page": "https://archive.fixture.example/search/results",
+                  "has_query": true,
+                  "page_links": 1,
+                  "shown_links": [
+                    "L1"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 47,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "2f383e2d538dd8db",
+                  "view_chars": 541,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 4,
+            "response_id": "6b12a281a06b23e2",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-c5d665b4",
+                "name": "web_follow",
+                "args": {
+                  "link": "L1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "7801efc66743bdfb",
+                "result_chars": 827,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/info/ax-101/",
+                  "has_query": false,
+                  "page_links": 3,
+                  "shown_links": [
+                    "L2",
+                    "L3",
+                    "L4"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 185,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "7801efc66743bdfb",
+                  "view_chars": 827,
+                  "followed": "L1"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 5,
+            "response_id": "5668dbfd52842946",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-2b3d05ed",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "mirror.other.example",
+                    "sha256": "7d892168e0ab7608"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "REFUSED",
+                "result_sha256": "74059114d0f0556c",
+                "result_chars": 69
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 6,
+            "response_id": "570abca4308c6eba",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-6ca986fc",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "archive.fixture.example",
+                    "sha256": "7579032511a43f8c"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "a8b7f5ebd5ba6921",
+                "result_chars": 827,
+                "view": {
+                  "op": "open",
+                  "page": "https://archive.fixture.example/info/ax-101/",
+                  "has_query": false,
+                  "page_links": 3,
+                  "shown_links": [
+                    "L2",
+                    "L3",
+                    "L4"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 185,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "a8b7f5ebd5ba6921",
+                  "view_chars": 827,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 7,
+            "response_id": "6b12a281a06b23e2",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-c5d665b4",
+                "name": "web_follow",
+                "args": {
+                  "link": "L1"
+                },
+                "decision": "DENIED",
+                "reason": "acção idêntica já pedida 2 vez(es) nesta tarefa; repeti-la não traz informação nova",
+                "status": "DENIED",
+                "result_sha256": "768096fc7a5bcdbd",
+                "result_chars": 225
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 8,
+            "response_id": "4c0f38bb7311966e",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-624b7dc0",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "archive.fixture.example",
+                    "sha256": "2daa4d130f762f7b"
+                  }
+                },
+                "decision": "DENIED",
+                "reason": "limite de chamadas desta ferramenta atingido",
+                "status": "DENIED",
+                "result_sha256": "413352fd2136891d",
+                "result_chars": 184
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 9,
+            "response_id": "133f48426b1b6a68",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [],
+            "text_chars": 211
+          }
+        ],
+        "final": {
+          "completion": "ANSWERED_WITH_SOURCES",
+          "halted": null,
+          "flags": [
+            "TOOL_REFUSALS"
+          ],
+          "sources": [
+            "https://archive.fixture.example/search/",
+            "https://archive.fixture.example/search/results?…",
+            "https://archive.fixture.example/info/ax-101/"
+          ],
+          "turns": 9,
+          "links": {
+            "registered": 4,
+            "presented": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "registered_not_presented": 0,
+            "used": [
+              "L1"
+            ],
+            "used_without_presentation": []
+          }
+        }
+      }
+    },
+    {
+      "scenario": "E_premature",
+      "model": "FAKE (scripted, reacts only to presented ids) - not Qwen",
+      "model_answer": "O AX-101 (Widget Framing) trata do enquadramento. Fonte: https://archive.fixture.example/info/ax-101/",
+      "completion": "ANSWERED_WITH_SOURCES",
+      "flags": [],
+      "halted": null,
+      "pages_consulted": [
+        "https://archive.fixture.example/search/",
+        "https://archive.fixture.example/search/results?q=AX-101",
+        "https://archive.fixture.example/info/ax-101/"
+      ],
+      "not_executed_or_refused": [],
+      "originals_not_opened": [
+        "https://archive.fixture.example/docs/ax-101.html",
+        "https://archive.fixture.example/docs/ax-202.html"
+      ],
+      "objectives_unproven": [
+        "AX-101: original not opened",
+        "AX-202: original not opened"
+      ],
+      "trace": {
+        "turns": [
+          {
+            "turn": 1,
+            "response_id": "d2de68834d124be5",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_open-f7976aeb",
+                "name": "web_open",
+                "args": {
+                  "url": {
+                    "host": "archive.fixture.example",
+                    "sha256": "ba7b83ded8c5f459"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "26b9016b893805ce",
+                "result_chars": 530,
+                "view": {
+                  "op": "open",
+                  "page": "https://archive.fixture.example/search/",
+                  "has_query": false,
+                  "page_links": 0,
+                  "shown_links": [],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [
+                    "F1"
+                  ],
+                  "text_chars": 48,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "26b9016b893805ce",
+                  "view_chars": 530,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 2,
+            "response_id": "e922e15e70a8fc17",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_type-6071f9e4",
+                "name": "web_type",
+                "args": {
+                  "field": "F1",
+                  "text": {
+                    "chars": 6,
+                    "sha256": "4604945d9cdbdb13"
+                  }
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "2e5c567977bec359",
+                "result_chars": 75
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 3,
+            "response_id": "51e99e48a6f2dbf9",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_submit-ca2fdfe2",
+                "name": "web_submit",
+                "args": {
+                  "field": "F1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "9c0cc79a5cbf3913",
+                "result_chars": 541,
+                "view": {
+                  "op": "submit",
+                  "page": "https://archive.fixture.example/search/results",
+                  "has_query": true,
+                  "page_links": 1,
+                  "shown_links": [
+                    "L1"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 0,
+                  "fields": [],
+                  "text_chars": 47,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "9c0cc79a5cbf3913",
+                  "view_chars": 541,
+                  "followed": null
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 4,
+            "response_id": "6b12a281a06b23e2",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [
+              {
+                "call_id": "call-web_follow-c5d665b4",
+                "name": "web_follow",
+                "args": {
+                  "link": "L1"
+                },
+                "decision": "APPROVED",
+                "reason": null,
+                "status": "OK",
+                "result_sha256": "36e244ad6df6d7d5",
+                "result_chars": 827,
+                "view": {
+                  "op": "follow",
+                  "page": "https://archive.fixture.example/info/ax-101/",
+                  "has_query": false,
+                  "page_links": 3,
+                  "shown_links": [
+                    "L2",
+                    "L3",
+                    "L4"
+                  ],
+                  "not_shown_links": 0,
+                  "omitted_offsite_links": 1,
+                  "fields": [],
+                  "text_chars": 185,
+                  "text_cut_in_view": false,
+                  "page_truncated": false,
+                  "view_sha256": "36e244ad6df6d7d5",
+                  "view_chars": 827,
+                  "followed": "L1"
+                }
+              }
+            ],
+            "text_chars": 0
+          },
+          {
+            "turn": 5,
+            "response_id": "5ce27991575674ab",
+            "tools_offered": [
+              "web_find",
+              "web_follow",
+              "web_open",
+              "web_submit",
+              "web_type"
+            ],
+            "proposals": [],
+            "text_chars": 101
+          }
+        ],
+        "final": {
+          "completion": "ANSWERED_WITH_SOURCES",
+          "halted": null,
+          "flags": [],
+          "sources": [
+            "https://archive.fixture.example/search/",
+            "https://archive.fixture.example/search/results?…",
+            "https://archive.fixture.example/info/ax-101/"
+          ],
+          "turns": 5,
+          "links": {
+            "registered": 4,
+            "presented": [
+              "L1",
+              "L2",
+              "L3",
+              "L4"
+            ],
+            "registered_not_presented": 0,
+            "used": [
+              "L1"
+            ],
+            "used_without_presentation": []
+          }
+        }
+      }
+    }
+  ]
+}

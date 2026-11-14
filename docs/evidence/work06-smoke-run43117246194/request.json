@@ -1,0 +1,7 @@
+{
+  "experiment": "WORK05_PRODUCT_AGENT_REAL_SMOKE",
+  "request_id": 2,
+  "approved_code_sha": "95b238de8ee5b3232107926240ff383730987e90",
+  "plan_sha256": "b9be5c6916ccf3a62e1f742af206f90da895dfa8ff2c98a0c522784c7373df9d",
+  "authorized_by": "RIGHTWARE operator, WORK-06 second real smoke, single run request_id 2, develop only, 2026-11-12"
+}
