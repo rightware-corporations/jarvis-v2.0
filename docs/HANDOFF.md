@@ -3239,3 +3239,21 @@ Nada disto foi iniciado.
 **DECISIONS PENDING:** exact E0/E1 UC acceptance set, target Windows hardware, first useful approved actions, local memory consent/retention/deletion, wake word scope, GUI option, empirical model quality, upstream licence/dependency/GUI/memory tests, full integration architecture, separate WP-04 implementation authorization.
 
 **NEXT:** Review WP-01/WP-02 findings. Request a new bounded approval for the next appropriate investigation/contract-design increment (e.g. WP-03 Portuguese context corpus or WP-04 interface design only). Do not permit Claude to change product code based solely on Blueprint approval. Maintain HANDOFF-FIRST and exact CI SHA.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-010 — WP-03 Portuguese corpus and WP-04 control-plane design (ChatGPT)
+
+**USER AUTHORIZATION:** Following official Blueprint approval/JRV-BP-009 and completed read-only WP-01/WP-02, operator said "vamos entao fazer isso , continuemos" referring to the offered next increment: WP-03 Portuguese contextual understanding corpus + WP-04 implementation-neutral interface contract/design. **ONLY documents/specifications** authorized; no product implementation or A4.
+
+**START BASELINE:** Remote `develop` `721e0ac15d846b44f7be9c0d2676813328de522b`, three GitHub CI runs on same SHA SUCCESS (`43606396316`, `43606391824`, `43606391725`). Read docs/HANDOFF.md, WP-01/WP-02 and prior blueprint; inspected `rightware/agent/session.py`, `completion.py`, `receipts.py`, `policy.py`, `runtime.py`, `voice.py` and A3 regression test symbols from develop. Product paths unchanged.
+
+**ARTIFACTS COMMITTED:**
+- [WP-03 labelled Portuguese context fixtures](product-blueprint/fixtures/WP03_PT_CONTEXT_CORPUS_v1.csv) — 36 synthetic cases, commit `c0f3f8953e51c92ce42818b28b858230d7ec656f`.
+- [WP-03 Portuguese Intent/Context Evaluation Contract](product-blueprint/WP-03_PORTUGUESE_CONTEXT_EVALUATION_CONTRACT.md), commit `83c0b54e5d1eb2d5b55d58878385542c02a5e64f`. Covers dialogue reference, correction, ambiguity, knowledge, no-tool effects, sensitive operations and memory truth; expected intent/response categories, qualitative oracle, no numeric guesses and mandatory future real-model evaluation.
+- [WP-04/D01 Unified Control Plane Interface Design](product-blueprint/WP-04_UNIFIED_CONTROL_PLANE_INTERFACE_DESIGN.md), commit `76070961d044d7126f99fa2aebf78b654af80921`. Defines proposed request/route/grant/result/context/adapters, mapped existing AgentSession/A1–A3 statuses, safe migration slices D01–D08, 14 future INT-001–014 test oracles, A1–A3 preservation matrix, and open IF-01–10 decisions.
+- [Blueprint index](product-blueprint/README.md) updated, commit `1426279dc87f825d1fdcd9b6d8073d0d4c9b3b1b`.
+
+**SOURCE-BASED FACTS:** `chat` currently uses OpenJarvis SimpleAgent; `voice` uses VoiceLoop/AgentContext and restricted WindowsActions; `agent` uses RIGHTWARE AgentSession with AgentPolicy and A1–A3 constructor opt-ins. `AgentSession.run()` composes raw outcomes and applies A3 gate only when enabled; no current common product controller. Pinned OpenJarvis itself has candidate persistent memory, GUI, scheduler, file tools, but nothing here approves enabling them.
+
+**EVIDENCE:** WP-03 fixtures are MANUALLY AUTHORED, NOT TESTED. WP-04 INT-001–014 are PROPOSED acceptance tests, NOT RUN. No Qwen invocation, Windows action, package installation, tests execution, source-code modification, vendor upgrade, A4, main merge or release occurred in this increment. Earlier green CI is not evidence that these future tests pass.
+
+**NEXT DECISION:** Operator review of WP-03 corpus and WP-04 interface design, including IF-01–10; separate authorization for a very narrow implementation slice WP-04/D01–D02 (trusted request/result façade and no-tool text path only), or separate focused read-only upstream GUI/memory validation. Preserve A1–A3 default-OFF and issue #9; no unsafe or destructive refactoring without explicit approval.
