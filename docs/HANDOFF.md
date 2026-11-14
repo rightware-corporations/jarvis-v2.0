@@ -3110,3 +3110,18 @@ Não alterados: `_compose`, `policy.py`, quotas, `receipts.py`, `browser.py`, `w
 2. A4 (aceitação end-to-end) e, separadamente, uma futura execução Qwen autorizada para medir se o modelo real responde ao feedback de recuperação.
 
 Nada disto foi iniciado.
+
+
+## CHECKPOINT — 14/11/2026: JRV-BP-001 — product blueprint index and JRV-001 authored (ChatGPT)
+
+**REQUEST:** Organize the full RIGHTWARE JARVIS product/system analysis as durable versioned Markdown in this repository and continue the matrices sequentially rather than saving them all at the end.
+
+**FILES CREATED:**
+- [Product Blueprint register](product-blueprint/README.md), commit \`5eb967f0383e706daf1aaae1221d131ff1bdeba8\`.
+- [JRV-001 Capability Taxonomy](product-blueprint/JRV-001_CAPABILITY_TAXONOMY.md), commit \`9d842580d5d19b6a2124eb05099461bc9a5a6212\`.
+
+**SCOPE:** product definition, logical architecture, 10 major systems with **81 explicitly enumerated target capabilities**, request classes, conceptual contracts, dependencies, release hypotheses, known A1/A2/A3 implementation evidence and open decisions. JRV-002 through JRV-007 are registered as PLANNED without creating empty documents. The earlier conversational claim of 79 capabilities was corrected by counting actual matrix rows.
+
+**CRITICAL GOVERNANCE:** JRV-001 = PROPOSED ARCHITECTURE, pending operator review/approval; NOT official approved architecture and NOT an implementation authorization. A1–A3 remain verified within their engineering test scope, #9 closed, A4 remains unapproved. This document does not claim live Qwen A3 recovery, durable memory, end-to-end Windows voice or trusted original-document identity. Do not automatically modify product code, vendor, main branch or dependencies based on the proposed taxonomy.
+
+**PROCESS:** one complete matrix per increment, append-only HANDOFF checkpoint, status/decision traceability, then subsequent use-case/behaviour-contract/architecture/current-code audit/gap analysis/roadmap matrices. Reconfirm GitHub HEAD and test evidence before each new code-mapping claim. Next JRV-002 use cases and actor journeys.
