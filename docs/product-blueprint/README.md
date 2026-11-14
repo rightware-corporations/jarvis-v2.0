@@ -2,7 +2,7 @@
 
 **Version:** 1.0 (incremental)  
 **Created:** 2026-11-14  
-**Status:** PROPOSED ARCHITECTURE — pending explicit operator approval  
+**Status:** APPROVED ARCHITECTURAL REFERENCE (operator 2026-11-14), with conditional/open technical decisions; reports JRV-008/WP-01/WP-02 preserve separate states  
 **Repository:** rightware-corporations/jarvis-v2.0  
 **Branch:** develop
 
@@ -58,3 +58,16 @@ Each capability should be traceable through \`JRV-SYSTEM.CAPABILITY\` identifier
 ## Blueprint v1.0 formal review
 
 Seven initial matrices (JRV-001–007) are authored. A separate [JRV-008 formal review and decision register](JRV-008_BLUEPRINT_REVIEW_AND_DECISION_REGISTER.md) supplies proposed approval language, narrower E0/E1 scope and open decisions. **No official architecture approval, implementation authority, A4 or release follows automatically from JRV-008.**
+
+
+## Official operator decision and authorized investigations
+
+- **APPROVED architectural reference:** [Decision JRV-DEC-2026-11-14-001](DECISION_2026-11-14_BLUEPRINT_V1_APPROVAL.md). The operator explicitly approved JRV-001–007 as the RIGHTWARE JARVIS Blueprint v1.0 reference, adopting E0/E1 planning envelopes and separately authorizing only WP-01/WP-02 read-only specification/investigation. The original matrices remain preserved as authored and some of their technical choices remain OPEN.
+- **APPROVED read-only work — report delivered:** [WP-01 Release Scope & Device Specification](WP-01_RELEASE_SCOPE_AND_DEVICE_SPECIFICATION.md). Exact UC shortlist remains a proposal; Issa's target device and consent policy are unknown.
+- **APPROVED read-only work — report delivered:** [WP-02 Pinned OpenJarvis Reuse & Integration Investigation](WP-02_VENDOR_AND_INTEGRATION_INVESTIGATION.md). Important qualification: upstream has existing persistent memory, GUI, scheduler and file tools; these are not integrated or security-accepted RIGHTWARE product features. **Reuse must be evaluated before building duplicate components.**
+- **Historical review:** [JRV-008 — Formal review](JRV-008_BLUEPRINT_REVIEW_AND_DECISION_REGISTER.md) predates the official approval; its "NOT APPROVED" wording remains valid **at its authored time**, not at present.
+- **Still not authorized:** any product code, A4, live-Qwen/Windows tests, vendor updates, dependency changes, memory retention rollout or commercial release.
+
+### Status interpretation
+
+The **Blueprint as an architectural reference** is approved, but its contents are not blanket implementation permission; each release scope, integration architecture, technology choice and measurable gate must still be decided within the approved process. When a future report contradicts an earlier proposed assumption (e.g. upstream module availability), attach the explicit follow-up instead of hiding/replacing earlier evidence.
