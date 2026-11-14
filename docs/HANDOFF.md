@@ -3011,3 +3011,11 @@ A expectativa do teste A2 de argumentos malformados foi actualizada para o motiv
 - `actionlint` OK; vendor, política, workflows e labs intactos.
 
 **Estado:** #9 resolvida localmente; CI e fecho da issue a confirmar a seguir. **Gate para A3:** só depois de CI verde no SHA desta correcção.
+
+## CHECKPOINT — 14/11/2026: WORK-07 issue #9 — GATE PASS, issue fechada (Claude Code)
+
+**CI em `0215cd1b214ed17f55dd205e38664797005286df`:** WORK-05 product [43594927827](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43594927827) success, log com **Ran 379 tests, OK** e passo «no test may skip» success; foundation 43594927822 e 43594931556 success.
+
+**Issue #9:** comentário de resolução [6877284168](https://github.com/rightware-corporations/jarvis-v2.0/issues/9#issuecomment-6877284168) e issue **fechada (completed)**.
+
+**Gate R3-C2-026 satisfeito:** começa o A3 (autorização na issue #8, comentário 6877184622).
