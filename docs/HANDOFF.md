@@ -3125,3 +3125,17 @@ Nada disto foi iniciado.
 **CRITICAL GOVERNANCE:** JRV-001 = PROPOSED ARCHITECTURE, pending operator review/approval; NOT official approved architecture and NOT an implementation authorization. A1–A3 remain verified within their engineering test scope, #9 closed, A4 remains unapproved. This document does not claim live Qwen A3 recovery, durable memory, end-to-end Windows voice or trusted original-document identity. Do not automatically modify product code, vendor, main branch or dependencies based on the proposed taxonomy.
 
 **PROCESS:** one complete matrix per increment, append-only HANDOFF checkpoint, status/decision traceability, then subsequent use-case/behaviour-contract/architecture/current-code audit/gap analysis/roadmap matrices. Reconfirm GitHub HEAD and test evidence before each new code-mapping claim. Next JRV-002 use cases and actor journeys.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-002 — JRV-002 use cases and actor journeys authored (ChatGPT)
+
+**REQUEST:** Continue RIGHTWARE JARVIS Product & Systems Blueprint sequentially after JRV-001, committing complete matrices individually in the repository.
+
+**BASELINE:** `develop` at `f049c560c37315b7f6456f536c1eddcccb5e03e1` when planning started; Blueprint JRV-001 was PROPOSED with 81 capability IDs.
+
+**DOCUMENT CREATED:** [JRV-002 Use Cases & Actor Journeys](product-blueprint/JRV-002_USE_CASES.md), commit `5fa718d6d95efe45e88e9b023fe22427e84de5b6`. Published 33 use cases (UC-001–UC-033), 9 logical actors (ACT-01–ACT-09), 8 end-to-end journeys (JN-01–JN-08), 14 detailed use-case contracts, 18 negative/adversarial scenarios and traceability to JRV-001. Index `product-blueprint/README.md` updated in commit `7899a08412c0686d69c17afea95b45577c091cf3`.
+
+**GOVERNANCE:** JRV-001 and JRV-002 are proposed and pending operator approval. Candidate tiers Core/Extended/Research are not official release scope. Actors are logical and do not imply already implemented multi-user or service architecture. No product code, vendors, policies, models, memory, main branch or A4 modified/authorized by this documentation.
+
+**EVIDENCE LIMITATION:** A1–A3 are implemented opt-in within their tested scope; 408 pinned tests and 3 green workflows recorded at engineering HEAD `65dad56f73b872017ef5c2d1c8717909d7c0106e`. This does not demonstrate complete real-Qwen recovery, durable memory, Windows voice, authenticated document original identity, recurring automation or user acceptance.
+
+**NEXT:** Review/approve JRV-001/JRV-002 explicitly; author JRV-003 Behaviour Contracts & measurable Acceptance Criteria, matching every major use-case class. Keep HANDOFF-FIRST and propose no code implementation without separate authorization.
