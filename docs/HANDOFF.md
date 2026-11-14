@@ -3179,3 +3179,17 @@ Nada disto foi iniciado.
 **SCOPE/CAUTIONS:** This is source-backed, read-only **selected files** audit and non-truncated tracked path inventory. Not a full vendor code/dependency/security assessment or real-Qwen/Windows test. No modifications to product code, policy, vendor, runtime, CI, main or A4. JRV-001–004 remain PROPOSED pending approval; JRV-005 findings require operator review, not automatic implementation authority.
 
 **NEXT:** JRV-006 gap analysis and dependency prioritization grounded in this pinned audit, then JRV-007 roadmap and release acceptance. Determine an explicit first-release UC scope before labeling missing capabilities blockers.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-006 — gap dependency priorities authored (ChatGPT)
+
+**REQUEST:** Convert JRV-005 source-backed implementation findings into a gap/dependency/prioritization framework distinguishing the first usable Issa version from the full RIGHTWARE JARVIS product.
+
+**BASELINE:** Remote `develop` HEAD `12eb60134e6f1664a8e94b9d3eb2da3722e91aaa` when writing began. At same SHA, WORK-05 product CI `43603809652`, foundation CI `43603809583` and `43603814332` all SUCCESS. JRV-005 audited code SHA `f4a50e5075d0b94f635b1540885a0f2bd5258bc8` (subsequent code changes not detected in prior steps; blueprint writes only). No new code or tests executed here.
+
+**DOCUMENT:** [JRV-006 Gap Analysis, Dependency Graph & Engineering Priorities](product-blueprint/JRV-006_GAP_ANALYSIS.md), initial commit `eb6dc3698f586f1898df185cd876b60bd3c5fea6`. Blueprint register updated in `929ae592178f84fe86b662d23542ac8f4e23b090`. The matrix provides 20 labelled gaps (GAP-001–020), 12 strategic risks, 14 candidate work packages (WP-01–14), 10 approval gates (DG-01–10), qualitative priority bands, reuse/adapt/build choices, dependency DAG, parallel streams, and proposed execution waves.
+
+**PRIMARY FINDING:** Split upstream chat, VoiceLoop, and RIGHTWARE AgentSession flows are the chief integration obstacle; A1/A2/A3 are opt-in tested internal components, not a complete integrated user experience. Recommended release envelopes: E0 internal unified text alpha with real-model checks, then E1 Issa personal pilot with scoped durable memory, Portuguese voice and one verified Windows action; E2 durable operational task recovery and selected extended adapters; E3 optional commercial expansion. These envelopes are proposals, not official scope or commitments.
+
+**GUARDRAILS:** Distinguish current scoped CI evidence from user acceptance; do not describe FAKE tests as real Qwen/Windows proof. No feature implementation, A4, Qwen runs, main merge, new dependencies, memory data retention policy, external provider permissions or release authorized by this documentation. No fictional numeric completion scores, prices, estimates or deadlines.
+
+**NEXT:** JRV-007 — Engineering Roadmap & Release Gates, mapping E0/E1/E2 proposed slices to WP/GAP/UC/CT and measurable acceptance. Operator to approve/revise JRV-001–007 and specific release scope before initiating new implementation tasks.
