@@ -3205,3 +3205,17 @@ Nada disto foi iniciado.
 **CRITICAL DISTINCTION:** The **seven Blueprint documents are authored** but remain **PROPOSED / pending operator approval**. Their compilation does NOT authorize code implementation, real-Qwen runs, Windows installation, A4 end-to-end mission, vendor updates, memory retention policy, paid APIs, product release, merge main or broad autonomy. An internal E0 alpha is not the Issa E1 product acceptance. The JRV-005 findings note that chat, voice and RIGHTWARE AgentSession are split; A1–A3 constructor opt-ins are not wired through the ordinary CLI. A3 tests are FAKE model; real Windows/voice/user acceptance remain unverified.
 
 **NEXT DECISION:** Review/approve or revise JRV-001–007 as a conceptual baseline and approve exact E0/E1 release scope, hardware and privacy/security constraints (DG-01/02, DEC-01–). Only then issue a **separate, bounded** WP-01/02 implementation/research authorization, with HANDOFF-FIRST and exact CI/test requirements. JRV-007's roadmap itself is NOT a blanket authorization.
+
+## CHECKPOINT — 14/11/2026: JRV-BP-008 — Blueprint formal review packet and proposed E0/E1 contract (ChatGPT)
+
+**REQUEST:** Continue after JRV-007 with formal review of the RIGHTWARE JARVIS Product & Systems Blueprint v1.0, separating recommended architecture/release scope from operator-authorized product decisions.
+
+**BASELINE:** Remote `develop` HEAD `d664d3ae564bc8fdaddf1d250f5fd171ed653359` at start; on that exact SHA product WORK-05 CI `43604910837` SUCCESS, foundations `43604910872` and `43604914364` SUCCESS. Existing seven matrices read; the JRV-005 code audit remains pinned to its older exact source SHA and is not a complete vendor audit.
+
+**DOCUMENT CREATED:** [JRV-008 — Blueprint Formal Review & Decision Register](product-blueprint/JRV-008_BLUEPRINT_REVIEW_AND_DECISION_REGISTER.md), commit `12538d970a3db08ca92dd11e5e5b9a58e13aecc5`; [Blueprint index](product-blueprint/README.md) updated in commit `ef0c254c0ac5cb34b45d70f1833016854064ab6f`.
+
+**REVIEW FINDING:** JRV-001–007 are authored and usable as a *proposed* reference, but not yet APPROVED. Ten recommended REV decisions, explicit E0 internal text-alpha candidate UC set and acceptance gates, E1 Issa Windows pilot candidate scope, ten open topics (hardware, memory privacy, wake, real model targets, UI, etc.), and recommended first WP-01/WP-02 read-only missions are recorded. No fabricated operator approval. User's continuation authorizes this documentation/review step only, not unbounded feature development.
+
+**CRITICAL GUARDRails:** A1–A3 existing code is opt-in and verified in scoped tests; product chat, voice, agent remain distinct; production CLI does not wire A1–A3 flags; real-Qwen/Windows user acceptance not demonstrated. A4, new code, vendor changes, cloud/paid APIs, Windows actions, data retention policy, release and main merge **NOT AUTHORIZED** by this checkpoint.
+
+**NEXT:** Operator review/explicit endorsement or amendments to JRV-008 proposed decision wording. On approval, publish a separate official decision record and only then bounded WP-01/WP-02 authorization (unless operator explicitly grants those directly). Preserve HANDOFF-FIRST, PR #1 and non-destructive Git workflow.
