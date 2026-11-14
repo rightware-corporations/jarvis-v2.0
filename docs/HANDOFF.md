@@ -2956,3 +2956,17 @@ Não alterados: `_compose`, `AgentReply`, `reply_json`, estados de conclusão, `
 **ESTADO:** A1 e A2 CONCLUIDAS; #9 defect aberto; A3 ESPECIFICADA MAS NAO INICIADA/AUTORIZADA; A4 pendente. Nenhuma mudanca ao runtime ou politica causada por este checkpoint. Kaggle demo continua em snapshot anterior, sem implicacao em CI product.
 
 **PROXIMA DECISAO:** operador autorizar separadamente correcao #9 e A3 dentro dos gates, ou primeiro uma auditoria read-only do design. Preservar HANDOFF-FIRST e commits concorrentes.
+
+## CHECKPOINT — 14/11/2026: WORK-07 R3-C2-026 — autorizacao sequencial issue 9 depois A3 (ChatGPT)
+
+**DECISAO OFICIAL DO OPERADOR:** «vamos autorizar e dar continuidade» apos recomendacao de corrigir issue #9 antes da A3. Autorizadas duas etapas **em sequencia, nao em paralelo**: (1) fix do motivo de recusa obsoleto (issue #9); (2) Milestone A3 Completion Gate (issue #8) somente quando #9 tiver testes e CI success, checkpoint HANDOFF e, se aplicavel, issue fechada. Nao e autorizacao de A4, Qwen, rollout, main, vendor ou alteracao de policy/quotas. A escrita desta ordem nao inicia Claude automaticamente.
+
+**BASELINE verificado:** HEAD de develop antes da missao `286fb9f30fb5bd180c75dfa8962fecc205c4563e`. WORK-05 product run `43486430027` SUCCESS; foundation `43486430026` e `43486435043` SUCCESS. Issue #8 aberta (A0–A4) e #9 aberta no momento da verificacao. Rever HEAD/CI antes da execucao real.
+
+**ORDEM #9:** [issue #9, autorizacao de correcao](https://github.com/rightware-corporations/jarvis-v2.0/issues/9#issuecomment-6877174649). Investigar early returns do upstream, falsificacao de motivo por `AgentPolicy.last_denial`, corrigir apenas no codigo RIGHTWARE sem mudar grants, com suites de regressao e CI. Se nao for possivel corrigir com evidencias, estado BLOCKED e A3 nao se inicia.
+
+**ORDEM A3:** [issue #8, autorizacao de A3 condicionada a #9](https://github.com/rightware-corporations/jarvis-v2.0/issues/8#issuecomment-6877184622). Integração fail-closed e opt-in da avaliacao deterministica de objectivos A1 com recibos vinculados A2; nunca contar DENIED/NOT_EXECUTED/ORPHAN/DUPLICATE/TIMED_OUT/late/audit FAILED como sucesso, nem aceitar URLs/HTTP 200 como identidade documental quando `identity_rule=NONE`. Resultado UNKNOWN_IDENTITY quando identidade nao possa ser provada. Recuperacao apenas bounded e com ultimo turno real, quotas, deadline, cancel e policy preservados. Default-OFF e compatibilidade byte-idêntica sem contrato/receipts; testes FAKE reais sobre AgentSession, suite pinned zero skips, mutation bounded e CI no SHA exacto. Sem Qwen.
+ 
+**ESTADO:** A1 e A2 CONFIRMADAS, 372 testes pinned PASS no HEAD A2; issue #9 AGUARDA IMPLEMENTACAO; A3 AUTORIZADA CONDICIONALMENTE, AINDA NAO IMPLEMENTADA; A4 NAO AUTORIZADA. As decisoes de implementacao, excecoes e CI ficam a cargo da sessao Claude Code, com HANDOFF-FIRST e preservacao de trabalho concorrente.
+
+**PROXIMA ACAO:** operador envia prompt unico ao Claude Code para fix #9 -> CI/HANDOFF gate -> A3. Nao avançar sem gate #9.
