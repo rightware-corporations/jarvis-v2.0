@@ -2970,3 +2970,13 @@ Não alterados: `_compose`, `AgentReply`, `reply_json`, estados de conclusão, `
 **ESTADO:** A1 e A2 CONFIRMADAS, 372 testes pinned PASS no HEAD A2; issue #9 AGUARDA IMPLEMENTACAO; A3 AUTORIZADA CONDICIONALMENTE, AINDA NAO IMPLEMENTADA; A4 NAO AUTORIZADA. As decisoes de implementacao, excecoes e CI ficam a cargo da sessao Claude Code, com HANDOFF-FIRST e preservacao de trabalho concorrente.
 
 **PROXIMA ACAO:** operador envia prompt unico ao Claude Code para fix #9 -> CI/HANDOFF gate -> A3. Nao avançar sem gate #9.
+
+## CHECKPOINT — 14/11/2026: WORK-07 R3-C2-026 Fase 0 / issue #9 — início (Claude Code)
+
+**Verificação:**
+- local `52d02e9` → fast-forward para o remoto `e748cfe165d27cee7bea164c7435625177c96e47`, árvore limpa;
+- CI do HEAD: WORK-05 product `43594441284`, foundation `43594441242` e `43594444840`, todos success;
+- PR: só o rascunho #1, que não é tocado;
+- lidos R3-C2-025/026, a issue #9 (ordem 6877174649) e a issue #8 (A3 condicionada, 6877184622).
+
+**Sequência obrigatória:** primeiro a correcção #9 com testes, CI e checkpoint; só depois A3. Sem A4, Qwen, vendor, política ou quotas.
