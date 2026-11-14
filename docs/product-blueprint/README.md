@@ -26,7 +26,7 @@ Make RIGHTWARE's intended JARVIS product, behaviours, architecture and engineeri
 | ID | Matrix | Status | Repository file |
 |---|---|---|---|
 | JRV-001 | Product definition & capability taxonomy | PROPOSED — authored, pending approval | [JRV-001_CAPABILITY_TAXONOMY.md](JRV-001_CAPABILITY_TAXONOMY.md) |
-| JRV-002 | Use cases & actor journeys | PLANNED — not authored | To be created |
+| JRV-002 | Use cases & actor journeys | PROPOSED — authored, pending approval | [JRV-002_USE_CASES.md](JRV-002_USE_CASES.md) |
 | JRV-003 | Behaviour contracts & acceptance criteria | PLANNED — not authored | To be created |
 | JRV-004 | System architecture & technical interfaces | PLANNED — not authored | To be created |
 | JRV-005 | Verified current implementation audit | PLANNED — not authored | To be created |
