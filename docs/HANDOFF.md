@@ -3269,3 +3269,22 @@ Nada disto foi iniciado.
 **RESTRICTIONS:** Implementation must be performed by Claude on a safe topic branch after fresh baseline check. No code has yet been changed for D01–D02 and no new tests have been run. The issue and prompt are NOT evidence that a working unified controller exists. No vendor pin/lockfile changes, no A1/A2/A3 or policy refactor, WindowsActions, voice, durable memory, new tooling, external APIs, live Qwen/Windows test, A4, main merge or release. Mandatory tests are specified in mission, including FAKE isolated, no tool effect and A1–A3 negative regressions, and exact-SHA pinned CI.
 
 **NEXT:** Claude implements D01–D02 only, produces topic-branch Draft PR and append-only HANDOFF checkpoint with exact tests and CI. ChatGPT then audits the delivered code/evidence and user-visible behavior before a separate D03 implementation decision.
+
+
+## CHECKPOINT — 15/11/2026: JRV-BP-012 — WP-04/D01–D02 text facade candidate (GitHub connector)
+
+**AUTHORIZATION:** Operator explicitly authorized D01/D02 code, fake tests, topic-branch commits, append-only HANDOFF and Draft PR to develop. This does not authorize D03–D08, A4, real Qwen or Windows device tests.
+
+**PREFLIGHT:** develop HEAD `fa36b3896de2408c9c98a80d6618469ef7099547`, main `0cac8e8d828d91cb9d849c67a33f62eb701bdb94`; no WP04 branch/open PR before creation; only release PR #1 DRAFT. Three baseline runs successful: foundation `43607801083` (PR), WORK-05 `43607796273` (push), foundation `43607796224` (push). Vendor gitlink and `rightware/runtime.py:PIN` equal `f21d902f4d3bd7f0f3f138f1a4613019a394b549`. No local clone or submodule venv accessible to the container, direct GitHub DNS unavailable. GitHub connector write permissions verified; existing worktrees were not modified.
+
+**BRANCH:** `feat/wp04-d01d02-text-facade`, branched from exact baseline. Code/review pre-checkpoint tip `5959ce59d237676829959118b7658a3458293e77`. Commits include `6ca1cfc` (lazy adapter), `8684b35` (facade), `7ee543e` (fake tests), `a9db30d` / `5514d18` (corrected lifecycle/diagnostic/claim filters), `2b29c3e` (test correction), `5959ce5` (review documentation), plus intermediate test fixes.
+
+**FILES:** New `rightware/text_adapter.py` (deferred pinned SimpleAgent/Ollama, injectable model factories, no tools or memory); `rightware/text_facade.py` (random host IDs, owner-local session binding, strict text validation, empty effective capabilities, bounded ephemeral context, route/status projection, cancellation and honest fail-closed result); `tests/test_wp04_d01_d02.py` (fake routing, owner/capability injection, zero effects, session isolation, budgets, model errors, timeout/cancel, WP03 corpus sampling); `docs/engineering/WP04_D01_D02_IMPLEMENTATION_REVIEW.md` (opt-in usage and limitations). `docs/HANDOFF.md` appended with this checkpoint.
+
+**STATUS AND EVIDENCE:** Code committed as **IMPLEMENTED_CANDIDATE**, not tested/accepted yet. Local project venv suite `python -m unittest discover -s tests -v` **BLOCKED/NOT_TESTED** (runtime has no repo clone, pinned vendor or GitHub DNS). New fake tests **NOT_TESTED at this checkpoint**; pending real GitHub Actions CI on PR's final exact SHA. No simulated PASS counts and no live model tests. No changes made to runtime/voice/agent CLI, policy, receipts, completion, WindowsActions, vendor gitlink/pin, dependencies, workflows, `develop`, `main` or PR #1.
+
+**NO-EFFECT DESIGN:** TASK/MEMORY_INTENT static refusal, never dispatched; model `SimpleAgent` direct text-only path, tool_results rejected, all result receipts/effects empty, factual_verified/task_completed/memory_persisted false. No role/grant fields accepted via text. Fake tests must verify these facts in CI before a PASS claim.
+
+**LIMITATIONS:** Deterministic routing is a conservative guard, not proven Portuguese understanding. Local owner is not multi-user auth. Synchronous model worker can finish after timeout/cancel; late output is discarded and same session stays busy while the worker lives. No live Qwen or user/device validation. D03 integration and policy-protected actions excluded.
+
+**NEXT EXACT STEP:** Open Draft PR into develop referencing Issue #10; inspect CI for the PR SHA and actual test counts, repair failures only within D01/D02, then append final checkpoint with exact-SHA evidence and review blockers. Do not merge.
