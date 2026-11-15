@@ -302,7 +302,7 @@ class TextFacade:
                 return self._result(request, route, Status.ERROR,
                                     "A resposta ultrapassou o limite do contexto.", ("RESPONSE_LIMIT",))
             if _FALSE_EFFECT.search(answer) or re.search(
-                    r"\\b(?:j[aá]\\s+|sim[, ]+|claro[, ]+)(?:enviei|abri|executei|apaguei|guardei|gravei|agendei)\\b",
+                    r"\b(?:j[aá]\s+|sim[, ]+|claro[, ]+)(?:enviei|abri|executei|apaguei|guardei|gravei|agendei)\b",
                     answer, re.IGNORECASE):
                 return self._result(request, route, Status.UNAVAILABLE,
                                     "O modelo afirmou uma execução que esta interface não pode comprovar. Nenhuma ferramenta foi chamada.",
