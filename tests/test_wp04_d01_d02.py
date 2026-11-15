@@ -271,7 +271,7 @@ class PinnedAdapterContract(unittest.TestCase):
         for result in (SimpleNamespace(content="Feito", tool_results=["executed"], metadata={}),
                        SimpleNamespace(content="", tool_results=[], metadata={}),
                        SimpleNamespace(content="ok", tool_results=[], metadata={"error": True})):
-            adapter = LocalSimpleTextAdapter(engine_factory=lambda: object(),
+            adapter = LocalSimpleTextAdapter(engine_factory=lambda: SimpleNamespace(close=lambda: None),
                 agent_factory=lambda *args, **kw: Agent(result), context_factory=lambda h: h)
             with self.assertRaises(InvalidModelReply):
                 adapter.reply("Explica algo", ())
