@@ -155,6 +155,7 @@ class TextFacade:
         self.max_history_chars, self.max_turns = max_history_chars, max_turns
         self.max_response_chars, self.deadline_seconds = max_response_chars, deadline_seconds
         self._adapter = adapter
+        self._adapter_init_lock = RLock()
         self._sessions: dict[str, _Session] = {}
         self._lock = RLock()
 
@@ -255,10 +256,12 @@ class TextFacade:
             box: dict = {}
             def work():
                 try:
-                    if self._adapter is None:
-                        self._adapter = LocalSimpleTextAdapter(
-                            timeout_seconds=self.deadline_seconds)
-                    box["value"] = self._adapter.reply(request.text, history)
+                    with self._adapter_init_lock:
+                        if self._adapter is None:
+                            self._adapter = LocalSimpleTextAdapter(
+                                timeout_seconds=self.deadline_seconds)
+                        adapter = self._adapter
+                    box["value"] = adapter.reply(request.text, history)
                 except BaseException as exc:
                     box["error"] = exc
 
@@ -284,9 +287,10 @@ class TextFacade:
             if "error" in box:
                 error = box["error"]
                 code = ("INVALID_MODEL_REPLY" if isinstance(error, InvalidModelReply)
+                        else "TIMEOUT" if isinstance(error, TimeoutError)
                         else "MODEL_UNAVAILABLE" if isinstance(error, (ConnectionError, OSError))
                         or "Connection" in type(error).__name__
-                        else "TIMEOUT" if isinstance(error, TimeoutError) else "MODEL_ERROR")
+                        else "MODEL_ERROR")
                 return self._result(request, route, Status.ERROR,
                                     "Não foi possível obter uma resposta válida do modelo local. Confirma o Ollama e o modelo instalado.",
                                     (code,))
@@ -297,7 +301,9 @@ class TextFacade:
             if len(answer) > self.max_response_chars:
                 return self._result(request, route, Status.ERROR,
                                     "A resposta ultrapassou o limite do contexto.", ("RESPONSE_LIMIT",))
-            if _FALSE_EFFECT.search(answer):
+            if _FALSE_EFFECT.search(answer) or re.search(
+                    r"\\b(?:j[aá]\\s+|sim[, ]+|claro[, ]+)(?:enviei|abri|executei|apaguei|guardei|gravei|agendei)\\b",
+                    answer, re.IGNORECASE):
                 return self._result(request, route, Status.UNAVAILABLE,
                                     "O modelo afirmou uma execução que esta interface não pode comprovar. Nenhuma ferramenta foi chamada.",
                                     ("UNVERIFIED_EFFECT_CLAIM",))
@@ -311,13 +317,12 @@ class TextFacade:
 
     def close(self) -> None:
         with self._lock:
-            tokens = list(self._sessions)
-        for token in tokens:
+            sessions = list(self._sessions.items())
+        active = any(s.worker is not None and s.worker.is_alive() for _, s in sessions)
+        for token, _ in sessions:
             self.close_session(token)
-        if self._adapter is not None and not any(
-            s.worker is not None and s.worker.is_alive()
-            for s in self._sessions.values()
-        ):
+        # Never wait forever for a cancelled/timed-out inference thread.
+        if self._adapter is not None and not active:
             close = getattr(self._adapter, "close", None)
             if callable(close):
                 close()
