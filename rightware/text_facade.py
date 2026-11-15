@@ -96,7 +96,8 @@ _COMPOUND_TASK = re.compile(
 )
 _MEMORY = re.compile(
     r"^\s*(?:lembra-te\s+de|memoriza\b|guarda\s+(?:na\s+mem[oó]ria|isto\s+para)|"
-    r"apaga\s+(?:a\s+)?prefer[eê]ncia\b|esquece\s+(?:o\s+que|a\s+prefer[eê]ncia))",
+    r"apaga\s+(?:a\s+)?prefer[eê]ncia\b|esquece\s+(?:o\s+que|a\s+prefer[eê]ncia)|"
+    r"qual\s+era\s+o\s+nome\s+que\s+eu\s+te\s+disse\b)",
     re.IGNORECASE,
 )
 _CLARIFY = re.compile(
@@ -105,7 +106,8 @@ _CLARIFY = re.compile(
 )
 _CONTROL = re.compile(
     r"^\s*(?:p[aá]ra\b|cancela\b|n[aã]o\s+executes\b|"
-    r"j[aá]\s+executaste\b|qual\s+[eé]\s+o\s+estado\b)",
+    r"j[aá]\s+(?:executei|executaste|abri|abriste|enviaste)\b|"
+    r"qual\s+[eé]\s+o\s+estado\b)",
     re.IGNORECASE,
 )
 _PLAN = re.compile(
