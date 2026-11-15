@@ -310,6 +310,63 @@ class CorpusSelection(unittest.TestCase):
                 self.assertFalse(result.factual_verified)
         facade.close()
 
+    def test_wp03_untrusted_prior_execution_and_old_memory(self):
+        fake = FakeTextModel("Não há evidência de execução.")
+        facade = TextFacade(adapter=fake)
+        sid = facade.open_session()
+        cases = {
+            "PTX-020": (Route.CONTROL, Status.UNAVAILABLE),
+            "PTX-023": (Route.CONTROL, Status.UNAVAILABLE),
+            "PTX-027": (Route.MEMORY_INTENT, Status.UNAVAILABLE),
+        }
+        path = Path(__file__).resolve().parents[1] / (
+            "docs/product-blueprint/fixtures/WP03_PT_CONTEXT_CORPUS_v1.csv")
+        with path.open(encoding="utf-8", newline="") as stream:
+            corpus = {row["case_id"]: row for row in csv.DictReader(stream)}
+        for cid, (route, status) in cases.items():
+            with self.subTest(case=cid):
+                response = facade.submit(sid, corpus[cid]["user_utterance"])
+                self.assertEqual((response.route, response.status), (route, status))
+                self.assertEqual(response.effects, ())
+                self.assertFalse(response.memory_persisted or response.task_completed)
+        self.assertEqual(fake.calls, [])
+        facade.close()
+
+
+class PinnedVendorIntegration(unittest.TestCase):
+    def test_actual_pinned_simple_agent_context_without_inference(self):
+        try:
+            from openjarvis.agents._stubs import AgentContext
+            from openjarvis.agents.simple import SimpleAgent
+            from openjarvis.core.types import Role
+        except ImportError:
+            self.skipTest("pinned OpenJarvis venv required")
+        calls = []
+        class FakeEngine:
+            engine_id = "fake"
+            def generate(self, messages, **kwargs):
+                calls.append((messages, kwargs))
+                return {"content": "Resposta local.", "usage": {}}
+        context = LocalSimpleTextAdapter._pinned_context((
+            ("user", "Explica a camada de ozono."),
+            ("assistant", "É uma camada atmosférica."),
+        ))
+        self.assertIsInstance(context, AgentContext)
+        self.assertEqual(tuple((m.role, m.content) for m in context.conversation.messages),
+                         ((Role.USER, "Explica a camada de ozono."),
+                          (Role.ASSISTANT, "É uma camada atmosférica.")))
+        self.assertEqual(context.tools, [])
+        self.assertEqual(context.memory_results, [])
+        agent = SimpleAgent(FakeEngine(), "qwen3.5:2b",
+                            temperature=0.2, max_tokens=64, engine_options={"num_ctx": 4096})
+        response = agent.run("E essa camada?", context=context)
+        self.assertEqual(response.content, "Resposta local.")
+        self.assertEqual(response.tool_results, [])
+        self.assertEqual([m.role for m in calls[0][0][-3:]],
+                         [Role.USER, Role.ASSISTANT, Role.USER])
+        self.assertEqual(calls[0][1]["num_ctx"], 4096)
+        self.assertNotIn("tools", calls[0][1])
+
 
 if __name__ == "__main__":
     unittest.main()
