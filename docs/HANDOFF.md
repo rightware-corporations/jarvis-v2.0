@@ -3269,3 +3269,17 @@ Nada disto foi iniciado.
 **RESTRICTIONS:** Implementation must be performed by Claude on a safe topic branch after fresh baseline check. No code has yet been changed for D01–D02 and no new tests have been run. The issue and prompt are NOT evidence that a working unified controller exists. No vendor pin/lockfile changes, no A1/A2/A3 or policy refactor, WindowsActions, voice, durable memory, new tooling, external APIs, live Qwen/Windows test, A4, main merge or release. Mandatory tests are specified in mission, including FAKE isolated, no tool effect and A1–A3 negative regressions, and exact-SHA pinned CI.
 
 **NEXT:** Claude implements D01–D02 only, produces topic-branch Draft PR and append-only HANDOFF checkpoint with exact tests and CI. ChatGPT then audits the delivered code/evidence and user-visible behavior before a separate D03 implementation decision.
+
+## CHECKPOINT — 16/11/2026: JRV-BP-014 — agent executor + harness research audit
+
+**USER DIRECTION:** Preserve OpenJarvis as JARVIS foundation; investigate an existing open-source autonomous agent as a NEW TASK EXECUTION MODULE, supervised by a RIGHTWARE Agentic Harness. The word "vamos" authorized starting the previously proposed **read-only investigation / selection**, NOT external-agent installation or unrestricted task execution.
+
+**REPO PREFLIGHT:** `develop@fa36b3896de2408c9c98a80d6618469ef7099547`; D01/D02 remain in Draft PR #11, head `bb6a95ec214448c8ff087aca709624b4e67c69f0`, NOT merged. PR #1 still Draft. For non-destructive isolation, research documentation is in branch `research/jrv-task-executor-harness-audit-20261116`, created from exact develop SHA.
+
+**RESEARCH OUTPUT:** [JRV-TE-001 — candidate audit](research/JRV_TASK_EXECUTOR_AGENTIC_HARNESS_CANDIDATE_AUDIT_2026-11-16.md), initial commit `ae1f4a0a576b41a0bcc1dbf628a7b83c962f0a01`. Examined JARVIS AgentSession, AgentPolicy, A1/A2/A3 and D01/D02 candidate and external GitHub source: goose (Rust StateMachine/approval/max-turns), Agent Zero (Python tool loop/delegation), Hermes Agent (Python conversation loop/persist-before-execute/iteration budget). Principal licenses Apache-2.0/MIT/MIT confirmed; dependent licenses not audited. Goose **preferred for a tightly constrained isolated feasibility test**, not adopted as production technology.
+
+**PRIMARY GAP:** The project has partial trusted tool execution and evidence, but no integrated general task delivery path from D01/D02 through a Task Executor to RIGHTWARE-authorized tools and objective-level completion. Browser-only A1 contracts do not generalize without a newly approved typed contract. External executor must NEVER bypass RIGHTWARE policy/receipts or decide its own verified completion.
+
+**EVIDENCE AND LIMITS:** STATIC CODE/DOC REVIEW ONLY. No external agent installed, no new dependency, source modification, vendor upgrade, local model inference, Windows action, tool effect, or tests. No blanket approval of goose/Agent Zero/Hermes or of TE-P0 implementation. No secrets, raw conversations or user device data added.
+
+**NEXT:** Review the research matrix and separately authorize a sandboxed, fake-first TE-P0 tool-proxy proof before implementing. Keep all existing branches/PRs untouched and preserve HANDOFF continuity.
