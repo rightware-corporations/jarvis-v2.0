@@ -3353,3 +3353,15 @@ Nada disto foi iniciado.
 **LIVE QWEN STATUS:** NOT YET EXECUTED at this checkpoint. The one-shot workflow will only trigger on its request file; it uses local Ollama `0.40.15` with verified SHA-256 from the existing WORK-05 workflow and `qwen3.5:2b`, and records a truthful PASS_LIMITED / REVIEW / BLOCKED verdict without pretending factual verification. No model-generated shell/Windows/file grants, no mandatory paid API. The IANA pages are REAL public GET targets unlike FAKE fixture tests. A tool-browsing failure does not authorize new hosts or credentials.
 
 **BRANCH/DEPENDENCIES:** `feat/te03-rfc-task-entry` name is a historical branch identifier; **the actual selected sources are IANA**, not the RFC benchmark source set. PR #14 DRAFT, stacked on TE-02 #13 and D01/D02 #11; no merges.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-019 — first real TE-03 Qwen 2B read-only task
+
+**REQUEST:** User authorized TE-03 continuation after TE-02 mock-verified 441 tests. New `task` command plus IANA public host fixed preset implemented on Draft PR #14, stacked on TE-02 #13 and D01/D02 #11, no merge.
+
+**EXACT REAL EVIDENCE:** [TE-03 Qwen2B live audit](evidence/TE03_IANA_QWEN2B_REAL_RUN_2026-11-17.md). One-shot GitHub Actions `44103342916` (job `134108951579`) at request SHA `2d895918ab3e98d63bbf5bd46893e1343bff0f60`, approved code parent `1e500216957d0ffaaac05b76a15cd4b7cf85b21f`. Ollama 0.40.15 SHA256 check PASS, real `qwen3.5:2b` model digest `0689d44085e06d165161a8a9a1731344278cfb5aade63a3c3dbdb48ab54b130a`; complete pinned FAKE suite PASS before inference.
+
+**RESULT:** REAL model executed browser tools under RIGHTWARE policy. `IANA_RESERVED=PAGE_OBSERVED` (receipt 1), `IANA_EXAMPLE=MISSING` (no receipt), 10 execution receipts, overall `HALTED`, exit 3, CI live step/job `FAIL` because mandatory second objective was not observed; code-owned safety contract remains intact, factual_verified=false, completion_verified=false. No fallback claim of success. Sanitized evidence artifact ID `14335624986`, reviewed independently. Exact reason of `HALTED` unverified (budget count == receipts count suggests quota but the sanitized artifact lacks halt reason).
+
+**DISTINCTIONS:** Prior WORK-05 FAKE CI `44103040670` SUCCESS on code SHA `629f0d09b84ac84de60c5305bd838f78ccf4ef0f` with 450/450 PASS and 0 skip frozen vendor; a model benchmark FAIL is a separate result, NOT a FAKE regression. The original WORK-07 oracle-leakage regression remains unmodified; public case switched to IANA after initial failing TE-03 test.
+
+**NEXT:** Before expanding tools/architecture, consider a small diagnostic-only change to expose sanitized halt reason and tool result counts. Compare exact same task with stronger locally hosted Qwen 4B only under a distinct deliberate one-shot gate; no automatic retries of live model, no Goose integration, no Windows file/OS grants, no main/develop merge.
