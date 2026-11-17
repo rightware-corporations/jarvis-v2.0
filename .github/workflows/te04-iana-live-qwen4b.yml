@@ -59,7 +59,7 @@ jobs:
           vendor/openjarvis/.venv/bin/python -m unittest discover -s tests -v > te04-evidence/fake-tests.log 2>&1
           ! grep -q " skipped" te04-evidence/fake-tests.log
           tail -3 te04-evidence/fake-tests.log
-      - name: Install verified local Ollama and Qwen 2B
+      - name: Install verified local Ollama and Qwen 4B
         run: |
           set -euo pipefail
           ARCHIVE="$RUNNER_TEMP/ollama.tar.zst"
