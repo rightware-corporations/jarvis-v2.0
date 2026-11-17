@@ -3417,3 +3417,11 @@ Nada disto foi iniciado.
 **CI:** `work05-product.yml` runs only on pull requests to `develop` (and pushes to develop / feat/work05-product-agent); `foundation.yml` only on main/develop. Therefore NO GitHub CI run exists for the TE-05 heads; the only regression evidence is the local pinned-venv run (471 OK, 0 skipped). Retargeting #16 to `develop` would trigger CI (diff would then include TE-02..TE-04 commits, like #15) — operator decision.
 
 **STOP:** no real Qwen run until separately authorized.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-025 — TE-05 live acceptance start (authorized: 2B then 4B, one run each)
+
+**SETUP:** Isolated branch `exp/te05-live-qwen` from TE-05 head `0ae3383` (CI-validated, WORK-05 run 44117743037, 471/471). New one-shot workflow `.github/workflows/te05-live-qwen.yml`, triggered only by a push of `ops/te05_live_model_request.json` on this branch: request 1 = `qwen3.5:2b` (digest `0689d440…130a`), request 2 = `qwen3.5:4b` (digest `d8b0f5e9…2c04`); only the request file may differ from the approved code commit; first attempt only; pinned OpenJarvis; full FAKE suite before the model.
+
+**LIMITS UNCHANGED:** IANA preset objectives, max_calls=10, max_turns=10, deadline 115 s, engine timeout 120 s, tools/hosts/policy. CLI runs with `--warmup` (reported separately). Outer harness kill 320 s = TE-03/TE-04 200 s + 120 s for the warm-up engine call; this is not a task budget. No automatic retries; 4B only if 2B infrastructure and controls work. Artifacts: sanitized task JSON, verdict, preflight, versions/models, exit, stderr (no service log, no transcripts, no tool args).
+
+**NOT TOUCHED:** develop `fa36b38`, main `0cac8e8`, PR #16 head/base, pin `f21d902`.
