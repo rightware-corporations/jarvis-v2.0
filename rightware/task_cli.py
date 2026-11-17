@@ -1,7 +1,7 @@
-"""TE-03: explicit opt-in public RFC research task through RIGHTWARE AgentSession.
+"""TE-03: explicit opt-in public IANA research task through RIGHTWARE AgentSession.
 
 No arbitrary host, no file/shell/Windows tools and no natural-language grants.
-Only the host-owned RFC 9110/9112 contract and public GET browser are permitted.
+Only the host-owned IANA Reserved Domains/9112 contract and public GET browser are permitted.
 This CLI is an experimental technical demonstration, not an accepted JARVIS UI.
 """
 from __future__ import annotations
@@ -17,20 +17,20 @@ from rightware.task_entry import TaskEntry
 from rightware.text_facade import TextFacade
 
 DEFAULT_INSTRUCTION = (
-    "Consulta directamente os RFC 9110 e RFC 9112 no RFC Editor, explica em português "
+    "Consulta directamente os IANA Reserved Domains e IANA Example Domains no IANA Editor, explica em português "
     "o tema de cada um e indica as duas fontes. Não declares a tarefa concluída "
     "se não conseguires ler ambos os documentos."
 )
-HOST = "www.rfc-editor.org"
-START = "https://www.rfc-editor.org/rfc/rfc9110.html"
-PRESET = "rfc-9110-9112-public-readonly"
+HOST = "www.iana.org"
+START = "https://www.iana.org/domains/reserved"
+PRESET = "iana-reserved-example-public-readonly"
 
 
 def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
-    parser = argparse.ArgumentParser(description="JARVIS TE-03 — tarefa RFC apenas leitura")
+    parser = argparse.ArgumentParser(description="JARVIS TE-03 — tarefa IANA apenas leitura")
     parser.add_argument("instruction", nargs="?", default=DEFAULT_INSTRUCTION)
     parser.add_argument("--allow-public-read", action="store_true",
-                        help="autoriza esta tarefa de leitura apenas em www.rfc-editor.org")
+                        help="autoriza esta tarefa de leitura apenas em www.iana.org")
     parser.add_argument("--model", default=None, help="modelo Ollama local instalado")
     parser.add_argument("--json", action="store_true", help="emitir resultado estruturado sem transcrição")
     args = parser.parse_args(argv)
@@ -65,15 +65,15 @@ def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
                     task_preset=PRESET, receipts=True, completion_gate=True,
                     budgets=Budgets(max_calls=10, deadline_seconds=115),
                     max_turns=10, max_tokens=768, temperature=0.2,
-                    audit_path=logs / f"te03-rfc-{stamp}.jsonl",
+                    audit_path=logs / f"te03-iana-{stamp}.jsonl",
                 )
         else:
             make_session = session_factory
 
         bridge = TaskEntry(facade, public_session_factory=make_session)
-        result = bridge.run_trusted_public_rfc_task(session_id, args.instruction)
+        result = bridge.run_trusted_public_iana_task(session_id, args.instruction)
         record = {
-            "task": "TE-03_RFC_PUBLIC_READ_ONLY",
+            "task": "TE-03_IANA_PUBLIC_READ_ONLY",
             "request_id": result.request_id,
             "route": result.route,
             "operational_state": result.operational_state,
