@@ -3397,3 +3397,15 @@ Nada disto foi iniciado.
 **STATE:** Branch `feat/te05-executor-task-completion` created from `origin/feat/te04-task-diagnostics-qwen4b` @ `5c7e0d4`; `origin/develop` @ `fa36b38` untouched; submodule pin `f21d902` unchanged. Baseline venv suite OK before changes. PRs #1, #11, #13, #14, #15 preserved (no merge).
 
 **NEXT:** implement, run full deterministic regression, update this HANDOFF with results, open Draft PR, stop before any real Qwen run.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-023 — TE-05 implementation (deterministic only)
+
+**CHANGES (commit `66badc1`, branch `feat/te05-executor-task-completion`):** DENIED no longer masked as UNKNOWN in task diagnostics; finite reason codes for policy denials and browser refusals (`receipt.reason_code`); numbers-only per-generation metrics (tokens, Ollama load/prompt_eval/eval/total, wall, deadline overrun); contracted (gate ON) runs state the code-owned objectives (id/label/URL) to the model; IANA preset `max_continuations=1`; task CLI optional tool-free `--warmup`, cost reported apart and counted in total wall. Unchanged: authorization logic, quotas, 10/10/115, engine timeout, tools, hosts, reply_json, pin. Evidence: `docs/evidence/TE05_EXECUTOR_TASK_COMPLETION_2026-11-17.md`.
+
+**TESTS ACTUALLY RUN (FAKE model, mocked HTTP; NOT real Qwen/acceptance):** new TE-05 file 18 OK; TE-02/03/04, issue #9, A1/A2/A3, R3-C1, E1–E4 OK; full venv suite 471 OK, 0 "skipped"; plain Python 471 OK (214 vendor tests not run there); A/B vs `5c7e0d4` on R3-C1 scenarios identical (reply_json, text, nonce-normalized model messages); six mutants all detected. One A1 interface assertion updated for the new `ToolOutcome.code` (default None).
+
+**FINDING:** correction to the read-only TE-05 diagnosis: with max_turns=10 and max_calls=10, ten single-call turns end on TURN_BUDGET (orchestrator turn limit first), not TOOL_BUDGET. TE-03's real halt code stays NOT VERIFIED. Deadline 115 s is checked between steps only (includes cold load; in-flight generation can overrun); engine 120 s is an httpx client timeout; server-side continuation NOT VERIFIED.
+
+**OPEN:** effect on real 2B/4B unknown; workflow does not pass `--warmup` nor upload service.log/audit; identity rule still NONE.
+
+**NEXT (needs separate authorization):** one real run per model with unchanged limits and `--warmup`, publishing the new diagnostics JSON. No real Qwen executed in TE-05.
