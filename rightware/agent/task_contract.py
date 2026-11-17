@@ -196,6 +196,18 @@ TRUSTED_PRESETS = _build_catalog((
             BrowserObjective("AX202", "open_original", "https://archive.fixture.example/docs/ax-202.html",
                              "abrir o documento original AX-202 (fixture sintética)"),
         )),
+    # TE-03: intentionally narrow real public read-only task; identity remains UNKNOWN.
+    # Host may opt into this PREDECLARED catalogue entry, never model text.
+    TaskContract(
+        preset_id="rfc-9110-9112-public-readonly",
+        schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=False,
+        hosts=("www.rfc-editor.org",),
+        objectives=(
+            BrowserObjective("RFC9110", "read_page", "https://www.rfc-editor.org/rfc/rfc9110.html",
+                             "ler a página RFC 9110 no RFC Editor"),
+            BrowserObjective("RFC9112", "read_page", "https://www.rfc-editor.org/rfc/rfc9112.html",
+                             "ler a página RFC 9112 no RFC Editor"),
+        )),
 ))
 
 
