@@ -3329,3 +3329,17 @@ Nada disto foi iniciado.
 **SCOPE AND VERDICT:** TE-01 goose remains separate candidate, real shell/tool calling confirmed in isolated Manus but no autonomous recovery/RIGHTWARE policy evidence. TE-02 new opt-in trusted facade uses the already protected `AgentSession`; the 2 synthetic page objectives yield `UNKNOWN_IDENTITY` when both pages observed because publisher identity is unverified; a premature answer yields `INCOMPLETE`. No status `COMPLETE_VERIFIED` asserted or real files compared by JARVIS. No new provider, OS tools, voice, memory, network effects, upstream changes or merge.
 
 **OPEN REVIEW:** Draft PR #13 stacked on PR #11, source code candidate only. Prior source SHA CI SUCCESS. This documentation-only commit requires a fresh exact-SHA run to confirm final HEAD, and is not itself retroactively covered by the previous run. The source test findings remain preserved.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-017 — TE-03 host-approved public task path
+
+**AUTHORIZATION:** User said "vamoa entao" following the offered next milestone TE-03: connect a controlled task entry and prepare a bounded real-model proof. Implemented candidate code and fake-first tests; real Qwen inference requires separate observed execution and cannot be claimed from these files.
+
+**BASELINE:** `develop@fa36b3896de2408c9c98a80d6618469ef7099547`; D01/D02 Draft PR #11 `bb6a95ec214448c8ff087aca709624b4e67c69f0`; TE-02 Draft PR #13 `60c8cc1bdf3b1620ffe716964ba5a35958faaab9`. TE-03 isolated branch `feat/te03-rfc-task-entry` created from exact TE-02 HEAD; this is a **STACKED** dependency, and neither previous PR has been merged. Goose TE-01 research PR #12 unchanged.
+
+**IMPLEMENTATION CANDIDATE:** `rightware/agent/task_contract.py` adds exact code-owned `rfc-9110-9112-public-readonly` two-objective contract for host `www.rfc-editor.org`, identity_rule NONE, no grant by text; `rightware/task_entry.py` retains TE-02 fixture and adds explicit host-only `run_trusted_public_rfc_task` using existing AgentSession (browser only, A2 receipts, A3 gate, max 12 calls/turns), rejecting untrusted sessions/factory; `rightware/task_cli.py` adds CLI with `--allow-public-read` mandatory, local Ollama and trusted presets; `rightware/runtime.py` introduces `python jarvis.py task` while preserving all previous commands. No shell/filesystem/Windows actions in this route, no Goose runtime or vendor change.
+
+**TESTS:** `tests/test_te03_public_task.py` adds fake-model + httpx.MockTransport integration/negative tests; A1 catalogue tests updated to enforce two original synthetic presets and the fixed new public entry (identity remains NONE). `docs/engineering/TE03_PUBLIC_RFC_TASK.md` documents the opt-in invocation and limits. Test/CI verdict PENDING at commit time; do not claim FAKE tests are Qwen, site-network or target Windows success.
+
+**STATUS:** Experimental integration candidate, NOT E0/E1 acceptance, no real Qwen run, no main/develop merges, no arbitrary tool execution. For code-owned public contract, even two page read receipts yield UNKNOWN_IDENTITY, not COMPLETE_VERIFIED; factual_verified always false.
+
+**NEXT:** Open DRAFT stacked PR, inspect actual WORK-05 CI logs on exact branch SHA, fix tests if needed, then decide/execute one opt-in CPU-only local Qwen smoke (no paid provider, read-only fixed host) with evidence before any general task routing or file/Windows capabilities.
