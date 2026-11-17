@@ -3305,3 +3305,19 @@ Nada disto foi iniciado.
 **BLOCKED / NOT_TESTED:** Local clone/venv command execution from ChatGPT container blocked by GitHub DNS; authoritative CI ran tests in GitHub hosted runner. No real Qwen semantic evaluation, target Windows hardware, live voice/memory, E0 UI or security penetration test; these remain outside scope. Regex-based routing is conservative and not a validated semantic Portuguese intent classifier. Host owner is a local placeholder, not multiuser authentication. On timeout/cancel, synchronous vendor worker can continue until it exits, so the same session rejects another request while pending. Review this lifecycle and handling of model-language effect claims before D03.
 
 **NEXT EXACT STEP:** After this documentation-only commit, confirm PR #11 stays DRAFT targeting develop, CI on its **final documentation SHA**, and both base branch and PR #1 unchanged; then independent source/security review. Explicit separate authorization is required for D03 and live-Qwen T3. No merge/release.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-015 — TE-01 evidence and TE-02 task entry
+
+**USER DIRECTION:** Operator supplied 6 Manus/goose evidence files and authorized continuation ("vamos entao prosseguir"). TE-01 logs independently audited; narrow, opt-in **TE-02 experimental** connection to existing AgentSession implemented. No general-purpose external agent imported.
+
+**BASELINE:** `develop@fa36b3896de2408c9c98a80d6618469ef7099547` remains unchanged; D01/D02 `feat/wp04-d01d02-text-facade@bb6a95ec214448c8ff087aca709624b4e67c69f0`, PR #11 remains Draft. TE-02 branch `feat/te02-trusted-task-entry` created at that exact D01/D02 HEAD; **stacked, do not merge without PR #11 review**. Previous JRV-TE-001 research PR #12 remains separate; no file copied from that branch.
+
+**UPLOAD AUDIT:** [TE-01 independent evidence review](evidence/TE01_GOOSE_MANUS_INDEPENDENT_AUDIT_2026-11-17.md). Goose 1.59.2 / Ollama qwen2.5:3b shows actual shell calls: first task FAIL (cat output mistaken for diff); externally directed retry PASS LIMITED (`diff -u` output identifies added line; produced report read back). No autonomous recovery established, since tool calls in retry are batched before observed tool results. No RIGHTWARE security integration, Qwen3.5 or Windows testing. Keep goose as candidate, not approved for adoption.
+
+**TE-02 SOURCE:** `rightware/task_entry.py` adds a standalone host-owned `TaskEntry` adapter, preserving `TextFacade.submit()` no-tool default, and permitting `run_trusted_browser_fixture()` only by explicit host call with an injected true `AgentSession`. It accepts solely synthetic trusted preset `synthetic-archive-two-originals`, browse-only host, existing A1/A2/A3 receipts/verification, bounded calls and turns; no general shell, filesystem or Windows tools. The typed result exposes objective states/receipt count and keeps factual verification false. **No public CLI wiring, no real model or device tests, no side effects outside synthetic fixtures.**
+
+**TESTS:** New `tests/test_te02_task_entry.py` combines no-vendor guard tests and integration via real `AgentSession`, fake model and mock browser. Exact CI/test counts and SHA pending verification; do NOT claim PASS until confirmed on the candidate HEAD. Past D01/D02 431 PASS applies to PR #11, not automatically to this branch.
+
+**BOUNDARIES:** No vendor changes/pin/lockfiles, no A1/A2/A3 refactor, runtime/voice/windows actions, external agent installation, API key, Qwen/Windows real test, release or merge.
+
+**NEXT:** Open separate Draft PR to `develop` with stacked branch disclosure, verify WORK-05 CI on exact SHA, independently review tests/security and compare observed capability to TE-01. Preserve HANDOFF-first continuity.
