@@ -3365,3 +3365,15 @@ Nada disto foi iniciado.
 **DISTINCTIONS:** Prior WORK-05 FAKE CI `44103040670` SUCCESS on code SHA `629f0d09b84ac84de60c5305bd838f78ccf4ef0f` with 450/450 PASS and 0 skip frozen vendor; a model benchmark FAIL is a separate result, NOT a FAKE regression. The original WORK-07 oracle-leakage regression remains unmodified; public case switched to IANA after initial failing TE-03 test.
 
 **NEXT:** Before expanding tools/architecture, consider a small diagnostic-only change to expose sanitized halt reason and tool result counts. Compare exact same task with stronger locally hosted Qwen 4B only under a distinct deliberate one-shot gate; no automatic retries of live model, no Goose integration, no Windows file/OS grants, no main/develop merge.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-020 — TE-04 sanitized diagnostics and Qwen4B comparison
+
+**AUTHORIZATION:** User approved continuation ("vamos entao") of previous recommendation: inspect TE-03 Qwen 2B HALTED result and compare Qwen3.5 4B on exactly the same fixed read-only public IANA task without expanding permissions, changing model budgets, importing Goose, or merging.
+
+**PREFLIGHT:** `develop@fa36b3896de2408c9c98a80d6618469ef7099547` unchanged. D01/D02 PR #11 DRAFT, TE-02 PR #13 DRAFT, TE-03 PR #14 DRAFT (head/base `151d0099842be5287ed5e6ad8067a1cc442fe23b` /`develop`). TE-04 branch `feat/te04-task-diagnostics-qwen4b` derives exactly from TE-03 source SHA, thus is STACKED on #14/#13/#11. Never merge before upstream reviews.
+
+**TE-03 EVIDENCE RETAINED:** Prior actual Qwen3.5:2b run `44103342916`: `HALTED`, IANA_RESERVED observed / IANA_EXAMPLE missing, 10 receipts, false factual/verified-completion claims. Exact stop reason was NOT in the published sanitized artifact. `max_calls=10` makes quota plausible; no confirmed exact cause. See `docs/evidence/TE03_IANA_QWEN2B_REAL_RUN_2026-11-17.md`.
+
+**TE-04 IMPLEMENTATION:** A non-sensitive typed enum for halt reason and allowlisted ordered receipt tool/status events added to `rightware/task_entry.py`, surfaced in `rightware/task_cli.py --json`; **NO raw instruction, model content, URLs, arguments or credentials** in diagnostics. `tests/test_te04_task_diagnostics.py` tests filtering, refusal of malformed diagnostic fields and FAKE AgentSession operation. `.github/workflows/te04-iana-live-qwen4b.yml` is one-shot request-file-triggered; model Qwen3.5:4b, Ollama and all effective tool budgets, temperatures, prompts and public IANA objectives same as TE-03. No live run has occurred at this checkpoint. See `docs/engineering/TE04_QWEN4B_CONTROLLED_COMPARISON.md`.
+
+**NEXT:** Open DRAFT PR, verify full WORK-05 suite in frozen vendor venv, then create a single-use TE-04 request file bound to exact source SHA. Observe final real-model evidence; document objectively. No automatic retry, no broader grants, no release.
