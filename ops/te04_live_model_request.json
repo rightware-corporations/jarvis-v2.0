@@ -1,0 +1,7 @@
+{
+  "experiment": "TE04_IANA_LIVE_QWEN4B",
+  "request_id": 1,
+  "approved_code_sha": "85d39d5dff62ce5dcd8048077dc7fbbf9b03a720",
+  "model": "qwen3.5:4b",
+  "scope": "PUBLIC_IANA_READ_ONLY"
+}
