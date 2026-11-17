@@ -82,6 +82,11 @@ def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
                 for oid, state, seq in result.objective_states
             ],
             "receipts_count": result.receipts_count,
+            "halt_reason_code": result.halt_reason_code,
+            "receipt_events": [
+                {"sequence": seq, "tool": tool, "status": status}
+                for seq, tool, status in result.receipt_events
+            ],
             "factual_verified": False,
             "completion_verified": result.completion_verified,
             "limitations": result.limitations,
