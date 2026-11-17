@@ -1,7 +1,7 @@
 """TE-03: explicit opt-in public IANA research task through RIGHTWARE AgentSession.
 
 No arbitrary host, no file/shell/Windows tools and no natural-language grants.
-Only the host-owned IANA Reserved Domains/9112 contract and public GET browser are permitted.
+Only the host-owned IANA reserved/example-domains contract and public GET browser are permitted.
 This CLI is an experimental technical demonstration, not an accepted JARVIS UI.
 """
 from __future__ import annotations
@@ -17,8 +17,8 @@ from rightware.task_entry import TaskEntry
 from rightware.text_facade import TextFacade
 
 DEFAULT_INSTRUCTION = (
-    "Consulta directamente os IANA Reserved Domains e IANA Example Domains no IANA Editor, explica em português "
-    "o tema de cada um e indica as duas fontes. Não declares a tarefa concluída "
+    "Consulta as páginas de domínios reservados e domínios de exemplo da IANA; explica em português "
+    "o propósito de cada página e indica as duas fontes. Não declares a tarefa concluída "
     "se não conseguires ler ambos os documentos."
 )
 HOST = "www.iana.org"
