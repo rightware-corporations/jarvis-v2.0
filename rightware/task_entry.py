@@ -21,6 +21,27 @@ _ALLOWED_SCOPE = frozenset({"browse"})
 _TERMINAL = frozenset({
     "COMPLETE_VERIFIED", "INCOMPLETE", "UNKNOWN", "UNKNOWN_IDENTITY", "HALTED", "ERROR",
 })
+# The model's text and the tool arguments are NEVER diagnostic evidence.
+_HALT_CODES = {
+    None: "NONE",
+    "limite de passos atingido": "TOOL_BUDGET",
+    "tempo esgotado": "DEADLINE",
+    "limite de turnos atingido": "TURN_BUDGET",
+    "tarefa cancelada": "CANCELLED",
+}
+_SAFE_TOOLS = frozenset(("web_open", "web_follow", "web_submit", "web_type", "web_find"))
+_SAFE_STATUSES = frozenset((
+    "OK", "FAILED", "REFUSED", "REFUSED_AT_BOUNDARY", "TIMED_OUT", "NOT_EXECUTED",
+    "BLOCKED", "HTTP_ERROR", "EMPTY_CONTENT", "CANCELLED", "UNKNOWN",
+))
+
+
+def _receipt_events(receipts):
+    """Only ordinal, fixed-vocabulary tool and outcome; no args, URLs, body or model text."""
+    return tuple((r.sequence if type(r.sequence) is int and r.sequence >= 1 else 0,
+                  r.tool if r.tool in _SAFE_TOOLS else "OTHER",
+                  r.status if r.status in _SAFE_STATUSES else "UNKNOWN") for r in receipts)
+
 
 
 @dataclass(frozen=True)
@@ -35,12 +56,19 @@ class TaskEntryResult:
     completion_verified: bool
     model_commentary_unverified: str
     limitations: tuple[str, ...]
+    halt_reason_code: str = "NONE"
+    receipt_events: tuple[tuple[int, str, str], ...] = ()
 
     def __post_init__(self):
         if self.route != "TASK" or self.operational_state not in _TERMINAL:
             raise ValueError("invalid task result")
         if self.factual_verified or (self.completion_verified and self.operational_state != "COMPLETE_VERIFIED"):
             raise ValueError("unverified claims must not become verified")
+        if self.halt_reason_code not in frozenset((*_HALT_CODES.values(), "OTHER")):
+            raise ValueError("untrusted halt diagnostics")
+        if any(type(seq) is not int or seq < 0 or tool not in (*_SAFE_TOOLS, "OTHER")
+               or status not in _SAFE_STATUSES for seq, tool, status in self.receipt_events):
+            raise ValueError("untrusted receipt diagnostics")
 
 
 class TaskEntry:
@@ -154,6 +182,8 @@ class TaskEntry:
                 model_commentary_unverified=reply.text,
                 limitations=(("SYNTHETIC_READ_ONLY" if synthetic else "PUBLIC_IANA_READ_ONLY"),
                              "NO_FACTUAL_VERIFICATION", "NO_INDEPENDENT_MODEL_VERIFICATION"),
+                halt_reason_code=_HALT_CODES.get(reply.halted, "OTHER"),
+                receipt_events=_receipt_events(agent.receipts),
             )
         finally:
             with self._lock:
