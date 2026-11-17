@@ -3417,3 +3417,17 @@ Nada disto foi iniciado.
 **CI:** `work05-product.yml` runs only on pull requests to `develop` (and pushes to develop / feat/work05-product-agent); `foundation.yml` only on main/develop. Therefore NO GitHub CI run exists for the TE-05 heads; the only regression evidence is the local pinned-venv run (471 OK, 0 skipped). Retargeting #16 to `develop` would trigger CI (diff would then include TE-02..TE-04 commits, like #15) — operator decision.
 
 **STOP:** no real Qwen run until separately authorized.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-025 — TE-05 live validation transferred to ChatGPT
+
+**OPERATOR:** Requested to transfer the two-run TE-05 warm-up evaluation from Claude Code to ChatGPT, to avoid consuming Claude usage or duplicating implementation. Operator must stop Claude's ongoing local session; GitHub remote was checked before starting: TE-05 PR #16 and branch stayed on `0ae3383528e8da0ee4eda82982d830895c4968c1`, no new model workflow run/commit, no develop/main movement. The existing local Claude work was limited to TE-05 source, already independently validated.
+
+**CI BASELINE:** The same TE-05 exact SHA `0ae3383` passed WORK-05 pinned frozen OpenJarvis suite `471/471 PASS, 0 skipped` in GitHub Actions `44117743037`, through temporary CI-only PR #17 (closed WITHOUT merge); #16 remains DRAFT stacked onto TE-04.
+
+**ISOLATION:** New experiment branch `exp/te05-live-qwen-20261117` created at exact TE-05 head SHA. Only new files `.github/workflows/te05-iana-live-{2b,4b}.yml` and experiment checkpoints/request files are allowed. Neither source code nor pinned vendor, policy, tools, host allowlist, deadlines or tool limits may change. No edits to PR #16.
+
+**ONE-SHOT PLAN:** Two separate push-path-triggered workflows, 2B first then 4B only if the 2B environment/authorization gate succeeds. Exact public IANA two pages and Python `jarvis.py task --allow-public-read --warmup --model qwen3.5:{2b,4b} --json`; max_calls=10, max_turns=10, deadline=115s, engine timeout unchanged. Use Ollama 0.40.15 verified archive digest and pinned Qwen Ollama model digests from prior real trials. Warm-up consumes time, reported separately; comparison with un-warmed TE-03/04 is NOT apples-to-apples and will be labelled as a new condition.
+
+**GATES:** Workflow runs only on an explicit per-model request file with source parent SHA, request ID 1, correct model, exact branch/unchanged gitlink; no automatic retry or cloud LLM. Sanitized JSON with objective states, receipts, refusal codes and numeric inference timing; never upload transcript, policy arguments, page bodies or Ollama logs. Green fake tests are not real inference evidence. `UNKNOWN_IDENTITY` with both `PAGE_OBSERVED` is at most PASS_LIMITED, never COMPLETE_VERIFIED.
+
+**STATUS:** PREPARED, no real Qwen task run yet at this checkpoint. Following step is one 2B request; inspect actual run and guard results before deciding to dispatch 4B. Preserve all findings on this isolated branch.
