@@ -36,8 +36,15 @@ def contract(**kw):
 class Catalog(unittest.TestCase):
     def test_catalog_is_code_owned_read_only_and_marks_the_fixture_synthetic(self):
         # A3 added one more SYNTHETIC preset (same fixture, max_continuations=1); all entries stay synthetic
-        self.assertEqual(list(TC.TRUSTED_PRESETS), [PRESET, PRESET + "-recovery"])
-        self.assertTrue(all(c.synthetic for c in TC.TRUSTED_PRESETS.values()))
+        self.assertEqual(list(TC.TRUSTED_PRESETS),
+                         [PRESET, PRESET + "-recovery", "rfc-9110-9112-public-readonly"])
+        self.assertTrue(TC.TRUSTED_PRESETS[PRESET].synthetic)
+        self.assertTrue(TC.TRUSTED_PRESETS[PRESET + "-recovery"].synthetic)
+        public = TC.TRUSTED_PRESETS["rfc-9110-9112-public-readonly"]
+        self.assertFalse(public.synthetic)
+        self.assertEqual(public.hosts, ("www.rfc-editor.org",))
+        self.assertEqual(len(public.objectives), 2)
+        self.assertTrue(all(o.identity_rule == "NONE" for o in public.objectives))
         self.assertEqual((BASE.max_continuations, TC.TRUSTED_PRESETS[PRESET + "-recovery"].max_continuations), (0, 1))
         self.assertTrue(BASE.synthetic)
         self.assertEqual(BASE.origin, "code_catalog")
