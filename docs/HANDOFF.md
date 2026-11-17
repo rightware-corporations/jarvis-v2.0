@@ -3409,3 +3409,11 @@ Nada disto foi iniciado.
 **OPEN:** effect on real 2B/4B unknown; workflow does not pass `--warmup` nor upload service.log/audit; identity rule still NONE.
 
 **NEXT (needs separate authorization):** one real run per model with unchanged limits and `--warmup`, publishing the new diagnostics JSON. No real Qwen executed in TE-05.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-024 — TE-05 Draft PR opened; GitHub CI not triggered
+
+**PR:** [rightware-corporations/jarvis-v2.0#16](https://github.com/rightware-corporations/jarvis-v2.0/pull/16) DRAFT, base `feat/te04-task-diagnostics-qwen4b` (stacked, TE-05 diff only), head `feat/te05-executor-task-completion`. No merge. PRs #1, #11–#15 untouched.
+
+**CI:** `work05-product.yml` runs only on pull requests to `develop` (and pushes to develop / feat/work05-product-agent); `foundation.yml` only on main/develop. Therefore NO GitHub CI run exists for the TE-05 heads; the only regression evidence is the local pinned-venv run (471 OK, 0 skipped). Retargeting #16 to `develop` would trigger CI (diff would then include TE-02..TE-04 commits, like #15) — operator decision.
+
+**STOP:** no real Qwen run until separately authorized.
