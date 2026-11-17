@@ -3321,3 +3321,11 @@ Nada disto foi iniciado.
 **BOUNDARIES:** No vendor changes/pin/lockfiles, no A1/A2/A3 refactor, runtime/voice/windows actions, external agent installation, API key, Qwen/Windows real test, release or merge.
 
 **NEXT:** Open separate Draft PR to `develop` with stacked branch disclosure, verify WORK-05 CI on exact SHA, independently review tests/security and compare observed capability to TE-01. Preserve HANDOFF-first continuity.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-016 — TE-02 exact-SHA CI confirmed
+
+**INDEPENDENT CI EVIDENCE:** WORK-05 GitHub Actions run [44096288889](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44096288889) SUCCESS on `feat/te02-trusted-task-entry@0e34057e1f05fba5bc76089528982ea44bb364b7` (initial TE-02 source + evidence + JRV-BP-015). Job `134084153128`: standard Python suite `Ran 441 tests ... OK (skipped=202)` (239 pass; 202 skip because pinned vendor not present), then pinned frozen OpenJarvis venv `Ran 441 tests ... OK` (**441 pass; 0 failed; 0 skipped**). Ten new TE-02 tests passed in pinned venv. These are FAKE model and mock HTTP, **not** live Qwen or Windows validation. Exact log fetched and inspected.
+
+**SCOPE AND VERDICT:** TE-01 goose remains separate candidate, real shell/tool calling confirmed in isolated Manus but no autonomous recovery/RIGHTWARE policy evidence. TE-02 new opt-in trusted facade uses the already protected `AgentSession`; the 2 synthetic page objectives yield `UNKNOWN_IDENTITY` when both pages observed because publisher identity is unverified; a premature answer yields `INCOMPLETE`. No status `COMPLETE_VERIFIED` asserted or real files compared by JARVIS. No new provider, OS tools, voice, memory, network effects, upstream changes or merge.
+
+**OPEN REVIEW:** Draft PR #13 stacked on PR #11, source code candidate only. Prior source SHA CI SUCCESS. This documentation-only commit requires a fresh exact-SHA run to confirm final HEAD, and is not itself retroactively covered by the previous run. The source test findings remain preserved.
