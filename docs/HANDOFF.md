@@ -3389,3 +3389,11 @@ Nada disto foi iniciado.
 **NON-EFFECT / CONTINUITY:** Corrected misleading workflow display label Qwen 2B to Qwen 4B after the run (no change to executed model or task logic). No rerun, no new model permission, no shell/Windows/files, no vendor/pin/lockfile or policy rewrite, no release/merge. The code+doc final SHA requires renewed CI confirmation after these documentation edits.
 
 **NEXT:** Review sanitized denial reasons/inefficient tool sequence and task planning before modifying budgets or integrating Goose; choose whether to test local GPU vs same task/limits by separate decision. Keep failures visible, preserve PRs DRAFT.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-022 — TE-05 implementation start (bounded authorization)
+
+**SCOPE:** Operator authorized minimal TE-05 fixes from the read-only diagnosis: (1) DENIED masked as UNKNOWN in task diagnostics + finite refusal reason codes + per-generation metrics; (2) host-validated contract objectives presented to the model + at most ONE A3 continuation for the IANA preset; (3) inference timing instrumentation, optional visible warm-up, timeout analysis. Limits: no change to `max_calls=10`, `max_turns=10`, deadline 115 s, authorization logic or quotas; no real Qwen; no develop/main change, no merge, no pin change, no goose/Agent Zero/Hermes, no shell/WindowsActions/files.
+
+**STATE:** Branch `feat/te05-executor-task-completion` created from `origin/feat/te04-task-diagnostics-qwen4b` @ `5c7e0d4`; `origin/develop` @ `fa36b38` untouched; submodule pin `f21d902` unchanged. Baseline venv suite OK before changes. PRs #1, #11, #13, #14, #15 preserved (no merge).
+
+**NEXT:** implement, run full deterministic regression, update this HANDOFF with results, open Draft PR, stop before any real Qwen run.
