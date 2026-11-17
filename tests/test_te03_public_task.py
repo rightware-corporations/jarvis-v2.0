@@ -57,10 +57,10 @@ class PublicEntryWithoutVendor(unittest.TestCase):
         f = TextFacade(adapter=Answer())
         sid = f.open_session()
         entry = TaskEntry(f)
-        result = entry.submit_text(sid, "Abre os IANAs 9110 e 9112.")
+        result = entry.submit_text(sid, "Abre as duas páginas da IANA.")
         self.assertEqual((result.status, result.effects), (Status.UNAVAILABLE, ()))
         with self.assertRaises(PermissionError):
-            entry.run_trusted_public_iana_task(sid, "Abre os IANAs.")
+            entry.run_trusted_public_iana_task(sid, "Abre as páginas da IANA.")
         f.close()
 
 
@@ -88,10 +88,10 @@ class PublicIanaWithFakeModel(unittest.TestCase):
                 return httpx.Response(403, text="FORBIDDEN")
             if request.url.path == "/domains/reserved":
                 return httpx.Response(200, headers={"content-type": "text/html"},
-                                      text="<html><h1>IANA Reserved Domains</h1><p>HTTP Semantics</p></html>")
+                                      text="<html><h1>IANA Reserved Domains</h1><p>Reserved domain categories</p></html>")
             if request.url.path == "/help/example-domains":
                 return httpx.Response(200, headers={"content-type": "text/html"},
-                                      text="<html><h1>IANA Example Domains</h1><p>HTTP/1.1</p></html>")
+                                      text="<html><h1>IANA Example Domains</h1><p>Documentation-only example domains</p></html>")
             return httpx.Response(404, text="NOT FOUND")
         return HttpxFetcher(resolver=lambda host: ["93.184.216.34"],
                             transport=httpx.MockTransport(handler), peer_check=lambda response: True,
@@ -125,7 +125,7 @@ class PublicIanaWithFakeModel(unittest.TestCase):
     def test_both_real_agent_tools_are_observed_but_not_verified_complete(self):
         self.model()
         bridge = TaskEntry(self.facade, public_session_factory=self.factory)
-        result = bridge.run_trusted_public_iana_task(self.sid, "Compara estes IANAs.")
+        result = bridge.run_trusted_public_iana_task(self.sid, "Compara estas duas páginas da IANA.")
         self.assertEqual(result.operational_state, "UNKNOWN_IDENTITY")
         self.assertEqual({id: status for id, status, _ in result.objective_states},
                          {"IANA_RESERVED": "PAGE_OBSERVED", "IANA_EXAMPLE": "PAGE_OBSERVED"})
