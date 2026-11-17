@@ -16,7 +16,7 @@ from typing import Callable
 from rightware.text_facade import TextFacade, TextResult
 
 _FIXTURE_ID = "synthetic-archive-two-originals"
-_RFC_ID = "rfc-9110-9112-public-readonly"
+_IANA_ID = "iana-reserved-example-public-readonly"
 _ALLOWED_SCOPE = frozenset({"browse"})
 _TERMINAL = frozenset({
     "COMPLETE_VERIFIED", "INCOMPLETE", "UNKNOWN", "UNKNOWN_IDENTITY", "HALTED", "ERROR",
@@ -74,14 +74,14 @@ class TaskEntry:
         """Preserve TE-02 synthetic test-only mode (no real network)."""
         return self._run_trusted(session_id, instruction, self._fixture_session_factory, _FIXTURE_ID, True)
 
-    def run_trusted_public_rfc_task(self, session_id: str, instruction: str) -> TaskEntryResult:
-        """Explicit host-authorized RFC-9110/9112 read-only task (real network permitted).
+    def run_trusted_public_iana_task(self, session_id: str, instruction: str) -> TaskEntryResult:
+        """Explicit host-authorized IANA-9110/9112 read-only task (real network permitted).
 
         This does not parse intents, enable tools on the default text path,
         or permit shell/filesystem/Windows effects. Document authenticity and
         factual correctness remain UNVERIFIED even if both pages are fetched.
         """
-        return self._run_trusted(session_id, instruction, self._public_session_factory, _RFC_ID, False)
+        return self._run_trusted(session_id, instruction, self._public_session_factory, _IANA_ID, False)
 
     def _run_trusted(self, session_id: str, instruction: str, factory: Callable | None,
                      preset_id: str, synthetic: bool) -> TaskEntryResult:
@@ -152,7 +152,7 @@ class TaskEntry:
                 objective_states=tuple(result_rows), receipts_count=len(agent.receipts),
                 factual_verified=False, completion_verified=reply.completion == "COMPLETE_VERIFIED",
                 model_commentary_unverified=reply.text,
-                limitations=(("SYNTHETIC_READ_ONLY" if synthetic else "PUBLIC_RFC_READ_ONLY"),
+                limitations=(("SYNTHETIC_READ_ONLY" if synthetic else "PUBLIC_IANA_READ_ONLY"),
                              "NO_FACTUAL_VERIFICATION", "NO_INDEPENDENT_MODEL_VERIFICATION"),
             )
         finally:
