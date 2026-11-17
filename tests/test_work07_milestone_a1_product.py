@@ -37,12 +37,12 @@ class Catalog(unittest.TestCase):
     def test_catalog_is_code_owned_read_only_and_marks_the_fixture_synthetic(self):
         # A3 added one more SYNTHETIC preset (same fixture, max_continuations=1); all entries stay synthetic
         self.assertEqual(list(TC.TRUSTED_PRESETS),
-                         [PRESET, PRESET + "-recovery", "rfc-9110-9112-public-readonly"])
+                         [PRESET, PRESET + "-recovery", "iana-reserved-example-public-readonly"])
         self.assertTrue(TC.TRUSTED_PRESETS[PRESET].synthetic)
         self.assertTrue(TC.TRUSTED_PRESETS[PRESET + "-recovery"].synthetic)
-        public = TC.TRUSTED_PRESETS["rfc-9110-9112-public-readonly"]
+        public = TC.TRUSTED_PRESETS["iana-reserved-example-public-readonly"]
         self.assertFalse(public.synthetic)
-        self.assertEqual(public.hosts, ("www.rfc-editor.org",))
+        self.assertEqual(public.hosts, ("www.iana.org",))
         self.assertEqual(len(public.objectives), 2)
         self.assertTrue(all(o.identity_rule == "NONE" for o in public.objectives))
         self.assertEqual((BASE.max_continuations, TC.TRUSTED_PRESETS[PRESET + "-recovery"].max_continuations), (0, 1))
