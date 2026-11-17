@@ -36,6 +36,7 @@ from html.parser import HTMLParser
 import re
 from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
 
+from rightware.agent.diagnostics import web_refusal_code
 from rightware.agent.web import MAX_URL, Page, WebRefused, frame, redact_url
 
 MAX_VIEW_CHARS = 3500
@@ -59,6 +60,7 @@ class Step:
     status: str                 # OK | HTTP_ERROR | EMPTY_CONTENT | REFUSED | FAILED
     content: str                # what the model receives
     evidence: dict              # what code verified (no model text besides the public query)
+    code: str | None = None     # TE-05 finite refusal code (diagnostics only; never sent to the model)
 
 
 @dataclasses.dataclass
@@ -245,10 +247,10 @@ class PublicBrowser:
             page = self.fetcher.fetch(url, host_allowed=self.allowed)
         except WebRefused as exc:
             self.events.append({**event, "outcome": "REFUSED", "reason": str(exc)[:120]})
-            return Step("REFUSED", f"Navegação recusada: {exc}.", {})
+            return Step("REFUSED", f"Navegação recusada: {exc}.", {}, web_refusal_code(str(exc)))
         except Exception as exc:              # fail closed, no internals
             self.events.append({**event, "outcome": "FAILED", "error": type(exc).__name__})
-            return Step("FAILED", f"A navegação falhou ({type(exc).__name__}).", {})
+            return Step("FAILED", f"A navegação falhou ({type(exc).__name__}).", {}, "FETCH_FAILED")
         backend = getattr(self.fetcher, "backend", None)    # pinned backend: real (host, ip, port) opened
         if backend is not None:
             event["connections"] = [list(c) for c in getattr(backend, "connections", [])][:10]
@@ -360,16 +362,19 @@ class PublicBrowser:
         target = self.links.get(link.strip().upper()) if isinstance(link, str) else None
         if target is None:
             self.events.append({"op": "follow", "link": str(link)[:12], "outcome": "REFUSED", "reason": "unknown link"})
-            return Step("REFUSED", "Ligação desconhecida: usa um identificador L# mostrado numa página desta tarefa.", {})
+            return Step("REFUSED", "Ligação desconhecida: usa um identificador L# mostrado numa página desta tarefa.", {},
+                        "UNKNOWN_LINK")
         return self._load(target[0], "follow", {"link": link.strip().upper()})
 
     def type(self, field: str, text: str) -> Step:
         f = self.fields.get(field.strip().upper()) if isinstance(field, str) else None
         if f is None:
-            return Step("REFUSED", "Campo desconhecido: usa um identificador F# de um campo de pesquisa mostrado.", {})
+            return Step("REFUSED", "Campo desconhecido: usa um identificador F# de um campo de pesquisa mostrado.", {},
+                        "UNKNOWN_FIELD")
         query = " ".join(text.split()) if isinstance(text, str) else ""
         if not query or len(query) > MAX_QUERY_CHARS or _CONTROL.search(text):
-            return Step("REFUSED", f"Pesquisa inválida: uma linha curta (até {MAX_QUERY_CHARS} caracteres).", {})
+            return Step("REFUSED", f"Pesquisa inválida: uma linha curta (até {MAX_QUERY_CHARS} caracteres).", {},
+                        "INVALID_QUERY")
         f.typed = query
         return Step("OK", f'Escrevi "{query}" no campo {f.fid}. Usa web_submit com o campo {f.fid} para pesquisar.',
                     {"field": f.fid, "chars": len(query)})
@@ -377,12 +382,13 @@ class PublicBrowser:
     def submit(self, field: str) -> Step:
         f = self.fields.get(field.strip().upper()) if isinstance(field, str) else None
         if f is None:
-            return Step("REFUSED", "Campo desconhecido: usa um identificador F# de um campo de pesquisa mostrado.", {})
+            return Step("REFUSED", "Campo desconhecido: usa um identificador F# de um campo de pesquisa mostrado.", {},
+                        "UNKNOWN_FIELD")
         if not f.form.search_ok:                              # defence in depth: never registered otherwise
-            return Step("REFUSED", "Este formulário não é uma pesquisa permitida.", {})
+            return Step("REFUSED", "Este formulário não é uma pesquisa permitida.", {}, "FORM_NOT_ALLOWED")
         typed = {id(x.control): x.typed for x in self.fields.values() if x.form is f.form and x.typed}
         if not typed:
-            return Step("REFUSED", f"Escreve primeiro a pesquisa no campo {f.fid} com web_type.", {})
+            return Step("REFUSED", f"Escreve primeiro a pesquisa no campo {f.fid} com web_type.", {}, "NOTHING_TYPED")
         pairs, button = [], False
         for c in f.form.controls:
             if c.disabled or not c.name:
@@ -403,13 +409,13 @@ class PublicBrowser:
         p = urlsplit(f.form.action)
         url = urlunsplit((p.scheme, p.netloc, p.path, urlencode(pairs), ""))
         if len(url) > MAX_URL:
-            return Step("REFUSED", "A pesquisa gera um endereço demasiado longo.", {})
+            return Step("REFUSED", "A pesquisa gera um endereço demasiado longo.", {}, "URL_TOO_LONG")
         return self._load(url, "submit", {"field": f.fid, "query": " | ".join(typed.values())})
 
     def find(self, text: str) -> Step:
         needle = " ".join(text.split()).casefold() if isinstance(text, str) else ""
         if not needle or len(needle) > MAX_LABEL:
-            return Step("REFUSED", "Texto de procura inválido (1 a 80 caracteres).", {})
+            return Step("REFUSED", "Texto de procura inválido (1 a 80 caracteres).", {}, "INVALID_FIND_TEXT")
         hits = [(lid, url, t) for lid, (url, t) in self.links.items()
                 if needle in t.casefold() or needle in url.casefold()][:MAX_FIND_RESULTS]
         lines = [l for l in self.current_text.splitlines() if needle in l.casefold()][:5]

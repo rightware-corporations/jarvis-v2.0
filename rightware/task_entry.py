@@ -30,8 +30,9 @@ _HALT_CODES = {
     "tarefa cancelada": "CANCELLED",
 }
 _SAFE_TOOLS = frozenset(("web_open", "web_follow", "web_submit", "web_type", "web_find"))
+# TE-05: DENIED (policy refused before execution) is a real receipt status; it was masked as UNKNOWN.
 _SAFE_STATUSES = frozenset((
-    "OK", "FAILED", "REFUSED", "REFUSED_AT_BOUNDARY", "TIMED_OUT", "NOT_EXECUTED",
+    "OK", "DENIED", "FAILED", "REFUSED", "REFUSED_AT_BOUNDARY", "TIMED_OUT", "NOT_EXECUTED",
     "BLOCKED", "HTTP_ERROR", "EMPTY_CONTENT", "CANCELLED", "UNKNOWN",
 ))
 
@@ -42,6 +43,14 @@ def _receipt_events(receipts):
                   r.tool if r.tool in _SAFE_TOOLS else "OTHER",
                   r.status if r.status in _SAFE_STATUSES else "UNKNOWN") for r in receipts)
 
+
+def _receipt_reason_codes(receipts):
+    """TE-05: (sequence, finite reason code) for receipts that carry one. Codes come from a fixed
+    vocabulary (policy denials, browser refusals); anything else becomes OTHER."""
+    from rightware.agent.diagnostics import REASON_CODES
+    return tuple((r.sequence if type(r.sequence) is int and r.sequence >= 1 else 0,
+                  r.reason_code if r.reason_code in REASON_CODES else "OTHER")
+                 for r in receipts if getattr(r, "reason_code", None) is not None)
 
 
 @dataclass(frozen=True)
@@ -58,6 +67,9 @@ class TaskEntryResult:
     limitations: tuple[str, ...]
     halt_reason_code: str = "NONE"
     receipt_events: tuple[tuple[int, str, str], ...] = ()
+    receipt_reason_codes: tuple[tuple[int, str], ...] = ()
+    generation_metrics: tuple = ()          # rightware.agent.diagnostics.GenerationMetric, numbers only
+    continuations: int = 0
 
     def __post_init__(self):
         if self.route != "TASK" or self.operational_state not in _TERMINAL:
@@ -69,6 +81,15 @@ class TaskEntryResult:
         if any(type(seq) is not int or seq < 0 or tool not in (*_SAFE_TOOLS, "OTHER")
                or status not in _SAFE_STATUSES for seq, tool, status in self.receipt_events):
             raise ValueError("untrusted receipt diagnostics")
+        if self.receipt_reason_codes or self.generation_metrics:
+            from rightware.agent.diagnostics import GenerationMetric, REASON_CODES
+            if any(type(seq) is not int or seq < 0 or code not in REASON_CODES
+                   for seq, code in self.receipt_reason_codes):
+                raise ValueError("untrusted reason diagnostics")
+            if any(type(m) is not GenerationMetric for m in self.generation_metrics):
+                raise ValueError("untrusted generation metrics")
+        if type(self.continuations) is not int or not 0 <= self.continuations <= 1:
+            raise ValueError("untrusted continuation count")
 
 
 class TaskEntry:
@@ -184,6 +205,10 @@ class TaskEntry:
                              "NO_FACTUAL_VERIFICATION", "NO_INDEPENDENT_MODEL_VERIFICATION"),
                 halt_reason_code=_HALT_CODES.get(reply.halted, "OTHER"),
                 receipt_events=_receipt_events(agent.receipts),
+                receipt_reason_codes=_receipt_reason_codes(agent.receipts),
+                generation_metrics=tuple(agent.generation_metrics),
+                continuations=detail.get("continuations") if type(detail.get("continuations")) is int
+                and 0 <= detail.get("continuations") <= 1 else 0,
             )
         finally:
             with self._lock:

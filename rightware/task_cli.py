@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import dataclasses
 import json
 from pathlib import Path
 import sys
+import time
 
 from rightware import runtime
 from rightware.task_entry import TaskEntry
@@ -24,6 +26,24 @@ DEFAULT_INSTRUCTION = (
 HOST = "www.iana.org"
 START = "https://www.iana.org/domains/reserved"
 PRESET = "iana-reserved-example-public-readonly"
+WARMUP_PROMPT = "Responde apenas: ok"
+
+
+def warm_up(engine, model: str, timer=time.perf_counter) -> dict:
+    """TE-05: ONE controlled local generation WITHOUT tools, before the task, so the model load
+    is not paid inside the task deadline. Its cost is never hidden: it is returned (numbers only)
+    and counted in the total wall time. No page, tool, contract or user text is involved."""
+    from openjarvis.core.types import Message, Role
+    from rightware.agent.diagnostics import generation_metric
+
+    started, result, state = timer(), None, "OK"
+    try:
+        result = engine.generate([Message(role=Role.USER, content=WARMUP_PROMPT)], model=model,
+                                 temperature=0.0, max_tokens=8)
+    except Exception as exc:              # reported, never fatal: the task path decides
+        state = f"FAILED_{type(exc).__name__}"[:60]
+    metric = generation_metric(0, "model", result, timer() - started)
+    return {"state": state, **dataclasses.asdict(metric)}
 
 
 def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
@@ -33,6 +53,8 @@ def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
                         help="autoriza esta tarefa de leitura apenas em www.iana.org")
     parser.add_argument("--model", default=None, help="modelo Ollama local instalado")
     parser.add_argument("--json", action="store_true", help="emitir resultado estruturado sem transcrição")
+    parser.add_argument("--warmup", action="store_true",
+                        help="aquecer o modelo local (sem ferramentas) antes da tarefa; custo reportado à parte")
     args = parser.parse_args(argv)
     if not args.allow_public_read:
         print("TE-03 indisponível: indicação explícita --allow-public-read necessária.", file=sys.stderr)
@@ -71,7 +93,11 @@ def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
             make_session = session_factory
 
         bridge = TaskEntry(facade, public_session_factory=make_session)
+        t0 = time.perf_counter()
+        warmup = warm_up(engine, model) if args.warmup else None
+        t1 = time.perf_counter()
         result = bridge.run_trusted_public_iana_task(session_id, args.instruction)
+        t2 = time.perf_counter()
         record = {
             "task": "TE-03_IANA_PUBLIC_READ_ONLY",
             "request_id": result.request_id,
@@ -87,6 +113,20 @@ def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
                 {"sequence": seq, "tool": tool, "status": status}
                 for seq, tool, status in result.receipt_events
             ],
+            "receipt_reason_codes": [
+                {"sequence": seq, "code": code} for seq, code in result.receipt_reason_codes
+            ],
+            "continuations": result.continuations,
+            "generations": [dataclasses.asdict(m) for m in result.generation_metrics],
+            "generation_totals": _totals(result.generation_metrics),
+            "timing": {
+                "warmup": warmup,
+                "warmup_wall_seconds": round(t1 - t0, 3),
+                "task_wall_seconds": round(t2 - t1, 3),
+                "total_wall_seconds": round(t2 - t0, 3),
+                "note": ("task deadline is checked between steps only; the engine timeout is a client "
+                         "(httpx) timeout and server-side work may continue after it"),
+            },
             "factual_verified": False,
             "completion_verified": result.completion_verified,
             "limitations": result.limitations,
@@ -108,6 +148,11 @@ def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
         close = getattr(engine, "close", None)
         if callable(close):
             close()
+
+
+def _totals(metrics) -> dict:
+    from rightware.agent.diagnostics import summarize
+    return summarize(metrics)
 
 
 if __name__ == "__main__":

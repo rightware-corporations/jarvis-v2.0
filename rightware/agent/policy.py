@@ -254,6 +254,11 @@ class AgentPolicy:
         return self._record(name, args, True, None, outcome=outcome)
 
     @property
+    def elapsed_seconds(self) -> float:
+        """Read-only: seconds since this policy (the task run) started. TE-05 diagnostics only."""
+        return self._clock() - self._start
+
+    @property
     def halt_reason(self) -> str | None:
         with self._lock:
             if self.cancelled:

@@ -198,9 +198,10 @@ TRUSTED_PRESETS = _build_catalog((
         )),
     # TE-03: intentionally narrow real public read-only task; identity remains UNKNOWN.
     # Host may opt into this PREDECLARED catalogue entry, never model text.
+    # TE-05: ONE bounded A3 continuation (only with budget left and no blocking condition).
     TaskContract(
         preset_id="iana-reserved-example-public-readonly",
-        schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=False,
+        schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=False, max_continuations=1,
         hosts=("www.iana.org",),
         objectives=(
             BrowserObjective("IANA_RESERVED", "read_page", "https://www.iana.org/domains/reserved",

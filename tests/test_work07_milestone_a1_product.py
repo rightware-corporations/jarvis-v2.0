@@ -236,7 +236,10 @@ class SessionIntegration(unittest.TestCase):
                          ["text", "completion", "outcomes", "sources", "halted", "flags", "verification"])
         # the only later addition is the A3 opt-in field, defaulting to None (absent from reply_json)
         self.assertEqual([(f.name, f.default) for f in fields[7:]], [("task_completion", None)])
-        self.assertEqual([f.name for f in dataclasses.fields(S.ToolOutcome)], ["tool", "status", "content", "evidence"])
+        outcome_fields = dataclasses.fields(S.ToolOutcome)
+        self.assertEqual([f.name for f in outcome_fields][:4], ["tool", "status", "content", "evidence"])
+        # TE-05 adds only a diagnostic refusal code, defaulting to None and absent from reply_json
+        self.assertEqual([(f.name, f.default) for f in outcome_fields[4:]], [("code", None)])
         (_, r0, _, _), (_, r1, _, _) = self.run_pair("A_incomplete")
         self.assertEqual(set(json.loads(S.reply_json(r1))), {"completion", "halted", "flags", "verification",
                                                              "sources", "outcomes"})
