@@ -5,12 +5,12 @@
 ## Objectivo
 Permitir uma primeira tarefa multi-objectivo de leitura pública usando um **modelo Ollama local real**, sem substituir o OpenJarvis, e sem criar um executor genérico de shell/ficheiros.
 
-A entrada `python jarvis.py task` é um opt-in explícito do host, **não** é um classificador automático de linguagem natural. O comando cria uma sessão temporária `TextFacade` e chama `TaskEntry.run_trusted_public_rfc_task`. A execução fica a cargo do `AgentSession` já existente no OpenJarvis/RIGHTWARE; o modelo só tem acesso às ferramentas `browse` aprovadas.
+A entrada `python jarvis.py task` é um opt-in explícito do host, **não** é um classificador automático de linguagem natural. O comando cria uma sessão temporária `TextFacade` e chama `TaskEntry.run_trusted_public_iana_task`. A execução fica a cargo do `AgentSession` já existente no OpenJarvis/RIGHTWARE; o modelo só tem acesso às ferramentas `browse` aprovadas.
 
 ## Âmbito aprovado no código — exactamente este caso
 
-- `www.rfc-editor.org` (HTTPS apenas), leitura pública de RFC 9110 e RFC 9112.
-- `TaskContract` *code-owned* `rfc-9110-9112-public-readonly`, dois objectivos obrigatórios com URLs exactos.
+- `www.iana.org` (HTTPS apenas), leitura pública de IANA Reserved Domains e IANA Example Domains.
+- `TaskContract` *code-owned* `iana-reserved-example-public-readonly`, dois objectivos obrigatórios com URLs exactos.
 - `AgentPolicy`: `allow={"browse"}`, `max_calls=10`, prazo 115 s, `max_turns=10`; sem WindowsActions, shell, FTP, browser com login, upload, ficheiro local, ou API paga.
 - `ReceiptLedger` A2 e `completion_gate` A3 obrigatórios.
 - O conteúdo de páginas é **dado não confiável**, nunca concede ferramentas adicionais.
@@ -31,7 +31,7 @@ O serviço Ollama deve já estar activo em `127.0.0.1:11434`. **Isto não foi te
 ## Testes e evidência
 
 - `tests/test_te03_public_task.py`: entrada host, negação do percurso texto, rejeição de cloud, fixture HTTP simulada, ambos objectivos observados/um em falta, tentativa de URL externo, restrições de `AgentSession`, saída JSON com modelo FAKE.
-- Os testes exercitam a implementação real de `AgentSession` com modelo `FakeModel`, nunca chamam Ollama ou RFC Editor.
+- Os testes exercitam a implementação real de `AgentSession` com modelo `FakeModel`, nunca chamam Ollama ou IANA Editor.
 - Suite completa: `vendor/openjarvis/.venv/bin/python -m unittest discover -s tests -v`; zero skips esperados no ambiente vendor fixado.
 - A prova live de Qwen, quando executada, tem de preservar modelos, URLs, saídas, SHA, restrições e FAIL/INCOMPLETE/UNKNOWN. Um workflow bem-sucedido não significa que os dois objectivos foram cumpridos.
 
