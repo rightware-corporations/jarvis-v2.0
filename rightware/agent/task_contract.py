@@ -174,7 +174,7 @@ def _build_catalog(entries: tuple[TaskContract, ...]) -> MappingProxyType:
 
 # -- the code-owned catalog (the ONLY source of contract authority) ----------------------
 TRUSTED_PRESETS = _build_catalog((
-    # SYNTHETIC test fixture (labs/work07_r3c1/site.py). Not a real publisher, not an RFC.
+    # SYNTHETIC test fixture (labs/work07_r3c1/site.py). Not a real publisher, not an IANA.
     TaskContract(
         preset_id="synthetic-archive-two-originals",
         schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=True,
@@ -199,14 +199,14 @@ TRUSTED_PRESETS = _build_catalog((
     # TE-03: intentionally narrow real public read-only task; identity remains UNKNOWN.
     # Host may opt into this PREDECLARED catalogue entry, never model text.
     TaskContract(
-        preset_id="rfc-9110-9112-public-readonly",
+        preset_id="iana-reserved-example-public-readonly",
         schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=False,
-        hosts=("www.rfc-editor.org",),
+        hosts=("www.iana.org",),
         objectives=(
-            BrowserObjective("RFC9110", "read_page", "https://www.rfc-editor.org/rfc/rfc9110.html",
-                             "ler a página RFC 9110 no RFC Editor"),
-            BrowserObjective("RFC9112", "read_page", "https://www.rfc-editor.org/rfc/rfc9112.html",
-                             "ler a página RFC 9112 no RFC Editor"),
+            BrowserObjective("IANA_RESERVED", "read_page", "https://www.iana.org/domains/reserved",
+                             "ler a página IANA Reserved Domains no IANA Editor"),
+            BrowserObjective("IANA_EXAMPLE", "read_page", "https://www.iana.org/help/example-domains",
+                             "ler a página IANA Example Domains no IANA Editor"),
         )),
 ))
 
