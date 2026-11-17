@@ -16,6 +16,7 @@ from typing import Callable
 from rightware.text_facade import TextFacade, TextResult
 
 _FIXTURE_ID = "synthetic-archive-two-originals"
+_RFC_ID = "rfc-9110-9112-public-readonly"
 _ALLOWED_SCOPE = frozenset({"browse"})
 _TERMINAL = frozenset({
     "COMPLETE_VERIFIED", "INCOMPLETE", "UNKNOWN", "UNKNOWN_IDENTITY", "HALTED", "ERROR",
@@ -51,13 +52,17 @@ class TaskEntry:
     completion gates already enabled. All execution stays in AgentSession.
     """
 
-    def __init__(self, text_facade: TextFacade, *, fixture_session_factory: Callable | None = None):
+    def __init__(self, text_facade: TextFacade, *, fixture_session_factory: Callable | None = None,
+                 public_session_factory: Callable | None = None):
         if not isinstance(text_facade, TextFacade):
             raise TypeError("expected a RIGHTWARE text facade")
         if fixture_session_factory is not None and not callable(fixture_session_factory):
             raise TypeError("fixture_session_factory must be callable")
+        if public_session_factory is not None and not callable(public_session_factory):
+            raise TypeError("public_session_factory must be callable")
         self.text_facade = text_facade
         self._fixture_session_factory = fixture_session_factory
+        self._public_session_factory = public_session_factory
         self._lock = Lock()
         self._active: set[str] = set()
 
@@ -66,17 +71,26 @@ class TaskEntry:
         return self.text_facade.submit(session_id, text)
 
     def run_trusted_browser_fixture(self, session_id: str, instruction: str) -> TaskEntryResult:
-        """Run only when a trusted application host explicitly invokes this method.
+        """Preserve TE-02 synthetic test-only mode (no real network)."""
+        return self._run_trusted(session_id, instruction, self._fixture_session_factory, _FIXTURE_ID, True)
 
-        Rejects real file/shell/Windows actions, network host expansion and
-        uncontracted sessions. No route is selected automatically by the LLM.
+    def run_trusted_public_rfc_task(self, session_id: str, instruction: str) -> TaskEntryResult:
+        """Explicit host-authorized RFC-9110/9112 read-only task (real network permitted).
+
+        This does not parse intents, enable tools on the default text path,
+        or permit shell/filesystem/Windows effects. Document authenticity and
+        factual correctness remain UNVERIFIED even if both pages are fetched.
         """
+        return self._run_trusted(session_id, instruction, self._public_session_factory, _RFC_ID, False)
+
+    def _run_trusted(self, session_id: str, instruction: str, factory: Callable | None,
+                     preset_id: str, synthetic: bool) -> TaskEntryResult:
+        """Only trusted host methods choose preset/grants; user text is never authority."""
         if (not isinstance(instruction, str) or not instruction.strip()
                 or len(instruction) > self.text_facade.max_input_chars
                 or any(ord(c) < 32 and c not in "\n\t\r" for c in instruction)):
             raise ValueError("invalid task instruction")
         self.text_facade.history_snapshot(session_id)  # checks host-minted session ownership
-        factory = self._fixture_session_factory
         if factory is None:
             raise PermissionError("No task execution has been enabled by the host")
         with self._lock:
@@ -91,24 +105,24 @@ class TaskEntry:
             agent = factory()
             if type(agent) is not AgentSession:
                 raise PermissionError("Untrusted task executor")
-            preset = TRUSTED_PRESETS[_FIXTURE_ID]
+            preset = TRUSTED_PRESETS[preset_id]
             budgets = agent.budgets
             if (agent.allow != _ALLOWED_SCOPE or agent.actions is not None
                     or agent.task_contract is not preset
-                    or not preset.synthetic
+                    or preset.synthetic is not synthetic
                     or agent.sites != preset.hosts
                     or not agent.receipts_enabled or not agent.completion_gate
                     or budgets is None or not 1 <= budgets.max_calls <= 12
                     or not 0 < budgets.deadline_seconds <= 120
                     or not 1 <= agent.max_turns <= 12):
-                raise PermissionError("Task session is outside the approved fixture envelope")
+                raise PermissionError("Task session is outside the approved task envelope")
 
             reply = agent.run(instruction)
             detail = reply.task_completion
             if (not isinstance(detail, dict)
                     or reply.completion not in _TERMINAL
                     or detail.get("state") != reply.completion
-                    or detail.get("contract_id") != _FIXTURE_ID
+                    or detail.get("contract_id") != preset_id
                     or detail.get("answer_factually_verified") is not False):
                 # Do not trust an unchecked model answer or an absent gate.
                 return TaskEntryResult(
@@ -138,7 +152,8 @@ class TaskEntry:
                 objective_states=tuple(result_rows), receipts_count=len(agent.receipts),
                 factual_verified=False, completion_verified=reply.completion == "COMPLETE_VERIFIED",
                 model_commentary_unverified=reply.text,
-                limitations=("SYNTHETIC_READ_ONLY", "NO_FACTUAL_VERIFICATION", "NO_REAL_MODEL_TEST"),
+                limitations=(("SYNTHETIC_READ_ONLY" if synthetic else "PUBLIC_RFC_READ_ONLY"),
+                             "NO_FACTUAL_VERIFICATION", "NO_INDEPENDENT_MODEL_VERIFICATION"),
             )
         finally:
             with self._lock:
