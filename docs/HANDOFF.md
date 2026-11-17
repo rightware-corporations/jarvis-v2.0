@@ -3343,3 +3343,13 @@ Nada disto foi iniciado.
 **STATUS:** Experimental integration candidate, NOT E0/E1 acceptance, no real Qwen run, no main/develop merges, no arbitrary tool execution. For code-owned public contract, even two page read receipts yield UNKNOWN_IDENTITY, not COMPLETE_VERIFIED; factual_verified always false.
 
 **NEXT:** Open DRAFT stacked PR, inspect actual WORK-05 CI logs on exact branch SHA, fix tests if needed, then decide/execute one opt-in CPU-only local Qwen smoke (no paid provider, read-only fixed host) with evidence before any general task routing or file/Windows capabilities.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-018 — TE-03 oracle-safe public IANA correction and fake CI
+
+**FIRST CI AND CORRECTION:** Initial TE-03 CI run `44101782180` FAILED due to `tests/test_work07_browser.py::ProductHasNoOracle`: old RFC 9110/9112 identifiers and `rfc-editor` hostname were forbidden in `rightware/` as a benchmark leakage guard. The nested request-commit regression also failed from the same cause. **No weakening of the oracle-isolation test.** Replaced the example public task with two real, small IANA pages: `https://www.iana.org/domains/reserved` and `https://www.iana.org/help/example-domains` (source URLs externally verified); all tool grants remain fixed host `www.iana.org`, public HTTPS browse-only.
+
+**VALIDATED:** Subsequent WORK-05 CI on SHA after correction `44102378097` SUCCESS: `Ran 450 tests ... OK (skipped=207)` on plain Python, `Ran 450 tests ... OK` on frozen pinned vendor venv (**450 PASS / 0 FAIL / 0 SKIP**). New TE-03 subset: 9 passed with fake model/mock HTTP. Workflow `.github/workflows/te03-iana-live-qwen.yml` added as single-request-path-triggered optional CPU-only experimental job; exact source SHA `629f0d09b84ac84de60c5305bd838f78ccf4ef0f` successfully re-tested by WORK-05 run [44103040670](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44103040670), same 450/450 zero skip pinned suite.
+
+**LIVE QWEN STATUS:** NOT YET EXECUTED at this checkpoint. The one-shot workflow will only trigger on its request file; it uses local Ollama `0.40.15` with verified SHA-256 from the existing WORK-05 workflow and `qwen3.5:2b`, and records a truthful PASS_LIMITED / REVIEW / BLOCKED verdict without pretending factual verification. No model-generated shell/Windows/file grants, no mandatory paid API. The IANA pages are REAL public GET targets unlike FAKE fixture tests. A tool-browsing failure does not authorize new hosts or credentials.
+
+**BRANCH/DEPENDENCIES:** `feat/te03-rfc-task-entry` name is a historical branch identifier; **the actual selected sources are IANA**, not the RFC benchmark source set. PR #14 DRAFT, stacked on TE-02 #13 and D01/D02 #11; no merges.
