@@ -1,5 +1,51 @@
 # JRV-TE-P1 — Live bake-off results: goose, Hermes Agent, Agent Zero (18/11/2026)
 
+## Update JRV-BP-039 (supersedes the Agent Zero "BLOCKED" state and the Hermes T2 JSON flag below)
+
+**Verified situation per candidate.** Same sandbox, model, 64K context, instruction and scorers; N=1 per test.
+
+| Candidate | T1 (autonomous mission) | T2 (interrupt + resume) | Containment | Operability on this CPU |
+|---|---|---|---|---|
+| goose v1.60.1 | PASS_WITH_LIMITATIONS: 503 → factsheet, value-correct report, 475 s | PASS_WITH_LIMITATIONS: resumed the same session and finished | external (`--internal` network, no host mounts); in-process gates off | 69 MiB agent, 7.1 GiB Ollama |
+| Hermes v0.23.2 | PASS_WITH_LIMITATIONS: same path, value-correct, 410 s | INCOMPLETE: safe pause; needs an operator decision (notice on **stderr**) | external; in-process gates off | 352 MiB agent, 9.3 GiB Ollama |
+| Agent Zero v2.16 | **INCOMPLETE (timeout 1 800 s)**: only `/` fetched; 3 browser click-reference errors; no report | **INCOMPLETE**: all 4 model generations hit its own 600 s litellm timeout (HTTP 500 at 10m0s); no tool operation, so resume was not exercised | external; 16 blocked HuggingFace egress attempts | 1 013 MiB agent, 8.0 GiB Ollama; generations of 1.5–10 min |
+
+**Agent Zero is no longer BLOCKED_BY_INFRASTRUCTURE.**
+* The official image was pulled from `mirror.gcr.io` **by the exact amd64 manifest digest** `sha256:28a9a19e…`, which the GitHub runner had verified (integrity job 44328624125). It was content-addressed, so Docker verified the manifest and every layer. Image ID `sha256:59b1a995…` equals the manifest's config digest.
+* Docker's storage driver was changed from vfs to overlay2 (kernel overlay verified), only to fit the 8.6 GB image. The python base image was re-pulled by the same digest `5e2bdb1b…`.
+* Agent Zero setup, all recorded:
+  * a DATA preset with chat and utility on the same `qwen3.5:4b`, 64K;
+  * embeddings on `all-minilm` (digest `1b226e28…`). `qwen3.5:4b` returns HTTP 501 on `/api/embed`, and all-MiniLM-L6-v2 is Agent Zero's own default family;
+  * `TIKTOKEN_CACHE_DIR` pointed at the tiktoken file **bundled inside the verified image** (SHA-256 equals tiktoken's expected hash `223921b7…`), because the network is closed;
+  * the task delivered through its official `POST /api/api_message`.
+* No Agent Zero code was modified, and no unverified build was used.
+* **Timeline check:** the Ollama log shows T1's last generation ended at 17:05:44, before T2 started at 17:05:47. The T2 failure is not contamination from T1.
+
+**Model-claim caveat:** Agent Zero's "thoughts" twice claimed success and "cross-referenced real-world data". No HTTP evidence supports this (only `/` was fetched; the network was closed). It counts as an unverified model claim, not a result.
+
+**Semantic checker audit.** Two defects were found and fixed:
+* a later correct value could hide an earlier contradictory one;
+* a `not_recommended` key could be taken as the recommendation.
+
+9 new tests cover this (`tests/test_te_p1_semantic_audit.py`): the real reports are positive cases, systematic per-value mutations are negative cases, and the strict scorer is preserved. The same `check()` is applied to every candidate. The strict `score.py` verdicts are stored as recorded and unchanged: FAIL on key names for every report.
+
+**Hermes T2 reconciliation.** The BP-038 JSON had `paused_requiring_operator: false`. The original logs show the pause notice in `phase2_stderr.txt` (856 bytes, SHA-256 `02e94cd9…`), with stdout empty (0 bytes). The first builder read only stdout. `labs/te_p1_bakeoff/build_evidence.py` now reads both streams and records the log hashes. The rebuilt JSON says `true` / `stderr`. The BP-038 report text was already correct.
+
+**Docker containment ≠ RIGHTWARE Tool Gateway.** In every run, the agents' own approval gates were OFF and the shell was unrestricted inside the container. The only enforcement was Docker's network and filesystem isolation. None of the three produced RIGHTWARE AgentPolicy decisions or ExecutionReceipts. Integration has **not** been tested.
+
+**Answer — smallest technical step to start supervised integration in JARVIS.** Build a minimal RIGHTWARE Tool Gateway as an MCP stdio server (in `labs/`), and point one external agent at it.
+* The server exposes only the existing, already-tested tools: `fixture_read`/`fixture_compare` or the public read-only browser. They are wrapped by the existing AgentPolicy + ReceiptLedger + completion verifier, with no new permissions.
+* Run **goose** with `--no-profile` and ONLY that MCP extension: no `developer`, so no shell. It runs in the same `--internal` sandbox with the same local Qwen, repeating T1.
+* Accept the step only if:
+  * every tool call appears as a bound RIGHTWARE receipt;
+  * shell/file tools are absent;
+  * the RIGHTWARE verifier, not the agent, decides completion.
+
+goose is chosen as the first target only because it has the most verified evidence here: T1 + autonomous T2 + the smallest footprint. That is **not a declared winner**. Hermes supports MCP too and should repeat the same step next. Agent Zero is not a viable first target on this CPU-only hardware.
+
+---
+
+
 **State:**
 * goose: **tested (T1, T2, T3 evidence)**.
 * Hermes Agent: **tested (T1, T2, T3 evidence)**.

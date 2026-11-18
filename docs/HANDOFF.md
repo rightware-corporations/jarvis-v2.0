@@ -3531,3 +3531,15 @@ Nada disto foi iniciado.
 **AGENT ZERO:** BLOCKED — `agent0ai/agent-zero:v2.16` (amd64 `sha256:28a9a19e…`) not pullable here (Docker Hub rate limit, mirror.gcr.io quota, public.ecr.aws data limit, ghcr denied); unpinned source install not attempted. Needed: authenticated pull/mirror of that digest in an equivalent isolated host, or a GitHub-hosted run.
 
 **DECISION:** no winner declared (insufficient evidence). No merge; develop/main/OpenJarvis untouched; nothing installed on Issa's computer.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-039 — TE-P1 continuation: semantic audit, Hermes T2 reconciliation, Agent Zero real runs
+
+**AUDIT:** `score_semantic.py` fixed (contradictory duplicates hidden; `not_recommended` taken as recommendation); 9 tests `tests/test_te_p1_semantic_audit.py` (real reports positive, per-value mutations negative, strict scorer preserved). Strict `score.py` verdicts unchanged (FAIL on key names for all reports). Same `check()` for every candidate.
+
+**RECONCILIATION:** Hermes T2 pause notice is in `phase2_stderr.txt` (856 B, sha256 `02e94cd9…`); stdout empty. BP-038 builder read stdout only → `false`. New `build_evidence.py` reads both streams + log hashes → `paused_requiring_operator: true`, stream `stderr`.
+
+**AGENT ZERO (no longer BLOCKED):** official image pulled from mirror.gcr.io by the exact amd64 digest `sha256:28a9a19e…` (verified by GitHub runner job 44328624125; image ID = config digest `59b1a995…`); Docker storage switched vfs→overlay2 for space. Setup: local preset data (qwen3.5:4b 64K; embeddings all-minilm `1b226e28…` because qwen embed → 501), in-image tiktoken cache (hash verified), task via official `/api/api_message`. T1: INCOMPLETE — timeout 1 800 s, only `/` fetched, 3 browser click-reference errors, 2 unverified success claims, no report. T2: INCOMPLETE — all 4 generations hit Agent Zero's 600 s litellm timeout (HTTP 500 at 10m0s); resume not exercised; no T1 contamination (timeline checked).
+
+**TESTS:** pinned venv full suite 535 OK; plain Python 535 OK (252 vendor tests not run). No winner declared. Docker containment is not RIGHTWARE Tool Gateway integration.
+
+**SMALLEST NEXT STEP (needs authorization):** labs MCP stdio "RIGHTWARE Tool Gateway" exposing only existing AgentPolicy+receipts tools; run goose with `--no-profile` and only that extension (no shell) on the same T1 sandbox; accept only if every tool call is a bound RIGHTWARE receipt and the RIGHTWARE verifier decides completion; repeat with Hermes.

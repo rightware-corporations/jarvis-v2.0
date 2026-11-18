@@ -54,6 +54,21 @@ def _a0_counts(text: str) -> dict:
             "huggingface_egress_attempts_blocked": t.count("huggingface.co")}
 
 
+def _ollama_summary(path: pathlib.Path, since: str | None = None) -> dict:
+    """Numbers from the Ollama server access log (status, endpoint, duration); no prompts."""
+    import re
+    rows = []
+    if path.exists():
+        for line in path.read_text(errors="replace").splitlines():
+            m = re.search(r"\[GIN\] \S+ - (\d\d:\d\d:\d\d) \| (\d{3}) \|\s+([\dhmsµ.]+) \|.*\"(/api/[a-z]+)\"", line)
+            if m and (since is None or m.group(1) >= since):
+                rows.append(m.groups())
+    gen = [r for r in rows if r[3] in ("/api/generate", "/api/chat")]
+    return {"requests": len(rows), "generate_or_chat": len(gen),
+            "generate_status_counts": {c: sum(1 for r in gen if r[1] == c) for c in sorted({r[1] for r in gen})},
+            "generate_durations": [r[2] for r in gen][-12:]}
+
+
 def _agent_zero(runs: pathlib.Path) -> dict:
     """Agent Zero runs (live_a0.py): same fields where they exist; counts instead of transcripts."""
     out = {}
@@ -71,7 +86,8 @@ def _agent_zero(runs: pathlib.Path) -> dict:
             "client_rc": r["client_rc"], "boot_seconds": r["boot_seconds"], "peak_mem_mib": r["peak_mem_mib"],
             "isolation": r["isolation"], "http_events": _events(r["http_events"]), "report_source": source,
             "score_py_as_recorded": r["verdict"], "semantic": check(report), "agent_report": report,
-            "counts": _a0_counts(so + se), "logs": [so_meta, se_meta, api_meta]}
+            "counts": _a0_counts(so + se), "logs": [so_meta, se_meta, api_meta],
+            "ollama": _ollama_summary(run / "ollama_server.log", since="16:35:40")}
     run = runs / "a0-t2"
     if (run / "t2.json").exists():
         d = json.loads((run / "t2.json").read_text())
@@ -88,7 +104,10 @@ def _agent_zero(runs: pathlib.Path) -> dict:
             "events_at_stop": _events(d.get("events_at_stop")), "http_events": _events(d.get("http_events")),
             "report_source": source, "score_py_as_recorded": d.get("verdict"), "semantic": check(report),
             "agent_report": report, "api_response_bytes": len(api), "counts_phase2": _a0_counts(so + se),
-            "logs": [so_meta, se_meta, api_meta]})
+            "logs": [so_meta, se_meta, api_meta],
+            "ollama_after_t2_start": _ollama_summary(run / "ollama_server.log", since="17:05:47"),
+            "phase1_outcome": ("every model generation hit Agent Zero's 600 s litellm timeout (HTTP 500 at 10m0s); "
+                               "no fixture request; resume path not exercised")})
     return out
 
 
