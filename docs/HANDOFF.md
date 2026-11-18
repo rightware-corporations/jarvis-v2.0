@@ -3427,3 +3427,11 @@ Nada disto foi iniciado.
 **TESTS ACTUALLY RUN (FAKE; NOT real Qwen):** new 16 OK (12 required scenarios incl. simulated 120 s engine timeout reproducing the 4B shape); TE-02..05, A1/A2/A3, issue #9, AgentPolicy OK; full venv 487 OK, 0 skipped; plain Python 487 OK; A/B vs `0ae3383` identical; 7 mutants detected; actionlint OK. Remote CI pending at this checkpoint.
 
 **NOT CONFIRMED:** historical 4B ERROR cause (ENGINE_TIMEOUT stays a hypothesis). **NEXT:** remote CI on exact SHA via temporary Draft PR to develop (close without merge), stacked Draft PR on TE-05; stop before any real model run.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-029 — TE-05E remote CI PASS on exact SHA; Draft PRs
+
+**CI:** WORK-05 product run [44289414804](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44289414804), job `134750420316`, head `21e836a2d4cde4941ba3fa77487bc2f5963cfec1`: **487 tests OK** (workflow fails on any "skipped", so 0 skipped). FAKE tests only — not real Qwen evidence.
+
+**PRs:** TE-05E [#18](https://github.com/rightware-corporations/jarvis-v2.0/pull/18) DRAFT, base `feat/te05-executor-task-completion` (stacked; #16 unchanged at `0ae3383`). Temporary CI-only [#19](https://github.com/rightware-corporations/jarvis-v2.0/pull/19) (branch `ci/te05e-validation-20261118` → base develop) to be closed WITHOUT merge after this docs-only checkpoint is also validated. No merge; develop/main/pin untouched; no real model run.
+
+**STOP:** TE-06 not started; any real model run needs separate authorization.
