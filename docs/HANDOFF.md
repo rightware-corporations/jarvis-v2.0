@@ -3471,3 +3471,15 @@ Nada disto foi iniciado.
 **SECURITY SCOPE:** No code changes from TE-06A; default chat remains tool-free, browser capabilities remain opt-in, TE-06A fixture file access remains read-only/host-bound and Linux secure-open only. Confirm no vendor pin drift. The test suite does not establish real agentic task performance. No real Qwen, Goose, Hermes, Agent Zero, local Windows actions or new API access in this integration step.
 
 **STOP CONDITION:** Any red CI, branch SHA drift, unexpected changed files, merge conflict, security regression or unavailable authorisation should stop integration for explicit review. Do not merge `main`.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-034 — recovered JRV-TE-001 agentic harness research to develop
+
+**DEVELOP CONSOLIDATION COMPLETED:** Product integration PR [#22](https://github.com/rightware-corporations/jarvis-v2.0/pull/22) was merged on 18/11/2026 into `develop`, merge SHA `bcd7e863af055acf72b1f6191be692c9ba521792`; frozen-vendor CI [44319969809](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44319969809) 522/522 OK, 0 skipped in the vendor venv. The implementation PRs #11/#13/#14/#15 were automatically marked merged by GitHub; stacked #16/#18/#20 were closed as superseded after verified commit ancestry. `main` is NOT merged; PR #1 stays DRAFT/DO NOT MERGE. This integration is NOT real-Qwen or Issa product acceptance.
+
+**RESEARCH PR #12 BLOCKER AND RECOVERY:** Historic [#12](https://github.com/rightware-corporations/jarvis-v2.0/pull/12) dated 16/11/2026 has a merge conflict because it independently appended to `docs/HANDOFF.md` from an old `develop` commit. Preserve the original full 173-line candidate audit `docs/research/JRV_TASK_EXECUTOR_AGENTIC_HARNESS_CANDIDATE_AUDIT_2026-11-16.md`, byte-identical to PR #12 blob `b8a38136b62578adaf11f7d444115d5072173e73`, via separate integration PR on current `develop`. The original JRV-BP-014 remains in PR #12 history; this new checkpoint carries forward its findings so no conflicting rewrite of HANDOFF is needed.
+
+**RESEARCH FINDINGS (not adoption):** goose first isolated feasibility candidate; Agent Zero and Hermes alternative executors. At the old JRV-BP-014 checkpoint there was no real sidecar integration or demonstrated control over all delegated tools. All agent-executor selection remains **RESEARCH / HYPOTHESIS**, NOT approved implementation. A real-world mission and bounded fault-recovery trial are still needed before deciding. Never equate the Manus goose experiment with verified end-to-end autonomous recovery.
+
+**PROPOSED DISPOSITION:** After exact-SHA CI and merge of this docs-only research preservation PR, close original #12 as SUPERSEDED, with links and no duplicated merge. Keep original research branch available. Do not create new agents, install packages, modify vendor/tool rights or trigger real model runs in this step.
+
+**NEXT:** Resume controlled side-by-side feasibility evaluation for Goose, Hermes and Agent Zero only under a separate bounded test authorization. Release PR #1 remains DRAFT.
