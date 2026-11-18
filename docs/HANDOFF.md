@@ -3449,3 +3449,11 @@ Nada disto foi iniciado.
 **TESTS ACTUALLY RUN (FAKE model, synthetic temp fixtures; NOT real Qwen, NOT Windows):** new 35 OK (20 required cases + isolation/invariants); TE-02..05E, A1/A2/A3, issue #9, AgentPolicy, WP-04 OK; full venv 522 OK, 0 skipped; plain Python 522 OK; A/B vs `322b4d8` identical; 10 mutants detected. Remote CI pending at this checkpoint.
 
 **LIMITS:** Linux secure-open only (Windows fails closed, unclaimed); narrative never verified (counts only); 16 KiB per file. **NEXT:** remote CI by exact-SHA temporary Draft PR (close without merge), stacked Draft PR on TE-05E; stop. TE-06B (real Qwen 2B) needs separate authorization.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-032 — TE-06A remote CI PASS on exact SHA; Draft PRs
+
+**CI:** WORK-05 product run [44314862415](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44314862415), job `134838183759`, head `6f6afc4ffca734a293305223a60c1b05f3cc0dc5`: **522 tests OK** (workflow fails on any "skipped"). FAKE tests only — not real Qwen, not Windows.
+
+**PRs:** TE-06A [#20](https://github.com/rightware-corporations/jarvis-v2.0/pull/20) DRAFT, base `feat/te05e-error-evidence-preservation` (stacked; #18 unchanged at `322b4d8`). Temporary CI-only [#21](https://github.com/rightware-corporations/jarvis-v2.0/pull/21) (`ci/te06a-validation-20261118` → develop) closed WITHOUT merge after this docs-only head is validated. No merge; develop/main/pin untouched.
+
+**STOP:** TE-06B (real Qwen 2B on this file task) not started; requires separate authorization.
