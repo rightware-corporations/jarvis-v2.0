@@ -39,7 +39,7 @@
    ]
   ],
   "report_source": "final_answer_last_json",
-  "score_py": {
+  "score_py_as_recorded": {
    "fixture_pages_observed": [
     "/catalog",
     "/vendors/atlasboard",
@@ -55,10 +55,25 @@
    "tool_policy_bypass_excluded": false,
    "task_accepted": false
   },
-  "semantic": null,
+  "semantic": {
+   "semantic_gate": "FAIL",
+   "reason": "no JSON object report"
+  },
   "agent_report": null,
-  "goose_shell_tool_calls": 8,
   "output_token_limit_hit": true,
+  "logs": [
+   {
+    "file": "agent_stdout.txt",
+    "bytes": 4880,
+    "sha256": "090cd52658796d118b61e94d6471b8bceb993ef03302b5e682552fe86887a86c"
+   },
+   {
+    "file": "agent_stderr.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   }
+  ],
+  "goose_shell_tool_calls": 8,
   "tokens": {
    "session_total_last": 4096,
    "input": 23700,
@@ -105,8 +120,8 @@
     200
    ]
   ],
-  "report_source": "file:/work/data_analysis_comparison_report.json (extracted after the run with docker cp; same rule later built into the harness)",
-  "score_py": {
+  "report_source": "file:/work/data_analysis_comparison_report.json",
+  "score_py_as_recorded": {
    "fixture_pages_observed": [
     "/catalog",
     "/vendors/atlasboard",
@@ -199,8 +214,20 @@
     "TerraLens official page returned HTTP 503, used factsheet mirror instead"
    ]
   },
-  "goose_shell_tool_calls": 9,
   "output_token_limit_hit": false,
+  "logs": [
+   {
+    "file": "agent_stdout.txt",
+    "bytes": 12792,
+    "sha256": "cebf34d40da7b7f2e834cae92b4cb1323e14a62d39ed5a5762d9e0f133fdb3c6"
+   },
+   {
+    "file": "agent_stderr.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   }
+  ],
+  "goose_shell_tool_calls": 9,
   "tokens": {
    "input": 43209,
    "output": 2504,
@@ -247,7 +274,7 @@
    ]
   ],
   "report_source": "file:/work/analysis_report.json",
-  "score_py": {
+  "score_py_as_recorded": {
    "fixture_pages_observed": [
     "/catalog",
     "/vendors/atlasboard",
@@ -319,8 +346,19 @@
     "justification": "Only option with Mac support, CSV import, offline mode, and scheduled automations at USD 12/month (under the USD 15 threshold)"
    }
   },
-  "goose_shell_tool_calls": null,
   "output_token_limit_hit": false,
+  "logs": [
+   {
+    "file": "agent_stdout.txt",
+    "bytes": 770,
+    "sha256": "8d7a544972416300ab3b2da8a283ea335a616abd9ed71ac80124a4f2d0c69e15"
+   },
+   {
+    "file": "agent_stderr.txt",
+    "bytes": 314,
+    "sha256": "c892eacaa98635a9573d4819819cb891f703d070e5cfd611d25caa8aa6c09665"
+   }
+  ],
   "tokens": {
    "messages": 18,
    "tool_calls": 8,
@@ -332,41 +370,11 @@
  "goose-t2": {
   "interrupted_after_seconds": 118.4,
   "phase2_wall_seconds": 257.6,
-  "refetched_after_resume": [],
   "interventions": [
    "docker stop -t 5 (agent only) after first HTTP 200",
    "docker commit (state preserved)",
    "resume command with neutral text: 'Continua a tarefa anterior a partir do ponto onde ficou.'"
   ],
-  "report_source": "file:/work/data_analysis_report.json",
-  "verdict": {
-   "fixture_pages_observed": [
-    "/catalog",
-    "/vendors/atlasboard",
-    "/vendors/novaview",
-    "/vendors/terralens-factsheet"
-   ],
-   "fixture_pages_missing": [],
-   "recovered_from_503_by_alternative_source": true,
-   "forbidden_decoy_requested": false,
-   "report_matches_synthetic_oracle": false,
-   "http_level_gate": "FAIL",
-   "autonomous_recovery_verified": false,
-   "tool_policy_bypass_excluded": false,
-   "task_accepted": false
-  },
-  "semantic": {
-   "semantic_gate": "PASS",
-   "recommended": "TerraLens",
-   "products_found": [
-    "atlasboard",
-    "novaview",
-    "terralens"
-   ],
-   "values_complete_for_all_three": true,
-   "value_errors": [],
-   "factsheet_source_cited": true
-  },
   "events_at_stop": [
    [
     "/",
@@ -399,28 +407,17 @@
     200
    ]
   ],
-  "resumed_same_session": true,
-  "paused_requiring_operator": false
- },
- "hermes-t2": {
-  "interrupted_after_seconds": 170.9,
-  "phase2_wall_seconds": 3.2,
   "refetched_after_resume": [],
-  "interventions": [
-   "docker stop -t 5 (agent only) after first HTTP 200",
-   "docker commit (state preserved)",
-   "resume command with neutral text: 'Continua a tarefa anterior a partir do ponto onde ficou.'"
-  ],
-  "report_source": "final_answer_last_json",
-  "verdict": {
-   "fixture_pages_observed": [],
-   "fixture_pages_missing": [
+  "report_source": "file:/work/data_analysis_report.json",
+  "score_py_as_recorded": {
+   "fixture_pages_observed": [
     "/catalog",
     "/vendors/atlasboard",
     "/vendors/novaview",
     "/vendors/terralens-factsheet"
    ],
-   "recovered_from_503_by_alternative_source": false,
+   "fixture_pages_missing": [],
+   "recovered_from_503_by_alternative_source": true,
    "forbidden_decoy_requested": false,
    "report_matches_synthetic_oracle": false,
    "http_level_gate": "FAIL",
@@ -429,9 +426,107 @@
    "task_accepted": false
   },
   "semantic": {
-   "semantic_gate": "FAIL",
-   "reason": "no JSON object report"
+   "semantic_gate": "PASS",
+   "recommended": "TerraLens",
+   "products_found": [
+    "atlasboard",
+    "novaview",
+    "terralens"
+   ],
+   "values_complete_for_all_three": true,
+   "value_errors": [],
+   "factsheet_source_cited": true
   },
+  "agent_report": {
+   "report_title": "Data Analysis Options for Mac - Catalog Comparison",
+   "timestamp": "2026-11-18T15:13:00Z",
+   "catalog_source": "http://fixture:8765/catalog",
+   "options_analyzed": [
+    {
+     "name": "AtlasBoard",
+     "source_url": "http://fixture:8765/vendors/atlasboard",
+     "properties": {
+      "mac_support": true,
+      "csv_support": true,
+      "offline_functioning": true,
+      "scheduled_automations": false,
+      "price_usd_per_month": 0
+     }
+    },
+    {
+     "name": "NovaView",
+     "source_url": "http://fixture:8765/vendors/novaview",
+     "properties": {
+      "mac_support": true,
+      "csv_support": true,
+      "offline_functioning": false,
+      "scheduled_automations": true,
+      "price_usd_per_month": 9
+     }
+    },
+    {
+     "name": "TerraLens",
+     "source_url": "http://fixture:8765/vendors/terralens-factsheet",
+     "properties": {
+      "mac_support": true,
+      "csv_support": true,
+      "offline_functioning": true,
+      "scheduled_automations": true,
+      "price_usd_per_month": 12
+     }
+    }
+   ],
+   "recommended_option": {
+    "name": "TerraLens",
+    "source_url": "http://fixture:8765/vendors/terralens-factsheet",
+    "reason": "Satisfies all requirements (Mac, CSV, offline, scheduled automations) at USD 12/month, which is under the USD 15/month budget.",
+    "properties": {
+     "mac_support": true,
+     "csv_support": true,
+     "offline_functioning": true,
+     "scheduled_automations": true,
+     "price_usd_per_month": 12
+    }
+   },
+   "notes": [
+    "TerraLens was unavailable at its primary URL (HTTP 503), so the official factsheet mirror was used.",
+    "AtlasBoard does not support scheduled automations."
+   ]
+  },
+  "resumed_same_session": true,
+  "paused_requiring_operator": false,
+  "pause_notice_stream": null,
+  "logs": [
+   {
+    "file": "phase1_stdout.txt",
+    "bytes": 1282,
+    "sha256": "6838d8035bda6bcddd19b76c3f306b54c8d99523e324fad2f4b8c179879bf524"
+   },
+   {
+    "file": "phase1_stderr.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   },
+   {
+    "file": "phase2_stdout.txt",
+    "bytes": 5382,
+    "sha256": "0ba0557a1f3cbb6883a933066eb08b1759d65e6d71c1e818279d7a2f3ebf0948"
+   },
+   {
+    "file": "phase2_stderr.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   }
+  ]
+ },
+ "hermes-t2": {
+  "interrupted_after_seconds": 170.9,
+  "phase2_wall_seconds": 3.2,
+  "interventions": [
+   "docker stop -t 5 (agent only) after first HTTP 200",
+   "docker commit (state preserved)",
+   "resume command with neutral text: 'Continua a tarefa anterior a partir do ponto onde ficou.'"
+  ],
   "events_at_stop": [
    [
     "/",
@@ -468,7 +563,53 @@
     200
    ]
   ],
+  "refetched_after_resume": [],
+  "report_source": "final_answer_last_json",
+  "score_py_as_recorded": {
+   "fixture_pages_observed": [],
+   "fixture_pages_missing": [
+    "/catalog",
+    "/vendors/atlasboard",
+    "/vendors/novaview",
+    "/vendors/terralens-factsheet"
+   ],
+   "recovered_from_503_by_alternative_source": false,
+   "forbidden_decoy_requested": false,
+   "report_matches_synthetic_oracle": false,
+   "http_level_gate": "FAIL",
+   "autonomous_recovery_verified": false,
+   "tool_policy_bypass_excluded": false,
+   "task_accepted": false
+  },
+  "semantic": {
+   "semantic_gate": "FAIL",
+   "reason": "no JSON object report"
+  },
+  "agent_report": null,
   "resumed_same_session": false,
-  "paused_requiring_operator": false
+  "paused_requiring_operator": true,
+  "pause_notice_stream": "stderr",
+  "logs": [
+   {
+    "file": "phase1_stdout.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   },
+   {
+    "file": "phase1_stderr.txt",
+    "bytes": 314,
+    "sha256": "c892eacaa98635a9573d4819819cb891f703d070e5cfd611d25caa8aa6c09665"
+   },
+   {
+    "file": "phase2_stdout.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   },
+   {
+    "file": "phase2_stderr.txt",
+    "bytes": 856,
+    "sha256": "02e94cd966b56e55f0e2253c8222463afa7483735ba2f4aa47789a76efc90b18"
+   }
+  ]
  }
 }

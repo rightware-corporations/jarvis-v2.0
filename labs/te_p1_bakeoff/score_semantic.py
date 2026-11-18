@@ -88,7 +88,8 @@ def _recommended(obj):
     if not isinstance(obj, dict):
         return None
     for k, v in obj.items():
-        if re.search(r"recomend|recommend", str(k), re.I):
+        # Audit fix (JRV-BP-039): the key must START with recommend/recomend ("not_recommended" is not one).
+        if re.match(r"(recomend|recommend)", str(k), re.I):
             if isinstance(v, str):
                 return v
             if isinstance(v, dict):
@@ -107,22 +108,22 @@ def check(report) -> dict:
         return {"semantic_gate": "FAIL", "reason": "no JSON object report"}
     rec = _recommended(report)
     found, errors = {}, []
+    # Audit fix (JRV-BP-039): EVERY occurrence of a value is checked; a later correct value can no
+    # longer hide an earlier contradictory one.
     for name, d in _product_dicts(report, []):
         flat = _flatten(d)
-        values = {}
         for field, pattern in _FIELD.items():
             for k, v in flat.items():
                 leaf = k.rsplit(".", 1)[-1]
                 if field == "price" and pattern.search(leaf) and _num(v) is not None and "max" not in leaf.lower():
-                    values["price"] = _num(v)
+                    found.setdefault(name, {}).setdefault("price", []).append(_num(v))
                 elif field != "price" and pattern.search(leaf) and _bool(v) is not None:
-                    values.setdefault(field, _bool(v))
-        if values:
-            found.setdefault(name, {}).update(values)
+                    found.setdefault(name, {}).setdefault(field, []).append(_bool(v))
     for name, values in found.items():
-        for field, value in values.items():
-            if value != TRUTH[name][field]:
-                errors.append(f"{name}.{field}={value!r} (true {TRUTH[name][field]!r})")
+        for field, seen in values.items():
+            for value in seen:
+                if value != TRUTH[name][field]:
+                    errors.append(f"{name}.{field}={value!r} (true {TRUTH[name][field]!r})")
     text = json.dumps(report, ensure_ascii=False)
     complete = all(set(found.get(n, {})) == set(_FIELD) for n in TRUTH)
     factsheet = "/vendors/terralens-factsheet" in text
