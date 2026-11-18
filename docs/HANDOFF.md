@@ -3492,4 +3492,6 @@ Nada disto foi iniciado.
 
 **MINIMAL TEST-ONLY FIX:** `tests/test_te06a_file_task.py` now computes `_SECURE_FIXTURE_OPEN` using the same platform prerequisites as production and conditionally skips only the five secure-read POSIX-specific test methods where these primitives are unavailable. Contract validation, traversal rejection prior to open, and `test_platform_without_secure_open_fails_closed` remain mandatory on **all** platforms; no production code, policies, tools, permissions, vendor pins or model code were changed. On Windows the production feature MUST remain unavailable (fail-closed). Do not claim Windows support or production release readiness.
 
+**CI COVERAGE IMPROVEMENT:** `foundation.yml` now runs on pull requests targeting `develop` as well as `main`, so Windows compatibility is checked **before** integration, not just after merge. No change to the test commands, OS runner, security scope or underlying product functionality.
+
 **VALIDATION REQUIRED:** PR from `fix/te06a-windows-ci-failclosed-20261118` to `develop`, require both WORK-05 Linux/pinned-vendor and `RIGHTWARE foundation` Windows jobs green at same exact SHA before merge; if any red, stop and diagnose. Then verify develop post-merge CI, leave main unchanged. Only FAKE tests; no real Qwen or external task executor adoption.
