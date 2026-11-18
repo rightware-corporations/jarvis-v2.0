@@ -27,6 +27,12 @@ try:
 except ImportError:                      # plain Python without the pinned vendor
     AgentSession = None
 
+# The secure fixture reader intentionally fails closed when POSIX dir_fd/O_NOFOLLOW are
+# unavailable (notably Windows). Only tests that require a successful secure read are
+# platform-conditional; the rejection test below MUST run on every platform.
+_SECURE_FIXTURE_OPEN = (hasattr(os, "O_NOFOLLOW") and hasattr(os, "O_DIRECTORY")
+                        and os.open in os.supports_dir_fd)
+
 TASK = "fixture-two-versions-compare"
 A_TEXT = "Relatório trimestral\nreceitas: 100\ncustos: 80\nnotas: nenhuma\nfim\n"
 B_TEXT = "Relatório trimestral\nreceitas: 120\nnotas: nenhuma\nanexo: tabela 2\nfim\n"
@@ -106,6 +112,7 @@ class _Files(unittest.TestCase):
 
 
 class SecureWorkspace(_Files):
+    @unittest.skipUnless(_SECURE_FIXTURE_OPEN, "secure POSIX file reader deliberately unavailable on Windows")
     def test_reads_hash_and_never_modify(self):
         ws = self.workspace()
         before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.iterdir()}
@@ -114,10 +121,12 @@ class SecureWorkspace(_Files):
         self.assertEqual(snap.lines, A_TEXT.splitlines())
         self.assertEqual(before, {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.root.iterdir()})
 
+    @unittest.skipUnless(_SECURE_FIXTURE_OPEN, "secure POSIX file reader deliberately unavailable on Windows")
     def test_6_empty_file_is_valid(self):
         self.write("version_a.txt", "")
         self.assertEqual(self.workspace().read("A").lines, [])
 
+    @unittest.skipUnless(_SECURE_FIXTURE_OPEN, "secure POSIX file reader deliberately unavailable on Windows")
     def test_7_8_missing_file_and_unknown_ids(self):
         ws = self.workspace({"A": "version_a.txt", "B": "missing.txt"})
         for fid, code in (("B", "FILE_NOT_FOUND"), ("C", "UNKNOWN_FILE_ID"), ("../A", "UNKNOWN_FILE_ID"),
@@ -136,6 +145,7 @@ class SecureWorkspace(_Files):
             with self.subTest(names=names), self.assertRaises(F.FileTaskError):
                 self.workspace(names)
 
+    @unittest.skipUnless(_SECURE_FIXTURE_OPEN, "secure POSIX file reader deliberately unavailable on Windows")
     def test_10_symlinks_hardlinks_and_root_links_are_refused(self):
         (self.root / "version_a.txt").unlink()
         os.symlink(self.outside, self.root / "version_a.txt")
@@ -155,6 +165,7 @@ class SecureWorkspace(_Files):
             self.workspace({"A": "adir", "B": "version_b.txt"}).read("A")
         self.assertEqual(ctx.exception.code, "NOT_REGULAR_FILE")
 
+    @unittest.skipUnless(_SECURE_FIXTURE_OPEN, "secure POSIX file reader deliberately unavailable on Windows")
     def test_11_12_size_binary_and_invalid_utf8(self):
         self.write("big.txt", "x" * 16385)
         self.write("bin.txt", data=b"abc\x00def")
