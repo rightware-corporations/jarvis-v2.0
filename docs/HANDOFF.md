@@ -3435,3 +3435,9 @@ Nada disto foi iniciado.
 **PRs:** TE-05E [#18](https://github.com/rightware-corporations/jarvis-v2.0/pull/18) DRAFT, base `feat/te05-executor-task-completion` (stacked; #16 unchanged at `0ae3383`). Temporary CI-only [#19](https://github.com/rightware-corporations/jarvis-v2.0/pull/19) (branch `ci/te05e-validation-20261118` → base develop) to be closed WITHOUT merge after this docs-only checkpoint is also validated. No merge; develop/main/pin untouched; no real model run.
 
 **STOP:** TE-06 not started; any real model run needs separate authorization.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-030 — TE-06A trusted file task execution start (FAKE only)
+
+**STATE:** remote heads verified: TE-05E `322b4d8` (PR #18 DRAFT, CI 44289652980 success), TE-05 `0ae3383` (#16), develop `fa36b38`, main `0cac8e8`, pin `f21d902`. No equivalent file-task implementation exists. Branch `feat/te06a-trusted-file-task-execution` from `322b4d8`.
+
+**SCOPE (authorized):** two host-created synthetic UTF-8 fixtures (ids A/B), code-owned file contract, two read-only tools (`fixture_read`, `fixture_compare`) through the existing AgentPolicy/ReceiptLedger/orchestrator, deterministic independent verifier, structured report, FAKE model tests. Capability `files` OFF by default, host-only. No real Qwen, no shell, no arbitrary paths, no writes, no Windows, no persistent permissions/memory, no pin/develop/main change.
