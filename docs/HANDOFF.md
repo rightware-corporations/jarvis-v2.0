@@ -3425,3 +3425,15 @@ Nada disto foi iniciado.
 **LIMITS UNCHANGED:** IANA preset objectives, max_calls=10, max_turns=10, deadline 115 s, engine timeout 120 s, tools/hosts/policy. CLI runs with `--warmup` (reported separately). Outer harness kill 320 s = TE-03/TE-04 200 s + 120 s for the warm-up engine call; this is not a task budget. No automatic retries; 4B only if 2B infrastructure and controls work. Artifacts: sanitized task JSON, verdict, preflight, versions/models, exit, stderr (no service log, no transcripts, no tool args).
 
 **NOT TOUCHED:** develop `fa36b38`, main `0cac8e8`, PR #16 head/base, pin `f21d902`.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-027 — TE-05 live results on `exp/te05-live-qwen` (2B PASS_LIMITED, 4B ERROR)
+
+(Numbering continues after the operator's JRV-BP-026 on parallel branch `exp/te05-live-qwen-20261117`.)
+
+**RUNS (one each, no retries, approved code `4fd4925`):** 2B request `70fcd27` → run 44120973970, PASS_LIMITED, UNKNOWN_IDENTITY, both IANA objectives PAGE_OBSERVED via 2 `web_open` OK, halt NONE, 0 continuations, 3 generations, warm-up 2.464 s, task 84.980 s, total 87.445 s. 4B request `a7cebd9` → run 44121642913, REVIEW, operational ERROR (`INCOMPLETE_OBJECTIVE_EVIDENCE`), 2 receipts counted, diagnostics discarded, warm-up 4.973 s, task 181.418 s, total 186.390 s. Job conclusions `success` = infrastructure only. Operator's separate 2B run 44121272096 also PASS_LIMITED (not started by this session).
+
+**CONCLUSION:** TE-05 measurably improved the real 2B on the fixed task (TE-03: HALTED, 10 receipts, 1/2 → TE-05: 2/2 in 2 calls); inference: due mainly to the stated objectives (cold load only ~2 s). 4B not improved/inconclusive: ERROR path hides cause; hypothesis (NOT VERIFIED): engine 120 s client timeout in one generation. Prompt processing dominates CPU time.
+
+**DEFECT FOUND:** ERROR replies lose receipt events, reason codes and metrics (`_apply_completion_gate` zero-objective record → `TaskEntry` generic fallback). Workflow marks REVIEW as green.
+
+**NEXT (needs authorization):** TE-05E FAKE-first error-path diagnostics fix + workflow failing on non-PASS_LIMITED; then optionally one 4B rerun with unchanged limits. Evidence: `docs/evidence/TE05_LIVE_QWEN_2B_4B_RESULTS_2026-11-17.md`. PR #16 DRAFT unchanged; no merge; develop/main/pin untouched.
