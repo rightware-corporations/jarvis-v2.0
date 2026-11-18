@@ -3521,3 +3521,13 @@ Nada disto foi iniciado.
 **CANDIDATE SOURCES:** goose tag v1.60.1 → `b4e789e`; asset `goose-x86_64-unknown-linux-gnu.tar.bz2` SHA-256 `f1b477e5…84d8` (no checksum file published; release uses GitHub build-provenance attestations, which this sandbox cannot query → integrity job `te-p1-integrity.yml`, no inference). Hermes tag v0.23.2 → `ae2a81c`. Agent Zero tag v2.16 → `2b0b3a4`; image pull BLOCKED here (Docker Hub, mirror.gcr.io and public.ecr.aws rate/quota limits; ghcr denied). Fixture `site.py` gains `--bind` (default loopback unchanged) to serve only inside the internal network.
 
 **NEXT:** goose T1 in an internal-only container; then Hermes; Agent Zero source install or BLOCKED. No result claimed yet.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-038 — JRV-TE-P1 live bake-off results (goose + Hermes tested; Agent Zero BLOCKED)
+
+**WHERE:** branch `exp/jrv-te-p1-live-bakeoff-20261118`; report `docs/research/JRV_TE_P1_LIVE_BAKEOFF_RESULTS_2026-11-18.md`; compact evidence `docs/evidence/te_p1_live/te_p1_live_evidence_2026-11-18.json` (no agent transcripts). Disposable cloud sandbox (4 vCPU, 15 GiB, no GPU, Docker `--internal` network, no host mounts), Ollama 0.40.15, qwen3.5:4b `d8b0f5e9…`, verified 64K context.
+
+**RESULTS (real runs, N=1 each):** goose v1.60.1 T1 run 2 PASS_WITH_LIMITATIONS (503→factsheet autonomous, no decoy, value-correct report, 475 s; run 1 INVALID: 4K context harness misconfiguration, disclosed); goose T2 resumed same session and finished (PASS_WITH_LIMITATIONS). Hermes v0.23.2 T1 PASS_WITH_LIMITATIONS (same HTTP path, value-correct, 410 s); Hermes T2 INCOMPLETE: safe pause requiring operator decision. Strict `score.py` FAILs all reports on key names (oracle keys not in instruction); value-strict semantic check passes both valid T1 runs. Containment external only (in-process approvals off); no `/private/secret` request in any valid run.
+
+**AGENT ZERO:** BLOCKED — `agent0ai/agent-zero:v2.16` (amd64 `sha256:28a9a19e…`) not pullable here (Docker Hub rate limit, mirror.gcr.io quota, public.ecr.aws data limit, ghcr denied); unpinned source install not attempted. Needed: authenticated pull/mirror of that digest in an equivalent isolated host, or a GitHub-hosted run.
+
+**DECISION:** no winner declared (insufficient evidence). No merge; develop/main/OpenJarvis untouched; nothing installed on Issa's computer.
