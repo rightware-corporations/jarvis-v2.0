@@ -3457,3 +3457,17 @@ Nada disto foi iniciado.
 **PRs:** TE-06A [#20](https://github.com/rightware-corporations/jarvis-v2.0/pull/20) DRAFT, base `feat/te05e-error-evidence-preservation` (stacked; #18 unchanged at `322b4d8`). Temporary CI-only [#21](https://github.com/rightware-corporations/jarvis-v2.0/pull/21) (`ci/te06a-validation-20261118` → develop) closed WITHOUT merge after this docs-only head is validated. No merge; develop/main/pin untouched.
 
 **STOP:** TE-06B (real Qwen 2B on this file task) not started; requires separate authorization.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-033 — TE-02→TE-06A consolidation candidate for develop
+
+**OPERATOR PRIORITY:** Close the accumulated engineering work on 18 November 2026, without prematurely promoting a release or conflating FAKE regression success with Issa product acceptance. Preparation and integration into `develop` authorized as a controlled process; no `main` merge or real-Qwen run.
+
+**REPO GATE (before write):** `develop` `fa36b3896de2408c9c98a80d6618469ef7099547`, source TE-06A `1207e99cb893349aa8d000b16d2633936c70ff89`. Verified via GitHub compare: the TE-06A tip is **60 commits ahead, 0 behind**, with 39 files modified against `develop`. Seven implementation PRs are stacked (#11 WP-04, #13 TE-02, #14 TE-03, #15 TE-04, #16 TE-05, #18 TE-05E, #20 TE-06A); no merge had occurred when this checkpoint was written. Research-only PR #12 is a separate document branch and release PR #1 (develop→main) is an explicitly protected boundary.
+
+**BASELINE:** Exact source SHA `1207e99...` passed WORK-05 GitHub Actions run [44315123156](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44315123156), pinned OpenJarvis `522 tests OK`, zero skipped in the vendor venv. A second prior source SHA `6f6afc4` passed run `44314862415`. These are FAKE model/synthetic fixtures, **not** live autonomy, voice, Windows or Issa acceptance.
+
+**INTEGRATION PROCEDURE:** Use isolated `integration/jarvis-te02-te06a-20261118`, initialized at the TE-06A tip. This is an append-only integration checkpoint, not a code rewrite. Open one reviewable PR to `develop`, trigger CI on its exact HEAD, verify full pinned tests and check for conflicts/pin/permissions changes. If accepted, merge this PR to `develop` preserving commit history, then close the seven superseded stacked PRs **without merging them again** and link the consolidated merge commit. Research-only PR #12 must be dispositioned independently with documentation preserved; release PR #1 stays DRAFT / DO NOT MERGE.
+
+**SECURITY SCOPE:** No code changes from TE-06A; default chat remains tool-free, browser capabilities remain opt-in, TE-06A fixture file access remains read-only/host-bound and Linux secure-open only. Confirm no vendor pin drift. The test suite does not establish real agentic task performance. No real Qwen, Goose, Hermes, Agent Zero, local Windows actions or new API access in this integration step.
+
+**STOP CONDITION:** Any red CI, branch SHA drift, unexpected changed files, merge conflict, security regression or unavailable authorisation should stop integration for explicit review. Do not merge `main`.
