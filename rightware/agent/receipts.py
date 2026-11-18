@@ -42,10 +42,23 @@ import json
 import secrets
 import threading
 
+from rightware.agent.diagnostics import policy_reason_code
 from rightware.agent.policy import canonical
 from rightware.agent.web import redact_url
 
 HASH_SCOPE_RAW = "raw_response_bytes"      # SHA-256 of the downloaded body bytes (not the model view)
+
+
+_FILE_KEYS = ("file_id", "file_sha256", "bytes", "lines", "a_sha256", "b_sha256", "diff_sha256",
+              "added", "removed", "modified")
+
+
+def _file_evidence(ev: dict) -> tuple | None:
+    """TE-06A: only fixed keys with str/int values (hashes, ids, counts) from a file tool."""
+    if "file_id" not in ev and "diff_sha256" not in ev:
+        return None
+    return tuple((k, ev[k]) for k in _FILE_KEYS
+                 if k in ev and (type(ev[k]) is int or (isinstance(ev[k], str) and len(ev[k]) <= 64)))
 
 
 @dataclasses.dataclass(frozen=True)
@@ -69,14 +82,17 @@ class ExecutionReceipt:
     raw_sha256: str | None
     hash_scope: str | None
     truncated: bool | None
+    reason_code: str | None = None   # TE-05 finite diagnostic code (DENIED/REFUSED*/FAILED); never args or text
+    file_evidence: tuple | None = None   # TE-06A: whitelisted (key, value) pairs of a file tool; never file text
 
 
 class _Record:
     __slots__ = ("sequence", "call_id", "call_id_status", "tool", "key", "authorized", "executed",
-                 "status", "binding", "policy_reason", "audit", "late", "evidence", "state")
+                 "status", "binding", "policy_reason", "audit", "late", "evidence", "state", "reason_code")
 
     def __init__(self, **kw):
         self.executed, self.late, self.evidence, self.audit = False, False, {}, "NOT_APPLICABLE"
+        self.reason_code = None
         for k, v in kw.items():
             setattr(self, k, v)
 
@@ -113,6 +129,8 @@ class ReceiptLedger:
                           status=None if allowed else "DENIED", binding="BOUND",
                           policy_reason=None if allowed else (reason or "recusada"),
                           state="OPEN" if allowed else "CLOSED")
+            if not allowed:
+                rec.reason_code = policy_reason_code(reason or "recusada")
             self._records.append(rec)
             return rec
 
@@ -151,12 +169,14 @@ class ReceiptLedger:
             if rec.state == "CLAIMED":
                 rec.state = "RUNNING"
 
-    def finish(self, rec: _Record, status: str, evidence: dict, audit_ok: bool | None) -> None:
+    def finish(self, rec: _Record, status: str, evidence: dict, audit_ok: bool | None,
+               reason_code: str | None = None) -> None:
         with self._lock:
             rec.late = rec.state == "ABANDONED"
             rec.status = status
             rec.evidence = dict(evidence or {})
             rec.audit = "NOT_APPLICABLE" if audit_ok is None else ("OK" if audit_ok else "FAILED")
+            rec.reason_code = reason_code
             rec.state = "CLOSED"
 
     # -- end of run ------------------------------------------------------------------------
@@ -182,5 +202,7 @@ class ReceiptLedger:
                     http_status=ev.get("status") if isinstance(ev.get("status"), int) else None,
                     content_type=ev.get("content_type") if isinstance(ev.get("content_type"), str) else None,
                     raw_sha256=raw, hash_scope=HASH_SCOPE_RAW if raw else None,
-                    truncated=ev.get("truncated") if isinstance(ev.get("truncated"), bool) else None))
+                    truncated=ev.get("truncated") if isinstance(ev.get("truncated"), bool) else None,
+                    reason_code=r.reason_code,
+                    file_evidence=_file_evidence(ev)))
             return tuple(out)

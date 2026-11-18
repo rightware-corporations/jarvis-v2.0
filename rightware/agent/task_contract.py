@@ -174,7 +174,7 @@ def _build_catalog(entries: tuple[TaskContract, ...]) -> MappingProxyType:
 
 # -- the code-owned catalog (the ONLY source of contract authority) ----------------------
 TRUSTED_PRESETS = _build_catalog((
-    # SYNTHETIC test fixture (labs/work07_r3c1/site.py). Not a real publisher, not an RFC.
+    # SYNTHETIC test fixture (labs/work07_r3c1/site.py). Not a real publisher; it is unrelated to the IANA public sample.
     TaskContract(
         preset_id="synthetic-archive-two-originals",
         schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=True,
@@ -195,6 +195,19 @@ TRUSTED_PRESETS = _build_catalog((
                              "abrir o documento original AX-101 (fixture sintética)"),
             BrowserObjective("AX202", "open_original", "https://archive.fixture.example/docs/ax-202.html",
                              "abrir o documento original AX-202 (fixture sintética)"),
+        )),
+    # TE-03: intentionally narrow real public read-only task; identity remains UNKNOWN.
+    # Host may opt into this PREDECLARED catalogue entry, never model text.
+    # TE-05: ONE bounded A3 continuation (only with budget left and no blocking condition).
+    TaskContract(
+        preset_id="iana-reserved-example-public-readonly",
+        schema_version=SCHEMA_VERSION, origin=ORIGIN, synthetic=False, max_continuations=1,
+        hosts=("www.iana.org",),
+        objectives=(
+            BrowserObjective("IANA_RESERVED", "read_page", "https://www.iana.org/domains/reserved",
+                             "ler a página de domínios reservados da IANA"),
+            BrowserObjective("IANA_EXAMPLE", "read_page", "https://www.iana.org/help/example-domains",
+                             "ler a página sobre domínios de exemplo da IANA"),
         )),
 ))
 

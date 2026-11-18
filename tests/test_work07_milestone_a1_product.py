@@ -36,8 +36,15 @@ def contract(**kw):
 class Catalog(unittest.TestCase):
     def test_catalog_is_code_owned_read_only_and_marks_the_fixture_synthetic(self):
         # A3 added one more SYNTHETIC preset (same fixture, max_continuations=1); all entries stay synthetic
-        self.assertEqual(list(TC.TRUSTED_PRESETS), [PRESET, PRESET + "-recovery"])
-        self.assertTrue(all(c.synthetic for c in TC.TRUSTED_PRESETS.values()))
+        self.assertEqual(list(TC.TRUSTED_PRESETS),
+                         [PRESET, PRESET + "-recovery", "iana-reserved-example-public-readonly"])
+        self.assertTrue(TC.TRUSTED_PRESETS[PRESET].synthetic)
+        self.assertTrue(TC.TRUSTED_PRESETS[PRESET + "-recovery"].synthetic)
+        public = TC.TRUSTED_PRESETS["iana-reserved-example-public-readonly"]
+        self.assertFalse(public.synthetic)
+        self.assertEqual(public.hosts, ("www.iana.org",))
+        self.assertEqual(len(public.objectives), 2)
+        self.assertTrue(all(o.identity_rule == "NONE" for o in public.objectives))
         self.assertEqual((BASE.max_continuations, TC.TRUSTED_PRESETS[PRESET + "-recovery"].max_continuations), (0, 1))
         self.assertTrue(BASE.synthetic)
         self.assertEqual(BASE.origin, "code_catalog")
@@ -229,7 +236,10 @@ class SessionIntegration(unittest.TestCase):
                          ["text", "completion", "outcomes", "sources", "halted", "flags", "verification"])
         # the only later addition is the A3 opt-in field, defaulting to None (absent from reply_json)
         self.assertEqual([(f.name, f.default) for f in fields[7:]], [("task_completion", None)])
-        self.assertEqual([f.name for f in dataclasses.fields(S.ToolOutcome)], ["tool", "status", "content", "evidence"])
+        outcome_fields = dataclasses.fields(S.ToolOutcome)
+        self.assertEqual([f.name for f in outcome_fields][:4], ["tool", "status", "content", "evidence"])
+        # TE-05 adds only a diagnostic refusal code, defaulting to None and absent from reply_json
+        self.assertEqual([(f.name, f.default) for f in outcome_fields[4:]], [("code", None)])
         (_, r0, _, _), (_, r1, _, _) = self.run_pair("A_incomplete")
         self.assertEqual(set(json.loads(S.reply_json(r1))), {"completion", "halted", "flags", "verification",
                                                              "sources", "outcomes"})

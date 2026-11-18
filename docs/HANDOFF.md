@@ -3269,3 +3269,205 @@ Nada disto foi iniciado.
 **RESTRICTIONS:** Implementation must be performed by Claude on a safe topic branch after fresh baseline check. No code has yet been changed for D01–D02 and no new tests have been run. The issue and prompt are NOT evidence that a working unified controller exists. No vendor pin/lockfile changes, no A1/A2/A3 or policy refactor, WindowsActions, voice, durable memory, new tooling, external APIs, live Qwen/Windows test, A4, main merge or release. Mandatory tests are specified in mission, including FAKE isolated, no tool effect and A1–A3 negative regressions, and exact-SHA pinned CI.
 
 **NEXT:** Claude implements D01–D02 only, produces topic-branch Draft PR and append-only HANDOFF checkpoint with exact tests and CI. ChatGPT then audits the delivered code/evidence and user-visible behavior before a separate D03 implementation decision.
+
+
+## CHECKPOINT — 15/11/2026: JRV-BP-012 — WP-04/D01–D02 text facade candidate (GitHub connector)
+
+**AUTHORIZATION:** Operator explicitly authorized D01/D02 code, fake tests, topic-branch commits, append-only HANDOFF and Draft PR to develop. This does not authorize D03–D08, A4, real Qwen or Windows device tests.
+
+**PREFLIGHT:** develop HEAD `fa36b3896de2408c9c98a80d6618469ef7099547`, main `0cac8e8d828d91cb9d849c67a33f62eb701bdb94`; no WP04 branch/open PR before creation; only release PR #1 DRAFT. Three baseline runs successful: foundation `43607801083` (PR), WORK-05 `43607796273` (push), foundation `43607796224` (push). Vendor gitlink and `rightware/runtime.py:PIN` equal `f21d902f4d3bd7f0f3f138f1a4613019a394b549`. No local clone or submodule venv accessible to the container, direct GitHub DNS unavailable. GitHub connector write permissions verified; existing worktrees were not modified.
+
+**BRANCH:** `feat/wp04-d01d02-text-facade`, branched from exact baseline. Code/review pre-checkpoint tip `5959ce59d237676829959118b7658a3458293e77`. Commits include `6ca1cfc` (lazy adapter), `8684b35` (facade), `7ee543e` (fake tests), `a9db30d` / `5514d18` (corrected lifecycle/diagnostic/claim filters), `2b29c3e` (test correction), `5959ce5` (review documentation), plus intermediate test fixes.
+
+**FILES:** New `rightware/text_adapter.py` (deferred pinned SimpleAgent/Ollama, injectable model factories, no tools or memory); `rightware/text_facade.py` (random host IDs, owner-local session binding, strict text validation, empty effective capabilities, bounded ephemeral context, route/status projection, cancellation and honest fail-closed result); `tests/test_wp04_d01_d02.py` (fake routing, owner/capability injection, zero effects, session isolation, budgets, model errors, timeout/cancel, WP03 corpus sampling); `docs/engineering/WP04_D01_D02_IMPLEMENTATION_REVIEW.md` (opt-in usage and limitations). `docs/HANDOFF.md` appended with this checkpoint.
+
+**STATUS AND EVIDENCE:** Code committed as **IMPLEMENTED_CANDIDATE**, not tested/accepted yet. Local project venv suite `python -m unittest discover -s tests -v` **BLOCKED/NOT_TESTED** (runtime has no repo clone, pinned vendor or GitHub DNS). New fake tests **NOT_TESTED at this checkpoint**; pending real GitHub Actions CI on PR's final exact SHA. No simulated PASS counts and no live model tests. No changes made to runtime/voice/agent CLI, policy, receipts, completion, WindowsActions, vendor gitlink/pin, dependencies, workflows, `develop`, `main` or PR #1.
+
+**NO-EFFECT DESIGN:** TASK/MEMORY_INTENT static refusal, never dispatched; model `SimpleAgent` direct text-only path, tool_results rejected, all result receipts/effects empty, factual_verified/task_completed/memory_persisted false. No role/grant fields accepted via text. Fake tests must verify these facts in CI before a PASS claim.
+
+**LIMITATIONS:** Deterministic routing is a conservative guard, not proven Portuguese understanding. Local owner is not multi-user auth. Synchronous model worker can finish after timeout/cancel; late output is discarded and same session stays busy while the worker lives. No live Qwen or user/device validation. D03 integration and policy-protected actions excluded.
+
+**NEXT EXACT STEP:** Open Draft PR into develop referencing Issue #10; inspect CI for the PR SHA and actual test counts, repair failures only within D01/D02, then append final checkpoint with exact-SHA evidence and review blockers. Do not merge.
+
+
+## CHECKPOINT — 15/11/2026: JRV-BP-013 — D01/D02 exact-SHA CI validated, Draft PR review (GitHub connector)
+
+**IMPLEMENTATION STATUS:** WP-04 D01/D02 **IMPLEMENTED_CANDIDATE / TESTED_FAKE / REVIEW_REQUIRED**, not E0 acceptance, not an Issa release. Approved scope only; D03–D08 and A4 not started.
+
+**BRANCH AND PR:** `feat/wp04-d01d02-text-facade` branched from `develop@fa36b3896de2408c9c98a80d6618469ef7099547`; Draft PR [#11](https://github.com/rightware-corporations/jarvis-v2.0/pull/11) targets `develop` and references Issue #10. Verified tested code HEAD `405098c829a43c759f9fc64014702585d2176d2b`; no merge. Additional implementation changes: `be69fc4c` guards prior-execution claims/historical memory, `405098c8` adds actual pinned vendor API test using fake engine and PTX-020/023/027 negatives.
+
+**CI VERIFIED AT EXACT SHA `405098c829a43c759f9fc64014702585d2176d2b`:** GitHub Actions WORK-05 [run 43748244163](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43748244163), `product` job SUCCESS. Step 1 `python -m unittest discover -s tests -v` on plain Python 3.12: **431 total / 234 PASS / 0 FAIL / 197 SKIP** (197 require pinned vendor, including new actual API integration case). Step 2 installed `uv==0.11.32`, `uv sync --project vendor/openjarvis --frozen --no-dev --python "$(which python)"`; `vendor/openjarvis/.venv/bin/python -m unittest discover -s tests -v`: **431 total / 431 PASS / 0 FAIL / 0 SKIP**. New WP04 test module: **23 cases**, all PASS in pinned environment; 22 PASS + 1 SKIP on plain Python. CI contains existing tests for runtime, voice, legacy agent, A1/A2/A3 negatives (wrong originals, late results), and Issue #9 denial reason, passing in pinned venv. No live model inference/Windows device tests were run.
+
+**REPOSITORY CHANGE CHECK:** diff to develop contains only `rightware/text_facade.py`, `rightware/text_adapter.py`, `tests/test_wp04_d01_d02.py`, `docs/engineering/WP04_D01_D02_IMPLEMENTATION_REVIEW.md` and append-only `docs/HANDOFF.md`. `vendor/openjarvis` gitlink and runtime PIN unchanged at `f21d902f4d3bd7f0f3f138f1a4613019a394b549`. No edits to existing runtime/agent/voice/WindowsActions/policy/receipts/completion/lockfiles/workflows. `main` and release PR #1 not modified.
+
+**NO-EFFECT EVIDENCE:** New tests reject malformed text, foreign session IDs, channel escalation, user JSON owner/capability injection; assert no model/tool dispatch for direct calculator/mail/memory commands, empty effects/receipts, disabled memory persistence and verified completion, bounded and segregated in-RAM history, timeout/late response discard, host cancellation and invalid model result refusal. Quoted malicious instructions remain untrusted text, with no available execution route. Pinned SimpleAgent `AgentContext` and `.run(input, context=...)` exercised through fake `InferenceEngine.generate`, no Ollama.
+
+**BLOCKED / NOT_TESTED:** Local clone/venv command execution from ChatGPT container blocked by GitHub DNS; authoritative CI ran tests in GitHub hosted runner. No real Qwen semantic evaluation, target Windows hardware, live voice/memory, E0 UI or security penetration test; these remain outside scope. Regex-based routing is conservative and not a validated semantic Portuguese intent classifier. Host owner is a local placeholder, not multiuser authentication. On timeout/cancel, synchronous vendor worker can continue until it exits, so the same session rejects another request while pending. Review this lifecycle and handling of model-language effect claims before D03.
+
+**NEXT EXACT STEP:** After this documentation-only commit, confirm PR #11 stays DRAFT targeting develop, CI on its **final documentation SHA**, and both base branch and PR #1 unchanged; then independent source/security review. Explicit separate authorization is required for D03 and live-Qwen T3. No merge/release.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-015 — TE-01 evidence and TE-02 task entry
+
+**USER DIRECTION:** Operator supplied 6 Manus/goose evidence files and authorized continuation ("vamos entao prosseguir"). TE-01 logs independently audited; narrow, opt-in **TE-02 experimental** connection to existing AgentSession implemented. No general-purpose external agent imported.
+
+**BASELINE:** `develop@fa36b3896de2408c9c98a80d6618469ef7099547` remains unchanged; D01/D02 `feat/wp04-d01d02-text-facade@bb6a95ec214448c8ff087aca709624b4e67c69f0`, PR #11 remains Draft. TE-02 branch `feat/te02-trusted-task-entry` created at that exact D01/D02 HEAD; **stacked, do not merge without PR #11 review**. Previous JRV-TE-001 research PR #12 remains separate; no file copied from that branch.
+
+**UPLOAD AUDIT:** [TE-01 independent evidence review](evidence/TE01_GOOSE_MANUS_INDEPENDENT_AUDIT_2026-11-17.md). Goose 1.59.2 / Ollama qwen2.5:3b shows actual shell calls: first task FAIL (cat output mistaken for diff); externally directed retry PASS LIMITED (`diff -u` output identifies added line; produced report read back). No autonomous recovery established, since tool calls in retry are batched before observed tool results. No RIGHTWARE security integration, Qwen3.5 or Windows testing. Keep goose as candidate, not approved for adoption.
+
+**TE-02 SOURCE:** `rightware/task_entry.py` adds a standalone host-owned `TaskEntry` adapter, preserving `TextFacade.submit()` no-tool default, and permitting `run_trusted_browser_fixture()` only by explicit host call with an injected true `AgentSession`. It accepts solely synthetic trusted preset `synthetic-archive-two-originals`, browse-only host, existing A1/A2/A3 receipts/verification, bounded calls and turns; no general shell, filesystem or Windows tools. The typed result exposes objective states/receipt count and keeps factual verification false. **No public CLI wiring, no real model or device tests, no side effects outside synthetic fixtures.**
+
+**TESTS:** New `tests/test_te02_task_entry.py` combines no-vendor guard tests and integration via real `AgentSession`, fake model and mock browser. Exact CI/test counts and SHA pending verification; do NOT claim PASS until confirmed on the candidate HEAD. Past D01/D02 431 PASS applies to PR #11, not automatically to this branch.
+
+**BOUNDARIES:** No vendor changes/pin/lockfiles, no A1/A2/A3 refactor, runtime/voice/windows actions, external agent installation, API key, Qwen/Windows real test, release or merge.
+
+**NEXT:** Open separate Draft PR to `develop` with stacked branch disclosure, verify WORK-05 CI on exact SHA, independently review tests/security and compare observed capability to TE-01. Preserve HANDOFF-first continuity.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-016 — TE-02 exact-SHA CI confirmed
+
+**INDEPENDENT CI EVIDENCE:** WORK-05 GitHub Actions run [44096288889](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44096288889) SUCCESS on `feat/te02-trusted-task-entry@0e34057e1f05fba5bc76089528982ea44bb364b7` (initial TE-02 source + evidence + JRV-BP-015). Job `134084153128`: standard Python suite `Ran 441 tests ... OK (skipped=202)` (239 pass; 202 skip because pinned vendor not present), then pinned frozen OpenJarvis venv `Ran 441 tests ... OK` (**441 pass; 0 failed; 0 skipped**). Ten new TE-02 tests passed in pinned venv. These are FAKE model and mock HTTP, **not** live Qwen or Windows validation. Exact log fetched and inspected.
+
+**SCOPE AND VERDICT:** TE-01 goose remains separate candidate, real shell/tool calling confirmed in isolated Manus but no autonomous recovery/RIGHTWARE policy evidence. TE-02 new opt-in trusted facade uses the already protected `AgentSession`; the 2 synthetic page objectives yield `UNKNOWN_IDENTITY` when both pages observed because publisher identity is unverified; a premature answer yields `INCOMPLETE`. No status `COMPLETE_VERIFIED` asserted or real files compared by JARVIS. No new provider, OS tools, voice, memory, network effects, upstream changes or merge.
+
+**OPEN REVIEW:** Draft PR #13 stacked on PR #11, source code candidate only. Prior source SHA CI SUCCESS. This documentation-only commit requires a fresh exact-SHA run to confirm final HEAD, and is not itself retroactively covered by the previous run. The source test findings remain preserved.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-017 — TE-03 host-approved public task path
+
+**AUTHORIZATION:** User said "vamoa entao" following the offered next milestone TE-03: connect a controlled task entry and prepare a bounded real-model proof. Implemented candidate code and fake-first tests; real Qwen inference requires separate observed execution and cannot be claimed from these files.
+
+**BASELINE:** `develop@fa36b3896de2408c9c98a80d6618469ef7099547`; D01/D02 Draft PR #11 `bb6a95ec214448c8ff087aca709624b4e67c69f0`; TE-02 Draft PR #13 `60c8cc1bdf3b1620ffe716964ba5a35958faaab9`. TE-03 isolated branch `feat/te03-rfc-task-entry` created from exact TE-02 HEAD; this is a **STACKED** dependency, and neither previous PR has been merged. Goose TE-01 research PR #12 unchanged.
+
+**IMPLEMENTATION CANDIDATE:** `rightware/agent/task_contract.py` adds exact code-owned `rfc-9110-9112-public-readonly` two-objective contract for host `www.rfc-editor.org`, identity_rule NONE, no grant by text; `rightware/task_entry.py` retains TE-02 fixture and adds explicit host-only `run_trusted_public_rfc_task` using existing AgentSession (browser only, A2 receipts, A3 gate, max 12 calls/turns), rejecting untrusted sessions/factory; `rightware/task_cli.py` adds CLI with `--allow-public-read` mandatory, local Ollama and trusted presets; `rightware/runtime.py` introduces `python jarvis.py task` while preserving all previous commands. No shell/filesystem/Windows actions in this route, no Goose runtime or vendor change.
+
+**TESTS:** `tests/test_te03_public_task.py` adds fake-model + httpx.MockTransport integration/negative tests; A1 catalogue tests updated to enforce two original synthetic presets and the fixed new public entry (identity remains NONE). `docs/engineering/TE03_PUBLIC_RFC_TASK.md` documents the opt-in invocation and limits. Test/CI verdict PENDING at commit time; do not claim FAKE tests are Qwen, site-network or target Windows success.
+
+**STATUS:** Experimental integration candidate, NOT E0/E1 acceptance, no real Qwen run, no main/develop merges, no arbitrary tool execution. For code-owned public contract, even two page read receipts yield UNKNOWN_IDENTITY, not COMPLETE_VERIFIED; factual_verified always false.
+
+**NEXT:** Open DRAFT stacked PR, inspect actual WORK-05 CI logs on exact branch SHA, fix tests if needed, then decide/execute one opt-in CPU-only local Qwen smoke (no paid provider, read-only fixed host) with evidence before any general task routing or file/Windows capabilities.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-018 — TE-03 oracle-safe public IANA correction and fake CI
+
+**FIRST CI AND CORRECTION:** Initial TE-03 CI run `44101782180` FAILED due to `tests/test_work07_browser.py::ProductHasNoOracle`: old RFC 9110/9112 identifiers and `rfc-editor` hostname were forbidden in `rightware/` as a benchmark leakage guard. The nested request-commit regression also failed from the same cause. **No weakening of the oracle-isolation test.** Replaced the example public task with two real, small IANA pages: `https://www.iana.org/domains/reserved` and `https://www.iana.org/help/example-domains` (source URLs externally verified); all tool grants remain fixed host `www.iana.org`, public HTTPS browse-only.
+
+**VALIDATED:** Subsequent WORK-05 CI on SHA after correction `44102378097` SUCCESS: `Ran 450 tests ... OK (skipped=207)` on plain Python, `Ran 450 tests ... OK` on frozen pinned vendor venv (**450 PASS / 0 FAIL / 0 SKIP**). New TE-03 subset: 9 passed with fake model/mock HTTP. Workflow `.github/workflows/te03-iana-live-qwen.yml` added as single-request-path-triggered optional CPU-only experimental job; exact source SHA `629f0d09b84ac84de60c5305bd838f78ccf4ef0f` successfully re-tested by WORK-05 run [44103040670](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44103040670), same 450/450 zero skip pinned suite.
+
+**LIVE QWEN STATUS:** NOT YET EXECUTED at this checkpoint. The one-shot workflow will only trigger on its request file; it uses local Ollama `0.40.15` with verified SHA-256 from the existing WORK-05 workflow and `qwen3.5:2b`, and records a truthful PASS_LIMITED / REVIEW / BLOCKED verdict without pretending factual verification. No model-generated shell/Windows/file grants, no mandatory paid API. The IANA pages are REAL public GET targets unlike FAKE fixture tests. A tool-browsing failure does not authorize new hosts or credentials.
+
+**BRANCH/DEPENDENCIES:** `feat/te03-rfc-task-entry` name is a historical branch identifier; **the actual selected sources are IANA**, not the RFC benchmark source set. PR #14 DRAFT, stacked on TE-02 #13 and D01/D02 #11; no merges.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-019 — first real TE-03 Qwen 2B read-only task
+
+**REQUEST:** User authorized TE-03 continuation after TE-02 mock-verified 441 tests. New `task` command plus IANA public host fixed preset implemented on Draft PR #14, stacked on TE-02 #13 and D01/D02 #11, no merge.
+
+**EXACT REAL EVIDENCE:** [TE-03 Qwen2B live audit](evidence/TE03_IANA_QWEN2B_REAL_RUN_2026-11-17.md). One-shot GitHub Actions `44103342916` (job `134108951579`) at request SHA `2d895918ab3e98d63bbf5bd46893e1343bff0f60`, approved code parent `1e500216957d0ffaaac05b76a15cd4b7cf85b21f`. Ollama 0.40.15 SHA256 check PASS, real `qwen3.5:2b` model digest `0689d44085e06d165161a8a9a1731344278cfb5aade63a3c3dbdb48ab54b130a`; complete pinned FAKE suite PASS before inference.
+
+**RESULT:** REAL model executed browser tools under RIGHTWARE policy. `IANA_RESERVED=PAGE_OBSERVED` (receipt 1), `IANA_EXAMPLE=MISSING` (no receipt), 10 execution receipts, overall `HALTED`, exit 3, CI live step/job `FAIL` because mandatory second objective was not observed; code-owned safety contract remains intact, factual_verified=false, completion_verified=false. No fallback claim of success. Sanitized evidence artifact ID `14335624986`, reviewed independently. Exact reason of `HALTED` unverified (budget count == receipts count suggests quota but the sanitized artifact lacks halt reason).
+
+**DISTINCTIONS:** Prior WORK-05 FAKE CI `44103040670` SUCCESS on code SHA `629f0d09b84ac84de60c5305bd838f78ccf4ef0f` with 450/450 PASS and 0 skip frozen vendor; a model benchmark FAIL is a separate result, NOT a FAKE regression. The original WORK-07 oracle-leakage regression remains unmodified; public case switched to IANA after initial failing TE-03 test.
+
+**NEXT:** Before expanding tools/architecture, consider a small diagnostic-only change to expose sanitized halt reason and tool result counts. Compare exact same task with stronger locally hosted Qwen 4B only under a distinct deliberate one-shot gate; no automatic retries of live model, no Goose integration, no Windows file/OS grants, no main/develop merge.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-020 — TE-04 sanitized diagnostics and Qwen4B comparison
+
+**AUTHORIZATION:** User approved continuation ("vamos entao") of previous recommendation: inspect TE-03 Qwen 2B HALTED result and compare Qwen3.5 4B on exactly the same fixed read-only public IANA task without expanding permissions, changing model budgets, importing Goose, or merging.
+
+**PREFLIGHT:** `develop@fa36b3896de2408c9c98a80d6618469ef7099547` unchanged. D01/D02 PR #11 DRAFT, TE-02 PR #13 DRAFT, TE-03 PR #14 DRAFT (head/base `151d0099842be5287ed5e6ad8067a1cc442fe23b` /`develop`). TE-04 branch `feat/te04-task-diagnostics-qwen4b` derives exactly from TE-03 source SHA, thus is STACKED on #14/#13/#11. Never merge before upstream reviews.
+
+**TE-03 EVIDENCE RETAINED:** Prior actual Qwen3.5:2b run `44103342916`: `HALTED`, IANA_RESERVED observed / IANA_EXAMPLE missing, 10 receipts, false factual/verified-completion claims. Exact stop reason was NOT in the published sanitized artifact. `max_calls=10` makes quota plausible; no confirmed exact cause. See `docs/evidence/TE03_IANA_QWEN2B_REAL_RUN_2026-11-17.md`.
+
+**TE-04 IMPLEMENTATION:** A non-sensitive typed enum for halt reason and allowlisted ordered receipt tool/status events added to `rightware/task_entry.py`, surfaced in `rightware/task_cli.py --json`; **NO raw instruction, model content, URLs, arguments or credentials** in diagnostics. `tests/test_te04_task_diagnostics.py` tests filtering, refusal of malformed diagnostic fields and FAKE AgentSession operation. `.github/workflows/te04-iana-live-qwen4b.yml` is one-shot request-file-triggered; model Qwen3.5:4b, Ollama and all effective tool budgets, temperatures, prompts and public IANA objectives same as TE-03. No live run has occurred at this checkpoint. See `docs/engineering/TE04_QWEN4B_CONTROLLED_COMPARISON.md`.
+
+**NEXT:** Open DRAFT PR, verify full WORK-05 suite in frozen vendor venv, then create a single-use TE-04 request file bound to exact source SHA. Observe final real-model evidence; document objectively. No automatic retry, no broader grants, no release.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-021 — TE-04 actual Qwen4B live verdict and 2B comparison
+
+**IMPLEMENTATION/TESTS:** TE-04 observational diagnostics in `rightware/task_entry.py` and `rightware/task_cli.py` (finite halt enum and sanitized ordered tool/status receipts, no args/URLs/model raw text). New tests `tests/test_te04_task_diagnostics.py` added 3 tests, all passing. GitHub WORK-05 run [44107668161](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44107668161) SUCCESS at SHA `85d39d5dff62ce5dcd8048077dc7fbbf9b03a720`: **453 tests / 0 failures / 0 skips** in frozen pinned OpenJarvis venv; plain Python 453 total, 208 skipped as expected without vendor. Draft PR #15 is stacked on #14/#13/#11, no merges.
+
+**REAL QWEN4B:** single-shot job [44107892549](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44107892549), job `134125161607`, request SHA `425d29caa82e0a660137cd80e0c1034101e11f33`, code SHA `85d39d5dff62ce5dcd8048077dc7fbbf9b03a720`, model `qwen3.5:4b` digest `d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04` (4.2B Q4_K_M), Ollama 0.40.15. Technical environment setup and integrity gates PASS. Model run verdict **REVIEW / job FAILED honestly**: IANA_RESERVED PAGE_OBSERVED, IANA_EXAMPLE MISSING, HALTED by `DEADLINE`, 3 receipts [web_open OK, web_follow REFUSED, web_find UNKNOWN], 0 verified completion and 0 factual verification. CLI exit 3. Artifact `te04-iana-qwen4b` ID `14339129559`, archive SHA256 `a0e80da0cfdcd37d2ac7b8e89329aa3cced6730e54dfb790d2af4efbbfb7bbe7`, ZIP read and independently inspected.
+
+**COMPARISON:** TE-03 Qwen3.5:2b had 10 receipts, HALTED, 1/2 objectives observed, reason not emitted. 4B had only 3 receipts and independently confirmed 115s task deadline. Both models fail the same fixed public task with equal budget. Their Ollama variants use different default quantizations (2B Q8_0 vs 4B Q4_K_M), CPU throughput matters, N=1 per variant. This is NOT a valid ranking of general intelligence and not proof Goose is needed. See [full TE-04 evidence](evidence/TE04_QWEN2B_VS_4B_LIVE_RESULTS_2026-11-17.md).
+
+**NON-EFFECT / CONTINUITY:** Corrected misleading workflow display label Qwen 2B to Qwen 4B after the run (no change to executed model or task logic). No rerun, no new model permission, no shell/Windows/files, no vendor/pin/lockfile or policy rewrite, no release/merge. The code+doc final SHA requires renewed CI confirmation after these documentation edits.
+
+**NEXT:** Review sanitized denial reasons/inefficient tool sequence and task planning before modifying budgets or integrating Goose; choose whether to test local GPU vs same task/limits by separate decision. Keep failures visible, preserve PRs DRAFT.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-022 — TE-05 implementation start (bounded authorization)
+
+**SCOPE:** Operator authorized minimal TE-05 fixes from the read-only diagnosis: (1) DENIED masked as UNKNOWN in task diagnostics + finite refusal reason codes + per-generation metrics; (2) host-validated contract objectives presented to the model + at most ONE A3 continuation for the IANA preset; (3) inference timing instrumentation, optional visible warm-up, timeout analysis. Limits: no change to `max_calls=10`, `max_turns=10`, deadline 115 s, authorization logic or quotas; no real Qwen; no develop/main change, no merge, no pin change, no goose/Agent Zero/Hermes, no shell/WindowsActions/files.
+
+**STATE:** Branch `feat/te05-executor-task-completion` created from `origin/feat/te04-task-diagnostics-qwen4b` @ `5c7e0d4`; `origin/develop` @ `fa36b38` untouched; submodule pin `f21d902` unchanged. Baseline venv suite OK before changes. PRs #1, #11, #13, #14, #15 preserved (no merge).
+
+**NEXT:** implement, run full deterministic regression, update this HANDOFF with results, open Draft PR, stop before any real Qwen run.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-023 — TE-05 implementation (deterministic only)
+
+**CHANGES (commit `66badc1`, branch `feat/te05-executor-task-completion`):** DENIED no longer masked as UNKNOWN in task diagnostics; finite reason codes for policy denials and browser refusals (`receipt.reason_code`); numbers-only per-generation metrics (tokens, Ollama load/prompt_eval/eval/total, wall, deadline overrun); contracted (gate ON) runs state the code-owned objectives (id/label/URL) to the model; IANA preset `max_continuations=1`; task CLI optional tool-free `--warmup`, cost reported apart and counted in total wall. Unchanged: authorization logic, quotas, 10/10/115, engine timeout, tools, hosts, reply_json, pin. Evidence: `docs/evidence/TE05_EXECUTOR_TASK_COMPLETION_2026-11-17.md`.
+
+**TESTS ACTUALLY RUN (FAKE model, mocked HTTP; NOT real Qwen/acceptance):** new TE-05 file 18 OK; TE-02/03/04, issue #9, A1/A2/A3, R3-C1, E1–E4 OK; full venv suite 471 OK, 0 "skipped"; plain Python 471 OK (214 vendor tests not run there); A/B vs `5c7e0d4` on R3-C1 scenarios identical (reply_json, text, nonce-normalized model messages); six mutants all detected. One A1 interface assertion updated for the new `ToolOutcome.code` (default None).
+
+**FINDING:** correction to the read-only TE-05 diagnosis: with max_turns=10 and max_calls=10, ten single-call turns end on TURN_BUDGET (orchestrator turn limit first), not TOOL_BUDGET. TE-03's real halt code stays NOT VERIFIED. Deadline 115 s is checked between steps only (includes cold load; in-flight generation can overrun); engine 120 s is an httpx client timeout; server-side continuation NOT VERIFIED.
+
+**OPEN:** effect on real 2B/4B unknown; workflow does not pass `--warmup` nor upload service.log/audit; identity rule still NONE.
+
+**NEXT (needs separate authorization):** one real run per model with unchanged limits and `--warmup`, publishing the new diagnostics JSON. No real Qwen executed in TE-05.
+
+## CHECKPOINT — 17/11/2026: JRV-BP-024 — TE-05 Draft PR opened; GitHub CI not triggered
+
+**PR:** [rightware-corporations/jarvis-v2.0#16](https://github.com/rightware-corporations/jarvis-v2.0/pull/16) DRAFT, base `feat/te04-task-diagnostics-qwen4b` (stacked, TE-05 diff only), head `feat/te05-executor-task-completion`. No merge. PRs #1, #11–#15 untouched.
+
+**CI:** `work05-product.yml` runs only on pull requests to `develop` (and pushes to develop / feat/work05-product-agent); `foundation.yml` only on main/develop. Therefore NO GitHub CI run exists for the TE-05 heads; the only regression evidence is the local pinned-venv run (471 OK, 0 skipped). Retargeting #16 to `develop` would trigger CI (diff would then include TE-02..TE-04 commits, like #15) — operator decision.
+
+**STOP:** no real Qwen run until separately authorized.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-028 — TE-05E error-path evidence preservation (FAKE only)
+
+**STATE AT START:** remote heads re-verified: TE-05 `0ae3383` (PR #16 DRAFT, unchanged), `exp/te05-live-qwen` `ae8085e` (JRV-BP-027), operator branch `exp/te05-live-qwen-20261117` `3176aa2` (JRV-BP-025/026 there), develop `fa36b38`, main `0cac8e8`. No later changes.
+
+**CHANGES (commit `d2454c0`, branch `feat/te05e-error-evidence-preservation` from `0ae3383`):** finite `ERROR_CODES` from exception types (cause chain), failed generation recorded with `engine_error` and no invented metrics; completion gate on ERROR keeps receipt-backed objective verdicts with task state ERROR; TaskEntry keeps receipts/reason codes/metrics/halt code on every error branch, untrusted evidence → objectives UNKNOWN, unexpected failure → safe AGENT_FAILURE record; CLI `error_code`; experimental `te05e-live-qwen.yml` fails unless PASS_LIMITED and always uploads sanitized evidence (`labs/te05e_live/verdict.py`). No policy/quota/budget/timeout/tool/host/pin change. Evidence: `docs/evidence/TE05E_ERROR_EVIDENCE_PRESERVATION_2026-11-18.md`.
+
+**TESTS ACTUALLY RUN (FAKE; NOT real Qwen):** new 16 OK (12 required scenarios incl. simulated 120 s engine timeout reproducing the 4B shape); TE-02..05, A1/A2/A3, issue #9, AgentPolicy OK; full venv 487 OK, 0 skipped; plain Python 487 OK; A/B vs `0ae3383` identical; 7 mutants detected; actionlint OK. Remote CI pending at this checkpoint.
+
+**NOT CONFIRMED:** historical 4B ERROR cause (ENGINE_TIMEOUT stays a hypothesis). **NEXT:** remote CI on exact SHA via temporary Draft PR to develop (close without merge), stacked Draft PR on TE-05; stop before any real model run.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-029 — TE-05E remote CI PASS on exact SHA; Draft PRs
+
+**CI:** WORK-05 product run [44289414804](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44289414804), job `134750420316`, head `21e836a2d4cde4941ba3fa77487bc2f5963cfec1`: **487 tests OK** (workflow fails on any "skipped", so 0 skipped). FAKE tests only — not real Qwen evidence.
+
+**PRs:** TE-05E [#18](https://github.com/rightware-corporations/jarvis-v2.0/pull/18) DRAFT, base `feat/te05-executor-task-completion` (stacked; #16 unchanged at `0ae3383`). Temporary CI-only [#19](https://github.com/rightware-corporations/jarvis-v2.0/pull/19) (branch `ci/te05e-validation-20261118` → base develop) to be closed WITHOUT merge after this docs-only checkpoint is also validated. No merge; develop/main/pin untouched; no real model run.
+
+**STOP:** TE-06 not started; any real model run needs separate authorization.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-030 — TE-06A trusted file task execution start (FAKE only)
+
+**STATE:** remote heads verified: TE-05E `322b4d8` (PR #18 DRAFT, CI 44289652980 success), TE-05 `0ae3383` (#16), develop `fa36b38`, main `0cac8e8`, pin `f21d902`. No equivalent file-task implementation exists. Branch `feat/te06a-trusted-file-task-execution` from `322b4d8`.
+
+**SCOPE (authorized):** two host-created synthetic UTF-8 fixtures (ids A/B), code-owned file contract, two read-only tools (`fixture_read`, `fixture_compare`) through the existing AgentPolicy/ReceiptLedger/orchestrator, deterministic independent verifier, structured report, FAKE model tests. Capability `files` OFF by default, host-only. No real Qwen, no shell, no arbitrary paths, no writes, no Windows, no persistent permissions/memory, no pin/develop/main change.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-031 — TE-06A trusted file task implemented (FAKE only)
+
+**CHANGES (commit `2db33b3`, branch `feat/te06a-trusted-file-task-execution` from `322b4d8`):** `rightware/agent/file_task.py` (code-owned FileTaskContract A/B, secure host FixtureWorkspace with O_DIRECTORY|O_NOFOLLOW + dir_fd, deterministic diff, independent verifier, narrative count check, report renderer); `fixture_read`/`fixture_compare` ToolDefs in separate `FILE_TOOLS`, merged only for host file contracts; `_CompletionEngine` injectable assessment; receipts carry whitelisted `file_evidence`; `TaskEntry.run_trusted_file_compare` + `FileTaskEntryResult` + JSON/text report; finite file refusal codes; demo `labs/te06a_files/demo.py`. No policy/quota/budget/pin change. Evidence: `docs/evidence/TE06A_TRUSTED_FILE_TASK_2026-11-18.md`.
+
+**TESTS ACTUALLY RUN (FAKE model, synthetic temp fixtures; NOT real Qwen, NOT Windows):** new 35 OK (20 required cases + isolation/invariants); TE-02..05E, A1/A2/A3, issue #9, AgentPolicy, WP-04 OK; full venv 522 OK, 0 skipped; plain Python 522 OK; A/B vs `322b4d8` identical; 10 mutants detected. Remote CI pending at this checkpoint.
+
+**LIMITS:** Linux secure-open only (Windows fails closed, unclaimed); narrative never verified (counts only); 16 KiB per file. **NEXT:** remote CI by exact-SHA temporary Draft PR (close without merge), stacked Draft PR on TE-05E; stop. TE-06B (real Qwen 2B) needs separate authorization.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-032 — TE-06A remote CI PASS on exact SHA; Draft PRs
+
+**CI:** WORK-05 product run [44314862415](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44314862415), job `134838183759`, head `6f6afc4ffca734a293305223a60c1b05f3cc0dc5`: **522 tests OK** (workflow fails on any "skipped"). FAKE tests only — not real Qwen, not Windows.
+
+**PRs:** TE-06A [#20](https://github.com/rightware-corporations/jarvis-v2.0/pull/20) DRAFT, base `feat/te05e-error-evidence-preservation` (stacked; #18 unchanged at `322b4d8`). Temporary CI-only [#21](https://github.com/rightware-corporations/jarvis-v2.0/pull/21) (`ci/te06a-validation-20261118` → develop) closed WITHOUT merge after this docs-only head is validated. No merge; develop/main/pin untouched.
+
+**STOP:** TE-06B (real Qwen 2B on this file task) not started; requires separate authorization.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-033 — TE-02→TE-06A consolidation candidate for develop
+
+**OPERATOR PRIORITY:** Close the accumulated engineering work on 18 November 2026, without prematurely promoting a release or conflating FAKE regression success with Issa product acceptance. Preparation and integration into `develop` authorized as a controlled process; no `main` merge or real-Qwen run.
+
+**REPO GATE (before write):** `develop` `fa36b3896de2408c9c98a80d6618469ef7099547`, source TE-06A `1207e99cb893349aa8d000b16d2633936c70ff89`. Verified via GitHub compare: the TE-06A tip is **60 commits ahead, 0 behind**, with 39 files modified against `develop`. Seven implementation PRs are stacked (#11 WP-04, #13 TE-02, #14 TE-03, #15 TE-04, #16 TE-05, #18 TE-05E, #20 TE-06A); no merge had occurred when this checkpoint was written. Research-only PR #12 is a separate document branch and release PR #1 (develop→main) is an explicitly protected boundary.
+
+**BASELINE:** Exact source SHA `1207e99...` passed WORK-05 GitHub Actions run [44315123156](https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/44315123156), pinned OpenJarvis `522 tests OK`, zero skipped in the vendor venv. A second prior source SHA `6f6afc4` passed run `44314862415`. These are FAKE model/synthetic fixtures, **not** live autonomy, voice, Windows or Issa acceptance.
+
+**INTEGRATION PROCEDURE:** Use isolated `integration/jarvis-te02-te06a-20261118`, initialized at the TE-06A tip. This is an append-only integration checkpoint, not a code rewrite. Open one reviewable PR to `develop`, trigger CI on its exact HEAD, verify full pinned tests and check for conflicts/pin/permissions changes. If accepted, merge this PR to `develop` preserving commit history, then close the seven superseded stacked PRs **without merging them again** and link the consolidated merge commit. Research-only PR #12 must be dispositioned independently with documentation preserved; release PR #1 stays DRAFT / DO NOT MERGE.
+
+**SECURITY SCOPE:** No code changes from TE-06A; default chat remains tool-free, browser capabilities remain opt-in, TE-06A fixture file access remains read-only/host-bound and Linux secure-open only. Confirm no vendor pin drift. The test suite does not establish real agentic task performance. No real Qwen, Goose, Hermes, Agent Zero, local Windows actions or new API access in this integration step.
+
+**STOP CONDITION:** Any red CI, branch SHA drift, unexpected changed files, merge conflict, security regression or unavailable authorisation should stop integration for explicit review. Do not merge `main`.
