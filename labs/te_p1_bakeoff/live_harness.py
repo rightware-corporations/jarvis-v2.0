@@ -171,21 +171,26 @@ def main(argv=None) -> int:
     (out / "agent_stderr.txt").write_text(logs.stderr, encoding="utf-8")
     for path in a.collect:
         sh(["docker", "cp", f"{ag}:{path}", str(out / ("collect_" + path.strip("/").replace("/", "_")))])
-    report_file = out / "collect_work_report.json"
-    report = None
-    if report_file.exists():
+    # Same rule for every agent: a JSON file the agent wrote in /work (report.json first, else the
+    # largest *.json), otherwise the last JSON object of its final answer. Nothing is edited.
+    sh(["docker", "cp", f"{ag}:/work/.", str(out / "agent_workdir")])
+    report, report_source = None, "none"
+    files = sorted((out / "agent_workdir").glob("*.json"), key=lambda f: (f.name != "report.json", -f.stat().st_size))
+    for f in files:
         try:
-            report = json.loads(report_file.read_text(encoding="utf-8"))
+            report, report_source = json.loads(f.read_text(encoding="utf-8")), f"file:/work/{f.name}"
+            break
         except ValueError:
-            report = None
-    report_source = "file:/work/report.json" if report is not None else "final_answer_last_json"
+            continue
     if report is None:
-        report = last_json_object(logs.stdout)
+        report, report_source = last_json_object(logs.stdout), "final_answer_last_json"
     (out / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     events = [json.loads(s) for s in (out / "http.jsonl").read_text().splitlines() if s.strip()] \
         if (out / "http.jsonl").exists() else []
     from labs.te_p1_bakeoff.score import score
+    from labs.te_p1_bakeoff.score_semantic import check
     verdict = score(events, report if isinstance(report, dict) else {})
+    semantic = check(report)
     run = {
         "agent": a.agent, "image": a.image, "command": [c if len(c) < 400 else c[:80] + "…" for c in cmd],
         "wall_seconds": round(wall, 1), "timed_out": timed_out, "exit_code": status.get("ExitCode"),
@@ -194,11 +199,11 @@ def main(argv=None) -> int:
         "isolation": {"network": NETWORK, "internal": network.get("Internal"), "agent_host_mounts": mounts,
                       "containers_on_network": sorted(c["Name"] for c in network.get("Containers", {}).values())},
         "http_events": events, "report_source": report_source, "report_shape": normalise_report(report),
-        "verdict": verdict,
+        "verdict": verdict, "semantic": semantic,
     }
     (out / "run.json").write_text(json.dumps(run, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({k: run[k] for k in ("agent", "wall_seconds", "timed_out", "exit_code", "peak_mem_mib",
-                                          "report_source", "verdict")}, ensure_ascii=False, indent=2))
+                                          "report_source", "verdict", "semantic")}, ensure_ascii=False, indent=2))
     sh(["docker", "rm", "-f", "fixture"])
     return 0
 
