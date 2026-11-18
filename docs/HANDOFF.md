@@ -3441,3 +3441,11 @@ Nada disto foi iniciado.
 **STATE:** remote heads verified: TE-05E `322b4d8` (PR #18 DRAFT, CI 44289652980 success), TE-05 `0ae3383` (#16), develop `fa36b38`, main `0cac8e8`, pin `f21d902`. No equivalent file-task implementation exists. Branch `feat/te06a-trusted-file-task-execution` from `322b4d8`.
 
 **SCOPE (authorized):** two host-created synthetic UTF-8 fixtures (ids A/B), code-owned file contract, two read-only tools (`fixture_read`, `fixture_compare`) through the existing AgentPolicy/ReceiptLedger/orchestrator, deterministic independent verifier, structured report, FAKE model tests. Capability `files` OFF by default, host-only. No real Qwen, no shell, no arbitrary paths, no writes, no Windows, no persistent permissions/memory, no pin/develop/main change.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-031 — TE-06A trusted file task implemented (FAKE only)
+
+**CHANGES (commit `2db33b3`, branch `feat/te06a-trusted-file-task-execution` from `322b4d8`):** `rightware/agent/file_task.py` (code-owned FileTaskContract A/B, secure host FixtureWorkspace with O_DIRECTORY|O_NOFOLLOW + dir_fd, deterministic diff, independent verifier, narrative count check, report renderer); `fixture_read`/`fixture_compare` ToolDefs in separate `FILE_TOOLS`, merged only for host file contracts; `_CompletionEngine` injectable assessment; receipts carry whitelisted `file_evidence`; `TaskEntry.run_trusted_file_compare` + `FileTaskEntryResult` + JSON/text report; finite file refusal codes; demo `labs/te06a_files/demo.py`. No policy/quota/budget/pin change. Evidence: `docs/evidence/TE06A_TRUSTED_FILE_TASK_2026-11-18.md`.
+
+**TESTS ACTUALLY RUN (FAKE model, synthetic temp fixtures; NOT real Qwen, NOT Windows):** new 35 OK (20 required cases + isolation/invariants); TE-02..05E, A1/A2/A3, issue #9, AgentPolicy, WP-04 OK; full venv 522 OK, 0 skipped; plain Python 522 OK; A/B vs `322b4d8` identical; 10 mutants detected. Remote CI pending at this checkpoint.
+
+**LIMITS:** Linux secure-open only (Windows fails closed, unclaimed); narrative never verified (counts only); 16 KiB per file. **NEXT:** remote CI by exact-SHA temporary Draft PR (close without merge), stacked Draft PR on TE-05E; stop. TE-06B (real Qwen 2B) needs separate authorization.
