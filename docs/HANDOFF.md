@@ -3417,3 +3417,13 @@ Nada disto foi iniciado.
 **CI:** `work05-product.yml` runs only on pull requests to `develop` (and pushes to develop / feat/work05-product-agent); `foundation.yml` only on main/develop. Therefore NO GitHub CI run exists for the TE-05 heads; the only regression evidence is the local pinned-venv run (471 OK, 0 skipped). Retargeting #16 to `develop` would trigger CI (diff would then include TE-02..TE-04 commits, like #15) — operator decision.
 
 **STOP:** no real Qwen run until separately authorized.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-028 — TE-05E error-path evidence preservation (FAKE only)
+
+**STATE AT START:** remote heads re-verified: TE-05 `0ae3383` (PR #16 DRAFT, unchanged), `exp/te05-live-qwen` `ae8085e` (JRV-BP-027), operator branch `exp/te05-live-qwen-20261117` `3176aa2` (JRV-BP-025/026 there), develop `fa36b38`, main `0cac8e8`. No later changes.
+
+**CHANGES (commit `d2454c0`, branch `feat/te05e-error-evidence-preservation` from `0ae3383`):** finite `ERROR_CODES` from exception types (cause chain), failed generation recorded with `engine_error` and no invented metrics; completion gate on ERROR keeps receipt-backed objective verdicts with task state ERROR; TaskEntry keeps receipts/reason codes/metrics/halt code on every error branch, untrusted evidence → objectives UNKNOWN, unexpected failure → safe AGENT_FAILURE record; CLI `error_code`; experimental `te05e-live-qwen.yml` fails unless PASS_LIMITED and always uploads sanitized evidence (`labs/te05e_live/verdict.py`). No policy/quota/budget/timeout/tool/host/pin change. Evidence: `docs/evidence/TE05E_ERROR_EVIDENCE_PRESERVATION_2026-11-18.md`.
+
+**TESTS ACTUALLY RUN (FAKE; NOT real Qwen):** new 16 OK (12 required scenarios incl. simulated 120 s engine timeout reproducing the 4B shape); TE-02..05, A1/A2/A3, issue #9, AgentPolicy OK; full venv 487 OK, 0 skipped; plain Python 487 OK; A/B vs `0ae3383` identical; 7 mutants detected; actionlint OK. Remote CI pending at this checkpoint.
+
+**NOT CONFIRMED:** historical 4B ERROR cause (ENGINE_TIMEOUT stays a hypothesis). **NEXT:** remote CI on exact SHA via temporary Draft PR to develop (close without merge), stacked Draft PR on TE-05; stop before any real model run.
