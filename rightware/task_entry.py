@@ -29,6 +29,9 @@ _HALT_CODES = {
     "limite de turnos atingido": "TURN_BUDGET",
     "tarefa cancelada": "CANCELLED",
 }
+# TE-05E: mirrors rightware.agent.diagnostics.ERROR_CODES (kept here so text-only paths need no vendor).
+_ERROR_CODES = frozenset(("NONE", "ENGINE_TIMEOUT", "ENGINE_CONNECTION", "ENGINE_FAILURE", "AGENT_FAILURE",
+                          "AUDIT_FAILURE", "EVIDENCE_INCOMPLETE", "OTHER"))
 _SAFE_TOOLS = frozenset(("web_open", "web_follow", "web_submit", "web_type", "web_find"))
 # TE-05: DENIED (policy refused before execution) is a real receipt status; it was masked as UNKNOWN.
 _SAFE_STATUSES = frozenset((
@@ -70,6 +73,7 @@ class TaskEntryResult:
     receipt_reason_codes: tuple[tuple[int, str], ...] = ()
     generation_metrics: tuple = ()          # rightware.agent.diagnostics.GenerationMetric, numbers only
     continuations: int = 0
+    error_code: str = "NONE"                # TE-05E: finite execution-error category (diagnostic only)
 
     def __post_init__(self):
         if self.route != "TASK" or self.operational_state not in _TERMINAL:
@@ -90,6 +94,10 @@ class TaskEntryResult:
                 raise ValueError("untrusted generation metrics")
         if type(self.continuations) is not int or not 0 <= self.continuations <= 1:
             raise ValueError("untrusted continuation count")
+        if self.error_code not in _ERROR_CODES:
+            raise ValueError("untrusted error diagnostics")
+        if (self.error_code != "NONE") != (self.operational_state == "ERROR"):
+            raise ValueError("an execution error and the ERROR state must go together")
 
 
 class TaskEntry:
@@ -166,7 +174,31 @@ class TaskEntry:
                     or not 1 <= agent.max_turns <= 12):
                 raise PermissionError("Task session is outside the approved task envelope")
 
-            reply = agent.run(instruction)
+            try:
+                reply = agent.run(instruction)
+            except Exception:                    # TE-05E: an unexpected failure still yields a safe record
+                reply = None
+            # Safe diagnostics are collected FIRST, so that no error path can discard them (TE-05E).
+            receipts = agent.receipts
+            diag = dict(
+                receipts_count=len(receipts),
+                receipt_events=_receipt_events(receipts),
+                receipt_reason_codes=_receipt_reason_codes(receipts),
+                generation_metrics=tuple(agent.generation_metrics),
+                halt_reason_code=_HALT_CODES.get(reply.halted, "OTHER") if reply is not None else "NONE",
+            )
+            unknown_rows = tuple((o.oid, "UNKNOWN", None) for o in preset.objectives)
+
+            def failed(code: str, limitation: str) -> TaskEntryResult:
+                # Evidence could not be trusted: every objective stays UNKNOWN (never observed).
+                return TaskEntryResult(
+                    secrets.token_hex(16), session_id, "TASK", "ERROR", unknown_rows,
+                    factual_verified=False, completion_verified=False, model_commentary_unverified="",
+                    limitations=(limitation,), error_code=code, **diag)
+
+            if reply is None:
+                return failed("AGENT_FAILURE", "EXECUTION_FAILED")
+            error_code = agent.error_code if agent.error_code in _ERROR_CODES else "OTHER"
             detail = reply.task_completion
             if (not isinstance(detail, dict)
                     or reply.completion not in _TERMINAL
@@ -174,41 +206,37 @@ class TaskEntry:
                     or detail.get("contract_id") != preset_id
                     or detail.get("answer_factually_verified") is not False):
                 # Do not trust an unchecked model answer or an absent gate.
-                return TaskEntryResult(
-                    secrets.token_hex(16), session_id, "TASK", "ERROR", (), len(agent.receipts),
-                    False, False, "", ("INVALID_COMPLETION_EVIDENCE",),
-                )
+                return failed(error_code if error_code != "NONE" else "EVIDENCE_INCOMPLETE",
+                              "INVALID_COMPLETION_EVIDENCE")
             objectives = detail.get("objectives")
             if not isinstance(objectives, list) or len(objectives) != len(preset.objectives):
-                return TaskEntryResult(
-                    secrets.token_hex(16), session_id, "TASK", "ERROR", (), len(agent.receipts),
-                    False, False, "", ("INCOMPLETE_OBJECTIVE_EVIDENCE",),
-                )
+                return failed(error_code if error_code != "NONE" else "EVIDENCE_INCOMPLETE",
+                              "INCOMPLETE_OBJECTIVE_EVIDENCE")
             result_rows = []
             for index, o in enumerate(objectives):
                 if (not isinstance(o, dict) or o.get("oid") != preset.objectives[index].oid
                         or o.get("state") not in ("VERIFIED", "PAGE_OBSERVED", "UNKNOWN", "MISSING")
                         or (o.get("evidence_sequence") is not None
                             and (type(o["evidence_sequence"]) is not int or o["evidence_sequence"] < 1))):
-                    return TaskEntryResult(
-                        secrets.token_hex(16), session_id, "TASK", "ERROR", (), len(agent.receipts),
-                        False, False, "", ("MALFORMED_OBJECTIVE_EVIDENCE",),
-                    )
+                    return failed(error_code if error_code != "NONE" else "EVIDENCE_INCOMPLETE",
+                                  "MALFORMED_OBJECTIVE_EVIDENCE")
                 result_rows.append((o["oid"], o["state"], o.get("evidence_sequence")))
+            if reply.completion != "ERROR":
+                error_code = "NONE"
+            elif error_code == "NONE":
+                error_code = "OTHER"
             return TaskEntryResult(
                 request_id=secrets.token_hex(16), session_id=session_id, route="TASK",
                 operational_state=reply.completion,
-                objective_states=tuple(result_rows), receipts_count=len(agent.receipts),
+                objective_states=tuple(result_rows),
                 factual_verified=False, completion_verified=reply.completion == "COMPLETE_VERIFIED",
                 model_commentary_unverified=reply.text,
                 limitations=(("SYNTHETIC_READ_ONLY" if synthetic else "PUBLIC_IANA_READ_ONLY"),
-                             "NO_FACTUAL_VERIFICATION", "NO_INDEPENDENT_MODEL_VERIFICATION"),
-                halt_reason_code=_HALT_CODES.get(reply.halted, "OTHER"),
-                receipt_events=_receipt_events(agent.receipts),
-                receipt_reason_codes=_receipt_reason_codes(agent.receipts),
-                generation_metrics=tuple(agent.generation_metrics),
+                             "NO_FACTUAL_VERIFICATION", "NO_INDEPENDENT_MODEL_VERIFICATION")
+                + (("EXECUTION_ERROR",) if reply.completion == "ERROR" else ()),
                 continuations=detail.get("continuations") if type(detail.get("continuations")) is int
                 and 0 <= detail.get("continuations") <= 1 else 0,
+                error_code=error_code, **diag,
             )
         finally:
             with self._lock:

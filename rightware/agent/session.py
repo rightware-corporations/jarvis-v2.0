@@ -26,7 +26,8 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
 from rightware.agent.completion import evaluate as evaluate_completion, recovery_feedback
-from rightware.agent.diagnostics import GenerationMetric, generation_metric, policy_reason_code
+from rightware.agent.diagnostics import (GenerationMetric, engine_error_code, generation_metric,
+                                         policy_reason_code)
 from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
 from rightware.agent.receipts import ExecutionReceipt, ReceiptLedger
 from rightware.agent.task_contract import STATUS_NOT_EVALUATED, TaskContract, select_preset
@@ -139,10 +140,11 @@ class _GuardedEngine:
         self.metrics: list[GenerationMetric] = []
         self._timer = timer
         self._kind = "model"
+        self.engine_error: str | None = None     # TE-05E: finite code of an engine exception (types only)
 
-    def _metric(self, kind: str, result, wall: float) -> None:
+    def _metric(self, kind: str, result, wall: float, engine_error: str | None = None) -> None:
         overrun = self._policy.elapsed_seconds - self._policy.budgets.deadline_seconds
-        self.metrics.append(generation_metric(len(self.metrics) + 1, kind, result, wall, overrun))
+        self.metrics.append(generation_metric(len(self.metrics) + 1, kind, result, wall, overrun, engine_error))
 
     def generate(self, messages, **kwargs):
         kind, self._kind = self._kind, "model"
@@ -153,11 +155,14 @@ class _GuardedEngine:
                 self._trace.on_generate(kwargs.get("tools"), None, halted=halt)
             self._metric("halt_short_circuit", None, 0.0)
             return {"content": f"[Jarvis] {halt}.", "usage": {}}
-        started, result = self._timer(), None
+        started, result, error = self._timer(), None, None
         try:
             result = self._engine.generate(messages, **kwargs)
+        except Exception as exc:                  # classified by type, then re-raised unchanged
+            error = self.engine_error = engine_error_code(exc)
+            raise
         finally:
-            self._metric(kind, result, self._timer() - started)
+            self._metric(kind, result, self._timer() - started, error)
         if self._trace is not None:
             self._trace.on_generate(kwargs.get("tools"), result)
         calls = result.get("tool_calls") or []
@@ -385,6 +390,7 @@ class AgentSession:
         self.audit_path, self.budgets = audit_path, budgets
         self.max_turns, self.temperature, self.max_tokens = max_turns, temperature, max_tokens
         self.generation_metrics: tuple[GenerationMetric, ...] = ()    # TE-05: last run, numbers only
+        self.error_code = "NONE"                                       # TE-05E: last run, finite code
 
     # -- tool runners (code-checked outcomes) ---------------------------------
     def _web_read(self, args: dict) -> ToolOutcome:
@@ -469,6 +475,7 @@ class AgentSession:
                 prompt += objectives_prompt(self.task_contract)
 
         self.generation_metrics = ()
+        self.error_code = "NONE"
         self.trace = trace = TaskTrace() if self.trace_enabled else None
         self.ledger = ledger = ReceiptLedger() if self.receipts_enabled else None
         tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes, trace, self.browser, ledger) for n in TOOLS
@@ -491,6 +498,7 @@ class AgentSession:
             if not guarded.halted and (getattr(result, "metadata", None) or {}).get("max_turns_exceeded"):
                 guarded.halted = "limite de turnos atingido"
         except Exception as exc:
+            self.error_code = guarded.engine_error or "AGENT_FAILURE"      # TE-05E: types only, never text
             name = type(exc).__name__
             answer = ("Não consigo ligar ao modelo local. Confirma que o Ollama está a correr."
                       if "Connect" in name or "Connect" in str(exc) else
@@ -502,6 +510,8 @@ class AgentSession:
             self._close_pending(policy, outcomes)
             reply = self._compose(answer, outcomes, guarded.halted, policy)
         self.generation_metrics = tuple(guarded.metrics)
+        if reply.completion == "ERROR" and self.error_code == "NONE":
+            self.error_code = "AUDIT_FAILURE" if "AUDIT_FAILED" in reply.flags else "OTHER"
         if self.completion_gate:
             reply = self._apply_completion_gate(reply, guarded)
         if trace is not None:
@@ -510,13 +520,14 @@ class AgentSession:
 
     def _apply_completion_gate(self, reply: AgentReply, guarded: "_CompletionEngine") -> AgentReply:
         """Replace the product classification by the contract verdict (contracted runs only)."""
-        if reply.completion == "ERROR":
-            from rightware.agent.completion import CompletionResult
-            result = CompletionResult("ERROR", self.task_contract.preset_id, (), "erro do motor ou da auditoria")
-        else:
-            halted = reply.halted or ("tarefa cancelada" if self._policy is not None and self._policy.cancelled else None)
-            result = evaluate_completion(self.task_contract, self.receipts, halted=halted,
-                                         audit_failed="AUDIT_FAILED" in reply.flags)
+        halted = reply.halted or ("tarefa cancelada" if self._policy is not None and self._policy.cancelled else None)
+        result = evaluate_completion(self.task_contract, self.receipts, halted=halted,
+                                     audit_failed="AUDIT_FAILED" in reply.flags)
+        if reply.completion == "ERROR" and result.state != "ERROR":
+            # TE-05E: an execution error keeps the per-objective verdicts that the receipts support
+            # (never more), but the task itself is ERROR: it can never become complete.
+            result = dataclasses.replace(result, state="ERROR",
+                                         reason=f"execução interrompida por erro ({self.error_code})")
         observed = [o.oid for o in result.objectives if o.state == "PAGE_OBSERVED"]
         line = {
             "INCOMPLETE": f"objectivos sem evidência de execução: {', '.join(result.missing)}",
@@ -529,7 +540,7 @@ class AgentSession:
         }[result.state]
         text = (reply.text + f"\nEstado da tarefa ({result.contract_id}): {result.state}: {line}. "
                 "A correcção factual da resposta não foi verificada.")
-        detail = {**result.as_dict(), "product_completion": reply.completion,
+        detail = {**result.as_dict(), "product_completion": reply.completion, "error_code": self.error_code,
                   "continuations": guarded.continuations,
                   "continuation_budget": self.task_contract.max_continuations,
                   "recovery": list(guarded.recovery), "orchestrator_generations": guarded.orchestrator_generations}

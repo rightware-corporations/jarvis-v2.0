@@ -102,6 +102,50 @@ def web_refusal_code(message: object) -> str:
 REASON_CODES = POLICY_CODES | BROWSER_CODES
 
 
+# -- execution errors (TE-05E) --------------------------------------------------------------------
+# Why a contracted run ended in ERROR. Classified ONLY from exception TYPES (including the
+# ``raise ... from`` cause chain) and internal states; never from exception messages or model text.
+ERROR_CODES = frozenset((
+    "NONE",               # no execution error
+    "ENGINE_TIMEOUT",     # the engine client gave up waiting (e.g. httpx timeout); the server may continue
+    "ENGINE_CONNECTION",  # the local engine could not be reached
+    "ENGINE_FAILURE",     # the engine raised anything else (HTTP error status, malformed response, ...)
+    "AGENT_FAILURE",      # an exception outside the engine call (orchestrator / integration)
+    "AUDIT_FAILURE",      # the mandatory audit could not be persisted
+    "EVIDENCE_INCOMPLETE",  # the run ended but its completion evidence was missing or malformed
+    "OTHER",
+))
+
+
+def _cause_chain(exc: BaseException, limit: int = 6):
+    seen = []
+    while exc is not None and len(seen) < limit and all(exc is not e for e in seen):
+        seen.append(exc)
+        exc = exc.__cause__ or exc.__context__
+    return seen
+
+
+def engine_error_code(exc: BaseException) -> str:
+    """Finite category for an exception raised by ``engine.generate`` (types only)."""
+    try:
+        import httpx
+        timeout_types, connect_types = (httpx.TimeoutException,), (httpx.ConnectError,)
+    except ImportError:                                   # pragma: no cover - httpx is a runtime dependency
+        timeout_types, connect_types = (), ()
+    try:
+        from openjarvis.engine._base import EngineConnectionError
+    except ImportError:                                   # plain Python without the pinned vendor
+        EngineConnectionError = ()
+    chain = _cause_chain(exc)
+    if any(isinstance(e, timeout_types + (TimeoutError,)) for e in chain):
+        return "ENGINE_TIMEOUT"
+    if any(isinstance(e, connect_types + (ConnectionError,)) for e in chain):
+        return "ENGINE_CONNECTION"
+    if EngineConnectionError and any(isinstance(e, EngineConnectionError) for e in chain):
+        return "ENGINE_CONNECTION"
+    return "ENGINE_FAILURE"
+
+
 # -- generation metrics ----------------------------------------------------------------------------
 GENERATION_KINDS = ("model", "continuation", "halt_short_circuit")
 
@@ -135,12 +179,15 @@ class GenerationMetric:
     eval_seconds: float | None = None
     total_seconds: float | None = None
     deadline_overrun_seconds: float = 0.0
+    engine_error: str | None = None     # TE-05E: finite code when the engine raised (no metrics returned)
 
 
 def generation_metric(index: int, kind: str, result: object, wall_seconds: float,
-                      overrun_seconds: float = 0.0) -> GenerationMetric:
+                      overrun_seconds: float = 0.0, engine_error: str | None = None) -> GenerationMetric:
     if kind not in GENERATION_KINDS:
         raise ValueError("tipo de geração desconhecido")
+    if engine_error is not None and engine_error not in ERROR_CODES:
+        raise ValueError("código de erro desconhecido")
     data = result if isinstance(result, dict) else {}
     usage = data.get("usage") if isinstance(data.get("usage"), dict) else {}
     timing = data.get("engine_timing") if isinstance(data.get("engine_timing"), dict) else {}
@@ -156,6 +203,7 @@ def generation_metric(index: int, kind: str, result: object, wall_seconds: float
         eval_seconds=_seconds(timing.get("eval_duration")),
         total_seconds=_seconds(timing.get("total_duration")),
         deadline_overrun_seconds=round(max(0.0, float(overrun_seconds)), 3),
+        engine_error=engine_error,
     )
 
 
@@ -177,5 +225,6 @@ def summarize(metrics) -> dict:
         "prompt_eval_seconds": total("prompt_eval_seconds"),
         "eval_seconds": total("eval_seconds"),
         "max_deadline_overrun_seconds": max((m.deadline_overrun_seconds for m in metrics), default=0.0),
+        "engine_errors": sum(1 for m in metrics if m.engine_error is not None),
     }
 

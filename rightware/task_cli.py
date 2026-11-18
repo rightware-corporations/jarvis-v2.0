@@ -109,6 +109,7 @@ def main(argv=None, *, engine_factory=None, session_factory=None) -> int:
             ],
             "receipts_count": result.receipts_count,
             "halt_reason_code": result.halt_reason_code,
+            "error_code": result.error_code,
             "receipt_events": [
                 {"sequence": seq, "tool": tool, "status": status}
                 for seq, tool, status in result.receipt_events
