@@ -3495,3 +3495,19 @@ Nada disto foi iniciado.
 **CI COVERAGE IMPROVEMENT:** `foundation.yml` now runs on pull requests targeting `develop` as well as `main`, so Windows compatibility is checked **before** integration, not just after merge. No change to the test commands, OS runner, security scope or underlying product functionality.
 
 **VALIDATION REQUIRED:** PR from `fix/te06a-windows-ci-failclosed-20261118` to `develop`, require both WORK-05 Linux/pinned-vendor and `RIGHTWARE foundation` Windows jobs green at same exact SHA before merge; if any red, stop and diagnose. Then verify develop post-merge CI, leave main unchanged. Only FAKE tests; no real Qwen or external task executor adoption.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-036 — three-agent bake-off protocol, fixture, deterministic oracle
+
+**MOTIVE:** The operator authorised beginning the comparison of Goose, Hermes and Agent Zero directly rather than relying on the historical Manus retry. The goal is full task lifecycle (plan/tools/observe/recover/resume/verified delivery) under a RIGHTWARE-controlled Tool Gateway, not another IANA-only test.
+
+**BASELINE:** Prior to this research branch, develop was 1e0c0aa82d6e2f220b6acac4c8afd79a1d1fab79; main remained 0cac8e8d828d91cb9d849c67a33f62eb701bdb94. All engineering PRs had been consolidated; only release PR #1 stayed DRAFT / DO NOT MERGE. No product/runtime/vendor changes are authorised by this research trial.
+
+**UPSTREAM SOURCE CHECK:** Goose main a99b1021fe2f7bc878cb9bc6e4973cdb10bb6f32 / latest release v1.60.1; Hermes main 91cb42b51bddc6841c4e50183c41c96d59e48516 / v0.23.2; Agent Zero main 2b0b3a416d80638379dc575798a4174ab4d3e1d9 / v2.16. These are source snapshots, not claimed tag=SHA equivalences. Inspected existing orchestration/tool approval/iteration/persistence code. Runtime and bypass security NOT VERIFIED.
+
+**DELIVERABLES:** docs/research/JRV_TE_P1_THREE_AGENT_BAKEOFF_2026-11-18.md (strict 3-candidate protocol) plus labs/te_p1_bakeoff/site.py (synthetic local-only HTTP catalogue, transient HTTP 503, injected untrusted page) and score.py (independent event/oracle comparison with task_accepted=false until external autonomy/security evidence); tests/test_te_p1_bakeoff.py (four deterministic fixture/oracle checks). No external models or agent binaries are started by these files.
+
+**EVIDENCE:** The fixture/scorer were locally executed with python unittest discover, four deterministic tests OK; this is only a fixture correctness check, not an agent benchmark. This session's container has no Docker/agent binaries/external DNS. No candidate was installed, downloaded or run; no Qwen inference or real web task. Historical Goose/Manus qwen2.5:3b first run failed, external corrective retry succeeded, therefore cannot prove autonomous recovery.
+
+**SEPARATE REAL TEST GATE:** An isolated model/runtime environment is needed to run identical one-shot T1 with all three, confirm operator-independent 503 recovery, isolate prompt-injection decoy and record independent tool/egress evidence. T2 process restart/resume must be checked independently. Only then make a winner recommendation. Hermes recommends local model context 64K; don't compare unlike contexts or quantizations as a level playing field.
+
+**RESTRICTIONS:** Research branch and Draft PR only; no merge, main/release, vendor pin, host shell, Windows effects, paid API, broad filesystem access, persistent user memory or agent adoption. Validation CI is FAKE-only. Next engineering action after evidence: determine whether the environment can run the direct candidates under safe containment.
