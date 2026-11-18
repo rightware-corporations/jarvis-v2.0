@@ -70,10 +70,10 @@ def make_handler(state: LabState):
     return Handler
 
 
-def serve(port: int, evidence: Path):
+def serve(port: int, evidence: Path, bind: str = "127.0.0.1"):
     state = LabState(evidence)
-    with ThreadingHTTPServer(("127.0.0.1", port), make_handler(state)) as server:
-        print(json.dumps({"fixture_url": f"http://127.0.0.1:{server.server_address[1]}/",
+    with ThreadingHTTPServer((bind, port), make_handler(state)) as server:
+        print(json.dumps({"fixture_url": f"http://{bind}:{server.server_address[1]}/",
                           "evidence_path": str(evidence), "model_runs": "NOT_STARTED"}), flush=True)
         server.serve_forever()
 
@@ -82,10 +82,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--evidence", type=Path, required=True)
+    # Live bake-off only: bind inside an --internal Docker network (no external route). Default stays loopback.
+    parser.add_argument("--bind", default="127.0.0.1")
     args = parser.parse_args()
     if not 0 <= args.port <= 65535:
         parser.error("invalid port")
-    serve(args.port, args.evidence)
+    serve(args.port, args.evidence, args.bind)
 
 
 if __name__ == "__main__":

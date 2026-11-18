@@ -1,0 +1,33 @@
+# JRV-TE-P1: integrity anchors for the live bake-off (NO model, NO agent execution).
+# Publishes the publisher-side digests that the session sandbox cannot query directly.
+name: TE-P1 artifact integrity (no inference)
+on:
+  push:
+    branches: [exp/jrv-te-p1-live-bakeoff-20261118]
+    paths: [ops/te_p1_integrity_request.json]
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Release asset digests and build-provenance attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for spec in "aaif-goose/goose v1.60.1" "NousResearch/hermes-agent v0.23.2" "agent0ai/agent-zero v2.16"; do
+            set -- $spec
+            echo "== $1 $2"
+            curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/$1/releases/tags/$2" \
+              | python3 -c "import json,sys;d=json.load(sys.stdin);print('tag',d['tag_name'],'published',d['published_at']);[print(a['name'],a['size'],a.get('digest')) for a in d['assets'] if 'linux' in a['name'] or a['name'].endswith(('.whl','.tar.gz'))]" || echo "no release metadata"
+          done
+          D=sha256:f1b477e531c11e74b82761367e0284c7817908efe30a842889959713820584d8
+          echo "== goose linux x86_64 attestation for $D"
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/aaif-goose/goose/attestations/$D" \
+            | python3 -c "import json,sys;d=json.load(sys.stdin);a=d.get('attestations',[]);print('attestations',len(a));[print(x.get('bundle',{}).get('mediaType')) for x in a[:3]]" || echo "attestation lookup failed"
+      - name: Agent Zero image digest (Docker Hub, read-only manifest)
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect agent0ai/agent-zero:v2.16 | head -20 || echo "manifest lookup failed"

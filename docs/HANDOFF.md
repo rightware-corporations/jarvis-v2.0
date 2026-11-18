@@ -3511,3 +3511,13 @@ Nada disto foi iniciado.
 **SEPARATE REAL TEST GATE:** An isolated model/runtime environment is needed to run identical one-shot T1 with all three, confirm operator-independent 503 recovery, isolate prompt-injection decoy and record independent tool/egress evidence. T2 process restart/resume must be checked independently. Only then make a winner recommendation. Hermes recommends local model context 64K; don't compare unlike contexts or quantizations as a level playing field.
 
 **RESTRICTIONS:** Research branch and Draft PR only; no merge, main/release, vendor pin, host shell, Windows effects, paid API, broad filesystem access, persistent user memory or agent adoption. Validation CI is FAKE-only. Next engineering action after evidence: determine whether the environment can run the direct candidates under safe containment.
+
+## CHECKPOINT — 18/11/2026: JRV-BP-037 — JRV-TE-P1 live bake-off start (environment verified)
+
+**BRANCH:** `exp/jrv-te-p1-live-bakeoff-20261118` from protocol branch `research/jrv-te-p1-three-agent-bakeoff-20261118` @ `e10b236` (PR #25, JRV-BP-036). develop `1e0c0aa`, main `0cac8e8`, OpenJarvis pin untouched. Nothing installed on Issa's computer: the sandbox is this disposable cloud session container.
+
+**ENVIRONMENT (measured):** Ubuntu 24.04, 4 vCPU, 15 GiB RAM, no GPU, Docker 29.9.2 (vfs) usable; `docker network --internal` verified from outside the agent: container DNS/egress fail (pypi.org, example.com, host proxy unreachable) while a peer service on the same internal network answers. Ollama 0.40.15 (SHA-256 `628c0184…7379` verified). `qwen3.5:4b` digest `d8b0f5e9…2c04` (4.2B Q4_K_M) pulled; 64K context fits (5.82 GiB resident), prompt eval ≈89 tok/s on CPU.
+
+**CANDIDATE SOURCES:** goose tag v1.60.1 → `b4e789e`; asset `goose-x86_64-unknown-linux-gnu.tar.bz2` SHA-256 `f1b477e5…84d8` (no checksum file published; release uses GitHub build-provenance attestations, which this sandbox cannot query → integrity job `te-p1-integrity.yml`, no inference). Hermes tag v0.23.2 → `ae2a81c`. Agent Zero tag v2.16 → `2b0b3a4`; image pull BLOCKED here (Docker Hub, mirror.gcr.io and public.ecr.aws rate/quota limits; ghcr denied). Fixture `site.py` gains `--bind` (default loopback unchanged) to serve only inside the internal network.
+
+**NEXT:** goose T1 in an internal-only container; then Hermes; Agent Zero source install or BLOCKED. No result claimed yet.
