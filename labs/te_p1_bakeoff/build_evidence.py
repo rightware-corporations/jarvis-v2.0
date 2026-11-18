@@ -41,6 +41,57 @@ def _workdir_report(run: pathlib.Path):
     return None, None
 
 
+def _plain(text: str) -> str:
+    import re
+    return re.sub(r"\x1b\[[0-9;]*m", "", text)
+
+
+def _a0_counts(text: str) -> dict:
+    t = _plain(text)
+    return {"tool_uses": t.count("A0: Using tool"), "browser_tool_uses": t.count("A0: Using tool 'browser'"),
+            "browser_click_reference_errors": t.count("could not find reference"),
+            "thoughts_claiming_success": t.count("successfully completed"),
+            "huggingface_egress_attempts_blocked": t.count("huggingface.co")}
+
+
+def _agent_zero(runs: pathlib.Path) -> dict:
+    """Agent Zero runs (live_a0.py): same fields where they exist; counts instead of transcripts."""
+    out = {}
+    run = runs / "a0-t1"
+    if (run / "run.json").exists():
+        r = json.loads((run / "run.json").read_text())
+        so, so_meta = _log(run / "agent_stdout.txt")
+        se, se_meta = _log(run / "agent_stderr.txt")
+        api, api_meta = _log(run / "api_response.txt")
+        report, source = _workdir_report(run)
+        if report is None:
+            source = r.get("report_source")
+        out["agent-zero-t1"] = {
+            "wall_seconds": r["wall_seconds"], "timed_out": r["client_rc"] != 0 and r["wall_seconds"] >= 1800,
+            "client_rc": r["client_rc"], "boot_seconds": r["boot_seconds"], "peak_mem_mib": r["peak_mem_mib"],
+            "isolation": r["isolation"], "http_events": _events(r["http_events"]), "report_source": source,
+            "score_py_as_recorded": r["verdict"], "semantic": check(report), "agent_report": report,
+            "counts": _a0_counts(so + se), "logs": [so_meta, se_meta, api_meta]}
+    run = runs / "a0-t2"
+    if (run / "t2.json").exists():
+        d = json.loads((run / "t2.json").read_text())
+        so, so_meta = _log(run / "agent_stdout.txt")
+        se, se_meta = _log(run / "agent_stderr.txt")
+        api, api_meta = _log(run / "api_response.txt")
+        report, source = _workdir_report(run)
+        if report is None:
+            source = d.get("report_source")
+        out["agent-zero-t2"] = {k: d.get(k) for k in ("interrupted_after_seconds", "phase2_wall_seconds",
+                                                      "interventions", "refetched_after_resume",
+                                                      "resume_context_id_found", "state", "reason")}
+        out["agent-zero-t2"].update({
+            "events_at_stop": _events(d.get("events_at_stop")), "http_events": _events(d.get("http_events")),
+            "report_source": source, "score_py_as_recorded": d.get("verdict"), "semantic": check(report),
+            "agent_report": report, "api_response_bytes": len(api), "counts_phase2": _a0_counts(so + se),
+            "logs": [so_meta, se_meta, api_meta]})
+    return out
+
+
 def build(runs: pathlib.Path) -> dict:
     out = {}
     for name in ("goose-t1", "goose-t1-run2", "hermes-t1"):
@@ -88,6 +139,7 @@ def build(runs: pathlib.Path) -> dict:
                                     "stdout" if "This chat is paused" in texts[2] else None),
             "logs": metas,
         }
+    out.update(_agent_zero(runs))
     c = sqlite3.connect(runs / "goose-t1-run2/collect_root_.local_share_goose/sessions/sessions.db")
     out["goose-t1-run2"]["tokens"] = dict(zip(("input", "output", "total"), c.execute(
         "select accumulated_input_tokens,accumulated_output_tokens,accumulated_total_tokens from sessions").fetchone()))
@@ -107,6 +159,6 @@ if __name__ == "__main__":
     target.write_text(json.dumps(build(runs), ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps({k: {"semantic": v["semantic"]["semantic_gate"],
                           "strict": (v.get("score_py_as_recorded") or {}).get("http_level_gate"),
-                          **({"paused": v["paused_requiring_operator"], "stream": v["pause_notice_stream"],
-                              "resumed": v["resumed_same_session"]} if k.endswith("t2") else {})}
+                          **({"paused": v.get("paused_requiring_operator"), "stream": v.get("pause_notice_stream"),
+                              "resumed": v.get("resumed_same_session")} if k.endswith("t2") else {})}
                       for k, v in json.loads(target.read_text()).items()}, indent=1))
