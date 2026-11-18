@@ -99,7 +99,12 @@ def web_refusal_code(message: object) -> str:
     return "WEB_REFUSED_OTHER"
 
 
-REASON_CODES = POLICY_CODES | BROWSER_CODES
+# TE-06A: file-task refusals (mirrors rightware.agent.file_task.FILE_REFUSAL_CODES; a test keeps them equal)
+FILE_CODES = frozenset(("UNKNOWN_FILE_ID", "FILE_NOT_FOUND", "SYMLINK_REFUSED", "NOT_REGULAR_FILE",
+                        "MULTIPLE_LINKS", "FILE_TOO_LARGE", "BINARY_CONTENT", "INVALID_UTF8",
+                        "READS_REQUIRED", "FILE_CHANGED", "FILE_UNREADABLE"))
+
+REASON_CODES = POLICY_CODES | BROWSER_CODES | FILE_CODES
 
 
 # -- execution errors (TE-05E) --------------------------------------------------------------------

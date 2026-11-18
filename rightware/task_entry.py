@@ -32,7 +32,8 @@ _HALT_CODES = {
 # TE-05E: mirrors rightware.agent.diagnostics.ERROR_CODES (kept here so text-only paths need no vendor).
 _ERROR_CODES = frozenset(("NONE", "ENGINE_TIMEOUT", "ENGINE_CONNECTION", "ENGINE_FAILURE", "AGENT_FAILURE",
                           "AUDIT_FAILURE", "EVIDENCE_INCOMPLETE", "OTHER"))
-_SAFE_TOOLS = frozenset(("web_open", "web_follow", "web_submit", "web_type", "web_find"))
+_SAFE_TOOLS = frozenset(("web_open", "web_follow", "web_submit", "web_type", "web_find",
+                         "fixture_read", "fixture_compare"))
 # TE-05: DENIED (policy refused before execution) is a real receipt status; it was masked as UNKNOWN.
 _SAFE_STATUSES = frozenset((
     "OK", "DENIED", "FAILED", "REFUSED", "REFUSED_AT_BOUNDARY", "TIMED_OUT", "NOT_EXECUTED",
@@ -110,7 +111,7 @@ class TaskEntry:
     """
 
     def __init__(self, text_facade: TextFacade, *, fixture_session_factory: Callable | None = None,
-                 public_session_factory: Callable | None = None):
+                 public_session_factory: Callable | None = None, file_session_factory: Callable | None = None):
         if not isinstance(text_facade, TextFacade):
             raise TypeError("expected a RIGHTWARE text facade")
         if fixture_session_factory is not None and not callable(fixture_session_factory):
@@ -120,6 +121,9 @@ class TaskEntry:
         self.text_facade = text_facade
         self._fixture_session_factory = fixture_session_factory
         self._public_session_factory = public_session_factory
+        if file_session_factory is not None and not callable(file_session_factory):
+            raise TypeError("file_session_factory must be callable")
+        self._file_session_factory = file_session_factory
         self._lock = Lock()
         self._active: set[str] = set()
 
@@ -241,3 +245,176 @@ class TaskEntry:
         finally:
             with self._lock:
                 self._active.discard(session_id)
+
+
+# -- TE-06A: trusted file comparison -----------------------------------------------------------------
+_FILE_TASK_ID = "fixture-two-versions-compare"
+_FILE_STATES = frozenset(("COMPARISON_VERIFIED", "INCOMPLETE", "UNKNOWN", "HALTED", "ERROR"))
+_NARRATIVE = frozenset(("NOT_CHECKABLE", "NO_COUNTS_STATED", "COUNTS_CONSISTENT", "COUNTS_DISCREPANCY"))
+_HEX64 = frozenset("0123456789abcdef")
+
+
+def _sha(value) -> bool:
+    return isinstance(value, str) and len(value) == 64 and set(value) <= _HEX64
+
+
+@dataclass(frozen=True)
+class FileTaskEntryResult:
+    """Structured result of the trusted file comparison. ``changes`` come from CODE (only when the
+    agent's comparison was verified); the model text is carried separately as unverified."""
+    request_id: str
+    session_id: str
+    route: str
+    task_id: str
+    operational_state: str
+    file_a_sha256: str | None
+    file_b_sha256: str | None
+    read_receipts: tuple[int, ...]          # receipt sequences that verified READ_A, READ_B
+    comparison_receipt: int | None          # receipt sequence that verified COMPARE
+    changes: tuple | None
+    comparison_verified: bool
+    narrative: str                          # never "verified"; at most counts consistent with code
+    error_code: str
+    limitations: tuple[str, ...]
+    objective_states: tuple[tuple[str, str, int | None], ...]
+    model_commentary_unverified: str = ""
+    receipts_count: int = 0
+    receipt_events: tuple[tuple[int, str, str], ...] = ()
+    receipt_reason_codes: tuple[tuple[int, str], ...] = ()
+    generation_metrics: tuple = ()
+    halt_reason_code: str = "NONE"
+    continuations: int = 0
+
+    def __post_init__(self):
+        if self.route != "TASK" or self.operational_state not in _FILE_STATES or self.narrative not in _NARRATIVE:
+            raise ValueError("invalid file task result")
+        if self.comparison_verified != (self.operational_state == "COMPARISON_VERIFIED"):
+            raise ValueError("comparison verification must match the verified state")
+        if self.comparison_verified and (self.comparison_receipt is None or len(self.read_receipts) != 2
+                                         or not _sha(self.file_a_sha256) or not _sha(self.file_b_sha256)
+                                         or self.changes is None):
+            raise ValueError("a verified comparison needs both reads, the comparison receipt and hashes")
+        if not self.comparison_verified and self.changes is not None:
+            raise ValueError("unverified comparisons must not report changes")
+        if self.error_code not in _ERROR_CODES or (self.error_code != "NONE") != (self.operational_state == "ERROR"):
+            raise ValueError("an execution error and the ERROR state must go together")
+        if self.halt_reason_code not in frozenset((*_HALT_CODES.values(), "OTHER")):
+            raise ValueError("untrusted halt diagnostics")
+        if any(type(seq) is not int or seq < 0 or tool not in (*_SAFE_TOOLS, "OTHER")
+               or status not in _SAFE_STATUSES for seq, tool, status in self.receipt_events):
+            raise ValueError("untrusted receipt diagnostics")
+
+
+def _file_record_rows(detail, contract):
+    objectives = detail.get("objectives") if isinstance(detail, dict) else None
+    if not isinstance(objectives, list) or [o.get("oid") if isinstance(o, dict) else None
+                                            for o in objectives] != list(contract.objective_ids):
+        return None
+    rows = []
+    for o in objectives:
+        seq = o.get("evidence_sequence")
+        if o.get("state") not in ("VERIFIED", "UNKNOWN", "MISSING") or (seq is not None and (type(seq) is not int
+                                                                                           or seq < 1)):
+            return None
+        rows.append((o["oid"], o["state"], seq))
+    return tuple(rows)
+
+
+def _run_trusted_file_compare(self, session_id: str, instruction: str) -> FileTaskEntryResult:
+    """Host-authorised comparison of the two host-bound versions A/B. The instruction is never
+    authority: capability, contract, workspace and budgets all come from the host factory."""
+    if (not isinstance(instruction, str) or not instruction.strip()
+            or len(instruction) > self.text_facade.max_input_chars
+            or any(ord(c) < 32 and c not in "\n\t\r" for c in instruction)):
+        raise ValueError("invalid task instruction")
+    self.text_facade.history_snapshot(session_id)
+    if self._file_session_factory is None:
+        raise PermissionError("No file task has been enabled by the host")
+    with self._lock:
+        if session_id in self._active:
+            raise RuntimeError("Task already running in this session")
+        self._active.add(session_id)
+    try:
+        from rightware.agent.file_task import TRUSTED_FILE_PRESETS, FixtureWorkspace
+        from rightware.agent.session import AgentSession
+
+        agent = self._file_session_factory()
+        contract = TRUSTED_FILE_PRESETS[_FILE_TASK_ID]
+        budgets = agent.budgets if type(agent) is AgentSession else None
+        if (type(agent) is not AgentSession or agent.allow != frozenset({"files"})
+                or agent.actions is not None or agent.file_contract is not contract
+                or type(agent.file_workspace) is not FixtureWorkspace or not agent.receipts_enabled
+                or agent.completion_gate or agent.task_contract is not None
+                or budgets is None or not 1 <= budgets.max_calls <= 8
+                or not 0 < budgets.deadline_seconds <= 120 or not 1 <= agent.max_turns <= 8):
+            raise PermissionError("Task session is outside the approved file task envelope")
+        try:
+            reply = agent.run(instruction)
+        except Exception:
+            reply = None
+        receipts = agent.receipts
+        diag = dict(receipts_count=len(receipts), receipt_events=_receipt_events(receipts),
+                    receipt_reason_codes=_receipt_reason_codes(receipts),
+                    generation_metrics=tuple(agent.generation_metrics),
+                    halt_reason_code=_HALT_CODES.get(reply.halted, "OTHER") if reply is not None else "NONE")
+        unknown = tuple((oid, "UNKNOWN", None) for oid in contract.objective_ids)
+
+        def failed(code, limitation):
+            return FileTaskEntryResult(secrets.token_hex(16), session_id, "TASK", contract.task_id, "ERROR",
+                                       None, None, (), None, None, False, "NOT_CHECKABLE", code, (limitation,),
+                                       unknown, **diag)
+        if reply is None:
+            return failed("AGENT_FAILURE", "EXECUTION_FAILED")
+        detail = reply.task_completion
+        error_code = agent.error_code if agent.error_code in _ERROR_CODES else "OTHER"
+        rows = _file_record_rows(detail, contract)
+        if (rows is None or reply.completion not in _FILE_STATES or detail.get("state") != reply.completion
+                or detail.get("task_id") != contract.task_id or detail.get("narrative_verified") is not False):
+            return failed(error_code if error_code != "NONE" else "EVIDENCE_INCOMPLETE", "INVALID_COMPLETION_EVIDENCE")
+        verified = reply.completion == "COMPARISON_VERIFIED"
+        if reply.completion != "ERROR":
+            error_code = "NONE"
+        elif error_code == "NONE":
+            error_code = "OTHER"
+        seqs = {oid: seq for oid, state, seq in rows if state == "VERIFIED"}
+        changes = detail.get("changes") if verified else None
+        return FileTaskEntryResult(
+            request_id=secrets.token_hex(16), session_id=session_id, route="TASK", task_id=contract.task_id,
+            operational_state=reply.completion,
+            file_a_sha256=detail.get("file_a_sha256") if _sha(detail.get("file_a_sha256")) else None,
+            file_b_sha256=detail.get("file_b_sha256") if _sha(detail.get("file_b_sha256")) else None,
+            read_receipts=tuple(seqs[k] for k in ("READ_A", "READ_B") if k in seqs),
+            comparison_receipt=seqs.get("COMPARE"),
+            changes=tuple(changes) if isinstance(changes, list) else None,
+            comparison_verified=verified,
+            narrative=detail.get("narrative") if detail.get("narrative") in _NARRATIVE else "NOT_CHECKABLE",
+            error_code=error_code,
+            limitations=("SYNTHETIC_FIXTURE_FILES", "READ_ONLY", "NARRATIVE_NOT_VERIFIED", "LINUX_SECURE_OPEN_ONLY")
+            + (("EXECUTION_ERROR",) if reply.completion == "ERROR" else ()),
+            objective_states=rows, model_commentary_unverified=reply.text,
+            continuations=detail.get("continuations") if detail.get("continuations") in (0, 1) else 0, **diag)
+    finally:
+        with self._lock:
+            self._active.discard(session_id)
+
+
+TaskEntry.run_trusted_file_compare = _run_trusted_file_compare
+
+
+def file_task_record(result: FileTaskEntryResult) -> dict:
+    """JSON-ready report (no model transcript; model text is excluded, unverified anyway)."""
+    import dataclasses as _dc
+    return {
+        "task_id": result.task_id, "request_id": result.request_id, "operational_state": result.operational_state,
+        "file_a_sha256": result.file_a_sha256, "file_b_sha256": result.file_b_sha256,
+        "read_receipts": list(result.read_receipts), "comparison_receipt": result.comparison_receipt,
+        "changes": list(result.changes) if result.changes is not None else None,
+        "comparison_verified": result.comparison_verified, "narrative": result.narrative,
+        "narrative_verified": False, "error_code": result.error_code, "limitations": list(result.limitations),
+        "objectives": [{"id": o, "state": st, "receipt_sequence": q} for o, st, q in result.objective_states],
+        "receipts_count": result.receipts_count, "halt_reason_code": result.halt_reason_code,
+        "continuations": result.continuations,
+        "receipt_events": [{"sequence": q, "tool": t, "status": st} for q, t, st in result.receipt_events],
+        "receipt_reason_codes": [{"sequence": q, "code": c} for q, c in result.receipt_reason_codes],
+        "generations": [_dc.asdict(m) for m in result.generation_metrics],
+    }

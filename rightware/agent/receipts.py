@@ -49,6 +49,18 @@ from rightware.agent.web import redact_url
 HASH_SCOPE_RAW = "raw_response_bytes"      # SHA-256 of the downloaded body bytes (not the model view)
 
 
+_FILE_KEYS = ("file_id", "file_sha256", "bytes", "lines", "a_sha256", "b_sha256", "diff_sha256",
+              "added", "removed", "modified")
+
+
+def _file_evidence(ev: dict) -> tuple | None:
+    """TE-06A: only fixed keys with str/int values (hashes, ids, counts) from a file tool."""
+    if "file_id" not in ev and "diff_sha256" not in ev:
+        return None
+    return tuple((k, ev[k]) for k in _FILE_KEYS
+                 if k in ev and (type(ev[k]) is int or (isinstance(ev[k], str) and len(ev[k]) <= 64)))
+
+
 @dataclasses.dataclass(frozen=True)
 class ExecutionReceipt:
     run_id: str                  # runtime-generated, one per AgentSession.run
@@ -71,6 +83,7 @@ class ExecutionReceipt:
     hash_scope: str | None
     truncated: bool | None
     reason_code: str | None = None   # TE-05 finite diagnostic code (DENIED/REFUSED*/FAILED); never args or text
+    file_evidence: tuple | None = None   # TE-06A: whitelisted (key, value) pairs of a file tool; never file text
 
 
 class _Record:
@@ -190,5 +203,6 @@ class ReceiptLedger:
                     content_type=ev.get("content_type") if isinstance(ev.get("content_type"), str) else None,
                     raw_sha256=raw, hash_scope=HASH_SCOPE_RAW if raw else None,
                     truncated=ev.get("truncated") if isinstance(ev.get("truncated"), bool) else None,
-                    reason_code=r.reason_code))
+                    reason_code=r.reason_code,
+                    file_evidence=_file_evidence(ev)))
             return tuple(out)

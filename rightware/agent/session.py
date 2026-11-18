@@ -26,6 +26,7 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 from rightware.agent.browser import PublicBrowser
 from rightware.agent.completion import evaluate as evaluate_completion, recovery_feedback
+from rightware.agent import file_task as F
 from rightware.agent.diagnostics import (GenerationMetric, engine_error_code, generation_metric,
                                          policy_reason_code)
 from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
@@ -77,6 +78,16 @@ TOOLS: dict[str, ToolDef] = {
         "web_find", "Procura texto nas ligações já vistas e na página actual (sem navegar).",
         {"text": {"type": "string", "maxLength": 80, "description": "Texto a procurar"}},
         ("text",), session_flag="browse", consequential=False, max_calls=6),
+}
+# TE-06A: separate registry, merged into a run ONLY when the host allowed the "files" capability.
+FILE_TOOLS = {
+    "fixture_read": ToolDef(
+        "fixture_read", "Lê (só leitura) a versão A ou B autorizada pelo anfitrião. Não aceita caminhos.",
+        {"file": {"type": "string", "enum": ["A", "B"], "maxLength": 1, "description": "A ou B"}},
+        ("file",), session_flag="files", consequential=False, max_calls=3),
+    "fixture_compare": ToolDef(
+        "fixture_compare", "Compara a versão A com a versão B (depois de ambas lidas) e devolve as diferenças "
+        "calculadas pelo código.", {}, (), session_flag="files", consequential=False, max_calls=2),
 }
 READ_TOOLS = ("web_read", "web_open", "web_follow", "web_submit")
 BROWSE_PROMPT = (
@@ -183,9 +194,13 @@ class _CompletionEngine(_GuardedEngine):
 
     Quotas and policy are never reset. Every extra generation is counted."""
 
-    def __init__(self, engine, policy: AgentPolicy, trace, *, contract, ledger, max_turns: int, max_calls: int):
+    def __init__(self, engine, policy: AgentPolicy, trace, *, contract, ledger, max_turns: int, max_calls: int,
+                 assess=None):
         super().__init__(engine, policy, trace)
         self._contract, self._ledger = contract, ledger
+        # TE-06A: optional (missing ids, feedback) assessment for non-browser contracts; default = A3.
+        self._assess = assess or (lambda receipts: (lambda r: (r.missing, recovery_feedback(contract, r)))(
+            evaluate_completion(contract, receipts)))
         self._max_turns, self._max_calls = max_turns, max_calls
         self.orchestrator_generations = 0
         self.continuations = 0
@@ -213,17 +228,17 @@ class _CompletionEngine(_GuardedEngine):
         self.orchestrator_generations += 1
         result = super().generate(messages, **kwargs)
         while not result.get("tool_calls") and self.halted is None:
-            partial = evaluate_completion(self._contract, self._ledger.receipts())
-            if not partial.missing:
+            missing, feedback = self._assess(self._ledger.receipts())
+            if not missing:
                 return result
             blocked = self._blocked()
             if blocked:
                 self.recovery.append(f"sem continuação: {blocked}")
                 return result
             self.continuations += 1
-            self.recovery.append("continuação pedida: " + ", ".join(partial.missing))
+            self.recovery.append("continuação pedida: " + ", ".join(missing))
             messages.append(Message(role=Role.ASSISTANT, content=result.get("content", "") or ""))
-            messages.append(Message(role=Role.USER, content=recovery_feedback(self._contract, partial)))
+            messages.append(Message(role=Role.USER, content=feedback))
             self._kind = "continuation"
             result = super().generate(messages, **kwargs)
         return result
@@ -355,7 +370,7 @@ class AgentSession:
                  max_tokens: int = 768, sites: tuple[str, ...] = (), browser_fetcher=None,
                  clock: Callable[[], float] | None = None, start_url: str | None = None,
                  trace: bool = False, task_preset: str | None = None, receipts: bool = False,
-                 completion_gate: bool = False):
+                 completion_gate: bool = False, file_task: str | None = None, file_workspace=None):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
@@ -380,6 +395,19 @@ class AgentSession:
         self.completion_gate = bool(completion_gate)
         if self.completion_gate and (self.task_contract is None or not self.receipts_enabled):
             raise ValueError("o completion gate exige um preset confiável (task_preset) e recibos (receipts=True)")
+        # TE-06A (opt-in, default OFF): host-only file comparison. The capability, the contract and the
+        # workspace binding all come from the host; the model can only name ids A/B.
+        self.file_contract: F.FileTaskContract | None = None
+        self.file_workspace = None
+        if file_task is not None or "files" in self.allow or file_workspace is not None:
+            if file_task is None or type(file_workspace) is not F.FixtureWorkspace:
+                raise ValueError("a capacidade 'files' exige um contrato de ficheiros e um ambiente do anfitrião")
+            if not self.receipts_enabled or self.completion_gate or self.task_contract is not None:
+                raise ValueError("tarefas de ficheiros exigem recibos e não se combinam com contratos web")
+            self.file_contract = F.select_file_preset(file_task, allow=self.allow)
+            if file_workspace.max_bytes != self.file_contract.max_bytes:
+                raise ValueError("o ambiente não respeita o limite de leitura do contrato")
+            self.file_workspace = file_workspace
         self.browser_fetcher = browser_fetcher or self.fetcher
         self.clock = clock
         self.browser: PublicBrowser | None = None
@@ -455,7 +483,8 @@ class AgentSession:
     def run(self, instruction: str) -> AgentReply:
         kwargs = {"clock": self.clock} if self.clock else {}
         self.browser = None
-        policy = AgentPolicy(TOOLS, allow=self.allow, budgets=self.budgets, audit_path=self.audit_path,
+        registry = {**TOOLS, **FILE_TOOLS} if self.file_contract is not None else TOOLS
+        policy = AgentPolicy(registry, allow=self.allow, budgets=self.budgets, audit_path=self.audit_path,
                              signature=self._action_signature, **kwargs)
         self._policy = policy
         outcomes: list[ToolOutcome] = []
@@ -473,14 +502,29 @@ class AgentSession:
                 prompt += f" Página inicial desta tarefa: {self.start_url}"
             if self.completion_gate:                     # TE-05: trusted objectives (contracted runs only)
                 prompt += objectives_prompt(self.task_contract)
+        file_run = None
+        if self.file_contract is not None:               # TE-06A: host-bound files, fresh per run
+            file_run = F.FileTaskRun(self.file_workspace)
+            runners["fixture_read"] = lambda args: ToolOutcome("fixture_read", *file_run.read(args["file"]))
+            runners["fixture_compare"] = lambda args: ToolOutcome("fixture_compare", *file_run.compare())
+            prompt += F.FILES_PROMPT + F.objectives_prompt(self.file_contract)
 
         self.generation_metrics = ()
         self.error_code = "NONE"
         self.trace = trace = TaskTrace() if self.trace_enabled else None
         self.ledger = ledger = ReceiptLedger() if self.receipts_enabled else None
-        tools = [_PolicyTool(TOOLS[n], policy, runners[n], outcomes, trace, self.browser, ledger) for n in TOOLS
-                 if TOOLS[n].session_flag in self.allow]
-        if self.completion_gate:
+        tools = [_PolicyTool(registry[n], policy, runners[n], outcomes, trace, self.browser, ledger) for n in registry
+                 if registry[n].session_flag in self.allow]
+        if self.file_contract is not None:
+            contract, workspace = self.file_contract, self.file_workspace
+
+            def assess(receipts):
+                r = F.evaluate_file_task(contract, receipts, workspace)
+                return r.missing, F.recovery_feedback(contract, r.missing)
+            budgets = self.budgets or Budgets()
+            guarded = _CompletionEngine(self.engine, policy, trace, contract=contract, ledger=ledger,
+                                        max_turns=self.max_turns, max_calls=budgets.max_calls, assess=assess)
+        elif self.completion_gate:
             budgets = self.budgets or Budgets()
             guarded = _CompletionEngine(self.engine, policy, trace, contract=self.task_contract, ledger=ledger,
                                         max_turns=self.max_turns, max_calls=budgets.max_calls)
@@ -514,6 +558,8 @@ class AgentSession:
             self.error_code = "AUDIT_FAILURE" if "AUDIT_FAILED" in reply.flags else "OTHER"
         if self.completion_gate:
             reply = self._apply_completion_gate(reply, guarded)
+        elif self.file_contract is not None:
+            reply = self._apply_file_gate(reply, guarded, answer if reply.completion != "ERROR" else "")
         if trace is not None:
             trace.finish(reply.completion, reply.halted, reply.flags, reply.sources, self.browser)
         return reply
@@ -543,6 +589,19 @@ class AgentSession:
         detail = {**result.as_dict(), "product_completion": reply.completion, "error_code": self.error_code,
                   "continuations": guarded.continuations,
                   "continuation_budget": self.task_contract.max_continuations,
+                  "recovery": list(guarded.recovery), "orchestrator_generations": guarded.orchestrator_generations}
+        return dataclasses.replace(reply, completion=result.state, text=text, task_completion=detail)
+
+    def _apply_file_gate(self, reply: AgentReply, guarded: "_CompletionEngine", model_text: str) -> AgentReply:
+        """TE-06A: the deterministic file verifier decides the task state (never the model)."""
+        halted = reply.halted or ("tarefa cancelada" if self._policy is not None and self._policy.cancelled else None)
+        result = F.evaluate_file_task(self.file_contract, self.receipts, self.file_workspace, halted=halted,
+                                      error=self.error_code if reply.completion == "ERROR" else None,
+                                      audit_failed="AUDIT_FAILED" in reply.flags, model_text=model_text)
+        text = (reply.text + f"\nEstado da tarefa ({result.task_id}): {result.state}: {result.reason}. "
+                "A narrativa do modelo não foi verificada.")
+        detail = {**result.as_dict(), "product_completion": reply.completion, "error_code": self.error_code,
+                  "continuations": guarded.continuations, "continuation_budget": self.file_contract.max_continuations,
                   "recovery": list(guarded.recovery), "orchestrator_generations": guarded.orchestrator_generations}
         return dataclasses.replace(reply, completion=result.state, text=text, task_completion=detail)
 
