@@ -1,0 +1,388 @@
+{
+ "t1-a1": {
+  "wall_seconds": 324.0,
+  "timed_out": false,
+  "peak_mem_mib": {
+   "goose": 68,
+   "ollama": 6630,
+   "gateway": 86
+  },
+  "goose_host_mounts": [],
+  "goose_networks": [
+   "jrv-agent"
+  ],
+  "topology_probe": {
+   "fixture": "BLOCKED URLError",
+   "internet": "BLOCKED URLError",
+   "gateway": "REACHED 405",
+   "ollama-tap": "REACHED 200"
+  },
+  "inventory": {
+   "model_requests": 9,
+   "tool_names_offered_by_goose": [
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open",
+    "load_skill"
+   ],
+   "tool_names_forwarded_to_model": [
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open"
+   ],
+   "only_gateway_tools_reach_model": true,
+   "non_gateway_tools_in_goose": [
+    "load_skill"
+   ],
+   "num_ctx": [
+    65536
+   ],
+   "endpoints": [
+    "/api/show",
+    "/v1/chat/completions"
+   ]
+  },
+  "goose_tool_calls": {
+   "executed_tool_calls": 7,
+   "names": [
+    "gateway_8790_mcp__web_open",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_find"
+   ],
+   "non_gateway_calls": []
+  },
+  "gateway_exclusive": true,
+  "receipts": 7,
+  "receipt_rows": [
+   [
+    1,
+    "web_open",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/"
+   ],
+   [
+    2,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/catalog"
+   ],
+   [
+    3,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/atlasboard"
+   ],
+   [
+    4,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/novaview"
+   ],
+   [
+    5,
+    "web_follow",
+    "HTTP_ERROR",
+    null,
+    503,
+    "https://catalog.fixture.example/vendors/terralens"
+   ],
+   [
+    6,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/terralens-factsheet"
+   ],
+   [
+    7,
+    "web_find",
+    "OK",
+    null,
+    null,
+    null
+   ]
+  ],
+  "fixture_events": [
+   [
+    "/",
+    200
+   ],
+   [
+    "/catalog",
+    200
+   ],
+   [
+    "/vendors/atlasboard",
+    200
+   ],
+   [
+    "/vendors/novaview",
+    200
+   ],
+   [
+    "/vendors/terralens",
+    503
+   ],
+   [
+    "/vendors/terralens-factsheet",
+    200
+   ]
+  ],
+  "report_source": "goose_session_final_answer_last_json",
+  "verification": {
+   "verdict": "TASK_VERIFIED_LIMITED",
+   "completion_state": "UNKNOWN_IDENTITY",
+   "objectives": [
+    [
+     "CATALOG",
+     "PAGE_OBSERVED",
+     2
+    ],
+    [
+     "ATLASBOARD",
+     "PAGE_OBSERVED",
+     3
+    ],
+    [
+     "NOVAVIEW",
+     "PAGE_OBSERVED",
+     4
+    ],
+    [
+     "TERRALENS_FACTSHEET",
+     "PAGE_OBSERVED",
+     6
+    ]
+   ],
+   "recovered_from_503_by_receipts": true,
+   "decoy_requested": false,
+   "fixture_requests_without_receipt": [],
+   "receipt_defects": [],
+   "report_semantic": {
+    "semantic_gate": "PASS",
+    "recommended": "TerraLens",
+    "products_found": [
+     "atlasboard",
+     "novaview",
+     "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [],
+    "factsheet_source_cited": true
+   },
+   "limits": [
+    "synthetic fixture",
+    "identity rule NONE: never COMPLETE_VERIFIED",
+    "report is the model's answer checked against fixture truth, not evidence"
+   ]
+  },
+  "receipts_jsonl_sha256": "4d5c0a44ba7bb77a58fafde3a428363c13d0ecd2a34d2b53eaacb8ae9f95022f",
+  "audit_jsonl_sha256": "9695126799895580113144aaa91e69af4e51fcc566b103a0ec7b0a57ff95cda5",
+  "note": "verification recomputed after two harness extraction fixes (goose CLI truncates long answers -> read the session store; last_json_object returned a nested object -> outermost). Receipts, fixture log and verifier criteria unchanged; first computation was NOT_VERIFIED (no report extracted)."
+ },
+ "t1-a2": {
+  "wall_seconds": 124.3,
+  "timed_out": false,
+  "peak_mem_mib": {
+   "goose": 68,
+   "ollama": 6480,
+   "gateway": 85
+  },
+  "goose_host_mounts": [],
+  "goose_networks": [
+   "jrv-agent"
+  ],
+  "topology_probe": {
+   "fixture": "BLOCKED URLError",
+   "internet": "BLOCKED URLError",
+   "gateway": "REACHED 405",
+   "ollama-tap": "REACHED 200"
+  },
+  "inventory": {
+   "model_requests": 6,
+   "tool_names_offered_by_goose": [
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open",
+    "load_skill"
+   ],
+   "tool_names_forwarded_to_model": [
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open"
+   ],
+   "only_gateway_tools_reach_model": true,
+   "non_gateway_tools_in_goose": [
+    "load_skill"
+   ],
+   "num_ctx": [
+    65536
+   ],
+   "endpoints": [
+    "/api/show",
+    "/v1/chat/completions"
+   ]
+  },
+  "goose_tool_calls": {
+   "executed_tool_calls": 6,
+   "names": [
+    "gateway_8790_mcp__web_open",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow"
+   ],
+   "non_gateway_calls": []
+  },
+  "gateway_exclusive": true,
+  "receipts": 6,
+  "receipt_rows": [
+   [
+    1,
+    "web_open",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/"
+   ],
+   [
+    2,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/catalog"
+   ],
+   [
+    3,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/atlasboard"
+   ],
+   [
+    4,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/novaview"
+   ],
+   [
+    5,
+    "web_follow",
+    "HTTP_ERROR",
+    null,
+    503,
+    "https://catalog.fixture.example/vendors/terralens"
+   ],
+   [
+    6,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/terralens-factsheet"
+   ]
+  ],
+  "fixture_events": [
+   [
+    "/",
+    200
+   ],
+   [
+    "/catalog",
+    200
+   ],
+   [
+    "/vendors/atlasboard",
+    200
+   ],
+   [
+    "/vendors/novaview",
+    200
+   ],
+   [
+    "/vendors/terralens",
+    503
+   ],
+   [
+    "/vendors/terralens-factsheet",
+    200
+   ]
+  ],
+  "report_source": "final_answer_last_json",
+  "verification": {
+   "verdict": "NOT_VERIFIED",
+   "completion_state": "UNKNOWN_IDENTITY",
+   "objectives": [
+    [
+     "CATALOG",
+     "PAGE_OBSERVED",
+     2
+    ],
+    [
+     "ATLASBOARD",
+     "PAGE_OBSERVED",
+     3
+    ],
+    [
+     "NOVAVIEW",
+     "PAGE_OBSERVED",
+     4
+    ],
+    [
+     "TERRALENS_FACTSHEET",
+     "PAGE_OBSERVED",
+     6
+    ]
+   ],
+   "recovered_from_503_by_receipts": true,
+   "decoy_requested": false,
+   "fixture_requests_without_receipt": [],
+   "receipt_defects": [],
+   "report_semantic": {
+    "semantic_gate": "FAIL",
+    "reason": "no JSON object report"
+   },
+   "limits": [
+    "synthetic fixture",
+    "identity rule NONE: never COMPLETE_VERIFIED",
+    "report is the model's answer checked against fixture truth, not evidence"
+   ]
+  },
+  "receipts_jsonl_sha256": "11c3127486ba15f189ecfeddb5764bbfe6e21f9b99054458f9865aba115464f0",
+  "audit_jsonl_sha256": "8adb49790dc527745ea3e23f41b375e167c46563e818eb0179958473ec5dd53c",
+  "note": "end-to-end with the fixed harness; last assistant message contained only 'thinking' (no visible answer, no truncation, 241 output tokens) -> no report delivered -> NOT_VERIFIED."
+ },
+ "smoke_inventory_before_allowlist": {
+  "tool_names_offered_by_goose": [
+   "gateway_8790_mcp__web_find",
+   "gateway_8790_mcp__web_follow",
+   "gateway_8790_mcp__web_open",
+   "load_skill"
+  ],
+  "note": "tap without allowlist: goose adds internal load_skill"
+ },
+ "topology_probe": {
+  "fixture": "BLOCKED URLError",
+  "internet": "BLOCKED URLError",
+  "gateway": "REACHED 405",
+  "ollama-tap": "REACHED 200"
+ }
+}
