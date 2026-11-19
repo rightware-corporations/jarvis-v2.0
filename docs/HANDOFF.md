@@ -3649,3 +3649,9 @@ Nada disto foi iniciado.
 **CI on `bf2aba3ea7e1385461f4d8a5b5105b715e7f6b20`:** WORK-05 run 44577991940 success, foundation run 44577992104 success. PR #27 description reconciled (BP-040…BP-052, P2D), still Draft.
 
 **PRE-REGISTRATION:** `docs/research/TE_P2D_PREREGISTRATION.md` SHA-256 `735f2cbc35ec15cdf6dfe8be558f67d1a3072b34646281557b0d62aa54483e49`: question Q-PY-01 (start `docs.python.org/3/library/crypto.html`), closed destination list (`docs.python.org` + `/3/library/`), protected rubric `reference_q_py_01.json`, limits, invalidation/STOP, 3 trials D1–D3, GO 3/3, GO_CONDICIONAL 2/3 model-only failure, NO-GO, NOT RUN if the platform does not allow the host. No agent public access before this commit. **NEXT:** run the runner; it refuses (PLATFORM_EGRESS_BLOCKED) while the environment does not allow the host.
+
+## CHECKPOINT — 19/11/2026: JRV-BP-054 — TE-P2D real public trials NOT RUN (platform egress blocked) — TE_P2D_PARTIAL
+
+**RUNNER:** `te_p2d_trials.py --prereg-commit e711aff6e0e8dac89f9a0509f9911014bc7528a7` on HEAD `e711aff`: every precondition passed (clean tree = remote head, frozen pre-registration unchanged, protocol values + harness hashes match, P2D frozen set identical, OpenJarvis pin, goose/Ollama binaries) EXCEPT `PLATFORM_EGRESS_BLOCKED` (the environment's network policy does not allow `docs.python.org`). No container started; **no agent public access occurred**. Evidence `docs/evidence/te_p2d/te_p2d_trials_not_run_2026-11-19.json`.
+
+**STATUS:** TE_P2D_PARTIAL — egress architecture, contract, verifier, tests (671 OK), mutation (30/30), FAKE dry-runs and frozen pre-registration delivered; public trials D1–D3 NOT RUN. **Requirement to resume:** allow `docs.python.org` in the cloud environment's network settings, then rerun the same command (nothing else changes). **STOP:** no open research, Hermes, Windows, voice or merge.
