@@ -3643,3 +3643,9 @@ Nada disto foi iniciado.
 **FAKE DRY-RUNS (real goose + scripted FAKE model + egress in explicit FAKE mode serving pages recorded in preparation; not public evidence):** isolation probes OK (goose net and Gateway: public/internet/host-proxy BLOCKED; egress refuses other host/path); 301 hop re-checked; pypi.org refused with receipt; fabricated quote → NOT_VERIFIED (claim not credited); correct report → RESEARCH_VERIFIED_LIMITED.
 
 **TESTS:** `tests/test_te_p2d_public.py` 30 OK; full venv 671 OK, 0 skipped; plain Python OK. Mutation 27/30 → 30/30 after 2 isolating tests (`docs/evidence/te_p2d/mutation_p2d.json`). P2B/P2C/P2D frozen sets unchanged. **NEXT:** CI on this commit, frozen TE-P2D pre-registration; trials run only if the platform allows `docs.python.org` (runner checks it and refuses otherwise).
+
+## CHECKPOINT — 19/11/2026: JRV-BP-053 — TE-P2D pre-registration published and FROZEN (before any agent public access)
+
+**CI on `bf2aba3ea7e1385461f4d8a5b5105b715e7f6b20`:** WORK-05 run 44577991940 success, foundation run 44577992104 success. PR #27 description reconciled (BP-040…BP-052, P2D), still Draft.
+
+**PRE-REGISTRATION:** `docs/research/TE_P2D_PREREGISTRATION.md` SHA-256 `735f2cbc35ec15cdf6dfe8be558f67d1a3072b34646281557b0d62aa54483e49`: question Q-PY-01 (start `docs.python.org/3/library/crypto.html`), closed destination list (`docs.python.org` + `/3/library/`), protected rubric `reference_q_py_01.json`, limits, invalidation/STOP, 3 trials D1–D3, GO 3/3, GO_CONDICIONAL 2/3 model-only failure, NO-GO, NOT RUN if the platform does not allow the host. No agent public access before this commit. **NEXT:** run the runner; it refuses (PLATFORM_EGRESS_BLOCKED) while the environment does not allow the host.
