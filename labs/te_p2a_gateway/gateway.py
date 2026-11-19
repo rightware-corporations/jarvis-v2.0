@@ -41,6 +41,23 @@ from rightware.agent.session import TOOLS
 
 from labs.te_p2a_gateway import report_contract as RC
 
+
+def _contract_module(contract_id):
+    """Only pre-registered contracts exist (fail closed on anything else)."""
+    if contract_id == RC.CONTRACT_ID:
+        return RC
+    from labs.te_p2d_public import research_contract as RESEARCH      # TE-P2D (labs)
+    if contract_id == RESEARCH.CONTRACT_ID:
+        return RESEARCH
+    raise ValueError("unknown report contract")
+
+
+def _submit_tool(module) -> ToolDef:
+    return ToolDef("submit_report", module.TOOL_DESCRIPTION,
+                   {"report": {"type": "string", "maxLength": 2 * module.MAX_REPORT_BYTES,
+                               "description": f"texto de um objecto JSON conforme ao contrato {module.CONTRACT_ID}"}},
+                   ("report",), session_flag="report", consequential=False, max_calls=module.MAX_SUBMISSIONS)
+
 GATEWAY_TOOLS = ("web_open", "web_follow", "web_find")
 TOOL_TIMEOUT_SECONDS = 30.0
 MAX_REPORT_CHARS = 8000
@@ -76,11 +93,15 @@ class Gateway:
         self.task_id, self.attempt_id = task_id, attempt_id
         self.registry = {n: TOOLS[n] for n in GATEWAY_TOOLS}
         allow = {"browse"}
-        if report_contract is not None and report_contract != RC.CONTRACT_ID:
-            raise ValueError("unknown report contract")      # fail closed: only the pre-registered version
+        self._rc = _contract_module(report_contract) if report_contract is not None else None
         self.report_contract = report_contract
+        # TE-P2D: in research mode every successful page read is announced to the model as a numbered RIGHTWARE
+        # observation (receipt sequence + raw SHA-256) that a report can cite; the text the model saw is kept.
+        self.observe = report_contract is not None and self._rc is not RC
+        self.observations: dict[int, dict] = {}
         if submit_report or report_contract:  # host decision (code), never the model's
-            self.registry["submit_report"] = SUBMIT_REPORT_V1 if report_contract else SUBMIT_REPORT
+            self.registry["submit_report"] = (SUBMIT_REPORT_V1 if self._rc is RC else _submit_tool(self._rc)) \
+                if report_contract else SUBMIT_REPORT
             allow.add("report")
         self.browser = PublicBrowser(sites, fetcher)
         kwargs = {"clock": clock} if clock else {}
@@ -122,7 +143,7 @@ class Gateway:
         """TE-P2B: pure contract validation (pre-filter) + decision + hash-chained record. Only the FIRST
         conformant report is stored for the verifier; nothing here judges content."""
         digest = hashlib.sha256(report.encode("utf-8", "surrogatepass")).hexdigest()
-        result = RC.validate_report(report)
+        result = self._rc.validate_report(report)
         seen = {t["sha256"] for t in self.submitted_texts}
         if self._accepted_sequence is not None:
             decision = "ALREADY_ACCEPTED"
@@ -137,13 +158,13 @@ class Gateway:
         if decision == "ACCEPTED_FOR_VERIFICATION":
             self._accepted_sequence = seq
             self.submissions.append({"sequence": seq, "sha256": digest, "report": report})
-        RC.chain_record(self.submission_chain, kind="submission", run_id=self.ledger.run_id,
+        self._rc.chain_record(self.submission_chain, kind="submission", run_id=self.ledger.run_id,
                         receipt_sequence=seq, call_id=self._current_call_id, report_sha256=digest,
                         report_bytes=len(report.encode("utf-8", "surrogatepass")), decision=decision,
                         schema_valid=result.schema_valid,
                         errors=[[e["path"], e["code"]] for e in result.errors])
-        remaining = SUBMIT_REPORT_V1.max_calls - self.policy.per_tool.get("submit_report", 0)
-        text = RC.feedback(result, decision, remaining)
+        remaining = self.registry["submit_report"].max_calls - self.policy.per_tool.get("submit_report", 0)
+        text = self._rc.feedback(result, decision, remaining)
         if decision == "ACCEPTED_FOR_VERIFICATION":
             return Step("OK", text, {}, None)
         return Step("REFUSED", text, {}, decision)
@@ -213,6 +234,8 @@ class Gateway:
                 self._stuck = worker
                 return (f"[RIGHTWARE] '{tool}' excedeu {self.tool_timeout:.0f} s; o resultado não é utilizável.", True)
             status, content = box.get("status", "FAILED"), box.get("content", "Erro da ferramenta.")
+            if self.observe and status == "OK" and tool in ("web_open", "web_follow"):
+                content = self._observation(rec, content)
             return content, status not in ("OK",)
 
     # -- TE-P2C: resume support (host-owned state only) ----------------------------------------
@@ -260,6 +283,16 @@ class Gateway:
             return (f"[RIGHTWARE] Resultado registado do recibo #{op['sequence']} (não re-executado):\n{content}",
                     box.get("status") != "OK")
         return None
+
+    def _observation(self, rec, content: str) -> str:
+        """Caller holds the lock. Register the page the model is about to see as a citable observation."""
+        receipt = next(r for r in self.ledger.receipts() if r.sequence == rec.sequence)
+        self.observations[rec.sequence] = {
+            "observation": rec.sequence, "final_url": receipt.final_url, "http_status": receipt.http_status,
+            "raw_sha256": receipt.raw_sha256, "text": content,
+            "text_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest()}
+        return (f"[RIGHTWARE observação {rec.sequence} | sha256 {(receipt.raw_sha256 or '')[:16]} | "
+                f"{receipt.final_url}]\n{content}")
 
     def begin_generation(self, generation: int) -> None:
         """Called by the transport only after a host-authorised resume consumed its grant."""

@@ -70,6 +70,10 @@ class McpApp:
         with (self.evidence / "transport_rejections.jsonl").open("w", encoding="utf-8") as f:
             for rej in self.rejections:
                 f.write(json.dumps(rej, sort_keys=True) + "\n")
+        if self.gateway.observe:                  # TE-P2D: citable observations (text the model saw + hashes)
+            with (self.evidence / "observations.jsonl").open("w", encoding="utf-8") as f:
+                for row in self.gateway.observations.values():
+                    f.write(json.dumps(row, sort_keys=True, ensure_ascii=False) + "\n")
         if self._control_token:                   # TE-P2C evidence (no token, no content)
             with (self.evidence / "control.jsonl").open("w", encoding="utf-8") as f:
                 for row in self.control_log:
@@ -263,9 +267,20 @@ def main(argv=None):
     p.add_argument("--allow-client", action="append", default=[], help="only these source IPs may call")
     p.add_argument("--submit-report", action="store_true", help="expose the receipted submit_report tool")
     p.add_argument("--report-contract", default=None, help="TE-P2B: submit_report under this contract id")
+    p.add_argument("--egress-socket", default=None, help="TE-P2D: supervised public egress Unix socket")
+    p.add_argument("--site", action="append", default=[], help="TE-P2D: exact public host allowlist")
+    p.add_argument("--prefix", action="append", default=[], help="TE-P2D: allowlisted path prefixes")
     a = p.parse_args(argv)
     a.evidence.mkdir(parents=True, exist_ok=True)
-    gw = Gateway(task_id=a.task, attempt_id=a.attempt, sites=(SYNTHETIC_HOST,), fetcher=fixture_fetcher(a.upstream),
+    if a.egress_socket:                        # TE-P2D: public pages ONLY through the supervised egress socket
+        from labs.te_p2d_public.egress import EgressPolicy
+        from labs.te_p2d_public.transport import EgressFetcher
+        if not a.site or not a.prefix:
+            raise SystemExit("--egress-socket requires explicit --site and --prefix allowlists")
+        sites, fetcher = tuple(a.site), EgressFetcher(a.egress_socket, EgressPolicy(tuple(a.site), tuple(a.prefix)))
+    else:
+        sites, fetcher = (SYNTHETIC_HOST,), fixture_fetcher(a.upstream)
+    gw = Gateway(task_id=a.task, attempt_id=a.attempt, sites=sites, fetcher=fetcher,
                  budgets=T1_BUDGETS, audit_path=a.evidence / "audit.jsonl", submit_report=a.submit_report,
                  report_contract=a.report_contract)
     app = McpApp(gw, a.evidence, tuple(a.allow_client), control_token=os.environ.get("JRV_CONTROL_TOKEN"))

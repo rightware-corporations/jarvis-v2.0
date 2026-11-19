@@ -1,0 +1,10 @@
+{
+  "question_id": "Q-PY-01",
+  "note": "PROTECTED reference for the RIGHTWARE verifier only. Never sent to the model, never in tool descriptions, prompts, feedback or receipts. Fixed before any TE-P2D trial from the official page (preparation check, not an agent run).",
+  "required_source": "https://docs.python.org/3/library/secrets.html",
+  "facts": [
+    {"fact_id": "F1", "meaning": "function that returns a URL-safe random token", "pattern": "token_urlsafe"},
+    {"fact_id": "F2", "meaning": "Python version in which the module was added", "pattern": "(?<![0-9.])3\\.6(?![0-9])"}
+  ],
+  "min_quote_chars": 12
+}

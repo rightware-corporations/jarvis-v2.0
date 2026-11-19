@@ -1,0 +1,40 @@
+{
+  "label": "PREPARATION checks by Claude (not the agent, not a trial) to verify pilot feasibility before freezing the protocol",
+  "date": "2026-11-19",
+  "method": "curl through the platform egress proxy while docs.python.org was briefly allowed",
+  "results": [
+    {
+      "url": "https://docs.python.org/3/library/crypto.html",
+      "status": 200,
+      "bytes": 19247,
+      "links_to_secrets_html": true
+    },
+    {
+      "url": "https://docs.python.org/3/library/secrets.html",
+      "status": 200,
+      "bytes": 36415,
+      "text_chars_after_html_to_text": 6443
+    },
+    {
+      "url": "https://docs.python.org/3/library/secrets",
+      "status": 301,
+      "location": "https://docs.python.org/3/library/secrets.html"
+    },
+    {
+      "url": "https://docs.python.org/3/library/",
+      "status": 200,
+      "bytes": 74036
+    }
+  ],
+  "page_sha256": {
+    "crypto.html": "48242deae5027a62ffa2b50fd9aa27e202c5c88bf355c749271f97ae355b7884",
+    "secrets.html": "3ac0ec93d1d42fe8dc275c7209b66bf8d6c0c59579d1f0f27a47b7a675b6fe11"
+  },
+  "platform_policy_timeline": [
+    "~17:04Z docs.python.org CONNECT 403 (not allowed)",
+    "update_environment add docs.python.org approved",
+    "~17:07Z 200 (preparation curl)",
+    "~17:09Z CONNECT 403 again; get_environment shows docs.python.org no longer in allowed_hosts \u2014 not re-requested, not bypassed"
+  ],
+  "note": "page contents are not committed; only hashes"
+}
