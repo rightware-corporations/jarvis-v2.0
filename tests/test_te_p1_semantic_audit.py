@@ -162,5 +162,17 @@ def _drop_recommendation(rep):
         del rep[k]
 
 
+
+
+class ReportExtraction(unittest.TestCase):
+    def test_last_json_object_returns_the_outermost_report_not_a_nested_part(self):
+        from labs.te_p1_bakeoff.live_harness import last_json_object
+        text = ('intro {"a": 1} texto\n```json\n{"relatorio": {"produtos": [{"nome": "X"}], '
+                '"recomendacao": {"produto": "TerraLens"}}, "fontes": ["u"]}\n```\nfim {broken')
+        self.assertEqual(list(last_json_object(text)), ["relatorio", "fontes"])
+        self.assertEqual(last_json_object('a {"x": {"y": 2}} b {"z": 3}'), {"z": 3})
+        self.assertIsNone(last_json_object("sem json"))
+
+
 if __name__ == "__main__":
     unittest.main()

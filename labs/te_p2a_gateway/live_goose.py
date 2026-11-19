@@ -113,6 +113,20 @@ def inventory(out: pathlib.Path) -> dict:
             "endpoints": sorted({r.get("path") for r in rows})}
 
 
+def goose_final_answer(out: pathlib.Path) -> str:
+    """Text of the LAST assistant message in goose's session store (complete, untruncated)."""
+    import glob
+    import sqlite3
+    text = ""
+    for db in glob.glob(str(out / "goose_state" / "**" / "sessions.db"), recursive=True):
+        rows = sqlite3.connect(db).execute("select content_json from messages where role='assistant' order by id").fetchall()
+        for (content,) in rows:
+            parts = [p.get("text", "") for p in json.loads(content or "[]") if p.get("type") == "text"]
+            if parts:
+                text = "\n".join(parts)
+    return text
+
+
 def goose_tool_calls(out: pathlib.Path) -> dict:
     """Tool calls goose actually executed, from its own session store (names only)."""
     import glob
@@ -149,6 +163,9 @@ def finish(out, extra) -> dict:
             break
         except ValueError:
             continue
+    if report is None:                         # goose's own session store: the full final answer
+        final = goose_final_answer(out)            # (the CLI truncates long output on the terminal)
+        report, source = last_json_object(final), "goose_session_final_answer_last_json"
     if report is None:
         report, source = last_json_object((out / "goose_stdout.txt").read_text(errors="replace")), "final_answer_last_json"
     calls = goose_tool_calls(out)

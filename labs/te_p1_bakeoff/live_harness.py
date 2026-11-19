@@ -71,24 +71,24 @@ class Sampler(threading.Thread):
 
 
 def last_json_object(text: str):
-    """The last top-level JSON object in a text (agent's final answer), or None."""
-    best = None
-    for start in [m.start() for m in re.finditer(r"\{", text)]:
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == "{":
-                depth += 1
-            elif text[i] == "}":
-                depth -= 1
-                if depth == 0:
-                    try:
-                        obj = json.loads(text[start:i + 1])
-                    except ValueError:
-                        break
-                    if isinstance(obj, dict):
-                        best = obj
-                    break
-    return best
+    """The last OUTERMOST JSON object in a text (agent's final answer), or None.
+
+    JRV-BP-041 fix: once an object parses, scanning resumes AFTER it, so objects nested inside it are
+    never returned in its place (the earlier version returned the last parsable '{', i.e. a sub-object)."""
+    best, pos = None, 0
+    decoder = json.JSONDecoder()
+    while True:
+        start = text.find("{", pos)
+        if start < 0:
+            return best
+        try:
+            obj, end = decoder.raw_decode(text, start)
+        except ValueError:
+            pos = start + 1
+            continue
+        if isinstance(obj, dict):
+            best = obj
+        pos = end
 
 
 def normalise_report(obj):
