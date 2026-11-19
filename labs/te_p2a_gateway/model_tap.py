@@ -53,6 +53,91 @@ def filter_tools(body: bytes, allowed_suffixes: tuple[str, ...]) -> tuple[bytes,
     return json.dumps(data).encode("utf-8"), [(t.get("function", t)).get("name") for t in kept]
 
 
+class ResponseToolFilter:
+    """RIGHTWARE allowlist on the MODEL OUTPUT (JRV-BP-043). The executor (goose v1.60.1) dispatches any tool
+    the model names that it knows internally — e.g. ``load_skill`` — even when that tool was never offered
+    to the model. So filtering the request is not enough: every streamed SSE event is parsed and any
+    ``tool_calls`` entry whose name is not allowlisted is REMOVED before the executor sees it. If a response
+    asked only for blocked tools, its ``finish_reason`` becomes ``stop`` (fail-closed: nothing executes).
+    Unparseable events are passed through unchanged only if they carry no tool call text."""
+
+    def __init__(self, allowed_suffixes: tuple[str, ...]):
+        self.allowed = allowed_suffixes
+        self.blocked_index: set[int] = set()
+        self.allowed_seen = False
+        self.blocked: list[str] = []
+        self._buffer = b""
+
+    def _ok(self, name: str) -> bool:
+        return bool(name) and name.endswith(self.allowed)
+
+    def _event(self, line: bytes) -> bytes | None:
+        if not line.startswith(b"data:"):
+            return line
+        payload = line[5:].strip()
+        if payload == b"[DONE]":
+            return line
+        try:
+            data = json.loads(payload)
+        except ValueError:
+            return None if b"tool_calls" in payload else line          # fail closed on opaque tool data
+        for choice in data.get("choices") or []:
+            delta = choice.get("delta") or choice.get("message") or {}
+            calls = delta.get("tool_calls")
+            if isinstance(calls, list):
+                kept = []
+                for i, call in enumerate(calls):
+                    idx = call.get("index", i)
+                    name = (call.get("function") or {}).get("name")
+                    if name is not None:
+                        if self._ok(name):
+                            self.allowed_seen = True
+                            self.blocked_index.discard(idx)
+                        else:
+                            self.blocked_index.add(idx)
+                            self.blocked.append(name)
+                    if idx not in self.blocked_index:
+                        kept.append(call)
+                if kept:
+                    delta["tool_calls"] = kept
+                else:
+                    delta.pop("tool_calls", None)
+            if choice.get("finish_reason") == "tool_calls" and not self.allowed_seen and self.blocked:
+                choice["finish_reason"] = "stop"
+        return b"data: " + json.dumps(data).encode("utf-8")
+
+    def feed(self, chunk: bytes) -> bytes:
+        self._buffer += chunk
+        out = []
+        while b"\n" in self._buffer:
+            line, self._buffer = self._buffer.split(b"\n", 1)
+            line = line.rstrip(b"\r")
+            ev = self._event(line)
+            if ev is not None:
+                out.append(ev + b"\n")
+        return b"".join(out)
+
+    def flush(self) -> bytes:
+        rest, self._buffer = self._buffer, b""
+        ev = self._event(rest) if rest else None
+        return ev or b""
+
+    def filter_json(self, body: bytes) -> bytes:
+        """Non-streaming responses (Ollama /api/chat or OpenAI JSON)."""
+        try:
+            data = json.loads(body)
+        except ValueError:
+            return body
+        targets = [c.get("message") or {} for c in data.get("choices") or []] + [data.get("message") or {}]
+        for msg in targets:
+            calls = msg.get("tool_calls")
+            if isinstance(calls, list):
+                keep = [c for c in calls if self._ok((c.get("function") or {}).get("name"))]
+                self.blocked += [(c.get("function") or {}).get("name") for c in calls if c not in keep]
+                msg["tool_calls"] = keep
+        return json.dumps(data).encode("utf-8")
+
+
 def make_handler(upstream: str, log: Path, lock: threading.Lock, allowed_suffixes: tuple[str, ...] = ()):
     u = urlsplit(upstream)
 
@@ -78,11 +163,27 @@ def make_handler(upstream: str, log: Path, lock: threading.Lock, allowed_suffixe
             self.send_header("Transfer-Encoding", "chunked")
             self.send_header("Connection", "close")
             self.end_headers()
+            flt = ResponseToolFilter(allowed_suffixes) if allowed_suffixes and method == "POST" else None
+            streaming = "event-stream" in (resp.getheader("Content-Type") or "")
+            whole = b""
             while True:
                 chunk = resp.read1(65536) if hasattr(resp, "read1") else resp.read(65536)
                 if not chunk:
                     break
+                if flt is not None and not streaming:
+                    whole += chunk
+                    continue
+                if flt is not None:
+                    chunk = flt.feed(chunk)
+                    if not chunk:
+                        continue
                 self.wfile.write(f"{len(chunk):X}\r\n".encode() + chunk + b"\r\n")
+            tail = (flt.filter_json(whole) if not streaming else flt.flush()) if flt is not None else b""
+            if tail:
+                self.wfile.write(f"{len(tail):X}\r\n".encode() + tail + b"\r\n")
+            if flt is not None and flt.blocked:
+                with lock, log.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps({"path": self.path, "blocked_tool_calls_in_model_output": flt.blocked}) + "\n")
                 self.wfile.flush()
             self.wfile.write(b"0\r\n\r\n")
             conn.close()
