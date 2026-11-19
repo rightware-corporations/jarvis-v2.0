@@ -50,8 +50,10 @@ def infra(out: pathlib.Path, a, attempt: str):
     sh(["docker", "run", "-d", "--name", "fixture", "--network", "jrv-fixture", "-v", f"{ROOT}/labs:/app/labs:ro",
         "-v", f"{ev}:/evidence", "-w", "/app", PY, "python", "-m", "labs.te_p1_bakeoff.site", "--port", "8765",
         "--bind", "0.0.0.0", "--evidence", "/evidence/http.jsonl"], check=True)
+    # TE-P2C: the supervisor control token is passed by NAME (value from the runner's environment, never argv)
+    control = ["-e", "JRV_CONTROL_TOKEN"] if getattr(a, "control_token", False) else []
     sh(["docker", "run", "-d", "--name", "gateway", "--network", "jrv-fixture", "-v", f"{ROOT}:/app:ro",
-        "-v", f"{ev}:/evidence", "-w", "/app", "-e", "PYTHONPATH=/app", GW_IMAGE, "/opt/ojvenv/bin/python", "-m",
+        "-v", f"{ev}:/evidence", "-w", "/app", "-e", "PYTHONPATH=/app", *control, GW_IMAGE, "/opt/ojvenv/bin/python", "-m",
         "labs.te_p2a_gateway.mcp_http", "--task", getattr(a, "task", "TE-P2A-T1"), "--attempt", attempt,
         "--evidence", "/evidence", "--allow-client", GOOSE_IP,
         *(["--report-contract", a.report_contract] if getattr(a, "report_contract", None) else ["--submit-report"])],

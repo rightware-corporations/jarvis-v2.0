@@ -28,6 +28,7 @@ propose and with which arguments; the policy decides.
 """
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import threading
@@ -57,6 +58,13 @@ SUBMIT_REPORT_V1 = ToolDef(
     {"report": {"type": "string", "maxLength": 2 * RC.MAX_REPORT_BYTES,
                 "description": "texto de um objecto JSON conforme ao contrato te-p2b.report.v1"}},
     ("report",), session_flag="report", consequential=False, max_calls=RC.MAX_SUBMISSIONS)
+
+
+# JRV-TE-P2C: replay classes (host-defined, never model-defined). An operation EXECUTED in an earlier transport
+# generation that is requested again with the same effective signature is NOT executed again.
+READ_REPLAY = ("web_open", "web_follow")        # network reads: replay a completed OK read once, then policy decides
+EFFECT_REPLAY = ("submit_report",)              # effects: any executed operation is never re-executed
+EFFECT_REPLAY_LIMIT = 3
 
 
 class Gateway:
@@ -92,6 +100,9 @@ class Gateway:
                          "submit_report": self._submit_report_v1 if report_contract else self._submit_report}
         self._current_sequence = None
         self._current_call_id = None
+        self.generation = 0                    # TE-P2C: transport generation (+1 per host-authorised resume)
+        self._ops: list[dict] = []             # executed/decided operations with signature and result box
+        self.replays: list[dict] = []          # TE-P2C: replay-served requests (evidence)
 
     def _submit_report(self, report: str) -> Step:
         """Deterministic validation only: one JSON object, bounded size. Stored with its SHA-256 under the
@@ -160,9 +171,10 @@ class Gateway:
     # -- the only way to act --------------------------------------------------------------------
     def call(self, name: object, arguments: object, request_id: object) -> tuple[str, bool]:
         """Returns (text for the model, is_error). Every proposal yields exactly one decision receipt."""
-        call_id = f"{self.task_id}:{self.attempt_id}:{request_id}" if request_id is not None else None
         tool = str(name) if isinstance(name, str) else "<invalid>"
         with self._lock:
+            gen = f"g{self.generation}:" if self.generation else ""      # TE-P2C: ids restart in a new process
+            call_id = f"{self.task_id}:{self.attempt_id}:{gen}{request_id}" if request_id is not None else None
             # JRV-BP-043: a request cancelled by the client before it ran, or any call while an earlier tool
             # is still running after its timeout, is refused WITHOUT executing (receipted, budget untouched).
             if request_id in self.cancelled_requests or (self._stuck is not None and self._stuck.is_alive()):
@@ -171,6 +183,10 @@ class Gateway:
                 self.ledger.decide(call_id, tool, json.dumps(arguments) if isinstance(arguments, dict) else None,
                                    False, reason)
                 return f"[RIGHTWARE] A ferramenta '{tool}' NÃO foi executada: {reason}.", True
+            replay = self._replay(tool, arguments, call_id)
+            if replay is not None:
+                return replay
+            sig = self._safe_signature(tool, arguments)
             before = len(self.policy.log)
             if not isinstance(arguments, dict):
                 self.policy.before_tool_call(tool, {"__invalid__": True})   # recorded + counted, always denied
@@ -191,11 +207,80 @@ class Gateway:
             worker.start()
             worker.join(self.tool_timeout)
             self.ledger.end_dispatch(rec)
+            self._ops.append({"sequence": rec.sequence, "tool": tool, "sig": sig, "generation": self.generation,
+                              "rec": rec, "box": box, "worker": worker, "replays": 0})
             if worker.is_alive():
                 self._stuck = worker
                 return (f"[RIGHTWARE] '{tool}' excedeu {self.tool_timeout:.0f} s; o resultado não é utilizável.", True)
             status, content = box.get("status", "FAILED"), box.get("content", "Erro da ferramenta.")
             return content, status not in ("OK",)
+
+    # -- TE-P2C: resume support (host-owned state only) ----------------------------------------
+    def _safe_signature(self, tool, arguments):
+        if not isinstance(arguments, dict):
+            return None
+        try:
+            return self._signature(tool, arguments)
+        except Exception:
+            return None
+
+    def _replay(self, tool, arguments, call_id):
+        """Caller holds the lock. Serve a request that repeats an operation executed in an EARLIER generation
+        from its receipt, without executing it again. Returns (text, is_error) or None (normal path)."""
+        if self.generation == 0 or tool not in READ_REPLAY + EFFECT_REPLAY:
+            return None
+        sig = self._safe_signature(tool, arguments)
+        if sig is None:
+            return None
+        for op in self._ops:
+            if op["generation"] >= self.generation or op["sig"] != sig or op["worker"].is_alive():
+                continue
+            rec, box = op["rec"], op["box"]
+            if not rec.executed:
+                continue
+            effect = tool in EFFECT_REPLAY
+            if not effect and (rec.status != "OK" or op["replays"] >= 1):
+                continue                                   # a failed read may be retried; one replay per read
+            args_json = json.dumps(arguments)
+            if effect and op["replays"] >= EFFECT_REPLAY_LIMIT:
+                reason = f"operação com efeito já executada no recibo #{op['sequence']}; não é repetida"
+                r = self.ledger.decide(call_id, tool, args_json, False, reason)
+                r.reason_code = "EFFECT_ALREADY_EXECUTED"
+                self.replays.append({"sequence": r.sequence, "original_sequence": op["sequence"], "tool": tool,
+                                     "generation": self.generation, "served": False})
+                return f"[RIGHTWARE] {reason}.", True
+            op["replays"] += 1
+            reason = (f"reenvio: operação já executada no recibo #{op['sequence']} (geração {op['generation']}); "
+                      "resultado registado devolvido sem nova execução")
+            r = self.ledger.decide(call_id, tool, args_json, False, reason)
+            r.reason_code = "REPLAYED_FROM_RECEIPT"
+            self.replays.append({"sequence": r.sequence, "original_sequence": op["sequence"], "tool": tool,
+                                 "generation": self.generation, "served": True})
+            content = box.get("content", "")
+            return (f"[RIGHTWARE] Resultado registado do recibo #{op['sequence']} (não re-executado):\n{content}",
+                    box.get("status") != "OK")
+        return None
+
+    def begin_generation(self, generation: int) -> None:
+        """Called by the transport only after a host-authorised resume consumed its grant."""
+        with self._lock:
+            if generation != self.generation + 1:
+                raise ValueError("generation must advance by one")
+            self.generation = generation
+            self.cancelled_requests.clear()               # ids of the previous process never carry over
+
+    def snapshot(self) -> dict:
+        """Host summary of the authorised state (waits for any in-flight call: same lock as ``call``)."""
+        with self._lock:
+            receipts = self.ledger.receipts()
+            digest = hashlib.sha256(json.dumps([dataclasses.asdict(r) for r in receipts], sort_keys=True,
+                                               default=str).encode()).hexdigest()
+            return {"task_id": self.task_id, "attempt_id": self.attempt_id, "generation": self.generation,
+                    "receipts": len(receipts), "last_sequence": receipts[-1].sequence if receipts else 0,
+                    "receipts_sha256": digest,
+                    "chain_head": self.submission_chain[-1]["record_sha256"] if self.submission_chain else None,
+                    "in_flight": bool(self._stuck is not None and self._stuck.is_alive()),
+                    "per_tool": dict(self.policy.per_tool), "calls": self.policy.calls}
 
     def _execute(self, tool: str, args: dict, box: dict) -> None:
         rec = self.ledger.claim(tool, args)

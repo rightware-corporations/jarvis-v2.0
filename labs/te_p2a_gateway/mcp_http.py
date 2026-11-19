@@ -14,8 +14,12 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import hmac
 import json
+import os
 import secrets
+import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -29,6 +33,8 @@ MAX_BODY_BYTES = 65536          # JRV-BP-043: bounded request size (413 above)
 SERVER_INFO = {"name": "rightware-tool-gateway", "version": "te-p2a-0.1"}
 # Code-owned limits for the T1 mission (not model-controlled).
 T1_BUDGETS = Budgets(max_calls=15, deadline_seconds=1700)
+MAX_GRANT_TTL = 300             # TE-P2C: a resume grant is single-use and short-lived
+SUMMARY_KEYS = ("task_id", "attempt_id", "generation", "last_sequence", "receipts_sha256", "chain_head")
 
 
 class McpApp:
@@ -36,13 +42,21 @@ class McpApp:
     ``initialize`` is refused, and every other request must carry the same ``Mcp-Session-Id``. Optional
     client allowlist by source IP (the executor's fixed address on the internal network)."""
 
-    def __init__(self, gateway: Gateway, evidence: Path | None = None, allowed_clients: tuple[str, ...] = ()):
+    def __init__(self, gateway: Gateway, evidence: Path | None = None, allowed_clients: tuple[str, ...] = (),
+                 control_token: str | None = None, clock=time.monotonic):
         self.gateway, self.evidence = gateway, evidence
         self.session_id = secrets.token_hex(16)
         self.initialized = False
         self.allowed_clients = tuple(allowed_clients)
         self.requests: list[dict] = []
         self.rejections: list[dict] = []
+        # TE-P2C: host-only supervision of the transport (suspend → authorise → one re-initialize)
+        self._control_token = control_token or None
+        self._clock = clock
+        self._lock = threading.Lock()
+        self.suspended = False
+        self.grant: dict | None = None
+        self.control_log: list[dict] = []
 
     def _dump(self):
         if self.evidence is None:
@@ -56,6 +70,13 @@ class McpApp:
         with (self.evidence / "transport_rejections.jsonl").open("w", encoding="utf-8") as f:
             for rej in self.rejections:
                 f.write(json.dumps(rej, sort_keys=True) + "\n")
+        if self._control_token:                   # TE-P2C evidence (no token, no content)
+            with (self.evidence / "control.jsonl").open("w", encoding="utf-8") as f:
+                for row in self.control_log:
+                    f.write(json.dumps(row, sort_keys=True) + "\n")
+            with (self.evidence / "replays.jsonl").open("w", encoding="utf-8") as f:
+                for row in self.gateway.replays:
+                    f.write(json.dumps(row, sort_keys=True) + "\n")
         if self.gateway.report_contract:          # TE-P2B: every submission (chain) and every submitted text
             for name, rows in (("submission_chain.jsonl", self.gateway.submission_chain),
                                ("submitted_texts.jsonl", self.gateway.submitted_texts)):
@@ -68,11 +89,18 @@ class McpApp:
         if self.allowed_clients and client_ip not in self.allowed_clients:
             return 403, "client not allowed"
         if method == "initialize":
-            if self.initialized:
-                return 409, "session already initialized"
-            return None
+            if not self.initialized:
+                return None
+            if self.suspended and self.grant is not None:
+                if self._clock() > self.grant["expires"]:
+                    self.grant = None
+                    return 403, "resume grant expired"
+                return None
+            return 409, "session already initialized"
         if not self.initialized:
             return 400, "not initialized"
+        if self.suspended:
+            return (400, "missing session id") if not session_header else (404, "session terminated")
         if session_header != self.session_id:
             return (400, "missing session id") if not session_header else (404, "unknown session id")
         return None
@@ -87,7 +115,16 @@ class McpApp:
                     self.gateway.cancelled_requests.add(target)   # finishes and is receipted truthfully
             return None
         if method == "initialize":
-            self.initialized = True
+            with self._lock:                      # admission is re-checked atomically with consumption
+                if self.initialized:
+                    if not (self.suspended and self.grant is not None and self._clock() <= self.grant["expires"]):
+                        return {"jsonrpc": "2.0", "id": rid, "error": {"code": -32600, "message": "not allowed"}}
+                    generation = self.gateway.generation + 1
+                    self.gateway.begin_generation(generation)
+                    self.grant, self.suspended = None, False
+                    self.session_id = secrets.token_hex(16)
+                    self.control_log.append({"event": "rebound", "generation": generation, "t": self._clock()})
+                self.initialized = True
             version = (msg.get("params") or {}).get("protocolVersion") or PROTOCOL_FALLBACK
             return _ok(rid, {"protocolVersion": version, "capabilities": {"tools": {"listChanged": False}},
                              "serverInfo": SERVER_INFO,
@@ -105,6 +142,46 @@ class McpApp:
         return {"jsonrpc": "2.0", "id": rid, "error": {"code": -32601, "message": "method not found"}}
 
 
+    # -- TE-P2C: supervisor control (loopback + token; never reachable by the executor) -----------
+    def control(self, client_ip: str, token, action: str, body: dict | None) -> tuple[int, dict]:
+        if not self._control_token:
+            return 404, {"error": "control disabled"}
+        if client_ip != "127.0.0.1" or not isinstance(token, str) or \
+                not hmac.compare_digest(token.encode(), self._control_token.encode()):
+            self.control_log.append({"event": "control_refused", "action": str(action)[:30], "client": client_ip})
+            return 403, {"error": "control not allowed"}
+        body = body if isinstance(body, dict) else {}
+        if action == "status":
+            return 200, {**self.gateway.snapshot(), "suspended": self.suspended, "grant": self.grant is not None}
+        if action == "suspend":
+            snap = self.gateway.snapshot()                # waits for any call in progress (same lock)
+            with self._lock:
+                self.suspended, self.grant, self.session_id = True, None, None
+            self.control_log.append({"event": "suspended", **{k: snap[k] for k in SUMMARY_KEYS},
+                                     "in_flight": snap["in_flight"], "t": self._clock()})
+            self._dump()
+            return 200, {**snap, "suspended": True}
+        if action == "authorize-resume":
+            if not self.suspended:
+                return 409, {"error": "not suspended"}
+            snap = self.gateway.snapshot()
+            if snap["in_flight"]:
+                return 409, {"error": "an operation is still in flight"}
+            mismatch = [k for k in SUMMARY_KEYS if body.get(k) != snap[k]]
+            if mismatch:
+                self.control_log.append({"event": "resume_refused", "mismatch": mismatch, "t": self._clock()})
+                return 409, {"error": "summary mismatch", "fields": mismatch}
+            ttl = body.get("ttl_seconds", 120)
+            if not isinstance(ttl, int) or isinstance(ttl, bool) or not 0 < ttl <= MAX_GRANT_TTL:
+                return 400, {"error": "invalid ttl"}
+            with self._lock:
+                self.grant = {"expires": self._clock() + ttl}
+            self.control_log.append({"event": "resume_authorized", "generation": snap["generation"], "ttl": ttl,
+                                     "t": self._clock()})
+            return 200, {"granted": True, "ttl_seconds": ttl, "next_generation": snap["generation"] + 1}
+        return 404, {"error": "unknown action"}
+
+
 def _ok(rid, result):
     return {"jsonrpc": "2.0", "id": rid, "result": result}
 
@@ -116,7 +193,8 @@ def make_handler(app: McpApp):
             self.send_response(code)
             if body is not None:
                 self.send_header("Content-Type", "application/json")
-            self.send_header("Mcp-Session-Id", app.session_id)
+            if app.session_id:
+                self.send_header("Mcp-Session-Id", app.session_id)
             for k, v in (extra or {}).items():
                 self.send_header(k, v)
             self.send_header("Content-Length", str(len(data)))
@@ -129,6 +207,16 @@ def make_handler(app: McpApp):
             return self._send(code, {"jsonrpc": "2.0", "id": None, "error": {"code": -32600, "message": reason}})
 
         def do_POST(self):
+            if self.path.startswith("/control/"):
+                try:
+                    length = int(self.headers.get("Content-Length", "0") or 0)
+                    body = json.loads(self.rfile.read(length)) if 0 < length <= MAX_BODY_BYTES else {}
+                except ValueError:
+                    body = None
+                code, out = app.control(self.client_address[0], self.headers.get("X-Rightware-Control"),
+                                        self.path[len("/control/"):].rstrip("/"), body)
+                app._dump()
+                return self._send(code, out)
             if self.path.rstrip("/") != "/mcp":
                 return self._send(404)
             try:
@@ -180,7 +268,7 @@ def main(argv=None):
     gw = Gateway(task_id=a.task, attempt_id=a.attempt, sites=(SYNTHETIC_HOST,), fetcher=fixture_fetcher(a.upstream),
                  budgets=T1_BUDGETS, audit_path=a.evidence / "audit.jsonl", submit_report=a.submit_report,
                  report_contract=a.report_contract)
-    app = McpApp(gw, a.evidence, tuple(a.allow_client))
+    app = McpApp(gw, a.evidence, tuple(a.allow_client), control_token=os.environ.get("JRV_CONTROL_TOKEN"))
     with ThreadingHTTPServer(("0.0.0.0", a.port), make_handler(app)) as server:
         print(json.dumps({"gateway": f"http://0.0.0.0:{a.port}/mcp", "task": a.task, "attempt": a.attempt}), flush=True)
         try:

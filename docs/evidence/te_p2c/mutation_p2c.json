@@ -1,0 +1,152 @@
+{
+  "phase": "TE-P2C checkpoint (Phase 3)",
+  "tool": "labs/te_p2a_gateway/mutation_p2c.py",
+  "tests": "tests.test_te_p2c_resume + tests.test_te_p2b_report_contract + tests.test_te_p2a_gateway",
+  "first_pass": {
+    "killed": 22,
+    "survived": [
+      "P02 grant not consumed (equivalent: suspend clears the grant)",
+      "P08 session id not rotated on re-bind",
+      "P10 suspend does not terminate session (equivalent: suspended flag gates first)",
+      "P16 same-generation replay"
+    ],
+    "fix": "added test_transport_state_invariants_across_suspend_and_rebind and test_same_generation_after_resume_is_unchanged"
+  },
+  "final": {
+    "killed": 26,
+    "total": 26,
+    "restored_identical": true
+  },
+  "mutants": [
+    {
+      "mutant": "P01 re-initialize without a grant",
+      "result": "KILLED",
+      "killed_by": "Bp043Transport.test_session_binding, RebindIdentity.test_grant_is_single_use_and_expires, RebindIdentity.test_lost_connection_needs_host_suspension …"
+    },
+    {
+      "mutant": "P02 grant not consumed",
+      "result": "KILLED",
+      "killed_by": "LegitimateResume.test_transport_state_invariants_across_suspend_and_rebind"
+    },
+    {
+      "mutant": "P03 grant expiry ignored (admission)",
+      "result": "KILLED",
+      "killed_by": "RebindIdentity.test_grant_is_single_use_and_expires"
+    },
+    {
+      "mutant": "P04 summary check removed",
+      "result": "KILLED",
+      "killed_by": "RebindIdentity.test_session_of_another_task_is_not_accepted, RebindIdentity.test_summary_mismatch_stale_or_other_task_is_refused"
+    },
+    {
+      "mutant": "P05 loopback check removed",
+      "result": "KILLED",
+      "killed_by": "RebindIdentity.test_control_is_host_only"
+    },
+    {
+      "mutant": "P06 token check removed",
+      "result": "KILLED",
+      "killed_by": "LoopbackHttp.test_control_over_http_needs_token_and_session_header_rules_hold, RebindIdentity.test_control_is_host_only"
+    },
+    {
+      "mutant": "P07 old session usable while suspended",
+      "result": "KILLED",
+      "killed_by": "RebindIdentity.test_old_forged_and_missing_session_ids_are_refused"
+    },
+    {
+      "mutant": "P08 session id not rotated on re-bind",
+      "result": "KILLED",
+      "killed_by": "LegitimateResume.test_transport_state_invariants_across_suspend_and_rebind"
+    },
+    {
+      "mutant": "P09 in-flight check removed",
+      "result": "KILLED",
+      "killed_by": "InFlightAndCancel.test_tool_still_running_after_timeout_blocks_resume"
+    },
+    {
+      "mutant": "P10 suspend does not terminate session",
+      "result": "KILLED",
+      "killed_by": "LegitimateResume.test_transport_state_invariants_across_suspend_and_rebind"
+    },
+    {
+      "mutant": "P11 replay disabled",
+      "result": "KILLED",
+      "killed_by": "InFlightAndCancel.test_suspend_waits_for_an_operation_in_progress, ReplayAndDedup.test_completed_read_is_replayed_once_not_refetched, ReplayAndDedup.test_effect_is_never_executed_twice_across_restart …"
+    },
+    {
+      "mutant": "P12 effects replayed like reads (re-executed later)",
+      "result": "KILLED",
+      "killed_by": "ReplayAndDedup.test_effect_is_never_executed_twice_across_restart, ReplayAndDedup.test_refused_effect_is_also_not_reexecuted"
+    },
+    {
+      "mutant": "P13 effect replay limit ignored",
+      "result": "KILLED",
+      "killed_by": "ReplayAndDedup.test_effect_is_never_executed_twice_across_restart"
+    },
+    {
+      "mutant": "P14 reads replayed without limit",
+      "result": "KILLED",
+      "killed_by": "ReplayAndDedup.test_completed_read_is_replayed_once_not_refetched, ReplayAndDedup.test_read_safety_does_not_imply_effect_safety"
+    },
+    {
+      "mutant": "P15 failed reads replayed",
+      "result": "KILLED",
+      "killed_by": "ReplayAndDedup.test_failed_read_is_not_replayed"
+    },
+    {
+      "mutant": "P16 same-generation replay",
+      "result": "KILLED",
+      "killed_by": "ReplayAndDedup.test_same_generation_after_resume_is_unchanged"
+    },
+    {
+      "mutant": "P17 generation missing from call id",
+      "result": "KILLED",
+      "killed_by": "LegitimateResume.test_interrupt_after_first_operation_then_resume_and_verify, LegitimateResume.test_interrupt_before_any_operation, LegitimateResume.test_resume_can_happen_twice_with_fresh_authorisation"
+    },
+    {
+      "mutant": "P18 cancellations leak across generations",
+      "result": "KILLED",
+      "killed_by": "InFlightAndCancel.test_cancellations_do_not_leak_across_generations"
+    },
+    {
+      "mutant": "P19 generation may jump",
+      "result": "KILLED",
+      "killed_by": "RebindIdentity.test_generation_must_advance_by_one"
+    },
+    {
+      "mutant": "P20 replay receipt marked executed-equivalent (no reason code)",
+      "result": "KILLED",
+      "killed_by": "ReplayAndDedup.test_completed_read_is_replayed_once_not_refetched"
+    },
+    {
+      "mutant": "P21 replay consumes no receipt",
+      "result": "KILLED",
+      "killed_by": "InFlightAndCancel.test_tool_still_running_after_timeout_blocks_resume, ReplayAndDedup.test_completed_read_is_replayed_once_not_refetched"
+    },
+    {
+      "mutant": "P22 snapshot ignores in-flight",
+      "result": "KILLED",
+      "killed_by": "InFlightAndCancel.test_tool_still_running_after_timeout_blocks_resume"
+    },
+    {
+      "mutant": "P23 duplicate effect counts refused repeats",
+      "result": "KILLED",
+      "killed_by": "RunnerRules.test_duplicate_effect_counts_only_accepted_submissions"
+    },
+    {
+      "mutant": "P24 duplicate effect not critical",
+      "result": "KILLED",
+      "killed_by": "RunnerRules.test_classification_and_decision"
+    },
+    {
+      "mutant": "P25 repeated read not a failure",
+      "result": "KILLED",
+      "killed_by": "RunnerRules.test_classification_and_decision"
+    },
+    {
+      "mutant": "P26 GO without continuity",
+      "result": "KILLED",
+      "killed_by": "RunnerRules.test_classification_and_decision"
+    }
+  ]
+}
