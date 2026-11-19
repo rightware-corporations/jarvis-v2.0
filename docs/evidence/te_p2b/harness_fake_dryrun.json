@@ -1,0 +1,163 @@
+{
+  "label": "FAKE harness dry-run — real goose v1.60.1 binary driven by the scripted FAKE model (labs/te_p2a_gateway/fake_model.py); NOT a trial, NOT real-model evidence",
+  "date": "2026-11-19",
+  "code_commit": "81b77ef80a10dea5bd0ac1572d8a33f8e5c48b99",
+  "script_steps": "web_open x6 (root, catalog, 3 vendors, factsheet), load_skill, submit_report (recommendation as object → invalid), submit_report (conformant)",
+  "isolation_probe": {
+    "fixture": "BLOCKED URLError",
+    "internet": "BLOCKED URLError",
+    "gateway": "REACHED 405",
+    "ollama-tap": "REACHED 200",
+    "gateway_initialize_from_non_goose_ip": "403"
+  },
+  "blocked_tool_calls_in_model_output": [
+    "load_skill"
+  ],
+  "goose_tool_calls": {
+    "executed_tool_calls": 8,
+    "names": [
+      "gateway_8790_mcp__web_open",
+      "gateway_8790_mcp__web_open",
+      "gateway_8790_mcp__web_open",
+      "gateway_8790_mcp__web_open",
+      "gateway_8790_mcp__web_open",
+      "gateway_8790_mcp__web_open",
+      "gateway_8790_mcp__submit_report",
+      "gateway_8790_mcp__submit_report"
+    ],
+    "non_gateway_calls": []
+  },
+  "gateway_exclusive": true,
+  "receipt_rows": [
+    [
+      1,
+      "web_open",
+      "OK",
+      null,
+      200,
+      "https://catalog.fixture.example/"
+    ],
+    [
+      2,
+      "web_open",
+      "OK",
+      null,
+      200,
+      "https://catalog.fixture.example/catalog"
+    ],
+    [
+      3,
+      "web_open",
+      "OK",
+      null,
+      200,
+      "https://catalog.fixture.example/vendors/atlasboard"
+    ],
+    [
+      4,
+      "web_open",
+      "DENIED",
+      "TOOL_QUOTA",
+      null,
+      null
+    ],
+    [
+      5,
+      "web_open",
+      "DENIED",
+      "TOOL_QUOTA",
+      null,
+      null
+    ],
+    [
+      6,
+      "web_open",
+      "DENIED",
+      "TOOL_QUOTA",
+      null,
+      null
+    ],
+    [
+      7,
+      "submit_report",
+      "REFUSED",
+      "REJECTED_SCHEMA",
+      null,
+      null
+    ],
+    [
+      8,
+      "submit_report",
+      "OK",
+      null,
+      null,
+      null
+    ]
+  ],
+  "contract": {
+    "contract_id": "te-p2b.report.v1",
+    "schema_sha256": "0ec32340fa5982f0297ffd0a0b7a3a7fc9bacb3287beefdcf4fe7dd18b732c1e",
+    "chain_check_gateway": {
+      "valid": true,
+      "problems": [],
+      "submissions": 2,
+      "accepted": 1
+    },
+    "chain_check_with_verdict": {
+      "valid": true,
+      "problems": [],
+      "submissions": 2,
+      "accepted": 1
+    },
+    "submissions": [
+      {
+        "receipt_sequence": 7,
+        "report_sha256": "ad49c2ec3113c11b66383da7496ef358e8f8f797d96c693d7aa000e94057e5b6",
+        "report_bytes": 766,
+        "decision": "REJECTED_SCHEMA",
+        "schema_valid": false,
+        "errors": [
+          [
+            "$.recommendation",
+            "E_TYPE"
+          ]
+        ]
+      },
+      {
+        "receipt_sequence": 8,
+        "report_sha256": "267ee6f2ead955b7906226f12fced6dc9736825dc2585be236ab7ba7a3168aca",
+        "report_bytes": 756,
+        "decision": "ACCEPTED_FOR_VERIFICATION",
+        "schema_valid": true,
+        "errors": []
+      }
+    ]
+  },
+  "verdict": "NOT_VERIFIED",
+  "objectives": [
+    [
+      "CATALOG",
+      "PAGE_OBSERVED",
+      2
+    ],
+    [
+      "ATLASBOARD",
+      "PAGE_OBSERVED",
+      3
+    ],
+    [
+      "NOVAVIEW",
+      "MISSING",
+      null
+    ],
+    [
+      "TERRALENS_FACTSHEET",
+      "MISSING",
+      null
+    ]
+  ],
+  "num_ctx_observed": [
+    65536
+  ],
+  "note": "web_open has a session quota of 3 (unchanged policy) so the scripted path could not reach NOVAVIEW/factsheet: NOT_VERIFIED is the correct verdict; classification MODELO_CONTEÚDO (conformant report, incomplete trajectory)."
+}
