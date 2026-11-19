@@ -1,0 +1,911 @@
+{
+  "label": "JRV-TE-P2C real T2 trials (goose v1.60.1 + qwen3.5:4b + 64K, CPU) under the frozen pre-registration",
+  "protocol": {
+    "n_trials": 3,
+    "max_replacements": 2,
+    "attempt_prefix": "C",
+    "task_id": "TE-P2C-T2",
+    "goose_version": "1.60.1",
+    "goose_sha256": "4db5cf70f20d200ab6971725b2f93808a9245606c8c126d926a89c70271361b8",
+    "ollama_version": "0.40.15",
+    "ollama_sha256": "5b8be7213d4ba3ba587bceaeed897ef39a09fc44c51e490c098aa31ba7b9d3cf",
+    "model": "qwen3.5:4b",
+    "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+    "num_ctx": 65536,
+    "temperature": "0.2",
+    "max_turns_per_phase": 40,
+    "trial_timeout_seconds": 1800,
+    "interrupt_rule": "first executed receipt with http_status 200",
+    "stop_command": "docker stop -t 5 goose",
+    "resume_grant_ttl_seconds": 120,
+    "resume_text_sha256": "433abd820c6d0346776490a1c847010ebe7cb49e2941792d18bbda14126579d1",
+    "instruction_sha256": "4d41d9f85d0c300fef2ffef2fc86bc5f2ef64be79d4964fb129645ee5e21e0a7",
+    "contract_id": "te-p2b.report.v1",
+    "schema_sha256": "0ec32340fa5982f0297ffd0a0b7a3a7fc9bacb3287beefdcf4fe7dd18b732c1e",
+    "global_step_budget": 15,
+    "deadline_seconds": 1700
+  },
+  "preconditions": {
+    "ok": true,
+    "problems": [],
+    "facts": {
+      "head": "2de0263449653b28245fa9c7bb872d0a8b7f1236",
+      "remote_head": "2de0263449653b28245fa9c7bb872d0a8b7f1236",
+      "prereg_commit": "2de0263449653b28245fa9c7bb872d0a8b7f1236",
+      "prereg_sha256": "1943baa5dfc6e2872fab06ef00ebd5866209b0e5021d9e3c71fb0b381cd97467",
+      "goose_sha256": "4db5cf70f20d200ab6971725b2f93808a9245606c8c126d926a89c70271361b8",
+      "goose_version": "1.60.1",
+      "ollama_sha256": "5b8be7213d4ba3ba587bceaeed897ef39a09fc44c51e490c098aa31ba7b9d3cf",
+      "frozen_groups": {
+        "verifier": "69839e3c53efabb456c1c3c4f4015cd6c31418e5b3b24460d25f44ae0a28a67d",
+        "policy": "dbe0b139e5c867a0a355218e7fb6b4753fda29cdf491e6b20c17fc936cca9102",
+        "scenario": "b4e03809f86bff261644ca0ebd026f24eeab162bae970ee976561c98024d3dc3",
+        "historical": "1e4c71caca0bf61b147f6d14453579fcfa5ea0eddda8e2b59397c1fa24e8dee3",
+        "permissions": "eaaabdab37654facc5b58909a133e4bd18f8bc4b845ed8d6a188844c8fd9bffc",
+        "p2b_contract": "6b8701851f2859f18ce498a54c096931962dbd2dee73abeb86e3405e88ab43f3",
+        "p2b_evidence": "4be80a8029adb6294cd35e0984ed33d755f2f6b2d943bf4f20980dec2b571aa4",
+        "t2_history": "deaa8953e2e969837482b7ea4c97e7e854099cfb0947b5ef7d7813c51bb0f835"
+      }
+    }
+  },
+  "summary": {
+    "n_valid": 3,
+    "verified_with_correct_continuity": 3,
+    "continuity_correct": 3,
+    "critical_stop": false,
+    "invalid_attempts": [],
+    "categories": {
+      "C1": null,
+      "C2": null,
+      "C3": null
+    },
+    "decision_by_preregistered_rule": "GO"
+  },
+  "frozen_after": {
+    "differences": [],
+    "groups": {
+      "verifier": "69839e3c53efabb456c1c3c4f4015cd6c31418e5b3b24460d25f44ae0a28a67d",
+      "policy": "dbe0b139e5c867a0a355218e7fb6b4753fda29cdf491e6b20c17fc936cca9102",
+      "scenario": "b4e03809f86bff261644ca0ebd026f24eeab162bae970ee976561c98024d3dc3",
+      "historical": "1e4c71caca0bf61b147f6d14453579fcfa5ea0eddda8e2b59397c1fa24e8dee3",
+      "permissions": "eaaabdab37654facc5b58909a133e4bd18f8bc4b845ed8d6a188844c8fd9bffc",
+      "p2b_contract": "6b8701851f2859f18ce498a54c096931962dbd2dee73abeb86e3405e88ab43f3",
+      "p2b_evidence": "4be80a8029adb6294cd35e0984ed33d755f2f6b2d943bf4f20980dec2b571aa4",
+      "t2_history": "deaa8953e2e969837482b7ea4c97e7e854099cfb0947b5ef7d7813c51bb0f835"
+    }
+  },
+  "trials": [
+    {
+      "attempt": "C1",
+      "started": "2026-11-19T16:44:43Z",
+      "volume": "jrv-p2c-goose-c1",
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "topology_probe": {
+        "fixture": "BLOCKED URLError",
+        "internet": "BLOCKED URLError",
+        "gateway": "REACHED 405",
+        "ollama-tap": "REACHED 200",
+        "gateway_initialize_from_non_goose_ip": "403"
+      },
+      "isolation_ok": true,
+      "interrupted_after_seconds": 64.9,
+      "first_completed_receipt": {
+        "sequence": 1,
+        "tool": "web_open",
+        "status": "OK",
+        "http_status": 200,
+        "final_url": "https://catalog.fixture.example/",
+        "call_id": "TE-P2C-T2:C1:3"
+      },
+      "suspend": {
+        "code": 200,
+        "body": {
+          "task_id": "TE-P2C-T2",
+          "attempt_id": "C1",
+          "generation": 0,
+          "receipts": 1,
+          "last_sequence": 1,
+          "receipts_sha256": "216427df787ccd204345f264fa3b211e38e1a9fc31bdc6beffa43bb870e5e604",
+          "chain_head": null,
+          "in_flight": false,
+          "per_tool": {
+            "web_open": 1
+          },
+          "calls": 1,
+          "suspended": true
+        }
+      },
+      "authorize_resume": {
+        "code": 200,
+        "body": {
+          "granted": true,
+          "ttl_seconds": 120,
+          "next_generation": 1
+        }
+      },
+      "phase2_wall_seconds": 162.5,
+      "phase2_timed_out": false,
+      "ended": "2026-11-19T16:48:40Z",
+      "wall_seconds": 228.7,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "final_status": {
+        "task_id": "TE-P2C-T2",
+        "attempt_id": "C1",
+        "generation": 1,
+        "receipts": 7,
+        "last_sequence": 7,
+        "receipts_sha256": "188f4988443ae7ac78cf45b66ee01af8459113bc6e78459bac06a2c093775d4c",
+        "chain_head": "63be232e834fc5fad5f99e5549d8360882f86c1ab35a394aa7272687049f7f8f",
+        "in_flight": false,
+        "per_tool": {
+          "web_open": 1,
+          "web_follow": 5,
+          "submit_report": 1
+        },
+        "calls": 7,
+        "suspended": false,
+        "grant": false
+      },
+      "continuity": {
+        "receipts_before_interruption": 1,
+        "receipts_after_resume": 6,
+        "rebound_events": 1,
+        "control_events": [
+          "suspended",
+          "resume_authorized",
+          "rebound"
+        ],
+        "phase2_gateway_calls": 6,
+        "replays": [],
+        "reexecuted_completed_reads_after_resume": [],
+        "duplicate_effects": 0,
+        "refused_repeat_submissions": 0,
+        "executed_submit_receipts": 1,
+        "call_ids_unique": true,
+        "after_resume_call_ids_have_generation": true,
+        "sequence_contiguous": true
+      },
+      "num_ctx_observed": [
+        65536
+      ],
+      "receipt_rows": [
+        [
+          1,
+          "web_open",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/"
+        ],
+        [
+          2,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/catalog"
+        ],
+        [
+          3,
+          "web_follow",
+          "HTTP_ERROR",
+          null,
+          503,
+          "https://catalog.fixture.example/vendors/terralens"
+        ],
+        [
+          4,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/novaview"
+        ],
+        [
+          5,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/atlasboard"
+        ],
+        [
+          6,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/terralens-factsheet"
+        ],
+        [
+          7,
+          "submit_report",
+          "OK",
+          null,
+          null,
+          null
+        ]
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "blocked_tool_calls_in_model_output": [],
+      "non_gateway_calls": [],
+      "goose_tool_requests": 7,
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "missing session id"
+        }
+      ],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report_bytes": 710,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "chain_valid": true,
+      "recovery_503": true,
+      "http_receipt_correspondence": {
+        "match": true,
+        "first_mismatch_index": null,
+        "receipt_requests": 6,
+        "fixture_requests": 6
+      },
+      "verdict": "TASK_VERIFIED_LIMITED",
+      "report_semantic": {
+        "semantic_gate": "PASS",
+        "recommended": "TerraLens",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          5
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "category": null,
+      "invalid": false,
+      "critical_stop": false,
+      "resumed": true,
+      "submitted_texts": [
+        {
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}",
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681"
+        }
+      ],
+      "first_call_after_resume": {
+        "sequence": 2,
+        "tool": "web_follow",
+        "call_id": "TE-P2C-T2:C1:g1:3",
+        "status": "OK",
+        "final_url": "https://catalog.fixture.example/catalog"
+      }
+    },
+    {
+      "attempt": "C2",
+      "started": "2026-11-19T16:48:42Z",
+      "volume": "jrv-p2c-goose-c2",
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "topology_probe": {
+        "fixture": "BLOCKED URLError",
+        "internet": "BLOCKED URLError",
+        "gateway": "REACHED 405",
+        "ollama-tap": "REACHED 200",
+        "gateway_initialize_from_non_goose_ip": "403"
+      },
+      "isolation_ok": true,
+      "interrupted_after_seconds": 55.2,
+      "first_completed_receipt": {
+        "sequence": 1,
+        "tool": "web_open",
+        "status": "OK",
+        "http_status": 200,
+        "final_url": "https://catalog.fixture.example/",
+        "call_id": "TE-P2C-T2:C2:3"
+      },
+      "suspend": {
+        "code": 200,
+        "body": {
+          "task_id": "TE-P2C-T2",
+          "attempt_id": "C2",
+          "generation": 0,
+          "receipts": 1,
+          "last_sequence": 1,
+          "receipts_sha256": "e61c92eba5b683efb338a0ad43f47cd43e580e9d5d803a407d1b6dba9088eae4",
+          "chain_head": null,
+          "in_flight": false,
+          "per_tool": {
+            "web_open": 1
+          },
+          "calls": 1,
+          "suspended": true
+        }
+      },
+      "authorize_resume": {
+        "code": 200,
+        "body": {
+          "granted": true,
+          "ttl_seconds": 120,
+          "next_generation": 1
+        }
+      },
+      "phase2_wall_seconds": 204.3,
+      "phase2_timed_out": false,
+      "ended": "2026-11-19T16:53:11Z",
+      "wall_seconds": 260.9,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "final_status": {
+        "task_id": "TE-P2C-T2",
+        "attempt_id": "C2",
+        "generation": 1,
+        "receipts": 7,
+        "last_sequence": 7,
+        "receipts_sha256": "e4801e3b92052b25d6dc70523a8d2720b706901bc8e0f52f433fa056568d01db",
+        "chain_head": "abbcdc13edd7c924f7e8f8f9df33ea46127ee60dc512d4d6b2021d9842fa94e4",
+        "in_flight": false,
+        "per_tool": {
+          "web_open": 1,
+          "web_follow": 5,
+          "submit_report": 1
+        },
+        "calls": 7,
+        "suspended": false,
+        "grant": false
+      },
+      "continuity": {
+        "receipts_before_interruption": 1,
+        "receipts_after_resume": 6,
+        "rebound_events": 1,
+        "control_events": [
+          "suspended",
+          "resume_authorized",
+          "rebound"
+        ],
+        "phase2_gateway_calls": 6,
+        "replays": [],
+        "reexecuted_completed_reads_after_resume": [],
+        "duplicate_effects": 0,
+        "refused_repeat_submissions": 0,
+        "executed_submit_receipts": 1,
+        "call_ids_unique": true,
+        "after_resume_call_ids_have_generation": true,
+        "sequence_contiguous": true
+      },
+      "num_ctx_observed": [
+        65536
+      ],
+      "receipt_rows": [
+        [
+          1,
+          "web_open",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/"
+        ],
+        [
+          2,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/catalog"
+        ],
+        [
+          3,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/atlasboard"
+        ],
+        [
+          4,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/novaview"
+        ],
+        [
+          5,
+          "web_follow",
+          "HTTP_ERROR",
+          null,
+          503,
+          "https://catalog.fixture.example/vendors/terralens"
+        ],
+        [
+          6,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/terralens-factsheet"
+        ],
+        [
+          7,
+          "submit_report",
+          "OK",
+          null,
+          null,
+          null
+        ]
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "blocked_tool_calls_in_model_output": [],
+      "non_gateway_calls": [],
+      "goose_tool_requests": 7,
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "missing session id"
+        }
+      ],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report_bytes": 710,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "chain_valid": true,
+      "recovery_503": true,
+      "http_receipt_correspondence": {
+        "match": true,
+        "first_mismatch_index": null,
+        "receipt_requests": 6,
+        "fixture_requests": 6
+      },
+      "verdict": "TASK_VERIFIED_LIMITED",
+      "report_semantic": {
+        "semantic_gate": "PASS",
+        "recommended": "TerraLens",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          3
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "category": null,
+      "invalid": false,
+      "critical_stop": false,
+      "resumed": true,
+      "submitted_texts": [
+        {
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}",
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681"
+        }
+      ],
+      "first_call_after_resume": {
+        "sequence": 2,
+        "tool": "web_follow",
+        "call_id": "TE-P2C-T2:C2:g1:3",
+        "status": "OK",
+        "final_url": "https://catalog.fixture.example/catalog"
+      }
+    },
+    {
+      "attempt": "C3",
+      "started": "2026-11-19T16:53:13Z",
+      "volume": "jrv-p2c-goose-c3",
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "topology_probe": {
+        "fixture": "BLOCKED URLError",
+        "internet": "BLOCKED URLError",
+        "gateway": "REACHED 405",
+        "ollama-tap": "REACHED 200",
+        "gateway_initialize_from_non_goose_ip": "403"
+      },
+      "isolation_ok": true,
+      "interrupted_after_seconds": 57.5,
+      "first_completed_receipt": {
+        "sequence": 1,
+        "tool": "web_open",
+        "status": "OK",
+        "http_status": 200,
+        "final_url": "https://catalog.fixture.example/",
+        "call_id": "TE-P2C-T2:C3:3"
+      },
+      "suspend": {
+        "code": 200,
+        "body": {
+          "task_id": "TE-P2C-T2",
+          "attempt_id": "C3",
+          "generation": 0,
+          "receipts": 1,
+          "last_sequence": 1,
+          "receipts_sha256": "a7390bccd085b9987fe6f1e1f8d14f81e6896460fd5d6125f9c94383ed45d013",
+          "chain_head": null,
+          "in_flight": false,
+          "per_tool": {
+            "web_open": 1
+          },
+          "calls": 1,
+          "suspended": true
+        }
+      },
+      "authorize_resume": {
+        "code": 200,
+        "body": {
+          "granted": true,
+          "ttl_seconds": 120,
+          "next_generation": 1
+        }
+      },
+      "phase2_wall_seconds": 177.7,
+      "phase2_timed_out": false,
+      "ended": "2026-11-19T16:57:18Z",
+      "wall_seconds": 236.6,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "final_status": {
+        "task_id": "TE-P2C-T2",
+        "attempt_id": "C3",
+        "generation": 1,
+        "receipts": 7,
+        "last_sequence": 7,
+        "receipts_sha256": "14011c8600a5ab23f8c87271d4632c797a31ef8a96cdddf77cfd14f4fd07ec75",
+        "chain_head": "9777cad1622ad38d0b01979d40b4080a0fbdd00a1de913cded4c4bbc705123fa",
+        "in_flight": false,
+        "per_tool": {
+          "web_open": 1,
+          "web_follow": 5,
+          "submit_report": 1
+        },
+        "calls": 7,
+        "suspended": false,
+        "grant": false
+      },
+      "continuity": {
+        "receipts_before_interruption": 1,
+        "receipts_after_resume": 6,
+        "rebound_events": 1,
+        "control_events": [
+          "suspended",
+          "resume_authorized",
+          "rebound"
+        ],
+        "phase2_gateway_calls": 6,
+        "replays": [],
+        "reexecuted_completed_reads_after_resume": [],
+        "duplicate_effects": 0,
+        "refused_repeat_submissions": 0,
+        "executed_submit_receipts": 1,
+        "call_ids_unique": true,
+        "after_resume_call_ids_have_generation": true,
+        "sequence_contiguous": true
+      },
+      "num_ctx_observed": [
+        65536
+      ],
+      "receipt_rows": [
+        [
+          1,
+          "web_open",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/"
+        ],
+        [
+          2,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/catalog"
+        ],
+        [
+          3,
+          "web_follow",
+          "HTTP_ERROR",
+          null,
+          503,
+          "https://catalog.fixture.example/vendors/terralens"
+        ],
+        [
+          4,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/atlasboard"
+        ],
+        [
+          5,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/novaview"
+        ],
+        [
+          6,
+          "web_follow",
+          "OK",
+          null,
+          200,
+          "https://catalog.fixture.example/vendors/terralens-factsheet"
+        ],
+        [
+          7,
+          "submit_report",
+          "OK",
+          null,
+          null,
+          null
+        ]
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "blocked_tool_calls_in_model_output": [],
+      "non_gateway_calls": [],
+      "goose_tool_requests": 7,
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "missing session id"
+        }
+      ],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report_bytes": 710,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "chain_valid": true,
+      "recovery_503": true,
+      "http_receipt_correspondence": {
+        "match": true,
+        "first_mismatch_index": null,
+        "receipt_requests": 6,
+        "fixture_requests": 6
+      },
+      "verdict": "TASK_VERIFIED_LIMITED",
+      "report_semantic": {
+        "semantic_gate": "PASS",
+        "recommended": "TerraLens",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          5
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "category": null,
+      "invalid": false,
+      "critical_stop": false,
+      "resumed": true,
+      "submitted_texts": [
+        {
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}",
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681"
+        }
+      ],
+      "first_call_after_resume": {
+        "sequence": 2,
+        "tool": "web_follow",
+        "call_id": "TE-P2C-T2:C3:g1:3",
+        "status": "OK",
+        "final_url": "https://catalog.fixture.example/catalog"
+      }
+    }
+  ],
+  "raw_run_dirs_sha256_not_committed": {
+    "C1": "a4676b449f6bb10a326d1d12173f785167917545bb759e91e0b30d8058693645",
+    "C2": "7066d65d551d5ff9d963a38dae8a5ff7856af2392ffc4245bd957807de1d4984",
+    "C3": "4477d31f9e7590dde616e93e2870f792e22964f24eb362c0451fda388d2761f0"
+  },
+  "runner_output_sha256": "30636c05876cf7da39ccced9fa969d293f1a27b79e5c36cd37e5cac4a2bf1144",
+  "excluded": "goose session stores/volumes, model request logs, goose stdout/stderr and Ollama logs stay local (no transcripts)"
+}
