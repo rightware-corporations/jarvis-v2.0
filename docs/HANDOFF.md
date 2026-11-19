@@ -3543,3 +3543,13 @@ Nada disto foi iniciado.
 **TESTS:** pinned venv full suite 535 OK; plain Python 535 OK (252 vendor tests not run). No winner declared. Docker containment is not RIGHTWARE Tool Gateway integration.
 
 **SMALLEST NEXT STEP (needs authorization):** labs MCP stdio "RIGHTWARE Tool Gateway" exposing only existing AgentPolicy+receipts tools; run goose with `--no-profile` and only that extension (no shell) on the same T1 sandbox; accept only if every tool call is a bound RIGHTWARE receipt and the RIGHTWARE verifier decides completion; repeat with Hermes.
+
+## CHECKPOINT — 19/11/2026: JRV-BP-040 — TE-P2A goose integration: branch fast-forward + RIGHTWARE Tool Gateway Phase A (FAKE)
+
+**BRANCH:** `exp/te-p1-kaggle-goose` fast-forwarded (no force) from `e10b236` to BP-039 `2d2a7fc` (it was an ancestor with 0 unique commits); `exp/jrv-te-p1-live-bakeoff-20261118`, develop `1e0c0aa`, main `0cac8e8` untouched.
+
+**GATEWAY (labs/te_p2a_gateway):** `gateway.py` reuses AgentPolicy + session ToolDefs (`web_open`, `web_follow`, `web_find`) + ReceiptLedger + PublicBrowser; explicit serialized binding decide → dispatch → claim → boundary re-check → started → tool → audit → finish → end_dispatch; call ids `<task>:<attempt>:<jsonrpc id>`. `mcp_http.py` minimal MCP streamable-HTTP (JSON only; initialize/ping/tools.list/tools.call). `fixture_transport.py` experimental SEPARATE transport accepting only `catalog.fixture.example` → fixture container (production HttpxFetcher/SSRF untouched; test asserts it still refuses). `verify.py` decides completion from receipts with A3 `evaluate` on a code-built validated TaskContract + 503 recovery + decoy + fixture-traffic-without-receipt + audited semantic report check.
+
+**PHASE A (FAKE, scripted MCP client, mocked fixture):** `tests/test_te_p2a_gateway.py` 14 OK — inventory exactly 3 tools; HTTP transport; full mission verified from receipts; premature completion/wrong report/decoy/unreceipted traffic → NOT_VERIFIED; unknown tools & invalid args DENIED with receipts; host allowlist + transport refusal; production SSRF unchanged; budget/deadline/cancel; boundary refusal after approval; duplicate ids; modified-args → ORPHAN; timeout → TIMED_OUT + late. 8 mutants all detected. NOT goose, NOT real model.
+
+**NEXT:** Phase B: goose v1.60.1 with only this MCP extension, independent tool-inventory capture, two internal networks (goose cannot reach the fixture), real qwen3.5:4b 64K, T1.
