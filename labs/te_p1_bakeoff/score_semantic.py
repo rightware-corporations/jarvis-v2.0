@@ -24,7 +24,9 @@ TRUTH = {
     "terralens": {"mac": True, "csv": True, "offline": True, "scheduled": True, "price": 12},
 }
 _FIELD = {
-    "mac": re.compile(r"mac", re.I),
+    # JRV-BP-044 fix: "mac" must start a word ("automacoes"/"automações" contain "mac" and were misread
+    # as the Mac field once every occurrence was checked).
+    "mac": re.compile(r"(?<![a-z])mac", re.I),
     "csv": re.compile(r"csv", re.I),
     "offline": re.compile(r"offline", re.I),
     "scheduled": re.compile(r"sched|agend|automa", re.I),

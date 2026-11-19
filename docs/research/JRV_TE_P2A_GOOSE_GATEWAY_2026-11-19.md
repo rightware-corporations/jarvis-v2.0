@@ -104,3 +104,47 @@ Pinned venv full suite: **550 OK, 0 skipped** (TE-P1 baseline 535, plus 14 gatew
 
 1. Repeat T1 through the gateway N≥5 to measure the delivery rate. Optionally add a code-owned `submit_report` gateway tool, so the report itself becomes a receipted operation instead of free text.
 2. Then T2 (interrupt and resume) through the gateway, and the same gateway with Hermes for comparison.
+
+---
+
+## 6. Security & completion review (JRV-BP-043/044, 19/11/2026)
+
+Same branch and Draft PR #27. The historical A1/A2 values above are unchanged. Evidence: `docs/evidence/te_p2a/te_p2a_review_evidence_2026-11-19.json`.
+
+| # | Finding in the real code | Fix | Tests |
+|---|---|---|---|
+| 1 | The verdict did not require the 503 recovery | `REQUIRE_503_RECOVERY = True` for the T1 contract | direct-to-factsheet and factsheet-before-outage → NOT_VERIFIED |
+| 2 | HTTP ↔ receipt check was path-set based (an extra request to a receipted path passed) | exact ordered `(path, status)` sequence equality, multiplicity included | extra same-path request, reorder, status change, missing → mismatch; exact 6↔6 positive |
+| 3 | `load_skill` only filtered from the request | **Demonstrated** with the real goose binary and a scripted FAKE model. goose **dispatches** `load_skill` even when it was never offered: it returned 4 066 chars of the embedded `goose-doc-guide`; traversal was refused by goose; unknown tools were refused. Containment: the model tap now also **filters the model output** (SSE/JSON) and removes non-allowlisted tool calls before goose sees them | unit tests (blocked/allowed/split stream/mixed/opaque/JSON); live demo: 2 blocked calls, goose session 0 tool requests |
+| 4 | MCP transport: no session binding, no size limit, no client auth, cancel ignored, calls possible while a timed-out tool runs | single session (re-initialize 409; missing/forged session id 400/404); source-IP allowlist (fixed goose IP); body ≤ 64 KiB (413); invalid/empty batch 400; serialised concurrency; `notifications/cancelled` → request refused before execution; calls refused while a timed-out tool still runs | 6 transport tests |
+| 5 | A2 ended with "thinking" only, so no report was delivered | host-enabled `submit_report`: one JSON object ≤ 8 000 chars, quota 2, SHA-256 bound to its receipt. The verifier channel `submit_report` accepts only a receipted, audited, hash-matching submission; final answer and "thinking" never count | receipted acceptance; final-answer-only rejected; tampered hash and unreceipted submission rejected; off unless the host enables it |
+| 6 | (found while reviewing the results) the semantic checker's `mac` pattern matched inside `automacoes`, giving a false error on a correct value | `mac` must start a word | positive, genuine-error negative, key matrix; TE-P1 evidence byte-identical |
+
+**Mutation:** 10/10 new mutants were detected for fixes 1–5.
+
+**Suite:** 569 OK, 0 skipped (pinned venv).
+
+### Hardened real runs (goose v1.60.1 + qwen3.5:4b, 64K, `submit_report` enabled, client allowlist)
+
+| | A3 | A4 |
+|---|---|---|
+| Wall time | 206 s | 217 s |
+| Gateway-exclusive / blocked output tool calls | yes / none | yes / none |
+| Receipts | 7: same 6-step path incl. 503 → factsheet, plus `submit_report` | 7, same |
+| Report delivered through the receipted channel | yes (seq 7, SHA-256 `28509ae0…`) | yes (seq 7, SHA-256 `62f6dafc…`) |
+| Verdict as recorded (BP-043 checker) | NOT_VERIFIED (false `atlasboard.mac` error) | NOT_VERIFIED (recommendation under key `tool` not recognised) |
+| Verdict recomputed after fix 6 | **TASK_VERIFIED_LIMITED** | NOT_VERIFIED |
+
+Both hardened runs delivered a report through the receipted channel, which addresses the A2 failure mode. A4 stays NOT_VERIFIED: its values are correct, but the checker does not recognise a recommendation under the key `tool`. I did **not** widen the checker after seeing this output, to avoid post-hoc tuning.
+
+Recommendation for TE-P2B: pre-register a minimal report schema (key names only, never values) in the `submit_report` description, with deterministic validation at submission time, so that the model gets immediate, receipted feedback.
+
+Transport rejections observed in the real runs:
+* 403 from the probe container (expected);
+* one "not initialized" POST from goose before its `initialize`, refused with no execution.
+
+### Residual risks and blockers
+
+* `load_skill` (and any goose-internal operation) still exists inside the goose binary. Containment depends on the RIGHTWARE model-boundary filter (input and output) plus the session-store audit. **Isolation is not declared complete on the basis of the filtered inventory alone.** No bypass was observed, but a compromised or bypassed tap would re-expose `load_skill` (embedded docs text only; no effects found).
+* The transport client allowlist is network-level (fixed IP on an internal network). No cryptographic client authentication is possible with goose v1.60.1's streamable-HTTP CLI flag (no headers), and a path token would leak into tool names.
+* N=4 real attempts on one synthetic mission. Verified: A1 and A3. Not verified: A2 (no answer) and A4 (checker coverage). Not product acceptance.

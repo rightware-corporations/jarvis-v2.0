@@ -164,6 +164,24 @@ def _drop_recommendation(rep):
 
 
 
+class FieldMatching(unittest.TestCase):
+    def test_mac_field_does_not_match_inside_automacoes(self):
+        rep = {"recomendacao": "TerraLens", "fontes": ["https://x/vendors/terralens-factsheet"], "comparacao": [
+            {"produto": "AtlasBoard", "suporte_mac": True, "csv": True, "offline": True, "automacoes_agendadas": False,
+             "preco_usd_mes": 0},
+            {"produto": "NovaView", "suporte_mac": True, "csv": True, "offline": False, "automacoes_agendadas": True,
+             "preco_usd_mes": 9},
+            {"produto": "TerraLens", "suporte_mac": True, "csv": True, "offline": True, "automacoes_agendadas": True,
+             "preco_usd_mes": 12}]}
+        self.assertEqual(S.check(rep)["semantic_gate"], "PASS")
+        rep["comparacao"][0]["suporte_mac"] = False                         # a genuinely wrong Mac value still fails
+        self.assertEqual(S.check(rep)["semantic_gate"], "FAIL")
+        for key in ("mac", "Mac_support", "macOS", "suporte_mac"):
+            self.assertTrue(S._FIELD["mac"].search(key), key)
+        for key in ("automacoes", "automações_agendadas", "Automação"):
+            self.assertFalse(S._FIELD["mac"].search(key), key)
+
+
 class ReportExtraction(unittest.TestCase):
     def test_last_json_object_returns_the_outermost_report_not_a_nested_part(self):
         from labs.te_p1_bakeoff.live_harness import last_json_object
