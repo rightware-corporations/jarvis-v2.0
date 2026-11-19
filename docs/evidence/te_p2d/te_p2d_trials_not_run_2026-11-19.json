@@ -1,0 +1,20 @@
+{
+  "label": "TE-P2D real public trials: NOT RUN",
+  "date": "2026-11-19",
+  "runner": "labs/te_p2d_public/te_p2d_trials.py --prereg-commit e711aff6e0e8dac89f9a0509f9911014bc7528a7",
+  "preconditions": {
+    "ok": false,
+    "problems": [
+      "PLATFORM_EGRESS_BLOCKED: the environment network policy does not allow the pre-registered host"
+    ],
+    "facts": {
+      "head": "e711aff6e0e8dac89f9a0509f9911014bc7528a7",
+      "remote_head": "e711aff6e0e8dac89f9a0509f9911014bc7528a7",
+      "prereg_commit": "e711aff6e0e8dac89f9a0509f9911014bc7528a7",
+      "platform_egress_allows_host": false
+    }
+  },
+  "all_other_preconditions_passed": true,
+  "agent_public_access": "none (no container was started)",
+  "requirement": "the cloud environment network policy must allow docs.python.org (Allowed domains); then rerun the same command \u2014 protocol, question, rubric and hashes stay frozen"
+}

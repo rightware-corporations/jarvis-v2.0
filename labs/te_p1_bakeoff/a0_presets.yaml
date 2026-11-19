@@ -1,0 +1,32 @@
+# JRV-TE-P1: single local preset (same Ollama qwen3.5:4b, 64K context as goose/Hermes); no cloud providers.
+- name: Default
+  chat:
+    provider: ollama
+    name: qwen3.5:4b
+    api_base: http://ollama:11434
+    ctx_length: 65536
+    ctx_history: 0.7
+    vision: false
+    max_embeds: 10
+    rl_requests: 0
+    rl_input: 0
+    rl_output: 0
+    kwargs: {}
+  utility:
+    provider: ollama
+    name: qwen3.5:4b
+    api_base: http://ollama:11434
+    ctx_length: 65536
+    ctx_input: 0.7
+    rl_requests: 0
+    rl_input: 0
+    rl_output: 0
+    kwargs: {}
+  embedding:
+    # qwen3.5:4b returns HTTP 501 on /api/embed; all-minilm (all-MiniLM-L6-v2, Agent Zero's own default family)
+    provider: ollama
+    name: all-minilm
+    api_base: http://ollama:11434
+    rl_requests: 0
+    rl_input: 0
+    kwargs: {}

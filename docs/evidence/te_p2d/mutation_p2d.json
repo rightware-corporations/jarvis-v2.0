@@ -1,0 +1,171 @@
+{
+  "phase": "TE-P2D Phase 3",
+  "tool": "labs/te_p2d_public/mutation_p2d.py",
+  "tests": "tests.test_te_p2d_public + test_te_p2c_resume + test_te_p2b_report_contract + test_te_p2a_gateway",
+  "first_pass": {
+    "killed": 27,
+    "survived": [
+      "V02 source_url vs observation unchecked",
+      "V04 egress correspondence ignored",
+      "V05 unauthorised egress ignored"
+    ],
+    "fix": "added test_claim_with_right_quote_but_wrong_source_url and test_egress_mismatch_or_unauthorised_hop_blocks_the_verdict"
+  },
+  "final": {
+    "killed": 30,
+    "total": 30,
+    "restored_identical": true
+  },
+  "mutants": [
+    {
+      "mutant": "E01 host allowlist bypassed",
+      "result": "KILLED",
+      "killed_by": "Policy.test_refused_destinations"
+    },
+    {
+      "mutant": "E02 https-only removed",
+      "result": "KILLED",
+      "killed_by": "Policy.test_refused_destinations, Transport.test_off_allowlist_never_reaches_egress"
+    },
+    {
+      "mutant": "E03 path prefix ignored",
+      "result": "KILLED",
+      "killed_by": "Policy.test_refused_destinations"
+    },
+    {
+      "mutant": "E04 dot-segments allowed",
+      "result": "KILLED",
+      "killed_by": "Policy.test_refused_destinations"
+    },
+    {
+      "mutant": "E05 credentials allowed",
+      "result": "KILLED",
+      "killed_by": "Policy.test_refused_destinations"
+    },
+    {
+      "mutant": "E06 upstream SSRF verdict ignored",
+      "result": "KILLED",
+      "killed_by": "Policy.test_upstream_ssrf_is_consulted"
+    },
+    {
+      "mutant": "E07 request budget ignored",
+      "result": "KILLED",
+      "killed_by": "Service.test_budgets_and_failures"
+    },
+    {
+      "mutant": "E08 body cap removed (bomb)",
+      "result": "KILLED",
+      "killed_by": "Service.test_redirect_not_followed_and_content_limits"
+    },
+    {
+      "mutant": "E09 content type unchecked",
+      "result": "KILLED",
+      "killed_by": "Service.test_redirect_not_followed_and_content_limits"
+    },
+    {
+      "mutant": "E10 proxy peer unchecked",
+      "result": "KILLED",
+      "killed_by": "Service.test_connection_must_be_through_the_platform_proxy_with_valid_tls"
+    },
+    {
+      "mutant": "E11 TLS host unchecked",
+      "result": "KILLED",
+      "killed_by": "Service.test_connection_must_be_through_the_platform_proxy_with_valid_tls"
+    },
+    {
+      "mutant": "E12 port check removed",
+      "result": "KILLED",
+      "killed_by": "Policy.test_refused_destinations"
+    },
+    {
+      "mutant": "T01 redirect hop not re-checked",
+      "result": "KILLED",
+      "killed_by": "Transport.test_redirects_are_rechecked_and_bounded"
+    },
+    {
+      "mutant": "T02 body integrity unchecked",
+      "result": "KILLED",
+      "killed_by": "Transport.test_integrity_and_transport_failures_fail_closed"
+    },
+    {
+      "mutant": "T03 gateway pre-check skipped",
+      "result": "KILLED",
+      "killed_by": "Transport.test_off_allowlist_never_reaches_egress"
+    },
+    {
+      "mutant": "V01 quote not checked",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_fabricated_quote_or_wrong_observation_or_url"
+    },
+    {
+      "mutant": "V02 source_url vs observation unchecked",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_claim_with_right_quote_but_wrong_source_url"
+    },
+    {
+      "mutant": "V03 unobserved sources ignored",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_unconsulted_source"
+    },
+    {
+      "mutant": "V04 egress correspondence ignored",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_egress_mismatch_or_unauthorised_hop_blocks_the_verdict"
+    },
+    {
+      "mutant": "V05 unauthorised egress ignored",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_egress_mismatch_or_unauthorised_hop_blocks_the_verdict"
+    },
+    {
+      "mutant": "V06 observation raw hash unchecked",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_tampered_hashes_and_observations"
+    },
+    {
+      "mutant": "V07 semantic ignores evidence",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_answer_right_but_unsupported_fact"
+    },
+    {
+      "mutant": "V08 question id ignored",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_question_id_and_delivery"
+    },
+    {
+      "mutant": "V09 uncredited claims tolerated",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_claim_cites_page_it_did_not_come_from, Verifier.test_claim_with_right_quote_but_wrong_source_url, Verifier.test_fabricated_quote_or_wrong_observation_or_url"
+    },
+    {
+      "mutant": "V10 observation text hash unchecked",
+      "result": "KILLED",
+      "killed_by": "Verifier.test_tampered_hashes_and_observations"
+    },
+    {
+      "mutant": "C01 source reference unchecked",
+      "result": "KILLED",
+      "killed_by": "Contract.test_valid_and_invalid"
+    },
+    {
+      "mutant": "C02 evidence required without abstention removed",
+      "result": "KILLED",
+      "killed_by": "Contract.test_valid_and_invalid"
+    },
+    {
+      "mutant": "C03 observation coercion (bool/str)",
+      "result": "KILLED",
+      "killed_by": "Contract.test_valid_and_invalid"
+    },
+    {
+      "mutant": "R01 unauthorised egress not a violation",
+      "result": "KILLED",
+      "killed_by": "RunnerRules.test_classification"
+    },
+    {
+      "mutant": "R02 GO with a failure",
+      "result": "KILLED",
+      "killed_by": "RunnerRules.test_decision"
+    }
+  ]
+}

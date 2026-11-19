@@ -1,0 +1,816 @@
+{
+  "label": "JRV-TE-P2B real T1 trials (goose v1.60.1 + qwen3.5:4b + 64K, CPU) under the frozen pre-registration",
+  "protocol": {
+    "n_trials": 5,
+    "max_replacements": 2,
+    "attempt_prefix": "B",
+    "task_id": "TE-P2B-T1",
+    "goose_version": "1.60.1",
+    "goose_sha256": "4db5cf70f20d200ab6971725b2f93808a9245606c8c126d926a89c70271361b8",
+    "ollama_version": "0.40.15",
+    "ollama_sha256": "5b8be7213d4ba3ba587bceaeed897ef39a09fc44c51e490c098aa31ba7b9d3cf",
+    "model": "qwen3.5:4b",
+    "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+    "num_ctx": 65536,
+    "temperature": "0.2",
+    "max_turns": 40,
+    "trial_timeout_seconds": 1800,
+    "contract_id": "te-p2b.report.v1",
+    "schema_sha256": "0ec32340fa5982f0297ffd0a0b7a3a7fc9bacb3287beefdcf4fe7dd18b732c1e",
+    "max_submissions": 3,
+    "max_report_bytes": 8000,
+    "global_step_budget": 15,
+    "deadline_seconds": 1700,
+    "instruction_sha256": "4d41d9f85d0c300fef2ffef2fc86bc5f2ef64be79d4964fb129645ee5e21e0a7"
+  },
+  "preconditions": {
+    "ok": true,
+    "problems": [],
+    "facts": {
+      "head": "ca9a6072e68e44df661707e17fc4080b32e435ba",
+      "remote_head": "ca9a6072e68e44df661707e17fc4080b32e435ba",
+      "prereg_sha256": "3acc2827d9f9cf3a2720f0e7e30aa71b4456278ab7f5b6c96fba16a7a9d8b9b2",
+      "prereg_commit": "ca9a6072e68e44df661707e17fc4080b32e435ba",
+      "goose_sha256": "4db5cf70f20d200ab6971725b2f93808a9245606c8c126d926a89c70271361b8",
+      "goose_version": "1.60.1",
+      "ollama_sha256": "5b8be7213d4ba3ba587bceaeed897ef39a09fc44c51e490c098aa31ba7b9d3cf",
+      "frozen_groups": {
+        "verifier": "69839e3c53efabb456c1c3c4f4015cd6c31418e5b3b24460d25f44ae0a28a67d",
+        "policy": "dbe0b139e5c867a0a355218e7fb6b4753fda29cdf491e6b20c17fc936cca9102",
+        "scenario": "b4e03809f86bff261644ca0ebd026f24eeab162bae970ee976561c98024d3dc3",
+        "historical": "1e4c71caca0bf61b147f6d14453579fcfa5ea0eddda8e2b59397c1fa24e8dee3",
+        "permissions": "eaaabdab37654facc5b58909a133e4bd18f8bc4b845ed8d6a188844c8fd9bffc"
+      }
+    }
+  },
+  "summary": {
+    "n_valid": 5,
+    "verified": 4,
+    "verified_wilson95_descriptive": [
+      0.3755,
+      0.9638
+    ],
+    "first_submission_schema_valid": 5,
+    "first_submission_wilson95_descriptive": [
+      0.5655,
+      1.0
+    ],
+    "conformant_accepted_after_feedback": 5,
+    "accepted_wilson95_descriptive": [
+      0.5655,
+      1.0
+    ],
+    "wall_seconds_min_max": [
+      196.5,
+      326.3
+    ],
+    "wall_seconds_median": 212.3,
+    "isolation_violations": 0,
+    "receipts_inconsistent": 0,
+    "invalid_attempts": [],
+    "categories": {
+      "B1": null,
+      "B2": null,
+      "B3": null,
+      "B4": "MODELO_CONTEÚDO",
+      "B5": null
+    },
+    "decision_by_preregistered_rule": "GO"
+  },
+  "frozen_after": {
+    "differences": [],
+    "groups": {
+      "verifier": "69839e3c53efabb456c1c3c4f4015cd6c31418e5b3b24460d25f44ae0a28a67d",
+      "policy": "dbe0b139e5c867a0a355218e7fb6b4753fda29cdf491e6b20c17fc936cca9102",
+      "scenario": "b4e03809f86bff261644ca0ebd026f24eeab162bae970ee976561c98024d3dc3",
+      "historical": "1e4c71caca0bf61b147f6d14453579fcfa5ea0eddda8e2b59397c1fa24e8dee3",
+      "permissions": "eaaabdab37654facc5b58909a133e4bd18f8bc4b845ed8d6a188844c8fd9bffc"
+    }
+  },
+  "trials": [
+    {
+      "attempt": "B1",
+      "started": "2026-11-19T15:38:14Z",
+      "ended": "2026-11-19T15:43:49Z",
+      "wall_seconds": 326.3,
+      "timed_out": false,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "num_ctx_observed": [
+        65536
+      ],
+      "isolation_ok": true,
+      "paths": [
+        "/",
+        "/catalog",
+        "/vendors/novaview",
+        "/vendors/atlasboard",
+        "/vendors/terralens",
+        "/vendors/terralens-factsheet"
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "recovery_503": {
+        "outage_receipts": 1,
+        "recovered": true
+      },
+      "blocked_tool_calls_in_model_output": [],
+      "denied_or_refused": [
+        [
+          5,
+          "web_follow",
+          "HTTP_ERROR",
+          null
+        ]
+      ],
+      "receipts": 7,
+      "chain_valid": true,
+      "chain_problems": [],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "6c5eb82d86c332deca9f9a38e94ce019b5094411bd333de94695c9d2d5ba98ba",
+          "report_bytes": 710,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "submission_count": 1,
+      "first_submission_schema_valid": true,
+      "http_receipt_correspondence": true,
+      "verdict": "TASK_VERIFIED_LIMITED",
+      "report_semantic": {
+        "semantic_gate": "PASS",
+        "recommended": "TerraLens",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          3
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "gateway_exclusive": true,
+      "non_gateway_calls": [],
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        }
+      ],
+      "category": null,
+      "detail": null,
+      "invalid": false,
+      "isolation_violation": false,
+      "receipts_inconsistent": false,
+      "submitted_texts": [
+        {
+          "sequence": 7,
+          "sha256": "6c5eb82d86c332deca9f9a38e94ce019b5094411bd333de94695c9d2d5ba98ba",
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}"
+        }
+      ]
+    },
+    {
+      "attempt": "B2",
+      "started": "2026-11-19T15:43:51Z",
+      "ended": "2026-11-19T15:47:32Z",
+      "wall_seconds": 212.3,
+      "timed_out": false,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "num_ctx_observed": [
+        65536
+      ],
+      "isolation_ok": true,
+      "paths": [
+        "/",
+        "/catalog",
+        "/vendors/terralens",
+        "/vendors/atlasboard",
+        "/vendors/novaview",
+        "/vendors/terralens-factsheet"
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "recovery_503": {
+        "outage_receipts": 1,
+        "recovered": true
+      },
+      "blocked_tool_calls_in_model_output": [],
+      "denied_or_refused": [
+        [
+          3,
+          "web_follow",
+          "HTTP_ERROR",
+          null
+        ]
+      ],
+      "receipts": 7,
+      "chain_valid": true,
+      "chain_problems": [],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report_bytes": 710,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "submission_count": 1,
+      "first_submission_schema_valid": true,
+      "http_receipt_correspondence": true,
+      "verdict": "TASK_VERIFIED_LIMITED",
+      "report_semantic": {
+        "semantic_gate": "PASS",
+        "recommended": "TerraLens",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          5
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "gateway_exclusive": true,
+      "non_gateway_calls": [],
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        }
+      ],
+      "category": null,
+      "detail": null,
+      "invalid": false,
+      "isolation_violation": false,
+      "receipts_inconsistent": false,
+      "submitted_texts": [
+        {
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}"
+        }
+      ]
+    },
+    {
+      "attempt": "B3",
+      "started": "2026-11-19T15:47:34Z",
+      "ended": "2026-11-19T15:50:59Z",
+      "wall_seconds": 196.5,
+      "timed_out": false,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "num_ctx_observed": [
+        65536
+      ],
+      "isolation_ok": true,
+      "paths": [
+        "/",
+        "/catalog",
+        "/vendors/atlasboard",
+        "/vendors/novaview",
+        "/vendors/terralens",
+        "/vendors/terralens-factsheet"
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "recovery_503": {
+        "outage_receipts": 1,
+        "recovered": true
+      },
+      "blocked_tool_calls_in_model_output": [],
+      "denied_or_refused": [
+        [
+          5,
+          "web_follow",
+          "HTTP_ERROR",
+          null
+        ]
+      ],
+      "receipts": 7,
+      "chain_valid": true,
+      "chain_problems": [],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report_bytes": 710,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "submission_count": 1,
+      "first_submission_schema_valid": true,
+      "http_receipt_correspondence": true,
+      "verdict": "TASK_VERIFIED_LIMITED",
+      "report_semantic": {
+        "semantic_gate": "PASS",
+        "recommended": "TerraLens",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          3
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "gateway_exclusive": true,
+      "non_gateway_calls": [],
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        }
+      ],
+      "category": null,
+      "detail": null,
+      "invalid": false,
+      "isolation_violation": false,
+      "receipts_inconsistent": false,
+      "submitted_texts": [
+        {
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}"
+        }
+      ]
+    },
+    {
+      "attempt": "B4",
+      "started": "2026-11-19T15:51:00Z",
+      "ended": "2026-11-19T15:54:53Z",
+      "wall_seconds": 223.2,
+      "timed_out": false,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "num_ctx_observed": [
+        65536
+      ],
+      "isolation_ok": true,
+      "paths": [
+        "/",
+        "/catalog",
+        "/vendors/atlasboard",
+        "/vendors/novaview",
+        "/vendors/terralens",
+        "/vendors/terralens-factsheet"
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "recovery_503": {
+        "outage_receipts": 1,
+        "recovered": true
+      },
+      "blocked_tool_calls_in_model_output": [],
+      "denied_or_refused": [
+        [
+          5,
+          "web_follow",
+          "HTTP_ERROR",
+          null
+        ]
+      ],
+      "receipts": 7,
+      "chain_valid": true,
+      "chain_problems": [],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "0b1e4d4b9c691c9f5da5d52a37ec1f52e662429dcceace4d49737dbeb0a8098b",
+          "report_bytes": 711,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "submission_count": 1,
+      "first_submission_schema_valid": true,
+      "http_receipt_correspondence": true,
+      "verdict": "NOT_VERIFIED",
+      "report_semantic": {
+        "semantic_gate": "FAIL",
+        "recommended": "AtlasBoard",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          3
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "gateway_exclusive": true,
+      "non_gateway_calls": [],
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        }
+      ],
+      "category": "MODELO_CONTEÚDO",
+      "detail": "conformant report not verified (values/recommendation/trajectory)",
+      "invalid": false,
+      "isolation_violation": false,
+      "receipts_inconsistent": false,
+      "submitted_texts": [
+        {
+          "sequence": 7,
+          "sha256": "0b1e4d4b9c691c9f5da5d52a37ec1f52e662429dcceace4d49737dbeb0a8098b",
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"AtlasBoard\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}"
+        }
+      ]
+    },
+    {
+      "attempt": "B5",
+      "started": "2026-11-19T15:54:54Z",
+      "ended": "2026-11-19T15:58:21Z",
+      "wall_seconds": 197.5,
+      "timed_out": false,
+      "infra_alive_at_end": {
+        "ollama": true,
+        "ollama-tap": true,
+        "gateway": true,
+        "fixture": true
+      },
+      "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+      "num_ctx_observed": [
+        65536
+      ],
+      "isolation_ok": true,
+      "paths": [
+        "/",
+        "/catalog",
+        "/vendors/terralens",
+        "/vendors/novaview",
+        "/vendors/atlasboard",
+        "/vendors/terralens-factsheet"
+      ],
+      "fixture_events": [
+        [
+          "/",
+          200
+        ],
+        [
+          "/catalog",
+          200
+        ],
+        [
+          "/vendors/terralens",
+          503
+        ],
+        [
+          "/vendors/novaview",
+          200
+        ],
+        [
+          "/vendors/atlasboard",
+          200
+        ],
+        [
+          "/vendors/terralens-factsheet",
+          200
+        ]
+      ],
+      "recovery_503": {
+        "outage_receipts": 1,
+        "recovered": true
+      },
+      "blocked_tool_calls_in_model_output": [],
+      "denied_or_refused": [
+        [
+          3,
+          "web_follow",
+          "HTTP_ERROR",
+          null
+        ]
+      ],
+      "receipts": 7,
+      "chain_valid": true,
+      "chain_problems": [],
+      "submissions": [
+        {
+          "receipt_sequence": 7,
+          "report_sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report_bytes": 710,
+          "decision": "ACCEPTED_FOR_VERIFICATION",
+          "schema_valid": true,
+          "errors": []
+        }
+      ],
+      "submission_count": 1,
+      "first_submission_schema_valid": true,
+      "http_receipt_correspondence": true,
+      "verdict": "TASK_VERIFIED_LIMITED",
+      "report_semantic": {
+        "semantic_gate": "PASS",
+        "recommended": "TerraLens",
+        "products_found": [
+          "atlasboard",
+          "novaview",
+          "terralens"
+        ],
+        "values_complete_for_all_three": true,
+        "value_errors": [],
+        "factsheet_source_cited": true
+      },
+      "objectives": [
+        [
+          "CATALOG",
+          "PAGE_OBSERVED",
+          2
+        ],
+        [
+          "ATLASBOARD",
+          "PAGE_OBSERVED",
+          5
+        ],
+        [
+          "NOVAVIEW",
+          "PAGE_OBSERVED",
+          4
+        ],
+        [
+          "TERRALENS_FACTSHEET",
+          "PAGE_OBSERVED",
+          6
+        ]
+      ],
+      "decoy_requested": false,
+      "gateway_exclusive": true,
+      "non_gateway_calls": [],
+      "transport_rejections": [
+        {
+          "client": "172.30.10.5",
+          "code": 403,
+          "reason": "client not allowed"
+        },
+        {
+          "client": "172.30.10.10",
+          "code": 400,
+          "reason": "not initialized"
+        }
+      ],
+      "category": null,
+      "detail": null,
+      "invalid": false,
+      "isolation_violation": false,
+      "receipts_inconsistent": false,
+      "submitted_texts": [
+        {
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}"
+        }
+      ]
+    }
+  ],
+  "raw_run_dirs_sha256_not_committed": {
+    "B1": "28fc14cb16057b1ca24dedad9c36cd0b5a0aaf4f49ce5a6186e5e80e28cfb626",
+    "B2": "25baaa03164a49494a161268cc91e99b1135527a15e2800fb1a7d9cea42e5f43",
+    "B3": "5f177f1004efee910182a48747c88b054ddb2226c289d742696aa13bf8b03ae8",
+    "B4": "29d629011a621bcec2d4754f0df590892c6479104e7fdfc7288d14e7fb09897e",
+    "B5": "19fa2410768fa5c3b83eb86c358fdd2ae471a7d8e02297678cb1ca5237a2ae96"
+  },
+  "runner_output_sha256": "b4c6ea3b569599f58e0c8f876036be8916547c43b031ec07ed735688f0467d02",
+  "excluded": "goose session stores, model request logs, stdout/stderr and Ollama logs stay local (no transcripts)"
+}

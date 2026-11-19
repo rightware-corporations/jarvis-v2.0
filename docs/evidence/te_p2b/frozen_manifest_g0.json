@@ -1,0 +1,49 @@
+{
+  "computed_at_commit": "6302246f7aef0ba1ed498b4443ae77b600a73af9",
+  "computed_on": "2026-11-19",
+  "files": {
+    ".github/workflows/foundation.yml": "dc846007ea0ca0ec42639ac1f7962e32b298b9188825f3b1b4d64b1199a982f4",
+    ".github/workflows/te-p1-integrity.yml": "461ae0c8ab96534a0839f30a03886e515be71242910319327e6b1a7348049c1c",
+    ".github/workflows/te03-iana-live-qwen.yml": "9493848a3f879f9d97f367a6d964f93a1aaad19b8d0d1fc4acc2c74874e745ee",
+    ".github/workflows/te04-iana-live-qwen4b.yml": "cb9625eb641769e2dfe81814aad2890a7c3dafb41602d260f70264b73e3f7241",
+    ".github/workflows/te05e-live-qwen.yml": "3648aa5390bd4bcfdd06700a148ab9d9884f551a7a4bbbd1d2cb86647454f031",
+    ".github/workflows/work03-cpu-agent.yml": "ea80d185b8707ba0491efc8b7258a2579941448f5ab61a5f760efc2ac8d2407d",
+    ".github/workflows/work04-cognitive.yml": "a06f5e151ee50a3ee04b3becd53af65e50a8744b45887c60e66597ea473dda48",
+    ".github/workflows/work04-r2-qwen-cpu.yml": "4af5b4f9923b480748e160a3b0cd7f739bf292ccadc3c9ef2633cda33c327eb5",
+    ".github/workflows/work04-r2-static.yml": "16fe3af883b31a1bccc33d83d1467cb6900a572264a4131f77643d9258469ec5",
+    ".github/workflows/work05-product.yml": "90f4506ef0ca402ecf9f8093b0645d013fa642909c1659d717373ac87f8971ee",
+    ".github/workflows/work05-qwen-smoke.yml": "b673715b824016501f81a08be214b5f4201fffc694657d7ed31ac6c364f1b102",
+    ".github/workflows/work07-qwen-rfc.yml": "22fbc6935580f66c8199ad674d062de7e941a8b807c297b0e515720b6da5fb9a",
+    ".github/workflows/work07-site-preflight.yml": "4438c57296f67b0c311a5f6a75223b0c6f750c72e85918222296eb5268bafdcf",
+    "docs/evidence/te_p2a/te_p2a_live_evidence_2026-11-19.json": "69e819d1f313a85acfb23744344b3ce1ab74cc45ff9044842be6914a9b9c090f",
+    "docs/evidence/te_p2a/te_p2a_review_evidence_2026-11-19.json": "90a9e730f31359865092d5a5be137f50fa68be2500054cb6e894b3229e0dd8b7",
+    "labs/te_p1_bakeoff/live_harness.py": "0716d598f4cabb7afd1a371b92fb612b84801e6423e452fb421edfc1294afc4d",
+    "labs/te_p1_bakeoff/score_semantic.py": "b6699282527dd241407d995349f6dddd65fd19472c96a5ee1866883b41077d61",
+    "labs/te_p1_bakeoff/site.py": "244a22ceb8f3da8dbf5eda5e7f3bc28296a39c553e454f50e679670cecaa2ebc",
+    "labs/te_p2a_gateway/fixture_transport.py": "a78e4fe2008f0749bbb2fdd25389a130ffc1fe9bb59d4ee79171576bfb83b6c4",
+    "labs/te_p2a_gateway/model_tap.py": "d8883c44aca331f36e10a801cb501cff15a724d78b7921646df663e415a26e1f",
+    "labs/te_p2a_gateway/verify.py": "85694b1c37cd80fad6b68e04d47bd33b36a18cd2d3bc4f95f57591b0bdc4d17b",
+    "rightware/agent/browser.py": "e314d138949827035a2b21995c97afce67216cec8e4cebec937f6188f8e12d63",
+    "rightware/agent/completion.py": "ca94ebaa63b22b882fed79eb864d3fb0c41507179fb950cbc035c0dcdf3cde01",
+    "rightware/agent/policy.py": "3b69cb82af02ec3926204f595c2af9b4e57e57cf57792d5caa19d69d59b8e1d8",
+    "rightware/agent/receipts.py": "9297df2c360d86386e6bcd165709e4774a8416e5752bcfb346a01f3b8092e653",
+    "rightware/agent/session.py": "f61000ae8dbb82f7a69fd04b4ca14a7cb28a3313509d42d0a8600c3b86c95dfa",
+    "rightware/agent/task_contract.py": "1eec3f2c37171b0258cbf32188e9ccb87a4eff90447d91ea87f0d20535721b0a"
+  },
+  "groups": {
+    "historical": "1e4c71caca0bf61b147f6d14453579fcfa5ea0eddda8e2b59397c1fa24e8dee3",
+    "permissions": "eaaabdab37654facc5b58909a133e4bd18f8bc4b845ed8d6a188844c8fd9bffc",
+    "policy": "dbe0b139e5c867a0a355218e7fb6b4753fda29cdf491e6b20c17fc936cca9102",
+    "scenario": "b4e03809f86bff261644ca0ebd026f24eeab162bae970ee976561c98024d3dc3",
+    "verifier": "69839e3c53efabb456c1c3c4f4015cd6c31418e5b3b24460d25f44ae0a28a67d"
+  },
+  "local_raw_runs_not_in_repo": {
+    "note": "sha256 over sorted 'sha256sum' lines of every file in the local A1-A4 run dirs (scratchpad, not committed)",
+    "t1-a1": "1994780128110def324b91053c7efd9d58a21d2880c12c5b7a105708a21b9d2a",
+    "t1-a2": "61f75b45c5c13d7eecc85851bb6de225c8260f0f7c14ba07d294343a7ea90b31",
+    "t1-a3": "d08a65721ffe495e9981e190ee14c720f4c22723da69a24ef8d41523ea4c267c",
+    "t1-a4": "2bcee7b2046adccc72c4fb094806cc767020f9fc0da7a084cf1244cf50a26b9e"
+  },
+  "openjarvis_gitlink": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "phase": "TE-P2B G0 preflight (before any TE-P2B edit)"
+}

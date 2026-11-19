@@ -1,0 +1,177 @@
+{
+  "phase": "TE-P2B checkpoint 3",
+  "run_on_commit": "7d1a5d2b5aa4fd4e63e47ef7b767ac84e3f20ed3 (final pass; first pass ran on the same tree before the isolated-tamper test was added)",
+  "tool": "labs/te_p2a_gateway/mutation_p2b.py",
+  "tests": "tests.test_te_p2b_report_contract + tests.test_te_p2a_gateway",
+  "first_pass": {
+    "killed": 28,
+    "survived": [
+      "M10 checker ignores links",
+      "M19 decision/status mismatch ignored",
+      "M22 record hash not verified"
+    ],
+    "cause": "S3 tamper cases were caught by another check simultaneously; added test_isolated_link_hash_and_decision_tampering (each defect alone)"
+  },
+  "final": {
+    "killed": 31,
+    "total": 31,
+    "restored_identical": true
+  },
+  "mutants": [
+    {
+      "mutant": "M01 accept unknown top-level key",
+      "result": "KILLED",
+      "killed_by": "C1Pipeline.test_invalid_report_never_reaches_the_verifier, C2Invalid.test_encoding_json_root_duplicates_and_nonfinite, C2Invalid.test_unknown_keys_top_and_nested …"
+    },
+    {
+      "mutant": "M02 accept unknown product key",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_unknown_keys_top_and_nested, C3Duplicates.test_invalid_then_valid_is_accepted"
+    },
+    {
+      "mutant": "M03 boolean coercion",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_wrong_types_for_every_field_without_coercion"
+    },
+    {
+      "mutant": "M04 number coercion",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_wrong_types_for_every_field_without_coercion, C6Feedback.test_feedback_never_echoes_submitted_or_expected_values, C6Feedback.test_same_structural_error_gives_identical_feedback"
+    },
+    {
+      "mutant": "M05 ignore missing top field",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_each_missing_field, C2Invalid.test_version_missing_unknown_or_wrong_type"
+    },
+    {
+      "mutant": "M06 ignore missing product field",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_each_missing_field"
+    },
+    {
+      "mutant": "M07 ignore size limit",
+      "result": "KILLED",
+      "killed_by": "C4Limits.test_exact_limit_is_valid_and_one_byte_more_is_rejected"
+    },
+    {
+      "mutant": "M08 quota not counted",
+      "result": "KILLED",
+      "killed_by": "C3Duplicates.test_same_report_twice_is_refused_and_counted, C4Limits.test_quota_exhausted_is_denied_with_a_receipt"
+    },
+    {
+      "mutant": "M09 chain without linking",
+      "result": "KILLED",
+      "killed_by": "C3Duplicates.test_first_conformant_report_is_final, C3Duplicates.test_invalid_then_valid_is_accepted, C3Duplicates.test_same_report_twice_is_refused_and_counted …"
+    },
+    {
+      "mutant": "M10 checker ignores links",
+      "result": "KILLED",
+      "killed_by": "S3ReceiptIntegrity.test_isolated_link_hash_and_decision_tampering"
+    },
+    {
+      "mutant": "M11 description carries scenario value",
+      "result": "KILLED",
+      "killed_by": "C5NoLeak.test_description_messages_feedback_and_receipts_carry_no_scenario_value"
+    },
+    {
+      "mutant": "M12 feedback echoes unknown key name",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_encoding_json_root_duplicates_and_nonfinite, C2Invalid.test_unknown_keys_top_and_nested, C6Feedback.test_feedback_never_echoes_submitted_or_expected_values …"
+    },
+    {
+      "mutant": "M13 feedback echoes submitted value",
+      "result": "KILLED",
+      "killed_by": "C6Feedback.test_feedback_never_echoes_submitted_or_expected_values, C6Feedback.test_same_structural_error_gives_identical_feedback"
+    },
+    {
+      "mutant": "M14 duplicates not detected",
+      "result": "KILLED",
+      "killed_by": "C3Duplicates.test_same_report_twice_is_refused_and_counted"
+    },
+    {
+      "mutant": "M15 later report replaces accepted",
+      "result": "KILLED",
+      "killed_by": "C3Duplicates.test_first_conformant_report_is_final"
+    },
+    {
+      "mutant": "M16 NaN/Infinity accepted",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_encoding_json_root_duplicates_and_nonfinite"
+    },
+    {
+      "mutant": "M17 duplicate keys accepted",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_encoding_json_root_duplicates_and_nonfinite"
+    },
+    {
+      "mutant": "M18 recommendation reference unchecked",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_lengths_items_ranges_formats_and_uniqueness"
+    },
+    {
+      "mutant": "M19 decision/status mismatch ignored",
+      "result": "KILLED",
+      "killed_by": "S3ReceiptIntegrity.test_isolated_link_hash_and_decision_tampering"
+    },
+    {
+      "mutant": "M20 unknown version accepted",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_version_missing_unknown_or_wrong_type"
+    },
+    {
+      "mutant": "M21 invalid report stored for verifier",
+      "result": "KILLED",
+      "killed_by": "C1Pipeline.test_invalid_report_never_reaches_the_verifier, C3Duplicates.test_first_conformant_report_is_final, C3Duplicates.test_invalid_then_valid_is_accepted …"
+    },
+    {
+      "mutant": "M22 record hash not verified",
+      "result": "KILLED",
+      "killed_by": "S3ReceiptIntegrity.test_isolated_link_hash_and_decision_tampering"
+    },
+    {
+      "mutant": "M23 control characters accepted",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_lengths_items_ranges_formats_and_uniqueness"
+    },
+    {
+      "mutant": "M24 URL format unchecked",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_lengths_items_ranges_formats_and_uniqueness"
+    },
+    {
+      "mutant": "M25 price range unchecked",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_lengths_items_ranges_formats_and_uniqueness"
+    },
+    {
+      "mutant": "M26 lone surrogate accepted in strings",
+      "result": "KILLED",
+      "killed_by": "C2Invalid.test_encoding_json_root_duplicates_and_nonfinite"
+    },
+    {
+      "mutant": "M27 schema_valid forced true",
+      "result": "KILLED",
+      "killed_by": "C1Pipeline.test_invalid_report_never_reaches_the_verifier, C1Valid.test_validation_is_deterministic_and_never_raises, C2Invalid.test_each_missing_field …"
+    },
+    {
+      "mutant": "M28 frozen detector blind",
+      "result": "KILLED",
+      "killed_by": "S7Frozen.test_frozen_detector_detects_a_change"
+    },
+    {
+      "mutant": "M29 model failure invalidates trial",
+      "result": "KILLED",
+      "killed_by": "TrialRules.test_classification_precedence_and_invalidation"
+    },
+    {
+      "mutant": "M30 GO threshold lowered",
+      "result": "KILLED",
+      "killed_by": "TrialRules.test_decision_thresholds"
+    },
+    {
+      "mutant": "M31 audit mismatch ignored",
+      "result": "KILLED",
+      "killed_by": "S3ReceiptIntegrity.test_audit_outcomes_must_match"
+    }
+  ]
+}

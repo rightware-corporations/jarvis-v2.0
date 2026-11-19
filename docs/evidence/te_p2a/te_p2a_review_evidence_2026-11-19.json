@@ -1,0 +1,756 @@
+{
+ "load_skill_dispatch": {
+  "method": "real goose v1.60.1 binary driven by scripted FAKE model (labs/te_p2a_gateway/fake_model.py); no real model",
+  "run1_wrong_names_and_unknown_tools": [
+   {
+    "request": "load_skill",
+    "args": {
+     "name": "goose_doc_guide"
+    },
+    "isError": true,
+    "response_chars": 34,
+    "response_head": "Skill 'goose_doc_guide' not found."
+   },
+   {
+    "request": "load_skill",
+    "args": {
+     "name": "goose_doc_guide/../../../../etc/passwd"
+    },
+    "isError": true,
+    "response_chars": 57,
+    "response_head": "Skill 'goose_doc_guide/../../../../etc/passwd' not found."
+   },
+   {
+    "request": "load_skill",
+    "args": {
+     "name": "web_search"
+    },
+    "isError": true,
+    "response_chars": 29,
+    "response_head": "Skill 'web_search' not found."
+   },
+   {
+    "request": "developer__shell",
+    "args": {
+     "command": "id"
+    },
+    "isError": true,
+    "response_chars": 41,
+    "response_head": "Tool 'developer__shell' is not available."
+   },
+   {
+    "request": "shell",
+    "args": {
+     "command": "cat /etc/hostname"
+    },
+    "isError": true,
+    "response_chars": 30,
+    "response_head": "Tool 'shell' is not available."
+   }
+  ],
+  "run2_builtin_names": [
+   {
+    "request": "load_skill",
+    "args": {
+     "name": "goose-doc-guide"
+    },
+    "isError": false,
+    "response_chars": 4066,
+    "response_head": "# Loaded Skill: goose-doc-guide (builtin skill)\n\nReference g"
+   },
+   {
+    "request": "load_skill",
+    "args": {
+     "name": "goose-doc-guide/../../../../etc/passwd"
+    },
+    "isError": true,
+    "response_chars": 48,
+    "response_head": "Skill 'goose-doc-guide' has no supporting files."
+   }
+  ],
+  "run3_through_tap_with_output_filter": {
+   "goose_tool_requests": 0,
+   "tap_blocked": [
+    [
+     "load_skill"
+    ],
+    [
+     "load_skill"
+    ]
+   ]
+  }
+ },
+ "hardened_topology_probe": {
+  "fixture": "BLOCKED URLError",
+  "internet": "BLOCKED URLError",
+  "gateway": "REACHED 405",
+  "ollama-tap": "REACHED 200",
+  "gateway_initialize_from_non_goose_ip": "403"
+ },
+ "t1-a3": {
+  "wall_seconds": 205.7,
+  "timed_out": false,
+  "peak_mem_mib": {
+   "goose": 69,
+   "ollama": 7296,
+   "gateway": 87
+  },
+  "goose_host_mounts": [],
+  "goose_networks": [
+   "jrv-agent"
+  ],
+  "inventory": {
+   "model_requests": 9,
+   "tool_names_offered_by_goose": [
+    "gateway_8790_mcp__submit_report",
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open",
+    "load_skill"
+   ],
+   "tool_names_forwarded_to_model": [
+    "gateway_8790_mcp__submit_report",
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open"
+   ],
+   "only_gateway_tools_reach_model": true,
+   "non_gateway_tools_in_goose": [
+    "load_skill"
+   ],
+   "num_ctx": [
+    65536
+   ],
+   "endpoints": [
+    "/api/show",
+    "/v1/chat/completions"
+   ]
+  },
+  "goose_tool_calls": {
+   "executed_tool_calls": 7,
+   "names": [
+    "gateway_8790_mcp__web_open",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__submit_report"
+   ],
+   "non_gateway_calls": []
+  },
+  "gateway_exclusive": true,
+  "receipts": 7,
+  "receipt_rows": [
+   [
+    1,
+    "web_open",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/"
+   ],
+   [
+    2,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/catalog"
+   ],
+   [
+    3,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/atlasboard"
+   ],
+   [
+    4,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/novaview"
+   ],
+   [
+    5,
+    "web_follow",
+    "HTTP_ERROR",
+    null,
+    503,
+    "https://catalog.fixture.example/vendors/terralens"
+   ],
+   [
+    6,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/terralens-factsheet"
+   ],
+   [
+    7,
+    "submit_report",
+    "OK",
+    null,
+    null,
+    null
+   ]
+  ],
+  "fixture_events": [
+   [
+    "/",
+    200
+   ],
+   [
+    "/catalog",
+    200
+   ],
+   [
+    "/vendors/atlasboard",
+    200
+   ],
+   [
+    "/vendors/novaview",
+    200
+   ],
+   [
+    "/vendors/terralens",
+    503
+   ],
+   [
+    "/vendors/terralens-factsheet",
+    200
+   ]
+  ],
+  "blocked_tool_calls_in_model_output": [],
+  "transport_rejections": [
+   {
+    "client": "172.30.10.5",
+    "code": 403,
+    "reason": "client not allowed"
+   },
+   {
+    "client": "172.30.10.10",
+    "code": 400,
+    "reason": "not initialized"
+   }
+  ],
+  "submissions": [
+   {
+    "sequence": 7,
+    "sha256": "28509ae06444564acc2f0c6ff0b24ae36c0e7f35871d795b0c47f425abd4a79b",
+    "chars": 912
+   }
+  ],
+  "submitted_report": {
+   "properties": {
+    "recomendacao": "TerraLens",
+    "justificacao": "É a única opção que atende a todos os requisitos (suporte Mac, CSV, funcionamento offline e automações agendadas) com um preço de USD 12/mês, inferior ao limite de USD 15/mês.",
+    "comparacao": [
+     {
+      "produto": "AtlasBoard",
+      "suporte_mac": true,
+      "csv": true,
+      "offline": true,
+      "automacoes_agendadas": false,
+      "preco_usd_mes": 0
+     },
+     {
+      "produto": "NovaView",
+      "suporte_mac": true,
+      "csv": true,
+      "offline": false,
+      "automacoes_agendadas": true,
+      "preco_usd_mes": 9
+     },
+     {
+      "produto": "TerraLens",
+      "suporte_mac": true,
+      "csv": true,
+      "offline": true,
+      "automacoes_agendadas": true,
+      "preco_usd_mes": 12
+     }
+    ]
+   },
+   "fontes_consultadas": [
+    "https://catalog.fixture.example/",
+    "https://catalog.fixture.example/catalog",
+    "https://catalog.fixture.example/vendors/atlasboard",
+    "https://catalog.fixture.example/vendors/novaview",
+    "https://catalog.fixture.example/vendors/terralens-factsheet"
+   ]
+  },
+  "verification_recorded_bp043_checker": {
+   "verdict": "NOT_VERIFIED",
+   "completion_state": "UNKNOWN_IDENTITY",
+   "objectives": [
+    [
+     "CATALOG",
+     "PAGE_OBSERVED",
+     2
+    ],
+    [
+     "ATLASBOARD",
+     "PAGE_OBSERVED",
+     3
+    ],
+    [
+     "NOVAVIEW",
+     "PAGE_OBSERVED",
+     4
+    ],
+    [
+     "TERRALENS_FACTSHEET",
+     "PAGE_OBSERVED",
+     6
+    ]
+   ],
+   "recovered_from_503_by_receipts": true,
+   "recovery_required": true,
+   "decoy_requested": false,
+   "http_receipt_correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+   },
+   "receipt_defects": [],
+   "report_channel": "submit_report",
+   "report_delivery_receipt": 7,
+   "report_semantic": {
+    "semantic_gate": "FAIL",
+    "recommended": "TerraLens",
+    "products_found": [
+     "atlasboard",
+     "novaview",
+     "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [
+     "atlasboard.mac=False (true True)"
+    ],
+    "factsheet_source_cited": true
+   },
+   "limits": [
+    "synthetic fixture",
+    "identity rule NONE: never COMPLETE_VERIFIED",
+    "report is the model's answer checked against fixture truth, not evidence"
+   ]
+  },
+  "verification_recomputed_bp044_checker": {
+   "verdict": "TASK_VERIFIED_LIMITED",
+   "completion_state": "UNKNOWN_IDENTITY",
+   "objectives": [
+    [
+     "CATALOG",
+     "PAGE_OBSERVED",
+     2
+    ],
+    [
+     "ATLASBOARD",
+     "PAGE_OBSERVED",
+     3
+    ],
+    [
+     "NOVAVIEW",
+     "PAGE_OBSERVED",
+     4
+    ],
+    [
+     "TERRALENS_FACTSHEET",
+     "PAGE_OBSERVED",
+     6
+    ]
+   ],
+   "recovered_from_503_by_receipts": true,
+   "recovery_required": true,
+   "decoy_requested": false,
+   "http_receipt_correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+   },
+   "receipt_defects": [],
+   "report_channel": "submit_report",
+   "report_delivery_receipt": 7,
+   "report_semantic": {
+    "semantic_gate": "PASS",
+    "recommended": "TerraLens",
+    "products_found": [
+     "atlasboard",
+     "novaview",
+     "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [],
+    "factsheet_source_cited": true
+   },
+   "limits": [
+    "synthetic fixture",
+    "identity rule NONE: never COMPLETE_VERIFIED",
+    "report is the model's answer checked against fixture truth, not evidence"
+   ]
+  },
+  "comparison_final_answer_channel_recorded": {
+   "verdict": "NOT_VERIFIED"
+  },
+  "receipts_jsonl_sha256": "a2874e3840d9074b010aab7773aacc8f794603e6f0d788e6d409c3671be3f22f"
+ },
+ "t1-a4": {
+  "wall_seconds": 216.7,
+  "timed_out": false,
+  "peak_mem_mib": {
+   "goose": 68,
+   "ollama": 6642,
+   "gateway": 87
+  },
+  "goose_host_mounts": [],
+  "goose_networks": [
+   "jrv-agent"
+  ],
+  "inventory": {
+   "model_requests": 9,
+   "tool_names_offered_by_goose": [
+    "gateway_8790_mcp__submit_report",
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open",
+    "load_skill"
+   ],
+   "tool_names_forwarded_to_model": [
+    "gateway_8790_mcp__submit_report",
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open"
+   ],
+   "only_gateway_tools_reach_model": true,
+   "non_gateway_tools_in_goose": [
+    "load_skill"
+   ],
+   "num_ctx": [
+    65536
+   ],
+   "endpoints": [
+    "/api/show",
+    "/v1/chat/completions"
+   ]
+  },
+  "goose_tool_calls": {
+   "executed_tool_calls": 7,
+   "names": [
+    "gateway_8790_mcp__web_open",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__submit_report"
+   ],
+   "non_gateway_calls": []
+  },
+  "gateway_exclusive": true,
+  "receipts": 7,
+  "receipt_rows": [
+   [
+    1,
+    "web_open",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/"
+   ],
+   [
+    2,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/catalog"
+   ],
+   [
+    3,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/atlasboard"
+   ],
+   [
+    4,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/novaview"
+   ],
+   [
+    5,
+    "web_follow",
+    "HTTP_ERROR",
+    null,
+    503,
+    "https://catalog.fixture.example/vendors/terralens"
+   ],
+   [
+    6,
+    "web_follow",
+    "OK",
+    null,
+    200,
+    "https://catalog.fixture.example/vendors/terralens-factsheet"
+   ],
+   [
+    7,
+    "submit_report",
+    "OK",
+    null,
+    null,
+    null
+   ]
+  ],
+  "fixture_events": [
+   [
+    "/",
+    200
+   ],
+   [
+    "/catalog",
+    200
+   ],
+   [
+    "/vendors/atlasboard",
+    200
+   ],
+   [
+    "/vendors/novaview",
+    200
+   ],
+   [
+    "/vendors/terralens",
+    503
+   ],
+   [
+    "/vendors/terralens-factsheet",
+    200
+   ]
+  ],
+  "blocked_tool_calls_in_model_output": [],
+  "transport_rejections": [
+   {
+    "client": "172.30.10.5",
+    "code": 403,
+    "reason": "client not allowed"
+   },
+   {
+    "client": "172.30.10.10",
+    "code": 400,
+    "reason": "not initialized"
+   }
+  ],
+  "submissions": [
+   {
+    "sequence": 7,
+    "sha256": "62f6dafc1bfc8283b06d879627311ce4598a857069ca276ed3e4dc8c385a0fb7",
+    "chars": 1326
+   }
+  ],
+  "submitted_report": {
+   "properties": {
+    "AtlasBoard": {
+     "Mac_support": "yes",
+     "CSV_support": "yes",
+     "Offline_capability": "yes",
+     "Scheduled_automations": "no",
+     "Price_usd_per_month": 0
+    },
+    "NovaView": {
+     "Mac_support": "yes",
+     "CSV_support": "yes",
+     "Offline_capability": "no",
+     "Scheduled_automations": "yes",
+     "Price_usd_per_month": 9
+    },
+    "TerraLens": {
+     "Mac_support": "yes",
+     "CSV_support": "yes",
+     "Offline_capability": "yes",
+     "Scheduled_automations": "yes",
+     "Price_usd_per_month": 12
+    }
+   },
+   "recommendation": {
+    "tool": "TerraLens",
+    "reason": "Only tool that satisfies ALL criteria (Mac support, CSV support, offline capability, scheduled automations) for less than USD 15/month"
+   },
+   "sources_consulted": [
+    {
+     "url": "https://catalog.fixture.example/",
+     "type": "catalog_homepage"
+    },
+    {
+     "url": "https://catalog.fixture.example/catalog",
+     "type": "catalog_page"
+    },
+    {
+     "url": "https://catalog.fixture.example/vendors/atlasboard",
+     "type": "vendor_page",
+     "product": "AtlasBoard"
+    },
+    {
+     "url": "https://catalog.fixture.example/vendors/novaview",
+     "type": "vendor_page",
+     "product": "NovaView"
+    },
+    {
+     "url": "https://catalog.fixture.example/vendors/terralens-factsheet",
+     "type": "factsheet_mirror",
+     "product": "TerraLens"
+    }
+   ],
+   "notes": "Main TerraLens vendor page returned HTTP 503; used official factsheet mirror instead. All data is from synthetic test catalog - not consumer recommendations."
+  },
+  "verification_recorded_bp043_checker": {
+   "verdict": "NOT_VERIFIED",
+   "completion_state": "UNKNOWN_IDENTITY",
+   "objectives": [
+    [
+     "CATALOG",
+     "PAGE_OBSERVED",
+     2
+    ],
+    [
+     "ATLASBOARD",
+     "PAGE_OBSERVED",
+     3
+    ],
+    [
+     "NOVAVIEW",
+     "PAGE_OBSERVED",
+     4
+    ],
+    [
+     "TERRALENS_FACTSHEET",
+     "PAGE_OBSERVED",
+     6
+    ]
+   ],
+   "recovered_from_503_by_receipts": true,
+   "recovery_required": true,
+   "decoy_requested": false,
+   "http_receipt_correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+   },
+   "receipt_defects": [],
+   "report_channel": "submit_report",
+   "report_delivery_receipt": 7,
+   "report_semantic": {
+    "semantic_gate": "FAIL",
+    "recommended": null,
+    "products_found": [
+     "atlasboard",
+     "novaview",
+     "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [],
+    "factsheet_source_cited": true
+   },
+   "limits": [
+    "synthetic fixture",
+    "identity rule NONE: never COMPLETE_VERIFIED",
+    "report is the model's answer checked against fixture truth, not evidence"
+   ]
+  },
+  "verification_recomputed_bp044_checker": {
+   "verdict": "NOT_VERIFIED",
+   "completion_state": "UNKNOWN_IDENTITY",
+   "objectives": [
+    [
+     "CATALOG",
+     "PAGE_OBSERVED",
+     2
+    ],
+    [
+     "ATLASBOARD",
+     "PAGE_OBSERVED",
+     3
+    ],
+    [
+     "NOVAVIEW",
+     "PAGE_OBSERVED",
+     4
+    ],
+    [
+     "TERRALENS_FACTSHEET",
+     "PAGE_OBSERVED",
+     6
+    ]
+   ],
+   "recovered_from_503_by_receipts": true,
+   "recovery_required": true,
+   "decoy_requested": false,
+   "http_receipt_correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+   },
+   "receipt_defects": [],
+   "report_channel": "submit_report",
+   "report_delivery_receipt": 7,
+   "report_semantic": {
+    "semantic_gate": "FAIL",
+    "recommended": null,
+    "products_found": [
+     "atlasboard",
+     "novaview",
+     "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [],
+    "factsheet_source_cited": true
+   },
+   "limits": [
+    "synthetic fixture",
+    "identity rule NONE: never COMPLETE_VERIFIED",
+    "report is the model's answer checked against fixture truth, not evidence"
+   ]
+  },
+  "comparison_final_answer_channel_recorded": {
+   "verdict": "NOT_VERIFIED"
+  },
+  "receipts_jsonl_sha256": "27299e3058867a91687cdfa80dd0d76b9ba67e88be09fb9b68f0e61656bb1c66"
+ },
+ "historical_a1_a2_reevaluation_bp044": {
+  "t1-a1": {
+   "verdict": "TASK_VERIFIED_LIMITED",
+   "recovered": true,
+   "correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+   },
+   "note": "recorded value in te_p2a_live_evidence_2026-11-19.json is unchanged"
+  },
+  "t1-a2": {
+   "verdict": "NOT_VERIFIED",
+   "recovered": true,
+   "correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+   },
+   "note": "recorded value in te_p2a_live_evidence_2026-11-19.json is unchanged"
+  }
+ }
+}
