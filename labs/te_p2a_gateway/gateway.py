@@ -38,6 +38,8 @@ from rightware.agent.policy import AgentPolicy, Budgets, ToolDef, canonical
 from rightware.agent.receipts import ReceiptLedger
 from rightware.agent.session import TOOLS
 
+from labs.te_p2a_gateway import report_contract as RC
+
 GATEWAY_TOOLS = ("web_open", "web_follow", "web_find")
 TOOL_TIMEOUT_SECONDS = 30.0
 MAX_REPORT_CHARS = 8000
@@ -48,33 +50,48 @@ SUBMIT_REPORT = ToolDef(
     "fontes consultadas. A conclusão é verificada pela RIGHTWARE a partir das execuções, não deste texto.",
     {"report": {"type": "string", "maxLength": MAX_REPORT_CHARS, "description": "objecto JSON do relatório"}},
     ("report",), session_flag="report", consequential=False, max_calls=2)
+# JRV-TE-P2B: the same receipted operation under the pre-registered contract te-p2b.report.v1. The policy
+# length bound is only the OUTER bound (2x); the contract's UTF-8 size rule gives structured feedback.
+SUBMIT_REPORT_V1 = ToolDef(
+    "submit_report", RC.TOOL_DESCRIPTION,
+    {"report": {"type": "string", "maxLength": 2 * RC.MAX_REPORT_BYTES,
+                "description": "texto de um objecto JSON conforme ao contrato te-p2b.report.v1"}},
+    ("report",), session_flag="report", consequential=False, max_calls=RC.MAX_SUBMISSIONS)
 
 
 class Gateway:
     def __init__(self, *, task_id: str, attempt_id: str, sites: tuple[str, ...], fetcher, budgets: Budgets,
                  audit_path: Path | None = None, clock=None, tool_timeout: float = TOOL_TIMEOUT_SECONDS,
-                 submit_report: bool = False):
+                 submit_report: bool = False, report_contract: str | None = None):
         if not task_id or not attempt_id:
             raise ValueError("task and attempt identity are required")
         self.task_id, self.attempt_id = task_id, attempt_id
         self.registry = {n: TOOLS[n] for n in GATEWAY_TOOLS}
         allow = {"browse"}
-        if submit_report:                     # host decision (code), never the model's
-            self.registry["submit_report"] = SUBMIT_REPORT
+        if report_contract is not None and report_contract != RC.CONTRACT_ID:
+            raise ValueError("unknown report contract")      # fail closed: only the pre-registered version
+        self.report_contract = report_contract
+        if submit_report or report_contract:  # host decision (code), never the model's
+            self.registry["submit_report"] = SUBMIT_REPORT_V1 if report_contract else SUBMIT_REPORT
             allow.add("report")
         self.browser = PublicBrowser(sites, fetcher)
         kwargs = {"clock": clock} if clock else {}
         self.policy = AgentPolicy(self.registry, allow=allow, budgets=budgets, audit_path=audit_path,
                                   signature=self._signature, **kwargs)
         self.submissions: list[dict] = []     # {"sequence", "sha256", "report"} — bound to receipts
+        self.submission_chain: list[dict] = []   # TE-P2B: hash-chained record of EVERY submission
+        self.submitted_texts: list[dict] = []    # TE-P2B: {"sequence", "sha256", "report"} incl. rejected ones
+        self._accepted_sequence = None
         self.cancelled_requests: set = set()  # MCP notifications/cancelled (request ids)
         self._stuck: threading.Thread | None = None   # a tool still running after its timeout
         self.ledger = ReceiptLedger(run_id=f"{task_id}:{attempt_id}")
         self.tool_timeout = tool_timeout
         self._lock = threading.Lock()
         self._runners = {"web_open": self.browser.open, "web_follow": self.browser.follow,
-                         "web_find": self.browser.find, "submit_report": self._submit_report}
+                         "web_find": self.browser.find,
+                         "submit_report": self._submit_report_v1 if report_contract else self._submit_report}
         self._current_sequence = None
+        self._current_call_id = None
 
     def _submit_report(self, report: str) -> Step:
         """Deterministic validation only: one JSON object, bounded size. Stored with its SHA-256 under the
@@ -89,6 +106,36 @@ class Gateway:
         self.submissions.append({"sequence": self._current_sequence, "sha256": digest, "report": report})
         return Step("OK", f"Relatório recebido pela RIGHTWARE (SHA-256 {digest[:16]}…); será verificado a partir "
                           "das execuções registadas.", {}, None)
+
+    def _submit_report_v1(self, report: str) -> Step:
+        """TE-P2B: pure contract validation (pre-filter) + decision + hash-chained record. Only the FIRST
+        conformant report is stored for the verifier; nothing here judges content."""
+        digest = hashlib.sha256(report.encode("utf-8", "surrogatepass")).hexdigest()
+        result = RC.validate_report(report)
+        seen = {t["sha256"] for t in self.submitted_texts}
+        if self._accepted_sequence is not None:
+            decision = "ALREADY_ACCEPTED"
+        elif digest in seen:
+            decision = "DUPLICATE_SUBMISSION"
+        elif not result.schema_valid:
+            decision = "REJECTED_SCHEMA"
+        else:
+            decision = "ACCEPTED_FOR_VERIFICATION"
+        seq = self._current_sequence
+        self.submitted_texts.append({"sequence": seq, "sha256": digest, "report": report})
+        if decision == "ACCEPTED_FOR_VERIFICATION":
+            self._accepted_sequence = seq
+            self.submissions.append({"sequence": seq, "sha256": digest, "report": report})
+        RC.chain_record(self.submission_chain, kind="submission", run_id=self.ledger.run_id,
+                        receipt_sequence=seq, call_id=self._current_call_id, report_sha256=digest,
+                        report_bytes=len(report.encode("utf-8", "surrogatepass")), decision=decision,
+                        schema_valid=result.schema_valid,
+                        errors=[[e["path"], e["code"]] for e in result.errors])
+        remaining = SUBMIT_REPORT_V1.max_calls - self.policy.per_tool.get("submit_report", 0)
+        text = RC.feedback(result, decision, remaining)
+        if decision == "ACCEPTED_FOR_VERIFICATION":
+            return Step("OK", text, {}, None)
+        return Step("REFUSED", text, {}, decision)
 
     # -- what the executor may see ------------------------------------------------------------
     def tool_specs(self) -> list[dict]:
@@ -138,7 +185,7 @@ class Gateway:
                 return (f"[RIGHTWARE] A ferramenta '{tool}' NÃO foi executada: {reason}. Não repitas a mesma "
                         "chamada; ajusta o plano ou conclui com o que já foi verificado.", True)
             self.ledger.dispatch(rec)
-            self._current_sequence = rec.sequence
+            self._current_sequence, self._current_call_id = rec.sequence, call_id
             box: dict = {}
             worker = threading.Thread(target=self._execute, args=(tool, dict(arguments), box), daemon=True)
             worker.start()

@@ -52,8 +52,9 @@ def infra(out: pathlib.Path, a, attempt: str):
         "--bind", "0.0.0.0", "--evidence", "/evidence/http.jsonl"], check=True)
     sh(["docker", "run", "-d", "--name", "gateway", "--network", "jrv-fixture", "-v", f"{ROOT}:/app:ro",
         "-v", f"{ev}:/evidence", "-w", "/app", "-e", "PYTHONPATH=/app", GW_IMAGE, "/opt/ojvenv/bin/python", "-m",
-        "labs.te_p2a_gateway.mcp_http", "--task", "TE-P2A-T1", "--attempt", attempt, "--evidence", "/evidence",
-        "--allow-client", GOOSE_IP, "--submit-report"],
+        "labs.te_p2a_gateway.mcp_http", "--task", getattr(a, "task", "TE-P2A-T1"), "--attempt", attempt,
+        "--evidence", "/evidence", "--allow-client", GOOSE_IP,
+        *(["--report-contract", a.report_contract] if getattr(a, "report_contract", None) else ["--submit-report"])],
        check=True)
     sh(["docker", "network", "connect", "--alias", "gateway", "jrv-agent", "gateway"], check=True)
     time.sleep(6)
@@ -127,7 +128,9 @@ def goose_final_answer(out: pathlib.Path) -> str:
     import sqlite3
     text = ""
     for db in glob.glob(str(out / "goose_state" / "**" / "sessions.db"), recursive=True):
-        rows = sqlite3.connect(db).execute("select content_json from messages where role='assistant' order by id").fetchall()
+        con = sqlite3.connect(db)
+        rows = con.execute("select content_json from messages where role='assistant' order by id").fetchall()
+        con.close()
         for (content,) in rows:
             parts = [p.get("text", "") for p in json.loads(content or "[]") if p.get("type") == "text"]
             if parts:
@@ -142,7 +145,10 @@ def goose_tool_calls(out: pathlib.Path) -> dict:
     dbs = glob.glob(str(out / "goose_state" / "**" / "sessions.db"), recursive=True)
     names = []
     for db in dbs:
-        for (content,) in sqlite3.connect(db).execute("select content_json from messages where role='assistant'"):
+        con = sqlite3.connect(db)
+        rows = con.execute("select content_json from messages where role='assistant' order by id").fetchall()
+        con.close()
+        for (content,) in rows:
             for part in json.loads(content or "[]"):
                 if part.get("type") == "toolRequest":
                     call = (part.get("toolCall") or {}).get("value") or {}
@@ -193,6 +199,26 @@ def finish(out, extra) -> dict:
               "fixture_events": [(e["path"], e["http_status"]) for e in events], "report_source": source,
               "verification": verify(receipts, events, None, submissions=submissions, report_channel="submit_report"),
               "comparison_final_answer_channel": verify(receipts, events, report, report_channel="final_answer")}
+    chain_path = out / "submission_chain.jsonl"
+    if chain_path.exists():                    # TE-P2B: contract mode — chain ↔ receipts ↔ audit, then verdict record
+        from labs.te_p2a_gateway import frozen
+        from labs.te_p2a_gateway import report_contract as RC
+        chain = [json.loads(x) for x in chain_path.read_text().splitlines() if x.strip()]
+        audit = [json.loads(x) for x in (out / "audit.jsonl").read_text().splitlines() if x.strip()] \
+            if (out / "audit.jsonl").exists() else []
+        before = RC.check_chain(chain, receipts, submissions, audit)
+        final = list(chain)
+        RC.chain_record(final, kind="verdict", run_id=chain[0]["run_id"] if chain else f"TE-P2B-T1:{extra.get('attempt')}",
+                        verdict=result["verification"]["verdict"],
+                        verifier_group_sha256=frozen.current()["groups"]["verifier"],
+                        accepted_receipt_sequence=result["verification"]["report_delivery_receipt"])
+        (out / "submission_chain_final.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in final))
+        after = RC.check_chain(final, receipts, submissions, audit) if chain else {"valid": True, "problems": []}
+        result["contract"] = {"contract_id": RC.CONTRACT_ID, "schema_sha256": RC.SCHEMA_SHA256,
+                              "chain_check_gateway": before, "chain_check_with_verdict": after,
+                              "submissions": [{k: r[k] for k in ("receipt_sequence", "report_sha256", "report_bytes",
+                                                                 "decision", "schema_valid", "errors")}
+                                              for r in chain]}
     (out / "run.json").write_text(json.dumps(result, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     return result
 
@@ -205,6 +231,8 @@ def main(argv=None):
     p.add_argument("--models", type=pathlib.Path, required=True)
     p.add_argument("--ollama", type=pathlib.Path, required=True)
     p.add_argument("--attempt", default="A1")
+    p.add_argument("--task", default="TE-P2A-T1")
+    p.add_argument("--report-contract", default=None, help="TE-P2B contract id (default: legacy submit_report)")
     a = p.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
     infra(a.out, a, a.attempt)

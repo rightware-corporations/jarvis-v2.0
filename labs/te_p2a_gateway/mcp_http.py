@@ -56,6 +56,12 @@ class McpApp:
         with (self.evidence / "transport_rejections.jsonl").open("w", encoding="utf-8") as f:
             for rej in self.rejections:
                 f.write(json.dumps(rej, sort_keys=True) + "\n")
+        if self.gateway.report_contract:          # TE-P2B: every submission (chain) and every submitted text
+            for name, rows in (("submission_chain.jsonl", self.gateway.submission_chain),
+                               ("submitted_texts.jsonl", self.gateway.submitted_texts)):
+                with (self.evidence / name).open("w", encoding="utf-8") as f:
+                    for row in rows:
+                        f.write(json.dumps(row, sort_keys=True) + "\n")
 
     def admit(self, client_ip: str, method, session_header) -> tuple[int, str] | None:
         """Transport-level checks; returns (http status, reason) to refuse, or None to accept."""
@@ -168,10 +174,12 @@ def main(argv=None):
     p.add_argument("--port", type=int, default=8790)
     p.add_argument("--allow-client", action="append", default=[], help="only these source IPs may call")
     p.add_argument("--submit-report", action="store_true", help="expose the receipted submit_report tool")
+    p.add_argument("--report-contract", default=None, help="TE-P2B: submit_report under this contract id")
     a = p.parse_args(argv)
     a.evidence.mkdir(parents=True, exist_ok=True)
     gw = Gateway(task_id=a.task, attempt_id=a.attempt, sites=(SYNTHETIC_HOST,), fetcher=fixture_fetcher(a.upstream),
-                 budgets=T1_BUDGETS, audit_path=a.evidence / "audit.jsonl", submit_report=a.submit_report)
+                 budgets=T1_BUDGETS, audit_path=a.evidence / "audit.jsonl", submit_report=a.submit_report,
+                 report_contract=a.report_contract)
     app = McpApp(gw, a.evidence, tuple(a.allow_client))
     with ThreadingHTTPServer(("0.0.0.0", a.port), make_handler(app)) as server:
         print(json.dumps({"gateway": f"http://0.0.0.0:{a.port}/mcp", "task": a.task, "attempt": a.attempt}), flush=True)
