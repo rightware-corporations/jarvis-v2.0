@@ -3561,3 +3561,7 @@ Nada disto foi iniciado.
 **PHASE C:** pinned venv full suite 550 OK, 0 skipped (535 + 14 gateway + 1 extraction); plain Python 550 OK. Report `docs/research/JRV_TE_P2A_GOOSE_GATEWAY_2026-11-19.md`; evidence `docs/evidence/te_p2a/te_p2a_live_evidence_2026-11-19.json` (no transcripts). Remote CI via the single Draft PR from this branch.
 
 **LIMITS:** N=2, 1/2 verified; synthetic mission; UNKNOWN_IDENTITY ceiling; `load_skill` filtered, not removable; goose not declared winner. **NEXT (needs authorization):** N≥5 repeats, optional receipted `submit_report` gateway tool, T2 through gateway, Hermes behind same gateway.
+
+## CHECKPOINT — 19/11/2026: JRV-BP-042 — TE-P2A Draft PR and remote CI
+
+**PR:** [#27](https://github.com/rightware-corporations/jarvis-v2.0/pull/27) DRAFT, head `exp/te-p1-kaggle-goose` → base develop (no merge; single PR, no new branch). **CI** on `30710600ff0228de77aef4e36d46a4cd6f533d92`: WORK-05 product run 44478173843 job 135403674182 **550 tests OK**; foundation run 44478173856 success (runner-capacity, lab-tests, launcher, windows-compat). FAKE/deterministic only. This docs-only checkpoint commit re-triggers the same PR CI. **STOP:** no further phase started.
