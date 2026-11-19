@@ -23,7 +23,8 @@ from labs.te_p1_bakeoff.live_harness import INSTRUCTION, ROOT, Sampler, last_jso
 BASE = "https://catalog.fixture.example/"
 PY = "mirror.gcr.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b"
 GW_IMAGE = "jrv-gateway:te-p2a"
-GATEWAY_TOOL_NAMES = ("web_open", "web_follow", "web_find")
+GATEWAY_TOOL_NAMES = ("web_open", "web_follow", "web_find", "submit_report")   # BP-043: + receipted report
+AGENT_SUBNET, GOOSE_IP = "172.30.10.0/24", "172.30.10.10"   # BP-043: gateway accepts only this client
 NETS = ("jrv-agent", "jrv-fixture")
 GOOSE_ENV = {"HOME": "/root", "GOOSE_DISABLE_KEYRING": "1", "GOOSE_PROVIDER": "ollama", "GOOSE_MODEL": "qwen3.5:4b",
              "OLLAMA_HOST": "http://ollama-tap:11434", "GOOSE_INPUT_LIMIT": "65536", "GOOSE_MODE": "auto",
@@ -31,11 +32,12 @@ GOOSE_ENV = {"HOME": "/root", "GOOSE_DISABLE_KEYRING": "1", "GOOSE_PROVIDER": "o
 
 
 def infra(out: pathlib.Path, a, attempt: str):
-    for net in NETS:
-        if sh(["docker", "network", "inspect", net]).returncode:
-            sh(["docker", "network", "create", "--internal", net], check=True)
     for n in ("ollama", "ollama-tap", "fixture", "gateway", "goose"):
         sh(["docker", "rm", "-f", n])
+    for net in NETS:                      # recreated per run; jrv-agent with a fixed subnet for the client allowlist
+        sh(["docker", "network", "rm", net])
+        extra = ["--subnet", AGENT_SUBNET] if net == "jrv-agent" else []
+        sh(["docker", "network", "create", "--internal", *extra, net], check=True)
     ev = str(out.resolve())
     sh(["docker", "run", "-d", "--name", "ollama", "--network", "jrv-agent", "-v", f"{a.ollama}:/opt/ollama:ro",
         "-v", f"{a.models}:/models", "-e", "OLLAMA_MODELS=/models", "-e", "OLLAMA_HOST=0.0.0.0:11434",
@@ -50,7 +52,8 @@ def infra(out: pathlib.Path, a, attempt: str):
         "--bind", "0.0.0.0", "--evidence", "/evidence/http.jsonl"], check=True)
     sh(["docker", "run", "-d", "--name", "gateway", "--network", "jrv-fixture", "-v", f"{ROOT}:/app:ro",
         "-v", f"{ev}:/evidence", "-w", "/app", "-e", "PYTHONPATH=/app", GW_IMAGE, "/opt/ojvenv/bin/python", "-m",
-        "labs.te_p2a_gateway.mcp_http", "--task", "TE-P2A-T1", "--attempt", attempt, "--evidence", "/evidence"],
+        "labs.te_p2a_gateway.mcp_http", "--task", "TE-P2A-T1", "--attempt", attempt, "--evidence", "/evidence",
+        "--allow-client", GOOSE_IP, "--submit-report"],
        check=True)
     sh(["docker", "network", "connect", "--alias", "gateway", "jrv-agent", "gateway"], check=True)
     time.sleep(6)
@@ -66,12 +69,17 @@ def probe(out: pathlib.Path) -> dict:
             "  except Exception as e: res[name]='BLOCKED '+type(e).__name__\nprint(json.dumps(res))")
     r = sh(["docker", "run", "--rm", "--network", "jrv-agent", PY, "python", "-c", code])
     result = json.loads(r.stdout.strip().splitlines()[-1])
+    post = ("import urllib.request,json\nreq=urllib.request.Request('http://gateway:8790/mcp',json.dumps({'jsonrpc':'2.0',"
+            "'id':1,'method':'initialize','params':{}}).encode(),{'Content-Type':'application/json'})\n"
+            "try:\n  print(urllib.request.urlopen(req,timeout=5).status)\nexcept urllib.error.HTTPError as e: print(e.code)")
+    result["gateway_initialize_from_non_goose_ip"] = sh(["docker", "run", "--rm", "--network", "jrv-agent", PY, "python",
+                                                         "-c", post]).stdout.strip()
     (out / "topology_probe.json").write_text(json.dumps(result, indent=2))
     return result
 
 
 def run_goose(out, a, text, max_turns=40, timeout=1800):
-    sh(["docker", "create", "--name", "goose", "--network", "jrv-agent", "--workdir", "/work",
+    sh(["docker", "create", "--name", "goose", "--network", "jrv-agent", "--ip", GOOSE_IP, "--workdir", "/work",
         "--security-opt", "no-new-privileges", *sum((["-e", f"{k}={v}"] for k, v in GOOSE_ENV.items()), []),
         PY, "goose", "run", "--no-profile", "--with-streamable-http-extension", "http://gateway:8790/mcp",
         "--max-turns", str(max_turns), "--name", "te-p2a", "--text", text], check=True)
@@ -169,11 +177,22 @@ def finish(out, extra) -> dict:
     if report is None:
         report, source = last_json_object((out / "goose_stdout.txt").read_text(errors="replace")), "final_answer_last_json"
     calls = goose_tool_calls(out)
+    subs_path = out / "submissions.jsonl"
+    submissions = [json.loads(x) for x in subs_path.read_text().splitlines() if x.strip()] if subs_path.exists() else []
+    rows = [json.loads(x) for x in (out / "model_requests.jsonl").read_text().splitlines() if x.strip()] \
+        if (out / "model_requests.jsonl").exists() else []
+    blocked = [n for r in rows for n in r.get("blocked_tool_calls_in_model_output", [])]
+    rejections = [json.loads(x) for x in (out / "transport_rejections.jsonl").read_text().splitlines() if x.strip()] \
+        if (out / "transport_rejections.jsonl").exists() else []
     result = {**extra, "inventory": inventory(out), "goose_tool_calls": calls, "receipts": len(receipts),
+              "blocked_tool_calls_in_model_output": blocked, "transport_rejections": rejections,
+              "submissions": [{"sequence": x["sequence"], "sha256": x["sha256"], "chars": len(x["report"])}
+                              for x in submissions],
               "gateway_exclusive": not calls["non_gateway_calls"] and len(receipts) == calls["executed_tool_calls"],
               "receipt_rows": [(r.sequence, r.tool, r.status, r.reason_code, r.http_status, r.final_url) for r in receipts],
               "fixture_events": [(e["path"], e["http_status"]) for e in events], "report_source": source,
-              "verification": verify(receipts, events, report)}
+              "verification": verify(receipts, events, None, submissions=submissions, report_channel="submit_report"),
+              "comparison_final_answer_channel": verify(receipts, events, report, report_channel="final_answer")}
     (out / "run.json").write_text(json.dumps(result, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     return result
 
