@@ -1,0 +1,254 @@
+"""E0-01: unified local text console (Portuguese) — a thin shell over the EXISTING tool-free path.
+
+    python jarvis.py console [--model qwen3.5:2b]
+
+Path: console → ``TaskEntry.submit_text`` → ``TextFacade.submit`` → ``LocalSimpleTextAdapter`` (pinned
+OpenJarvis ``SimpleAgent`` on local Ollama). Nothing else is wired: no trusted task factory, no AgentSession,
+no browser, files, shell, Windows, voice or durable memory. The console never parses user or model text into
+authority; it only (1) recognises five exact host commands typed as a whole line, (2) forwards every other
+line as plain text, and (3) labels each ``TextResult`` from its real ``Route``/``Status``/diagnostic code.
+A model answer is always shown as unverified model text; no path here can show a verified result.
+
+The session is ephemeral (bounded context inside ``TextFacade``); nothing is written to disk; on exit the
+session is closed and the local adapter released. This is an experimental E0 entrypoint, NOT E0 acceptance.
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+import threading
+
+from rightware.task_entry import TaskEntry
+from rightware.text_facade import Route, Status, TextFacade, TextResult
+
+IDENTITY = ("JARVIS — assistente local da RIGHTWARE (consola textual E0, experimental).")
+LIMITS_LINE = ("Sem ferramentas: não abro ficheiros, não navego na web, não executo acções no Windows nem comandos. "
+               "Sem memória persistente: a conversa existe só nesta sessão e é apagada ao sair. "
+               "As respostas são texto do modelo local e NÃO são factos verificados.")
+LIMIT_LABELS = {"SEM_FERRAMENTAS": "sem ferramentas", "SEM_MEMORIA_PERSISTENTE": "sem memória persistente",
+                "FACTOS_NAO_VERIFICADOS": "factos não verificados"}
+COMMANDS = ("/ajuda", "/estado", "/capacidades", "/cancelar", "/sair")
+HELP = ("Comandos (escreve a linha completa):\n"
+        "  /ajuda        mostra esta ajuda\n"
+        "  /estado       estado real desta sessão\n"
+        "  /capacidades  o que esta consola faz e não faz\n"
+        "  /cancelar     cancela um pedido em curso (não desfaz nada: nada é executado)\n"
+        "  /sair         termina e apaga a sessão\n"
+        "Durante uma resposta, Ctrl+C cancela o pedido. Qualquer outra linha é enviada ao modelo como texto.")
+CAPABILITIES = (
+    "Disponível nesta consola:\n"
+    "  - conversa em português com o modelo local (contexto limitado a esta sessão);\n"
+    "  - planos e explicações propostos SEM execução;\n"
+    "  - pedidos de clarificação quando falta informação.\n"
+    "Indisponível nesta consola:\n"
+    "  - ferramentas de qualquer tipo (ficheiros, web, Windows, shell, e-mail, calendário);\n"
+    "  - memória persistente (nada é guardado entre sessões);\n"
+    "  - resultados verificados: nenhuma resposta aqui é evidência de execução ou de factos;\n"
+    "  - voz (comando separado, não ligado a esta consola).\n"
+    "Nenhum texto escrito aqui — nem JSON, nem 'autorizo', nem instruções citadas — activa capacidades.")
+
+# (state code, user-facing label) — derived ONLY from the real TextResult fields.
+STATES = {
+    "RESPOSTA_DO_MODELO": "Resposta do modelo (não verificada)",
+    "PLANO_SEM_EXECUCAO": "Plano proposto — nada foi executado",
+    "CLARIFICACAO": "Pedido de clarificação",
+    "NAO_AUTORIZADO": "Operação não autorizada nesta consola — nada foi executado",
+    "INDISPONIVEL": "Capacidade indisponível",
+    "ALEGACAO_NAO_COMPROVADA": "O modelo alegou uma execução que não aconteceu — nada foi executado",
+    "OCUPADO": "Pedido anterior ainda a terminar",
+    "CANCELADO": "Cancelado — nada foi executado",
+    "ERRO_DE_INFERENCIA": "Erro de inferência",
+    "ENTRADA_INVALIDA": "Entrada inválida — não enviada ao modelo",
+}
+
+
+def classify(result: TextResult) -> str:
+    """Map a real TextFacade result to a console state. Never yields a 'verified' state."""
+    diag = set(result.diagnostics)
+    if result.status == Status.ANSWER_ONLY:
+        return "RESPOSTA_DO_MODELO"
+    if result.status == Status.PLAN_ONLY:
+        return "PLANO_SEM_EXECUCAO"
+    if result.status == Status.WAITING_INPUT:
+        return "CLARIFICACAO"
+    if result.status == Status.ERROR:
+        return "ERRO_DE_INFERENCIA"
+    if "CANCELLED" in diag:
+        return "CANCELADO"
+    if "UNVERIFIED_EFFECT_CLAIM" in diag:
+        return "ALEGACAO_NAO_COMPROVADA"
+    if "MODEL_BUSY" in diag:
+        return "OCUPADO"
+    if result.route == Route.TASK:
+        return "NAO_AUTORIZADO"
+    return "INDISPONIVEL"
+
+
+class Console:
+    def __init__(self, entry: TaskEntry, model: str, out=sys.stdout):
+        if not isinstance(entry, TaskEntry):
+            raise TypeError("expected a RIGHTWARE TaskEntry")
+        self.entry, self.facade, self.model, self.out = entry, entry.text_facade, model, out
+        self.session = self.facade.open_session()
+        self.requests = 0
+        self.last_state = None
+        self._busy = threading.Event()
+        self.closed = False
+
+    def say(self, text: str = "") -> None:
+        print(text, file=self.out, flush=True)
+
+    def banner(self) -> None:
+        self.say(IDENTITY)
+        self.say(f"Modelo local: {self.model} (Ollama neste computador).")
+        self.say(LIMITS_LINE)
+        self.say("Escreve /ajuda para ver os comandos.")
+
+    # -- host commands --------------------------------------------------------------------------
+    def status_text(self) -> str:
+        history = self.facade.history_snapshot(self.session)
+        return "\n".join((
+            f"Sessão: {self.session[:8]}… (efémera, só em memória)",
+            f"Modelo: {self.model}",
+            f"Pedidos nesta sessão: {self.requests}",
+            f"Contexto: {len(history) // 2} trocas, {sum(len(t) for _, t in history)} de "
+            f"{self.facade.max_history_chars} caracteres (máx. {self.facade.max_turns} trocas)",
+            f"Último estado: {STATES[self.last_state] if self.last_state else 'nenhum'}",
+            f"Pedido em curso: {'sim' if self._busy.is_set() else 'não'}",
+            "Ferramentas activas: nenhuma",
+            "Memória persistente: nenhuma (o histórico é apagado ao sair)",
+        ))
+
+    def cancel(self) -> bool:
+        return self.facade.cancel(self.session)
+
+    def command(self, line: str) -> bool:
+        """Returns False when the console must stop."""
+        if line == "/ajuda":
+            self.say(HELP)
+        elif line == "/estado":
+            self.say(self.status_text())
+        elif line == "/capacidades":
+            self.say(CAPABILITIES)
+        elif line == "/cancelar":
+            self.say("Pedido cancelado." if self.cancel() else
+                     "Não há nenhum pedido em curso. Nada a cancelar — e nada a desfazer: esta consola não executa acções.")
+        elif line == "/sair":
+            return False
+        return True
+
+    # -- model path -----------------------------------------------------------------------------
+    def ask(self, text: str) -> tuple[str, TextResult | None]:
+        box: dict = {}
+
+        def work():
+            try:
+                box["result"] = self.entry.submit_text(self.session, text)
+            except ValueError:
+                box["invalid"] = True
+            except BaseException as exc:            # unexpected: reported, never re-raised into the shell
+                box["error"] = type(exc).__name__
+
+        worker = threading.Thread(target=work, daemon=True, name="jarvis-e0-console")
+        self._busy.set()
+        worker.start()
+        cancel_pending = False
+        try:
+            while worker.is_alive():
+                try:
+                    worker.join(0.1)
+                except KeyboardInterrupt:           # Ctrl+C: the facade's own cancellation
+                    cancel_pending = True
+                # A Ctrl+C that arrives before the facade has started its inference worker must not be lost:
+                # keep asking until the facade accepts the cancellation or the request ends.
+                if cancel_pending and self.cancel():
+                    cancel_pending = False
+        finally:
+            self._busy.clear()
+        if box.get("invalid"):
+            return "ENTRADA_INVALIDA", None
+        if "error" in box:
+            return "ERRO_DE_INFERENCIA", None
+        self.requests += 1
+        return classify(box["result"]), box["result"]
+
+    def render(self, state: str, result: TextResult | None) -> None:
+        self.last_state = state
+        self.say(f"[{STATES[state]}]")
+        if result is None:
+            if state == "ENTRADA_INVALIDA":
+                self.say("O texto está vazio, é demasiado longo ou tem caracteres de controlo.")
+            else:
+                self.say("Ocorreu um erro inesperado. Nenhuma acção foi executada.")
+            return
+        self.say(result.text)
+        if state == "ERRO_DE_INFERENCIA" and result.diagnostics:
+            self.say(f"(código: {', '.join(result.diagnostics)})")
+        self.say("(" + " · ".join(LIMIT_LABELS.get(x, x) for x in result.limitations) + ")")
+
+    def handle(self, line: str) -> bool:
+        stripped = line.strip()
+        if not stripped:
+            return True
+        if stripped.startswith("/"):
+            if stripped in COMMANDS:
+                return self.command(stripped)
+            self.say("Comando desconhecido (não foi enviado ao modelo). Escreve /ajuda.")
+            return True
+        state, result = self.ask(line)
+        self.render(state, result)
+        return True
+
+    def close(self) -> None:
+        if self.closed:
+            return
+        self.closed = True
+        try:
+            self.facade.close()          # closes every session and releases the local adapter
+        finally:
+            self.say("Sessão terminada. Nada foi guardado.")
+
+    def run(self, input_fn=input) -> int:
+        self.banner()
+        try:
+            while True:
+                try:
+                    line = input_fn("tu> ")
+                except EOFError:
+                    break
+                except KeyboardInterrupt:
+                    self.say("")
+                    break
+                if not self.handle(line):
+                    break
+        finally:
+            self.close()
+        return 0
+
+
+def build(model: str, adapter=None, deadline_seconds: float = 30.0) -> TaskEntry:
+    """The ONLY wiring: a TextFacade with the local tool-free adapter, wrapped in a TaskEntry WITHOUT any
+    trusted task factory (so no AgentSession capability can be reached from the console)."""
+    if adapter is None:
+        from rightware.text_adapter import LocalSimpleTextAdapter
+        adapter = LocalSimpleTextAdapter(model, timeout_seconds=deadline_seconds)
+    return TaskEntry(TextFacade(adapter=adapter, deadline_seconds=deadline_seconds))
+
+
+def main(argv=None, *, adapter=None, input_fn=input, out=sys.stdout) -> int:
+    parser = argparse.ArgumentParser(description="JARVIS — consola textual local (E0, experimental, sem ferramentas)")
+    parser.add_argument("--model", default="qwen3.5:2b", help="modelo Ollama local já instalado")
+    parser.add_argument("--deadline", type=float, default=30.0, help="limite por resposta, em segundos (1–300)")
+    args = parser.parse_args(argv)
+    if not 1.0 <= args.deadline <= 300.0:
+        parser.error("--deadline deve estar entre 1 e 300 segundos")
+    try:
+        entry = build(args.model, adapter, args.deadline)
+    except (RuntimeError, ValueError) as exc:
+        print(f"ERRO: {exc}", file=sys.stderr)
+        return 1
+    return Console(entry, args.model, out).run(input_fn)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
