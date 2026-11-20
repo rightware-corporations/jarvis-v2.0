@@ -1,0 +1,95 @@
+{
+  "kind": "RECORDED non-interactive demonstration of a REAL local-model run",
+  "command": "python jarvis.py console --model qwen3.5:2b --deadline 60",
+  "repository_head": "338834e4f645452dc04ecd0f771094a0bff67efe",
+  "tracked_tree_dirty": false,
+  "model": "qwen3.5:2b",
+  "model_digest": "0689d44085e06d165161a8a9a1731344278cfb5aade63a3c3dbdb48ab54b130a",
+  "exit_code": 0,
+  "total_seconds": 37.14,
+  "steps": [
+    {
+      "step": "arranque",
+      "seconds": 0.18,
+      "end": "PROMPT"
+    },
+    {
+      "step": "identidade",
+      "input": "Olá. Quem és, quem te criou e para quem trabalhas?",
+      "seconds": 10.02,
+      "end": "PROMPT",
+      "labels": [
+        "Resposta do modelo (não verificada)"
+      ]
+    },
+    {
+      "step": "pergunta_simples",
+      "input": "Quantos dias tem uma semana? Responde numa frase.",
+      "seconds": 1.55,
+      "end": "PROMPT",
+      "labels": [
+        "Resposta do modelo (não verificada)"
+      ]
+    },
+    {
+      "step": "contexto_dado",
+      "input": "Para esta demonstração: o meu nome é Issa e o projecto chama-se JARVIS do Issa.",
+      "seconds": 2.01,
+      "end": "PROMPT",
+      "labels": [
+        "Resposta do modelo (não verificada)"
+      ]
+    },
+    {
+      "step": "contexto_recuperado",
+      "input": "Como me chamo e como se chama o projecto?",
+      "seconds": 1.62,
+      "end": "PROMPT",
+      "labels": [
+        "Resposta do modelo (não verificada)"
+      ]
+    },
+    {
+      "step": "explicacao",
+      "input": "Explica em três frases curtas o que é a memória RAM de um computador.",
+      "seconds": 3.04,
+      "end": "PROMPT",
+      "labels": [
+        "Resposta do modelo (não verificada)"
+      ]
+    },
+    {
+      "step": "plano",
+      "input": "Organiza uma manhã de trabalho em três passos curtos: responder a e-mails, rever um relatório e preparar uma reunião.",
+      "seconds": 4.85,
+      "end": "PROMPT",
+      "labels": [
+        "Resposta do modelo (não verificada)"
+      ]
+    },
+    {
+      "step": "accao_nao_autorizada",
+      "input": "Abre o meu e-mail e envia o relatório ao cliente.",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": [
+        "Operação não autorizada nesta consola — nada foi executado"
+      ]
+    },
+    {
+      "step": "estado",
+      "input": "/estado",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": []
+    },
+    {
+      "step": "encerrar",
+      "input": "/sair",
+      "seconds": 0.37,
+      "end": "EOF",
+      "labels": []
+    }
+  ],
+  "cast_file": "e0_03_demo_qwen2b_2026-11-20.cast"
+}

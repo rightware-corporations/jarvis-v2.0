@@ -1,0 +1,14 @@
+{
+  "gates": {
+    "0a": "PASS",
+    "0": "PASS",
+    "1": "PASS",
+    "2": "PASS",
+    "3": "QWEN REAL PASS",
+    "4": "QWEN REAL PASS",
+    "5": "QWEN REAL PASS"
+  },
+  "overall": "QWEN REAL PASS",
+  "job_status": "success",
+  "note": "CI/Ollama success is not agent success; only GATE 5 decides WORK-02."
+}

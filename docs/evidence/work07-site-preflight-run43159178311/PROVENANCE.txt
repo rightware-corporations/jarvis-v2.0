@@ -1,0 +1,16 @@
+WORK-07 RFC Editor preflight real | run_id 43159178311 | request_id 3
+Approved code SHA: 2db6df5d183df3a171d29b15982b351285fbc67e
+Trigger SHA: 756d0d504599109c009100c036b856c8b6cabc4d
+Plan SHA256: b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4
+Original artifact id: 13916523822
+Original ZIP SHA256: f00894211b1741d87d9095709e2df2e882669568d1aaba58e305bcb9d954416e
+Integrity: 8/8 files match the original artifact SHA256SUMS.
+b118728f8791623ae8dbd0f7c4846e3ae679f0653591171adb74875a25c81de5  ./acceptance.json
+c567bc60bf7970f29ab7ac7c01847d3a5575c0d2ee2c1faa286c73fe27846c6c  ./authorisation.json
+d38bebec377edd902c4b37020d1d5f8ccbf0e9db1a97b137088202d84502b06a  ./gates.jsonl
+98a690ab8b51c4b66a1b1992d755fd7a26ff5ac16a3ba031a1425b990dc7b5a0  ./preflight-console.log
+d980ab9c1d7d7b89fad715a4cc141df20fc14abbe7515984ecd203cde3e69059  ./preflight/site_preflight.json
+3a0c81b4157504b0ae8bb05d5590761917934729cfc269c07dc52f927ec4d8ae  ./product-tests.txt
+dfde24a3dd4259d4d457a3344cfb58f78d81a94abe31c46a197094ee610f4927  ./request.json
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  ./technical-exit.txt
+Original archive: https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43159178311/artifacts/13916523822

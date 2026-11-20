@@ -1,0 +1,15 @@
+## Environment
+Linux runnervm7aw5e 7.0.0-1017-azure #17~24.04.1-Ubuntu SMP PREEMPT Thu Sep 24 18:46:57 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+4
+CPU(s):                                  4
+Model name:                              Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+CPU(s) scaling MHz:                      123%
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       1.1Gi        13Gi        43Mi       1.1Gi        14Gi
+Swap:          3.0Gi          0B       3.0Gi
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       145G   59G   86G  41% /
+/dev/root       145G   59G   86G  41% /
+Python 3.12.3
+no nvidia-smi (CPU runner)
+openjarvis core OK

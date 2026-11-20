@@ -1,0 +1,87 @@
+{
+  "experiment": "WORK05_PRODUCT_AGENT_REAL_SMOKE",
+  "url": "https://example.com/",
+  "instruction": "Lê a página https://example.com/ com a ferramenta web_read e diz-me, numa frase em português, para que serve este domínio segundo a própria página. Cita o endereço.",
+  "capabilities": [
+    "web"
+  ],
+  "windows_actions": false,
+  "limits": {
+    "max_turns": 4,
+    "max_tokens": 512,
+    "tool_calls": 3,
+    "deadline_seconds": 300.0
+  },
+  "model": "qwen3.5:4b",
+  "model_digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+  "ollama": "0.40.15",
+  "openjarvis_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "models_called": true,
+  "approved_code_sha": "95b238de8ee5b3232107926240ff383730987e90",
+  "trigger_sha": "173224f009bf146afd0ee6186616c3f316873df9",
+  "plan_sha256": "b9be5c6916ccf3a62e1f742af206f90da895dfa8ff2c98a0c522784c7373df9d",
+  "utc_start": "2026-11-11T23:08:25.905017+00:00",
+  "utc_end": "2026-11-11T23:08:57.057637+00:00",
+  "model_responses": [
+    {
+      "engine_id": "ollama",
+      "tool_calls": [
+        {
+          "name": "web_read",
+          "url": "https://example.com/",
+          "arguments_sha256": "871da56124c2d5d2305651314cbc7932bd55bcb5c18574e5ecc7aab2edc76816"
+        }
+      ],
+      "content_chars": 0
+    },
+    {
+      "engine_id": "ollama",
+      "tool_calls": [],
+      "content_chars": 104
+    }
+  ],
+  "reply": {
+    "completion": "ANSWERED_WITH_SOURCES",
+    "halted": null,
+    "flags": [],
+    "verification": {
+      "http_response": true,
+      "content_retrieved": true,
+      "tool_verified": true,
+      "provenance_recorded": true,
+      "answer_factually_verified": false
+    },
+    "sources": [
+      {
+        "final_url": "https://example.com/",
+        "status": 200,
+        "content_type": "text/html",
+        "sha256": "25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484",
+        "chars": 179,
+        "truncated": false
+      }
+    ],
+    "outcomes": [
+      {
+        "tool": "web_read",
+        "status": "OK",
+        "evidence": {
+          "final_url": "https://example.com/",
+          "status": 200,
+          "content_type": "text/html",
+          "sha256": "25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484",
+          "chars": 179,
+          "truncated": false
+        }
+      }
+    ]
+  },
+  "answer": "Segundo a própria página, este domínio serve para exemplos de documentação sem necessidade de permissão.\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://example.com/ (HTTP 200)",
+  "verdict": {
+    "verdict": "PASS",
+    "reasons": [],
+    "model_proposed_web_read": true,
+    "answer_mentions_page_terms": true,
+    "answer_factually_verified": false
+  }
+}

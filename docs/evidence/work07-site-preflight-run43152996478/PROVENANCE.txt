@@ -1,0 +1,7 @@
+GitHub Actions run 43152996478 (work07-site-preflight.yml), run_attempt 1, trigger commit 7633dd68434db5149f2d68135063229c88130fbc, approved code 982e51dc097e485a01bbd9d7acee53c43d7edf10, request_id 1, plan b0e4ac7849b7ad14d19ca4c61da7f0929fa1ef351c5b0a5f633419eba6178ef4
+artifact 13914990111 sha256:3a60867502b2f766ea1f74e27be6bb4a29f25e390c9a85cd250f975d5420be87 (downloaded ZIP sha256 matched; 8/8 SHA256SUMS OK on the original files)
+technical execution: COMPLETED (exit 0); acceptance verdict: NOT_READY (accepted=false)
+REDACTION: preflight/site_preflight.json contained the site's own public search key (hidden form field x-typesense-api-key, embedded in the public page and sent back to the same host). It is replaced by REDACTED-public-search-key in this copy.
+  original sha256 (listed in SHA256SUMS): da44915337b933dfff421c5148f11dd6de21a410fd0eeeabb0b2740ab1f3c601
+  redacted copy sha256:                   3e4fea31b33e1209c294613468a85d8eef8824cf9ace34162ea293a7b52aa3be
+All other files are byte-identical to the artifact.

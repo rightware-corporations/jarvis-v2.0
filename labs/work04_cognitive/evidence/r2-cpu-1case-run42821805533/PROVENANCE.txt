@@ -1,0 +1,5 @@
+GitHub Actions run 42821805533 (workflow work04-r2-qwen-cpu.yml, mode 1case, request 2), commit db99711bae5d65c92234571271c66a72a5764ace
+artifact 13766599729 sha256:8d0e544f12b24caa4753a151e93558ae08ef21822885e090f4486730ae7944df (downloaded ZIP sha256 matched; SHA256SUMS verified)
+inner smoke.zip sha256 e74759a2e2b5081be3ab438d003c65e8f63aa54a14a1e336e24c1fde589a5f7a (kept in the GitHub artifact; its contents are in smoke/)
+excluded: ollama-server.tail.log, smoke.zip (kept in the GitHub artifact)
+QWEN REAL, CPU only, ONE scenario EVOL-4001: FAIL (DIAGNOSTIC ONLY, not WORK-04 acceptance)

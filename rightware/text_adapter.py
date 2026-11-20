@@ -1,0 +1,106 @@
+"""WP-04/D02: opt-in, local-only SimpleAgent adapter (no tools or memory).
+
+Imports from the pinned OpenJarvis submodule are intentionally deferred until
+the first reply.  This module is not used by the existing chat/voice/agent CLI.
+"""
+from __future__ import annotations
+
+from threading import RLock
+from typing import Callable
+
+from rightware.runtime import chat_command
+
+
+class InvalidModelReply(ValueError):
+    """The model returned no usable text or a tool/effect-shaped response."""
+
+
+class LocalSimpleTextAdapter:
+    """Call pinned SimpleAgent.run(text, context=AgentContext), never a tool agent.
+
+    Factories are injectable to run deterministic fake tests without Ollama.
+    Context is reconstructed for every request from caller-owned ephemeral
+    (role, text) pairs. No MemoryService, bus, prompt_builder or tool catalog
+    is ever supplied here.
+    """
+
+    def __init__(
+        self,
+        model: str = "qwen3.5:2b",
+        *,
+        temperature: float = 0.2,
+        max_tokens: int = 256,
+        num_ctx: int = 4096,
+        timeout_seconds: float = 30.0,
+        engine_factory: Callable | None = None,
+        agent_factory: Callable | None = None,
+        context_factory: Callable | None = None,
+    ):
+        chat_command(model)  # runtime's existing local-model/URL guard
+        if not (0.0 <= temperature <= 2.0) or not (1 <= max_tokens <= 1024):
+            raise ValueError("Invalid local generation limits")
+        if not (256 <= num_ctx <= 4096) or not (0.1 <= timeout_seconds <= 300):
+            raise ValueError("Invalid context or timeout limits")
+        self.model, self.temperature = model, temperature
+        self.max_tokens, self.num_ctx = max_tokens, num_ctx
+        self.timeout_seconds = timeout_seconds
+        self._engine_factory = engine_factory
+        self._agent_factory = agent_factory
+        self._context_factory = context_factory
+        self._engine = None
+        self._agent = None
+        self._lock = RLock()
+
+    @staticmethod
+    def _pinned_context(history: tuple[tuple[str, str], ...]):
+        from openjarvis.agents._stubs import AgentContext
+        from openjarvis.core.types import Message, Role
+
+        context = AgentContext()
+        for role, text in history:
+            if role not in ("user", "assistant") or not isinstance(text, str):
+                raise ValueError("Invalid ephemeral history")
+            context.conversation.add(Message(
+                role=Role.USER if role == "user" else Role.ASSISTANT,
+                content=text,
+            ))
+        # No tools/memory_results/metadata supplied.
+        return context
+
+    def _ensure_agent(self):
+        if self._agent is not None:
+            return self._agent
+        if self._engine_factory is None:
+            from openjarvis.engine.ollama import OllamaEngine
+            self._engine_factory = lambda: OllamaEngine(
+                host="http://127.0.0.1:11434", timeout=self.timeout_seconds)
+        if self._agent_factory is None:
+            from openjarvis.agents.simple import SimpleAgent
+            self._agent_factory = SimpleAgent
+        self._engine = self._engine_factory()
+        self._agent = self._agent_factory(
+            self._engine, self.model, temperature=self.temperature,
+            max_tokens=self.max_tokens, engine_options={"num_ctx": self.num_ctx},
+        )
+        return self._agent
+
+    def reply(self, text: str, history: tuple[tuple[str, str], ...]) -> str:
+        with self._lock:
+            agent = self._ensure_agent()
+            factory = self._context_factory or self._pinned_context
+            context = factory(history)
+            result = agent.run(text, context=context)
+            content = getattr(result, "content", None)
+            if (not isinstance(content, str) or not content.strip()
+                    or getattr(result, "tool_results", ())
+                    or (getattr(result, "metadata", None) or {}).get("error")
+                    or (getattr(result, "metadata", None) or {}).get("security_denied")):
+                raise InvalidModelReply("No valid tool-free text answer")
+            return content.strip()
+
+    def close(self) -> None:
+        with self._lock:
+            engine = self._engine
+            self._engine = self._agent = None
+            if engine is not None:
+                engine.close()
