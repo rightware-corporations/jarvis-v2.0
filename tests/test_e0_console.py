@@ -342,3 +342,55 @@ class Compatibility(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ------------------------------------------------------------------------------------- E0-02 blocker fixes
+class E002Fixes(unittest.TestCase):
+    """Regressions for the two blockers found by the REAL Qwen smoke (E0-02)."""
+
+    def test_para_as_preposition_reaches_the_model_and_stop_lines_still_stop(self):
+        for text in ("Para esta conversa: o código do projecto de teste é AZUL-47.", "Para amanhã preciso de ajuda.",
+                     "Para que serve um ficheiro CSV?"):
+            with self.subTest(text=text):
+                self.assertEqual(TextFacade._route(text), Route.ANSWER)
+        for text in ("Pára", "Pára, não executes mais nada.", "pára já", "para", "Para!", "PARA.", "para tudo"):
+            with self.subTest(text=text):
+                self.assertEqual(TextFacade._route(text), Route.CONTROL)
+        out, m = run(["Para esta conversa: o código do projecto é AZUL-47.", "Qual é o código do projecto?"],
+                     FakeModel(["Entendido.", "AZUL-47."]))
+        self.assertEqual(len(m.calls), 2)
+        self.assertIn("AZUL-47", m.calls[1][1][0][1])                     # context reached the second turn
+
+    def test_launcher_keeps_waiting_on_ctrl_c_and_child_gets_default_handling(self):
+        import signal
+        seen = []
+
+        def fake_call(cmd, **kw):
+            seen.append(signal.getsignal(signal.SIGINT))
+            return 0
+        before = signal.getsignal(signal.SIGINT)
+        with mock.patch.object(subprocess, "call", fake_call):
+            self.assertEqual(runtime.call_foreground(["x"]), 0)
+        self.assertTrue(callable(seen[0]) and seen[0] not in (signal.SIG_IGN, signal.SIG_DFL, before))
+        self.assertIs(signal.getsignal(signal.SIGINT), before)              # restored
+
+    @unittest.skipIf(os.name == "nt", "POSIX signal delivery; Windows console Ctrl+C is not verified here")
+    def test_real_sigint_to_launcher_does_not_kill_it(self):
+        child = ("import os, signal, sys, time\n"
+                 "ok = signal.getsignal(signal.SIGINT) is signal.default_int_handler\n"
+                 "os.kill(os.getppid(), signal.SIGINT)\n"
+                 "time.sleep(0.5)\n"
+                 "sys.exit(0 if ok else 3)\n")
+        self.assertEqual(runtime.call_foreground([sys.executable, "-c", child]), 0)
+
+
+class E002Wiring(unittest.TestCase):
+    def test_console_command_is_launched_through_call_foreground(self):
+        with mock.patch.object(runtime, "verify_source"), \
+                mock.patch.object(runtime, "prepare_config", return_value={"intelligence": {"default_model": "m"}}), \
+                mock.patch.object(runtime, "python_executable", return_value=mock.Mock(is_file=lambda: True,
+                                                                                      __str__=lambda s: "PY")), \
+                mock.patch.object(runtime, "call_foreground", return_value=0) as fg, \
+                mock.patch.object(subprocess, "call", side_effect=AssertionError("console must not use a bare call")):
+            self.assertEqual(runtime.main(["console"]), 0)
+        self.assertEqual(fg.call_args[0][0], ["PY", "-m", "rightware.console", "--model", "m"])

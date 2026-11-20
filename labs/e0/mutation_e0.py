@@ -3,7 +3,7 @@ to the working copy, tests/test_e0_console.py + tests/test_runtime.py run, the f
 Run: vendor/openjarvis/.venv/bin/python labs/e0/mutation_e0.py"""
 import hashlib, json, pathlib, subprocess, sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-CON, RT = "rightware/console.py", "rightware/runtime.py"
+CON, RT, FAC = "rightware/console.py", "rightware/runtime.py", "rightware/text_facade.py"
 M = [
  ("M01 model answer labelled as verified", CON, '"RESPOSTA_DO_MODELO": "Resposta do modelo (não verificada)"', '"RESPOSTA_DO_MODELO": "Resultado verificado"'),
  ("M02 refused action shown as generic unavailability", CON, "    if result.route == Route.TASK:\n        return \"NAO_AUTORIZADO\"", "    if False:\n        return \"NAO_AUTORIZADO\""),
@@ -20,9 +20,13 @@ M = [
  ("M13 banner hides the unverified-facts limitation", CON, "\"As respostas são texto do modelo local e NÃO são factos verificados.\"", "\"\""),
  ("M14 /sair does not stop", CON, "        elif line == \"/sair\":\n            return False", "        elif line == \"/sair\":\n            pass"),
  ("M15 runtime drops the configured default model", RT, "            extra = [\"--model\", args.model or config[\"intelligence\"][\"default_model\"], *extra]", "            extra = [*extra]"),
+ ("M17 launcher ignores SIGINT with SIG_IGN (inherited by the child)", RT, "    previous = signal.signal(signal.SIGINT, lambda signum, frame: None)", "    previous = signal.signal(signal.SIGINT, signal.SIG_IGN)"),
+ ("M18 launcher without SIGINT protection (dies on Ctrl+C)", RT, "            return call_foreground(console_command(extra), cwd=ROOT, env=voice_environment())", "            return subprocess.call(console_command(extra), cwd=ROOT, env=voice_environment())"),
+ ("M19 launcher handler not restored", RT, "    finally:\n        signal.signal(signal.SIGINT, previous)", "    finally:\n        pass"),
+ ("M20 'Para ...' preposition treated as stop again", FAC, r"pára\b|para(?:\s+(?:j[aá]|tudo|isso|com\s+isso))?\s*[.!]*\s*$|", r"p[aá]ra\b|"),
  ("M16 runtime runs the console outside the pinned venv", RT, "    return [str(python_executable()), \"-m\", \"rightware.console\", *extra]", "    return [sys.executable, \"-m\", \"rightware.console\", *extra]"),
 ]
-TESTS = ["tests.test_e0_console", "tests.test_runtime"]
+TESTS = ["tests.test_e0_console", "tests.test_runtime", "tests.test_wp04_d01_d02"]
 py = str(ROOT / "vendor/openjarvis/.venv/bin/python")
 files = {f for _, f, _, _ in M}
 orig = {f: (ROOT / f).read_text() for f in files}

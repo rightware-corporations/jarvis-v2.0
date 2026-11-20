@@ -1,11 +1,11 @@
 {
-  "package": "JRV-E0-01",
+  "package": "JRV-E0-01 + E0-02 fixes",
   "tool": "labs/e0/mutation_e0.py",
-  "tests": "tests.test_e0_console + tests.test_runtime",
+  "tests": "tests.test_e0_console + tests.test_runtime + tests.test_wp04_d01_d02",
   "scope": "only the NEW invariants (rightware/console.py and the console wiring in rightware/runtime.py); unchanged code is not mutated",
   "final": {
-    "killed": 16,
-    "total": 16,
+    "killed": 20,
+    "total": 20,
     "restored_identical": true
   },
   "mutants": [
@@ -82,12 +82,36 @@
     {
       "mutant": "M15 runtime drops the configured default model",
       "result": "KILLED",
-      "killed_by": "Compatibility.test_runtime_console_command_and_existing_commands"
+      "killed_by": "Compatibility.test_runtime_console_command_and_existing_commands, E002Wiring.test_console_command_is_launched_through_call_foreground"
+    },
+    {
+      "mutant": "M17 launcher ignores SIGINT with SIG_IGN (inherited by the child)",
+      "result": "KILLED",
+      "killed_by": "E002Fixes.test_launcher_keeps_waiting_on_ctrl_c_and_child_gets_default_handling, E002Fixes.test_real_sigint_to_launcher_does_not_kill_it"
+    },
+    {
+      "mutant": "M18 launcher without SIGINT protection (dies on Ctrl+C)",
+      "result": "KILLED",
+      "killed_by": "E002Wiring.test_console_command_is_launched_through_call_foreground"
+    },
+    {
+      "mutant": "M19 launcher handler not restored",
+      "result": "KILLED",
+      "killed_by": "E002Fixes.test_launcher_keeps_waiting_on_ctrl_c_and_child_gets_default_handling"
+    },
+    {
+      "mutant": "M20 'Para ...' preposition treated as stop again",
+      "result": "KILLED",
+      "killed_by": "E002Fixes.test_para_as_preposition_reaches_the_model_and_stop_lines_still_stop"
     },
     {
       "mutant": "M16 runtime runs the console outside the pinned venv",
       "result": "KILLED",
-      "killed_by": "Compatibility.test_runtime_console_command_and_existing_commands"
+      "killed_by": "Compatibility.test_runtime_console_command_and_existing_commands, E002Wiring.test_console_command_is_launched_through_call_foreground"
     }
-  ]
+  ],
+  "e0_02": {
+    "first_pass": "19/20 (M18 survived: the runtime test mocked subprocess.call)",
+    "fix": "added E002Wiring.test_console_command_is_launched_through_call_foreground"
+  }
 }

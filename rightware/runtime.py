@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import urllib.request
@@ -151,6 +152,18 @@ def console_command(extra):
     return [str(python_executable()), "-m", "rightware.console", *extra]
 
 
+def call_foreground(command, **kwargs):
+    """E0-02: run an interactive child that owns Ctrl+C. A terminal sends SIGINT to the whole foreground group;
+    without this the launcher died (exit 130) while the console kept running orphaned on the terminal. A Python
+    handler (NOT SIG_IGN, which exec would inherit) keeps the launcher waiting; the child starts with the default
+    disposition, so Ctrl+C still cancels inside the console."""
+    previous = signal.signal(signal.SIGINT, lambda signum, frame: None)
+    try:
+        return subprocess.call(command, **kwargs)
+    finally:
+        signal.signal(signal.SIGINT, previous)
+
+
 def voice_environment():
     """child_environment() plus UTF-8 stdio: on Windows a redirected/logged
     console would otherwise use cp1252 and fail on Portuguese text."""
@@ -210,7 +223,7 @@ def main(argv=None):
             if not python_executable().is_file():
                 raise RuntimeError("Run python jarvis.py setup first")
             extra = ["--model", args.model or config["intelligence"]["default_model"], *extra]
-            return subprocess.call(console_command(extra), cwd=ROOT, env=voice_environment())
+            return call_foreground(console_command(extra), cwd=ROOT, env=voice_environment())
         elif args.command == "diagnose":
             # Read-only. Prefer the upstream venv so speech libraries are checked.
             if args.model:

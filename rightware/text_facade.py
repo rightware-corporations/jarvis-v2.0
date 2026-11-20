@@ -105,7 +105,9 @@ _CLARIFY = re.compile(
     r"marca\s+para\s+sexta-feira)\s*[?!.]?\s*$", re.IGNORECASE
 )
 _CONTROL = re.compile(
-    r"^\s*(?:p[aá]ra\b|cancela\b|n[aã]o\s+executes\b|"
+    # E0-02: unaccented "para" is also the preposition ("Para esta conversa: ...") and must NOT be a stop
+    # command unless it is a short stop line; accented "pára" is only the verb and stays a stop anywhere.
+    r"^\s*(?:pára\b|para(?:\s+(?:j[aá]|tudo|isso|com\s+isso))?\s*[.!]*\s*$|cancela\b|n[aã]o\s+executes\b|"
     r"j[aá]\s+(?:executei|executaste|abri|abriste|enviaste)\b|"
     r"qual\s+[eé]\s+o\s+estado\b)",
     re.IGNORECASE,
