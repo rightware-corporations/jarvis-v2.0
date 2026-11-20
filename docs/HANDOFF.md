@@ -3495,3 +3495,13 @@ Nada disto foi iniciado.
 **CI COVERAGE IMPROVEMENT:** `foundation.yml` now runs on pull requests targeting `develop` as well as `main`, so Windows compatibility is checked **before** integration, not just after merge. No change to the test commands, OS runner, security scope or underlying product functionality.
 
 **VALIDATION REQUIRED:** PR from `fix/te06a-windows-ci-failclosed-20261118` to `develop`, require both WORK-05 Linux/pinned-vendor and `RIGHTWARE foundation` Windows jobs green at same exact SHA before merge; if any red, stop and diagnose. Then verify develop post-merge CI, leave main unchanged. Only FAKE tests; no real Qwen or external task executor adoption.
+
+## CHECKPOINT — 20/11/2026: JRV-E0-01-CP1 — E0 textual console: state recovery, component matrix, minimal plan (docs only)
+
+**OBJECTIVE:** turn existing components into one coherent Portuguese text entrypoint for E0, reusing (not re-architecting) the WP-04 TextFacade/TaskEntry path. **BRANCH/HEAD:** `develop`, local fast-forwarded from stale `65dad56` to remote `1e0c0aa82d6e2f220b6acac4c8afd79a1d1fab79` (no local changes). `main` `0cac8e8`, `demo/issa-20261111` `ccac84e`, `exp/te-p1-kaggle-goose` `a1b88ef` untouched; OpenJarvis gitlink `f21d902`. PR #27 stays Draft (TE_P2D_PARTIAL, BP-054).
+
+**BOUNDARY:** the research checkpoints JRV-BP-036 … JRV-BP-054 (TE-P1, TE-P2A/B/C/D: goose behind a MCP Gateway, report contracts, supervised resume, supervised egress) live ONLY on `exp/te-p1-kaggle-goose` / PR #27. They are NOT integrated in `develop` and are not product code; this line does not copy them.
+
+**BASELINE:** pinned venv 522 tests OK, 0 skipped; plain Python OK (252 vendor-dependent skips).
+
+**MATRIX + PLAN:** `docs/engineering/E0_01_CONSOLE_INTEGRATION.md`. Gap: the tested tool-free TextFacade/TaskEntry path has no user entrypoint (`chat` launches the upstream CLI outside it). Plan: new `rightware/console.py` (thin REPL over `TaskEntry(TextFacade(LocalSimpleTextAdapter)).submit_text`), `console` command in `runtime.py`, offline tests, mutation of the new invariants. Rejected: a new agent/session layer; wiring trusted task factories, browser, files, Windows, voice or memory into the console; editing TextFacade/policy/receipts. **PASS (docs).** **NEXT:** implement + tests (CP2).
