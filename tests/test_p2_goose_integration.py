@@ -311,6 +311,21 @@ class MissionCapability(unittest.TestCase):
         self.assertEqual(box["o"].state, CP.State.TAREFA_CANCELADA)
         self.assertFalse(cp.cancel())
 
+    def test_console_renders_a_verified_goose_outcome_without_changes(self):
+        cp = self.plane(self.mission(FakeRunner()))
+        verified = CP.TaskOutcome(CP.State.RESULTADO_VERIFICADO, G.CAPABILITY, "TASK_VERIFIED_LIMITED", True, None,
+                                  (("CATALOG", "PAGE_OBSERVED", 2),), 7, ((1, "web_open", "OK"),), "NONE", "NONE",
+                                  "Relatório submetido pelo goose: {}", 1.0)
+        out = io.StringIO()
+        con = C.Console(cp.entry, "m", out, cp)
+        with mock.patch.object(cp, "authorize_and_run", return_value=verified):
+            con.task_authorize("ABCDEF")                      # found by the REAL run: must not crash on changes=None
+        text = out.getvalue()
+        self.assertIn("[Resultado verificado por evidência (recibos + verificador RIGHTWARE)]", text)
+        self.assertIn("Estado do executor: TASK_VERIFIED_LIMITED", text)
+        self.assertNotIn("Alterações (calculadas", text)
+        self.assertIn("Comentário do modelo (NÃO verificado):", text)
+
     def test_off_by_default_and_host_only(self):
         cp = self.plane(None)
         self.assertNotIn(G.CAPABILITY, cp.capabilities)

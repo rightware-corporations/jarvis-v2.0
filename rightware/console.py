@@ -216,7 +216,7 @@ class Console:
                      + ", ".join(f"#{q} {t} {st}" for q, t, st in outcome.receipt_events))
         for oid, st, seq in outcome.objectives:
             self.say(f"  objectivo {oid}: {st}" + (f" (recibo #{seq})" if seq else ""))
-        if outcome.verified:
+        if outcome.verified and outcome.changes:      # only executors that produce code-computed changes (P1)
             self.say("Alterações (calculadas pelo código e confirmadas pelo verificador):")
             for c in outcome.changes:
                 self.say("  " + _change_line(c))
