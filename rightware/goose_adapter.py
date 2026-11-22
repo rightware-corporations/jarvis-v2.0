@@ -124,10 +124,25 @@ class DockerGooseRunner:
         for name in ("ollama", "ollama-tap", "fixture", "gateway"):
             sh(cmds[name], check=True)
         sh(["docker", "network", "connect", "--alias", "gateway", AGENT_NET, "gateway"], check=True)
-        time.sleep(6)
+        self.wait_ready()
         sh(cmds["goose"], check=True)
         sh(["docker", "cp", str(self.rt.goose_binary), "goose:/usr/local/bin/goose"], check=True)
         return {"probe": self.probe(), "goose_container": self.inspect_goose()}
+
+    def wait_ready(self, timeout: float = 60.0) -> bool:
+        """Wait until the Gateway announces it is listening (its startup line) instead of a fixed sleep: a cold
+        start could exceed the old 6 s and the isolation probe then (correctly) failed closed. Readiness never
+        replaces the probe; it only removes the race."""
+        end = time.monotonic() + timeout
+        while time.monotonic() < end:
+            logs = sh(["docker", "logs", "gateway"])
+            if '"gateway":' in (logs.stdout or "") + (logs.stderr or ""):
+                time.sleep(1)                       # tap/fixture start in parallel; one more second for them
+                return True
+            if sh(["docker", "inspect", "-f", "{{.State.Running}}", "gateway"]).stdout.strip() == "false":
+                return False
+            time.sleep(0.5)
+        return False
 
     def probe(self) -> dict:
         code = ("import urllib.request,json\nres={}\n"

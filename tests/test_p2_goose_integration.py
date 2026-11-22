@@ -338,10 +338,34 @@ class MissionCapability(unittest.TestCase):
         calls = []
         with mock.patch.object(G, "sh", side_effect=lambda a, **k: calls.append(a) or mock.Mock(returncode=0,
                                                                                                stdout="[{}]")), \
-                mock.patch.object(G.time, "sleep"), mock.patch.object(G.DockerGooseRunner, "probe", return_value={}):
+                mock.patch.object(G.time, "sleep"), mock.patch.object(G.DockerGooseRunner, "probe", return_value={}), \
+                mock.patch.object(G.DockerGooseRunner, "wait_ready", return_value=True):
             G.DockerGooseRunner(rt, Path("/tmp/p2-x")).prepare()
         creates = [c for c in calls if c[:3] == ["docker", "network", "create"]]
         self.assertTrue(creates and all("--internal" in c for c in creates))
+
+
+@unittest.skipIf(CP is None, "pinned OpenJarvis venv required")
+class Readiness(unittest.TestCase):
+    def test_waits_for_the_gateway_startup_line_not_a_fixed_sleep(self):
+        logs = iter(["", "", '{"gateway": "http://0.0.0.0:8790/mcp"}'])
+
+        def fake_sh(args, **kw):
+            if args[:2] == ["docker", "logs"]:
+                return mock.Mock(stdout=next(logs), stderr="")
+            return mock.Mock(stdout="true", stderr="")
+        r = G.DockerGooseRunner(G.GooseRuntime(Path("/g"), Path("/o"), Path("/m")), Path("/tmp/p2-r"))
+        with mock.patch.object(G, "sh", side_effect=fake_sh), mock.patch.object(G.time, "sleep"):
+            self.assertTrue(r.wait_ready(timeout=5))
+
+    def test_gateway_that_died_is_not_ready(self):
+        def fake_sh(args, **kw):
+            if args[:2] == ["docker", "logs"]:
+                return mock.Mock(stdout="Traceback", stderr="")
+            return mock.Mock(stdout="false", stderr="")
+        r = G.DockerGooseRunner(G.GooseRuntime(Path("/g"), Path("/o"), Path("/m")), Path("/tmp/p2-r"))
+        with mock.patch.object(G, "sh", side_effect=fake_sh), mock.patch.object(G.time, "sleep"):
+            self.assertFalse(r.wait_ready(timeout=5))
 
 
 # ------------------------------------------------------------------------------------------ P1 fixes
