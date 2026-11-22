@@ -1,0 +1,135 @@
+{
+  "package": "JRV-P2",
+  "tool": "labs/p2/mutation_p2.py",
+  "tests": "tests.test_p2_goose_integration + tests.test_p1_control_plane + tests.test_e0_console",
+  "first_pass": {
+    "killed": 22,
+    "total": 23,
+    "survived": [
+      "F02 'workspace created outside the cleanup scope' — EQUIVALENT (still inside the same try; TrialWorkspace cleans itself, guarded by F03)"
+    ],
+    "fix": "replaced by a real mutant of the same guarantee (workspace not closed in finally)"
+  },
+  "final": {
+    "killed": 23,
+    "total": 23,
+    "restored_identical": true
+  },
+  "mutants": [
+    {
+      "mutant": "F01 host status lines kept in commentary",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix1_verified_state_prevails_over_host_status_lines"
+    },
+    {
+      "mutant": "F02 trial workspace not closed after the run",
+      "result": "KILLED",
+      "killed_by": "NoEffects.test_workspace_is_host_owned_synthetic_and_removed"
+    },
+    {
+      "mutant": "F03 half-prepared workspace not removed",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix2_preparation_failure_cleans_and_resets"
+    },
+    {
+      "mutant": "F04 internal error shown as unauthorised",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_preparation_error_is_a_failure_and_cleans_up, P1Fixes.test_fix2_preparation_failure_cleans_and_resets, P1Fixes.test_fix4_internal_error_is_failure_not_authorization"
+    },
+    {
+      "mutant": "F05 running flag not reset",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_unverified_outcome_shows_no_changes, MissionCapability.test_preparation_error_is_a_failure_and_cleans_up, P1Fixes.test_fix2_preparation_failure_cleans_and_resets …"
+    },
+    {
+      "mutant": "F06 busy check removed",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix5_concurrency_is_atomic"
+    },
+    {
+      "mutant": "F07 banner ignores active mode",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix3_banner_and_capabilities_reflect_the_active_mode"
+    },
+    {
+      "mutant": "F08 console failure shown as invalid code",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix4_internal_error_is_failure_not_authorization"
+    },
+    {
+      "mutant": "G01 isolation probe ignored before start",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_bad_isolation_never_starts_goose"
+    },
+    {
+      "mutant": "G02 internet reachability ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected, MissionCapability.test_bad_isolation_never_starts_goose"
+    },
+    {
+      "mutant": "G03 host mounts ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "G04 extra networks ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "G05 non-goose client acceptance ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "G06 non-gateway executed calls ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_non_gateway_execution_or_inventory_is_a_failure"
+    },
+    {
+      "mutant": "G07 non-gateway tools reaching the model ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_non_gateway_execution_or_inventory_is_a_failure"
+    },
+    {
+      "mutant": "G08 verified without consistency",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_cancel_and_timeout, AdapterEvaluation.test_inconsistent_or_missing_receipts_are_unknown, AdapterEvaluation.test_page_failure_without_recovery_is_partial …"
+    },
+    {
+      "mutant": "G09 inconsistent evidence shown as partial",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_inconsistent_or_missing_receipts_are_unknown"
+    },
+    {
+      "mutant": "G10 cancellation not distinguished",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_cancel_and_timeout, MissionCapability.test_unauthorised_run_and_cancel"
+    },
+    {
+      "mutant": "G11 runner not cleaned up",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_bad_isolation_never_starts_goose, MissionCapability.test_preparation_error_is_a_failure_and_cleans_up"
+    },
+    {
+      "mutant": "G12 cancel not stopping goose",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_unauthorised_run_and_cancel"
+    },
+    {
+      "mutant": "G13 goose container gets a host mount",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "G14 networks not internal",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "G15 tap allowlist widened",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    }
+  ]
+}

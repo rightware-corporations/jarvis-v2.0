@@ -22,6 +22,7 @@ Authorization (host-defined, never text-defined)
 from __future__ import annotations
 
 import dataclasses
+import re
 import secrets
 import shutil
 import tempfile
@@ -123,9 +124,13 @@ class TrialWorkspace:
     def __init__(self):
         from rightware.agent.file_task import FixtureWorkspace
         self.root = Path(tempfile.mkdtemp(prefix="jarvis-ensaio-"))
-        for _, (name, text) in TRIAL_FILES.items():
-            (self.root / name).write_text(text, encoding="utf-8")
-        self.workspace = FixtureWorkspace(self.root, {k: v[0] for k, v in TRIAL_FILES.items()}, max_bytes=16384)
+        try:
+            for _, (name, text) in TRIAL_FILES.items():
+                (self.root / name).write_text(text, encoding="utf-8")
+            self.workspace = FixtureWorkspace(self.root, {k: v[0] for k, v in TRIAL_FILES.items()}, max_bytes=16384)
+        except BaseException:                       # JRV-P2 fix 2: never leave a half-prepared directory
+            shutil.rmtree(self.root, ignore_errors=True)
+            raise
 
     def close(self):
         try:
@@ -150,24 +155,64 @@ def real_session_factory(model: str, workspace_box: dict, agent_box: dict) -> Ca
     return make
 
 
+@dataclasses.dataclass(frozen=True)
+class Refusal:
+    """A task that did NOT run. ``reason``: CODE_INVALID (wrong/expired/used code), BUSY (another task is
+    running), ENVELOPE_REFUSED (the executor was outside the approved envelope). Never used for failures."""
+    state: State
+    reason: str
+
+
+_HOST_STATUS_LINE = re.compile(r"^\s*Estado(?: da tarefa \([^)]*\))?:", re.M)
+
+
+def model_text_only(text: str) -> str:
+    """JRV-P2 fix 1: the executor appends its own generic status lines ("Estado: …", "Estado da tarefa (…): …")
+    to the model's text; they can contradict the code-verified state. The Control Plane shows the verified state
+    itself, so those host-appended lines are removed from the (unverified) model commentary."""
+    return "\n".join(l for l in str(text or "").splitlines() if not _HOST_STATUS_LINE.match(l)).strip()
+
+
+def failure_outcome(capability: str, error_code: str, seconds: float) -> TaskOutcome:
+    return TaskOutcome(State.EXECUCAO_FALHADA, capability, "ERROR", False, None, (), 0, (), "NONE", error_code, "",
+                       seconds)
+
+
 class ControlPlane:
+    """Authority for authorization (host-enabled capability + single-use operator code). Executors are
+    registered by the HOST: the P1 trial comparison and, optionally, the JRV-P2 goose mission adapter."""
+
     def __init__(self, entry_text_facade: TextFacade, *, enable_trial_compare: bool = False,
-                 session_factory_builder: Callable | None = None, model: str = "qwen3.5:2b", clock=time.monotonic):
+                 session_factory_builder: Callable | None = None, model: str = "qwen3.5:2b", clock=time.monotonic,
+                 goose=None):
         if not isinstance(entry_text_facade, TextFacade):
             raise TypeError("expected a RIGHTWARE text facade")
         self.facade, self.model, self._clock = entry_text_facade, model, clock
-        self.capabilities = (TRIAL_COMPARE,) if enable_trial_compare else ()
         self._ws: dict = {}
         self._agent: dict = {}
         builder = session_factory_builder or real_session_factory
         factory = builder(model, self._ws, self._agent) if enable_trial_compare else None
         self.entry = TaskEntry(entry_text_facade, file_session_factory=factory)
         self.session = entry_text_facade.open_session()
+        self._executors: dict = {}
+        self._descriptions: dict = {}
+        if enable_trial_compare:
+            self._executors[TRIAL_COMPARE] = self._run_trial_compare
+            self._descriptions[TRIAL_COMPARE] = CAPABILITY_TEXT[TRIAL_COMPARE]
+        self._goose = goose
+        if goose is not None:
+            self._executors[goose.capability] = goose.run
+            self._descriptions[goose.capability] = goose.description
+        self.capabilities = tuple(self._executors)
         self._pending: dict | None = None
         self._lock = threading.Lock()
         self._cancelled = threading.Event()
+        self._active: str | None = None
         self.running = False
         self.audit: list[dict] = []          # host decisions (no content), for evidence
+
+    def describe(self, capability: str) -> str:
+        return self._descriptions[capability]
 
     # -- INPUT → SESSION → ROUTE (text) --------------------------------------------------------
     def submit_text(self, text: str) -> tuple[State, TextResult]:
@@ -197,47 +242,71 @@ class ControlPlane:
         return p["capability"]
 
     # -- EXECUTOR → EVIDENCE → RESULT ---------------------------------------------------------------
-    def authorize_and_run(self, code: str, on_start: Callable[[], None] | None = None) -> TaskOutcome | State:
+    def authorize_and_run(self, code: str, on_start: Callable[[], None] | None = None) -> TaskOutcome | Refusal:
         capability = self._consume(code)
         if capability is None:
-            return State.TAREFA_NAO_AUTORIZADA
-        if self.running:
-            return State.TAREFA_NAO_AUTORIZADA
-        self.running, started = True, self._clock()
+            return Refusal(State.TAREFA_NAO_AUTORIZADA, "CODE_INVALID")
+        with self._lock:                                    # JRV-P2 fix 5: one task at a time, atomically
+            if self.running:
+                self.audit.append({"event": "refused_busy"})
+                return Refusal(State.TAREFA_NAO_AUTORIZADA, "BUSY")
+            self.running, self._active = True, capability
+        started = self._clock()
         self._cancelled.clear()
-        ws = TrialWorkspace()
-        self._ws["ws"] = ws
         try:
+            outcome = self._executors[capability](self._cancelled, on_start)
+        except PermissionError:
+            self.audit.append({"event": "executor_refused_envelope"})
+            return Refusal(State.TAREFA_NAO_AUTORIZADA, "ENVELOPE_REFUSED")
+        except Exception as exc:                            # JRV-P2 fix 4: an internal error is a FAILURE
+            self.audit.append({"event": "executor_internal_error", "type": type(exc).__name__})
+            outcome = failure_outcome(capability, "INTERNAL_" + type(exc).__name__.upper()[:40],
+                                      round(self._clock() - started, 2))
+        finally:
+            with self._lock:
+                self.running, self._active = False, None
+        self.audit.append({"event": "task_finished", "state": outcome.state.value, "receipts": outcome.receipts_count})
+        return outcome
+
+    def _run_trial_compare(self, cancelled: threading.Event, on_start) -> TaskOutcome:
+        started = self._clock()
+        ws = None
+        try:
+            ws = TrialWorkspace()                           # JRV-P2 fix 2: created inside the cleanup scope
+            self._ws["ws"] = ws
             if on_start:
                 on_start()
             result = self.entry.run_trusted_file_compare(self.session, TRIAL_INSTRUCTION)
-        except PermissionError:
-            self.audit.append({"event": "executor_refused_envelope"})
-            return State.TAREFA_NAO_AUTORIZADA
         finally:
-            self.running = False
             self._agent.pop("agent", None)
-            ws.close()
             self._ws.pop("ws", None)
-        state = task_state(result, self._cancelled.is_set())
-        self.audit.append({"event": "task_finished", "state": state.value, "receipts": result.receipts_count})
-        return TaskOutcome(state=state, capability=capability, operational_state=result.operational_state,
+            if ws is not None:
+                ws.close()
+        state = task_state(result, cancelled.is_set())
+        return TaskOutcome(state=state, capability=TRIAL_COMPARE, operational_state=result.operational_state,
                            verified=state == State.RESULTADO_VERIFICADO,
                            changes=result.changes if state == State.RESULTADO_VERIFICADO else None,
                            objectives=result.objective_states, receipts_count=result.receipts_count,
                            receipt_events=result.receipt_events, halt_reason_code=result.halt_reason_code,
                            error_code=result.error_code,
-                           model_commentary_unverified=result.model_commentary_unverified,
+                           model_commentary_unverified=model_text_only(result.model_commentary_unverified),
                            seconds=round(self._clock() - started, 2))
 
     def cancel(self) -> bool:
-        """Cancel a running task through the executor's own AgentSession.cancel (policy-level stop)."""
-        agent = self._agent.get("agent")
-        if not self.running or agent is None:
+        """Cancel the running task through its executor's own cancellation."""
+        if not self.running:
             return False
-        self._cancelled.set()
-        agent.cancel()
-        return True
+        if self._active == TRIAL_COMPARE:
+            agent = self._agent.get("agent")
+            if agent is None:
+                return False
+            self._cancelled.set()
+            agent.cancel()
+            return True
+        if self._goose is not None and self._active == self._goose.capability:
+            self._cancelled.set()
+            return self._goose.cancel()
+        return False
 
     def close(self) -> None:
         ws = self._ws.pop("ws", None)
