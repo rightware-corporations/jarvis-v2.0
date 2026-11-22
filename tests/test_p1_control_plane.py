@@ -249,6 +249,8 @@ class ConsoleIntegration(unittest.TestCase):
         self.assertIn("[Tarefa em execução]", out)
         self.assertIn("[Resultado verificado por evidência (recibos + verificador RIGHTWARE)]", out)
         self.assertIn("objectivo COMPARE: VERIFIED (recibo #3)", out)
+        self.assertIn("Recibos (ferramentas efectivamente executadas): #1 fixture_read OK, #2 fixture_read OK, "
+                      "#3 fixture_compare OK", out)
         self.assertIn("Comentário do modelo (NÃO verificado):", out)
 
     def test_console_without_host_flag_has_no_tasks(self):

@@ -194,6 +194,9 @@ class Console:
         self.say(f"[{LABELS[outcome.state]}]")
         self.say(f"Estado do executor: {outcome.operational_state} · recibos: {outcome.receipts_count} · "
                  f"{outcome.seconds:.1f} s")
+        if outcome.receipt_events:
+            self.say("Recibos (ferramentas efectivamente executadas): "
+                     + ", ".join(f"#{q} {t} {st}" for q, t, st in outcome.receipt_events))
         for oid, st, seq in outcome.objectives:
             self.say(f"  objectivo {oid}: {st}" + (f" (recibo #{seq})" if seq else ""))
         if outcome.verified:
