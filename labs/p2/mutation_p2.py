@@ -13,6 +13,8 @@ M = [
  ("F06 busy check removed", CPF, "            if self.running:\n                self.audit.append({\"event\": \"refused_busy\"})", "            if False:\n                self.audit.append({\"event\": \"refused_busy\"})"),
  ("F07 banner ignores active mode", CON, "        if caps:                                        # JRV-P2 fix 3: say what is REALLY active", "        if False:"),
  ("F08 console failure shown as invalid code", CON, "        if \"error\" in box or (outcome is not None and not isinstance(outcome, (TaskOutcome, Refusal))):", "        if False:"),
+ ("F09 verified result assumed to carry changes (real-run crash)", CON, "        if outcome.verified and outcome.changes:      # only executors that produce code-computed changes (P1)", "        if outcome.verified:"),
+ ("G16 readiness wait skipped (cold-start race)", GA, "        self.wait_ready()\n", ""),
  ("G01 isolation probe ignored before start", GA, "            if isolation_problems(prep):                    # verified BEFORE goose starts: fail closed", "            if False:"),
  ("G02 internet reachability ignored", GA, "    if not str(p.get(\"internet\", \"\")).startswith(\"BLOCKED\"):", "    if False:"),
  ("G03 host mounts ignored", GA, "    if g.get(\"mounts\"):", "    if False:"),

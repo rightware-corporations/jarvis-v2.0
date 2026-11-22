@@ -11,8 +11,8 @@
     "fix": "replaced by a real mutant of the same guarantee (workspace not closed in finally)"
   },
   "final": {
-    "killed": 23,
-    "total": 23,
+    "killed": 25,
+    "total": 25,
     "restored_identical": true
   },
   "mutants": [
@@ -55,6 +55,16 @@
       "mutant": "F08 console failure shown as invalid code",
       "result": "KILLED",
       "killed_by": "P1Fixes.test_fix4_internal_error_is_failure_not_authorization"
+    },
+    {
+      "mutant": "F09 verified result assumed to carry changes (real-run crash)",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_console_renders_a_verified_goose_outcome_without_changes"
+    },
+    {
+      "mutant": "G16 readiness wait skipped (cold-start race)",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
     },
     {
       "mutant": "G01 isolation probe ignored before start",
@@ -131,5 +141,13 @@
       "result": "KILLED",
       "killed_by": "MissionCapability.test_runner_commands_isolation"
     }
-  ]
+  ],
+  "after_real_runs": {
+    "added": [
+      "F09 verified result assumed to carry changes (crash found by real run 2)",
+      "G16 readiness wait skipped (race found by real run 1)"
+    ],
+    "first_pass": "24/25 (G16 survived: the prepare test mocked wait_ready without asserting it ran before goose)",
+    "fix": "test asserts one readiness wait before the goose container is created"
+  }
 }

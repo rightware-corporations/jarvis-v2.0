@@ -354,8 +354,12 @@ class MissionCapability(unittest.TestCase):
         with mock.patch.object(G, "sh", side_effect=lambda a, **k: calls.append(a) or mock.Mock(returncode=0,
                                                                                                stdout="[{}]")), \
                 mock.patch.object(G.time, "sleep"), mock.patch.object(G.DockerGooseRunner, "probe", return_value={}), \
-                mock.patch.object(G.DockerGooseRunner, "wait_ready", return_value=True):
+                mock.patch.object(G.DockerGooseRunner, "wait_ready",
+                                  side_effect=lambda *a, **k: calls.append(["WAIT_READY"]) or True) as ready:
             G.DockerGooseRunner(rt, Path("/tmp/p2-x")).prepare()
+        self.assertEqual(ready.call_count, 1)
+        goose_create = next(i for i, c in enumerate(calls) if c[:4] == ["docker", "create", "--name", "goose"])
+        self.assertLess(calls.index(["WAIT_READY"]), goose_create)          # readiness before goose exists
         creates = [c for c in calls if c[:3] == ["docker", "network", "create"]]
         self.assertTrue(creates and all("--internal" in c for c in creates))
 

@@ -1,0 +1,502 @@
+{
+  "package": "JRV-P2 Gate 5",
+  "date": "2026-11-22",
+  "kind": "REAL goose v1.60.1 + qwen3.5:4b mission through the product console",
+  "environment": "Linux cloud container, 4 vCPU Xeon 2.1 GHz, 15 GiB, no GPU; Docker 29.9.2; not Windows, not Issa's computer",
+  "goose": "v1.60.1 binary sha256 4db5cf70f20d200ab6971725b2f93808a9245606c8c126d926a89c70271361b8",
+  "model": "qwen3.5:4b digest d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04 (Ollama 0.40.15 in a container on the internal network)",
+  "excluded": "goose session stores, model request logs and container logs stay local (no transcripts); file hashes recorded",
+  "runs": [
+    {
+      "run": "run1",
+      "code_head": "179af9c",
+      "note": "FAILED CLOSED before goose started: isolation probe could not reach the Gateway (cold-start race of a fixed 6 s sleep). Fixed by waiting for Gateway readiness (4feba0e).",
+      "exit_code": 0,
+      "total_seconds": 13.76,
+      "steps": [
+        {
+          "input": "/tarefas",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/tarefas\n  pesquisa-fixture-goose: Missão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE.\nPara pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.\ntu> "
+        },
+        {
+          "input": "/tarefa pesquisa-fixture-goose",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [
+            "Autorização necessária — nada foi executado ainda"
+          ],
+          "output": "/tarefa pesquisa-fixture-goose\n[Autorização necessária — nada foi executado ainda]\nMissão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE.\nPara autorizar esta execução escreve exactamente: /autorizar 1254C1  (uso único, 2 minutos)\ntu> "
+        },
+        {
+          "input": "/autorizar <código mostrado pelo anfitrião>",
+          "seconds": 13.6,
+          "end": "PROMPT",
+          "labels": [
+            "Tarefa em execução",
+            "Execução falhada"
+          ],
+          "output": "/autorizar 1254C1\n[Tarefa em execução] (Ctrl+C cancela)\n[Execução falhada]\nEstado do executor: NOT_STARTED · recibos: 0 · 12.6 s\ntu> "
+        },
+        {
+          "input": "/estado",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/estado\nSessão: 5599ae9a… (efémera, só em memória)\nModelo: qwen3.5:2b\nPedidos nesta sessão: 0\nContexto: 0 trocas, 0 de 6000 caracteres (máx. 6 trocas)\nÚltimo estado: nenhum\nPedido em curso: não\nFerramentas activas: nenhuma fora de uma tarefa autorizada\nTarefas supervisionadas activadas pelo anfitrião: pesquisa-fixture-goose\nTarefa em execução: não\nMemória persistente: nenhuma (o histórico é apagado ao sair)\ntu> "
+        },
+        {
+          "input": "/sair",
+          "seconds": 0.02,
+          "end": "EOF",
+          "labels": [],
+          "output": "/sair\nSessão terminada. Nada foi guardado.\n"
+        }
+      ],
+      "verification": {
+        "isolation": {
+          "probe": {
+            "fixture": "BLOCKED URLError",
+            "internet": "BLOCKED URLError",
+            "gateway": "BLOCKED URLError",
+            "non_goose_initialize": ""
+          },
+          "goose_container": {
+            "networks": [
+              "jrv-agent"
+            ],
+            "mounts": [],
+            "ip": {
+              "IPv4Address": "172.30.10.10"
+            }
+          }
+        }
+      },
+      "receipts": [],
+      "submissions": [],
+      "evidence_files_sha256": {}
+    },
+    {
+      "run": "run2",
+      "code_head": "4feba0e",
+      "note": "Mission VERIFIED by receipts+verifier; then the console crashed rendering a verified result without code-computed changes (changes=None). Fixed in 23330c7.",
+      "exit_code": 1,
+      "total_seconds": 259.07,
+      "steps": [
+        {
+          "input": "/tarefas",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/tarefas\n  pesquisa-fixture-goose: Missão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE.\nPara pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.\ntu> "
+        },
+        {
+          "input": "/tarefa pesquisa-fixture-goose",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [
+            "Autorização necessária — nada foi executado ainda"
+          ],
+          "output": "/tarefa pesquisa-fixture-goose\n[Autorização necessária — nada foi executado ainda]\nMissão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE.\nPara autorizar esta execução escreve exactamente: /autorizar 23383F  (uso único, 2 minutos)\ntu> "
+        },
+        {
+          "input": "/autorizar <código mostrado pelo anfitrião>",
+          "seconds": 258.94,
+          "end": "EOF",
+          "labels": [
+            "Tarefa em execução",
+            "Resultado verificado por evidência (recibos + verificador RIGHTWARE)"
+          ],
+          "output": "/autorizar 23383F\n[Tarefa em execução] (Ctrl+C cancela)\n[Resultado verificado por evidência (recibos + verificador RIGHTWARE)]\nEstado do executor: TASK_VERIFIED_LIMITED · recibos: 7 · 257.5 s\nRecibos (ferramentas efectivamente executadas): #1 web_open OK, #2 web_follow OK, #3 web_follow OK, #4 web_follow OK, #5 web_follow HTTP_ERROR, #6 web_follow OK, #7 submit_report OK\n  objectivo CATALOG: PAGE_OBSERVED (recibo #2)\n  objectivo ATLASBOARD: PAGE_OBSERVED (recibo #3)\n  objectivo NOVAVIEW: PAGE_OBSERVED (recibo #4)\n  objectivo TERRALENS_FACTSHEET: PAGE_OBSERVED (recibo #6)\nAlterações (calculadas pelo código e confirmadas pelo verificador):\nSessão terminada. Nada foi guardado.\nTraceback (most recent call last):\n  File \u001b[35m\"<frozen runpy>\"\u001b[0m, line \u001b[35m203\u001b[0m, in \u001b[35m_run_module_as_main\u001b[0m\n  File \u001b[35m\"<frozen runpy>\"\u001b[0m, line \u001b[35m88\u001b[0m, in \u001b[35m_run_code\u001b[0m\n  File \u001b[35m\"/home/user/jarvis-v2.0/rightware/console.py\"\u001b[0m, line \u001b[35m402\u001b[0m, in \u001b[35m<module>\u001b[0m\n    raise SystemExit(\u001b[31mmain\u001b[0m\u001b[1;31m()\u001b[0m)\n                     \u001b[31m~~~~\u001b[0m\u001b[1;31m^^\u001b[0m\n  File \u001b[35m\"/home/user/jarvis-v2.0/rightware/console.py\"\u001b[0m, line \u001b[35m398\u001b[0m, in \u001b[35mmain\u001b[0m\n    return \u001b[31mConsole(entry, args.model, out, control).run\u001b[0m\u001b[1;31m(input_fn)\u001b[0m\n           \u001b[31m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\u001b[1;31m^^^^^^^^^^\u001b[0m\n  File \u001b[35m\"/home/user/jarvis-v2.0/rightware/console.py\"\u001b[0m, line \u001b[35m340\u001b[0m, in \u001b[35mrun\u001b[0m\n    if not \u001b[31mself.handle\u001b[0m\u001b[1;31m(line)\u001b[0m:\n           \u001b[31m~~~~~~~~~~~\u001b[0m\u001b[1;31m^^^^^^\u001b[0m\n  File \u001b[35m\"/home/user/jarvis-v2.0/rightware/console.py\"\u001b[0m, line \u001b[35m309\u001b[0m, in \u001b[35mhandle\u001b[0m\n    \u001b[31mself.task_authorize\u001b[0m\u001b[1;31m(m.group(1))\u001b[0m\n    \u001b[31m~~~~~~~~~~~~~~~~~~~\u001b[0m\u001b[1;31m^^^^^^^^^^^^\u001b[0m\n  File \u001b[35m\"/home/user/jarvis-v2.0/rightware/console.py\"\u001b[0m, line \u001b[35m221\u001b[0m, in \u001b[35mtask_authorize\u001b[0m\n    for c in \u001b[1;31moutcome.changes\u001b[0m:\n             \u001b[1;31m^^^^^^^^^^^^^^^\u001b[0m\n\u001b[1;35mTypeError\u001b[0m: \u001b[35m'NoneType' object is not iterable\u001b[0m\n"
+        }
+      ],
+      "verification": {
+        "verdict": "TASK_VERIFIED_LIMITED",
+        "objectives": [
+          [
+            "CATALOG",
+            "PAGE_OBSERVED",
+            2
+          ],
+          [
+            "ATLASBOARD",
+            "PAGE_OBSERVED",
+            3
+          ],
+          [
+            "NOVAVIEW",
+            "PAGE_OBSERVED",
+            4
+          ],
+          [
+            "TERRALENS_FACTSHEET",
+            "PAGE_OBSERVED",
+            6
+          ]
+        ],
+        "recovered_from_503": true,
+        "http_receipt_correspondence": {
+          "match": true,
+          "first_mismatch_index": null,
+          "receipt_requests": 6,
+          "fixture_requests": 6
+        },
+        "receipt_defects": [],
+        "report_semantic": {
+          "semantic_gate": "PASS",
+          "recommended": "TerraLens",
+          "products_found": [
+            "atlasboard",
+            "novaview",
+            "terralens"
+          ],
+          "values_complete_for_all_three": true,
+          "value_errors": [],
+          "factsheet_source_cited": true
+        },
+        "chain_valid": true,
+        "violations": [],
+        "executed_calls": [
+          "gateway_8790_mcp__web_open",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__submit_report"
+        ],
+        "forwarded_tools": [
+          "gateway_8790_mcp__submit_report",
+          "gateway_8790_mcp__web_find",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_open"
+        ],
+        "blocked_in_model_output": [],
+        "run": {
+          "end": "EXITED",
+          "seconds": 251.0
+        },
+        "isolation": {
+          "probe": {
+            "fixture": "BLOCKED URLError",
+            "internet": "BLOCKED URLError",
+            "gateway": "REACHED 405",
+            "non_goose_initialize": "403"
+          },
+          "goose_container": {
+            "networks": [
+              "jrv-agent"
+            ],
+            "mounts": [],
+            "ip": {
+              "IPv4Address": "172.30.10.10"
+            }
+          }
+        }
+      },
+      "receipts": [
+        {
+          "sequence": 1,
+          "tool": "web_open",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/",
+          "call_id": "JRV-P2-T1:p2-jmp5rqx0:3"
+        },
+        {
+          "sequence": 2,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/catalog",
+          "call_id": "JRV-P2-T1:p2-jmp5rqx0:4"
+        },
+        {
+          "sequence": 3,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/vendors/atlasboard",
+          "call_id": "JRV-P2-T1:p2-jmp5rqx0:5"
+        },
+        {
+          "sequence": 4,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/vendors/novaview",
+          "call_id": "JRV-P2-T1:p2-jmp5rqx0:6"
+        },
+        {
+          "sequence": 5,
+          "tool": "web_follow",
+          "status": "HTTP_ERROR",
+          "reason_code": null,
+          "http_status": 503,
+          "final_url": "https://catalog.fixture.example/vendors/terralens",
+          "call_id": "JRV-P2-T1:p2-jmp5rqx0:7"
+        },
+        {
+          "sequence": 6,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/vendors/terralens-factsheet",
+          "call_id": "JRV-P2-T1:p2-jmp5rqx0:8"
+        },
+        {
+          "sequence": 7,
+          "tool": "submit_report",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": null,
+          "final_url": null,
+          "call_id": "JRV-P2-T1:p2-jmp5rqx0:9"
+        }
+      ],
+      "submissions": [
+        {
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}"
+        }
+      ],
+      "evidence_files_sha256": {
+        "audit.jsonl": "b48f7986eced0aa145f4bd501f73ef688c7f1a02b1db79ae04761ace542e3dee",
+        "http.jsonl": "d140d90752b10197f9d706cbbb2d1748da5ecd173492f31a042c80ef09b59620",
+        "model_requests.jsonl": "faaaa31666ce937c39fee8edde63d1f6e92d8177d2e25ab1e473022419f89af2",
+        "receipts.jsonl": "bd488741adbb6852ce305748f04ca34f638603844e2d5b406de34c00f76f786e",
+        "submission_chain.jsonl": "30dd8502bf3b66995cefb9c80bc0667b2b00dd421fd653a3662b23cc84107e52",
+        "submissions.jsonl": "8d691d6b9d3d0a69d8a57ce40a22bffda3745de96a7fc292acb1f005a4957585",
+        "submitted_texts.jsonl": "8d691d6b9d3d0a69d8a57ce40a22bffda3745de96a7fc292acb1f005a4957585",
+        "transport_rejections.jsonl": "1aa6a8541c26c731091528a37cc06ad9d60f647908ea62bf19233582ec71846d",
+        "verification.json": "afc4a6f02f4a9283f924725a89792b14712a1b89485e273a6014714a432d4224"
+      }
+    },
+    {
+      "run": "run3",
+      "code_head": "23330c7",
+      "note": "Full product path clean: VERIFIED, session closed, exit 0.",
+      "exit_code": 0,
+      "total_seconds": 218.84,
+      "steps": [
+        {
+          "input": "/tarefas",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/tarefas\n  pesquisa-fixture-goose: Missão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE.\nPara pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.\ntu> "
+        },
+        {
+          "input": "/tarefa pesquisa-fixture-goose",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [
+            "Autorização necessária — nada foi executado ainda"
+          ],
+          "output": "/tarefa pesquisa-fixture-goose\n[Autorização necessária — nada foi executado ainda]\nMissão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE.\nPara autorizar esta execução escreve exactamente: /autorizar 1D289F  (uso único, 2 minutos)\ntu> "
+        },
+        {
+          "input": "/autorizar <código mostrado pelo anfitrião>",
+          "seconds": 218.67,
+          "end": "PROMPT",
+          "labels": [
+            "Tarefa em execução",
+            "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+            "{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}",
+            "\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\""
+          ],
+          "output": "/autorizar 1D289F\n[Tarefa em execução] (Ctrl+C cancela)\n[Resultado verificado por evidência (recibos + verificador RIGHTWARE)]\nEstado do executor: TASK_VERIFIED_LIMITED · recibos: 7 · 217.2 s\nRecibos (ferramentas efectivamente executadas): #1 web_open OK, #2 web_follow OK, #3 web_follow HTTP_ERROR, #4 web_follow OK, #5 web_follow OK, #6 web_follow OK, #7 submit_report OK\n  objectivo CATALOG: PAGE_OBSERVED (recibo #2)\n  objectivo ATLASBOARD: PAGE_OBSERVED (recibo #4)\n  objectivo NOVAVIEW: PAGE_OBSERVED (recibo #5)\n  objectivo TERRALENS_FACTSHEET: PAGE_OBSERVED (recibo #6)\nComentário do modelo (NÃO verificado):\n  Relatório submetido pelo goose (texto do modelo; o veredicto vem do verificador): {\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}\ntu> "
+        },
+        {
+          "input": "/estado",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/estado\nSessão: 879eedef… (efémera, só em memória)\nModelo: qwen3.5:2b\nPedidos nesta sessão: 0\nContexto: 0 trocas, 0 de 6000 caracteres (máx. 6 trocas)\nÚltimo estado: nenhum\nPedido em curso: não\nFerramentas activas: nenhuma fora de uma tarefa autorizada\nTarefas supervisionadas activadas pelo anfitrião: pesquisa-fixture-goose\nTarefa em execução: não\nMemória persistente: nenhuma (o histórico é apagado ao sair)\ntu> "
+        },
+        {
+          "input": "/sair",
+          "seconds": 0.04,
+          "end": "EOF",
+          "labels": [],
+          "output": "/sair\nSessão terminada. Nada foi guardado.\n"
+        }
+      ],
+      "verification": {
+        "verdict": "TASK_VERIFIED_LIMITED",
+        "objectives": [
+          [
+            "CATALOG",
+            "PAGE_OBSERVED",
+            2
+          ],
+          [
+            "ATLASBOARD",
+            "PAGE_OBSERVED",
+            4
+          ],
+          [
+            "NOVAVIEW",
+            "PAGE_OBSERVED",
+            5
+          ],
+          [
+            "TERRALENS_FACTSHEET",
+            "PAGE_OBSERVED",
+            6
+          ]
+        ],
+        "recovered_from_503": true,
+        "http_receipt_correspondence": {
+          "match": true,
+          "first_mismatch_index": null,
+          "receipt_requests": 6,
+          "fixture_requests": 6
+        },
+        "receipt_defects": [],
+        "report_semantic": {
+          "semantic_gate": "PASS",
+          "recommended": "TerraLens",
+          "products_found": [
+            "atlasboard",
+            "novaview",
+            "terralens"
+          ],
+          "values_complete_for_all_three": true,
+          "value_errors": [],
+          "factsheet_source_cited": true
+        },
+        "chain_valid": true,
+        "violations": [],
+        "executed_calls": [
+          "gateway_8790_mcp__web_open",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__submit_report"
+        ],
+        "forwarded_tools": [
+          "gateway_8790_mcp__submit_report",
+          "gateway_8790_mcp__web_find",
+          "gateway_8790_mcp__web_follow",
+          "gateway_8790_mcp__web_open"
+        ],
+        "blocked_in_model_output": [],
+        "run": {
+          "end": "EXITED",
+          "seconds": 211.3
+        },
+        "isolation": {
+          "probe": {
+            "fixture": "BLOCKED URLError",
+            "internet": "BLOCKED URLError",
+            "gateway": "REACHED 405",
+            "non_goose_initialize": "403"
+          },
+          "goose_container": {
+            "networks": [
+              "jrv-agent"
+            ],
+            "mounts": [],
+            "ip": {
+              "IPv4Address": "172.30.10.10"
+            }
+          }
+        }
+      },
+      "receipts": [
+        {
+          "sequence": 1,
+          "tool": "web_open",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/",
+          "call_id": "JRV-P2-T1:p2-lnemzdls:3"
+        },
+        {
+          "sequence": 2,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/catalog",
+          "call_id": "JRV-P2-T1:p2-lnemzdls:4"
+        },
+        {
+          "sequence": 3,
+          "tool": "web_follow",
+          "status": "HTTP_ERROR",
+          "reason_code": null,
+          "http_status": 503,
+          "final_url": "https://catalog.fixture.example/vendors/terralens",
+          "call_id": "JRV-P2-T1:p2-lnemzdls:7"
+        },
+        {
+          "sequence": 4,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/vendors/atlasboard",
+          "call_id": "JRV-P2-T1:p2-lnemzdls:5"
+        },
+        {
+          "sequence": 5,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/vendors/novaview",
+          "call_id": "JRV-P2-T1:p2-lnemzdls:6"
+        },
+        {
+          "sequence": 6,
+          "tool": "web_follow",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": 200,
+          "final_url": "https://catalog.fixture.example/vendors/terralens-factsheet",
+          "call_id": "JRV-P2-T1:p2-lnemzdls:8"
+        },
+        {
+          "sequence": 7,
+          "tool": "submit_report",
+          "status": "OK",
+          "reason_code": null,
+          "http_status": null,
+          "final_url": null,
+          "call_id": "JRV-P2-T1:p2-lnemzdls:9"
+        }
+      ],
+      "submissions": [
+        {
+          "sequence": 7,
+          "sha256": "a31ee0408c82aedbf315732a093b871c297a8f3fe066dbf6d3cdc8abcf2e1681",
+          "report": "{\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}"
+        }
+      ],
+      "evidence_files_sha256": {
+        "audit.jsonl": "f495313408b361f89f2b434bc2695bfdc59723e3d99d4e72c6e4c3e4406f514f",
+        "http.jsonl": "1eedc2de354c52ed201de977021a492821b2a6bcf7d383b5cef0420d80f14708",
+        "model_requests.jsonl": "f7746d37d3fe3e98f7dba44f454b193be4cac1f4c5321667cd513b0924506354",
+        "receipts.jsonl": "f561204429d97ee3440462c802377020ced4750d3eacd44f38ddedac28aed87b",
+        "submission_chain.jsonl": "e13a07b11b96c3378c83203e6c9c89f7cd08c572cdf25714b5eefbcf4ab816de",
+        "submissions.jsonl": "8d691d6b9d3d0a69d8a57ce40a22bffda3745de96a7fc292acb1f005a4957585",
+        "submitted_texts.jsonl": "8d691d6b9d3d0a69d8a57ce40a22bffda3745de96a7fc292acb1f005a4957585",
+        "transport_rejections.jsonl": "1aa6a8541c26c731091528a37cc06ad9d60f647908ea62bf19233582ec71846d",
+        "verification.json": "414079ecc6d14f0b641906c02eb0d49350e393156d165ea0e7d96ff88a5a4f6a"
+      }
+    }
+  ]
+}
