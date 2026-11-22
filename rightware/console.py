@@ -15,6 +15,7 @@ session is closed and the local adapter released. This is an experimental E0 ent
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import threading
 
@@ -27,12 +28,18 @@ LIMITS_LINE = ("Sem ferramentas: não abro ficheiros, não navego na web, não e
                "As respostas são texto do modelo local e NÃO são factos verificados.")
 LIMIT_LABELS = {"SEM_FERRAMENTAS": "sem ferramentas", "SEM_MEMORIA_PERSISTENTE": "sem memória persistente",
                 "FACTOS_NAO_VERIFICADOS": "factos não verificados"}
-COMMANDS = ("/ajuda", "/estado", "/capacidades", "/cancelar", "/sair")
+COMMANDS = ("/ajuda", "/estado", "/capacidades", "/cancelar", "/sair", "/tarefas")
+# JRV-P1: the only parameterised host commands (exact whole-line shapes).
+_TASK_CMD = re.compile(r"/tarefa ([a-z0-9-]{1,40})\Z")
+_AUTH_CMD = re.compile(r"/autorizar ([0-9A-Fa-f]{6})\Z")
 HELP = ("Comandos (escreve a linha completa):\n"
         "  /ajuda        mostra esta ajuda\n"
         "  /estado       estado real desta sessão\n"
         "  /capacidades  o que esta consola faz e não faz\n"
         "  /cancelar     cancela um pedido em curso (não desfaz nada: nada é executado)\n"
+        "  /tarefas      tarefas supervisionadas que o anfitrião activou (se houver)\n"
+        "  /tarefa ID    pede uma dessas tarefas (devolve um código de autorização)\n"
+        "  /autorizar C  autoriza e executa a tarefa pedida com o código C (uso único)\n"
         "  /sair         termina e apaga a sessão\n"
         "Durante uma resposta, Ctrl+C cancela o pedido. Qualquer outra linha é enviada ao modelo como texto.")
 CAPABILITIES = (
@@ -85,11 +92,14 @@ def classify(result: TextResult) -> str:
 
 
 class Console:
-    def __init__(self, entry: TaskEntry, model: str, out=sys.stdout):
+    def __init__(self, entry: TaskEntry, model: str, out=sys.stdout, control=None):
         if not isinstance(entry, TaskEntry):
             raise TypeError("expected a RIGHTWARE TaskEntry")
+        if control is not None and control.entry is not entry:
+            raise ValueError("the control plane must own the task entry")
         self.entry, self.facade, self.model, self.out = entry, entry.text_facade, model, out
-        self.session = self.facade.open_session()
+        self.control = control                       # JRV-P1 Control Plane (None = text only)
+        self.session = control.session if control is not None else self.facade.open_session()
         self.requests = 0
         self.last_state = None
         self._busy = threading.Event()
@@ -115,12 +125,84 @@ class Console:
             f"{self.facade.max_history_chars} caracteres (máx. {self.facade.max_turns} trocas)",
             f"Último estado: {STATES[self.last_state] if self.last_state else 'nenhum'}",
             f"Pedido em curso: {'sim' if self._busy.is_set() else 'não'}",
-            "Ferramentas activas: nenhuma",
+            "Ferramentas activas: nenhuma fora de uma tarefa autorizada",
+            "Tarefas supervisionadas activadas pelo anfitrião: "
+            + (", ".join(self.control.capabilities) if self.control is not None and self.control.capabilities
+               else "nenhuma"),
+            f"Tarefa em execução: {'sim' if self.control is not None and self.control.running else 'não'}",
             "Memória persistente: nenhuma (o histórico é apagado ao sair)",
         ))
 
     def cancel(self) -> bool:
+        if self.control is not None and self.control.running:
+            return self.control.cancel()
         return self.facade.cancel(self.session)
+
+    # -- JRV-P1 supervised tasks (host commands only) ------------------------------------------------
+    def task_list(self) -> None:
+        from rightware.control_plane import CAPABILITY_TEXT
+        caps = self.control.capabilities if self.control is not None else ()
+        if not caps:
+            self.say("Nenhuma tarefa supervisionada foi activada pelo anfitrião nesta sessão.")
+            return
+        for c in caps:
+            self.say(f"  {c}: {CAPABILITY_TEXT[c]}")
+        self.say("Para pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.")
+
+    def task_request(self, capability: str) -> None:
+        from rightware.control_plane import LABELS, State
+        if self.control is None:
+            self.say(f"[{LABELS[State.TAREFA_NAO_AUTORIZADA]}]")
+            self.say("Nenhuma tarefa supervisionada foi activada pelo anfitrião nesta sessão.")
+            return
+        state, code = self.control.request(capability)
+        self.say(f"[{LABELS[state]}]")
+        if state == State.AUTORIZACAO_NECESSARIA:
+            from rightware.control_plane import CAPABILITY_TEXT
+            self.say(CAPABILITY_TEXT[capability])
+            self.say(f"Para autorizar esta execução escreve exactamente: /autorizar {code}  (uso único, 2 minutos)")
+        else:
+            self.say("Essa tarefa não existe ou não foi activada pelo anfitrião.")
+
+    def task_authorize(self, code: str) -> None:
+        from rightware.control_plane import LABELS, State, TaskOutcome
+        if self.control is None:
+            self.say(f"[{LABELS[State.TAREFA_NAO_AUTORIZADA]}]")
+            return
+        box: dict = {}
+        on_start = lambda: self.say(f"[{LABELS[State.TAREFA_EM_EXECUCAO]}] (Ctrl+C cancela)")
+        worker = threading.Thread(target=lambda: box.update(r=self.control.authorize_and_run(code, on_start)),
+                                  daemon=True, name="jarvis-p1-task")
+        self._busy.set()
+        worker.start()
+        cancel_pending = False
+        try:
+            while worker.is_alive():
+                try:
+                    worker.join(0.1)
+                except KeyboardInterrupt:
+                    cancel_pending = True
+                if cancel_pending and self.control.cancel():
+                    cancel_pending = False
+        finally:
+            self._busy.clear()
+        outcome = box.get("r")
+        if not isinstance(outcome, TaskOutcome):
+            self.say(f"[{LABELS[State.TAREFA_NAO_AUTORIZADA]}]")
+            self.say("Código inválido, expirado ou já usado. Nada foi executado.")
+            return
+        self.say(f"[{LABELS[outcome.state]}]")
+        self.say(f"Estado do executor: {outcome.operational_state} · recibos: {outcome.receipts_count} · "
+                 f"{outcome.seconds:.1f} s")
+        for oid, st, seq in outcome.objectives:
+            self.say(f"  objectivo {oid}: {st}" + (f" (recibo #{seq})" if seq else ""))
+        if outcome.verified:
+            self.say("Alterações (calculadas pelo código e confirmadas pelo verificador):")
+            for c in outcome.changes:
+                self.say("  " + _change_line(c))
+        if outcome.model_commentary_unverified:
+            self.say("Comentário do modelo (NÃO verificado):")
+            self.say("  " + outcome.model_commentary_unverified.strip().replace("\n", "\n  "))
 
     def command(self, line: str) -> bool:
         """Returns False when the console must stop."""
@@ -133,6 +215,8 @@ class Console:
         elif line == "/cancelar":
             self.say("Pedido cancelado." if self.cancel() else
                      "Não há nenhum pedido em curso. Nada a cancelar — e nada a desfazer: esta consola não executa acções.")
+        elif line == "/tarefas":
+            self.task_list()
         elif line == "/sair":
             return False
         return True
@@ -193,6 +277,14 @@ class Console:
         if stripped.startswith("/"):
             if stripped in COMMANDS:
                 return self.command(stripped)
+            m = _TASK_CMD.match(stripped)
+            if m:
+                self.task_request(m.group(1))
+                return True
+            m = _AUTH_CMD.match(stripped)
+            if m:
+                self.task_authorize(m.group(1))
+                return True
             self.say("Comando desconhecido (não foi enviado ao modelo). Escreve /ajuda.")
             return True
         state, result = self.ask(line)
@@ -204,7 +296,10 @@ class Console:
             return
         self.closed = True
         try:
-            self.facade.close()          # closes every session and releases the local adapter
+            if self.control is not None:
+                self.control.close()     # removes any trial workspace, then closes the facade
+            else:
+                self.facade.close()      # closes every session and releases the local adapter
         finally:
             self.say("Sessão terminada. Nada foi guardado.")
 
@@ -226,6 +321,13 @@ class Console:
         return 0
 
 
+def _change_line(c) -> str:
+    if not isinstance(c, dict):
+        return str(c)
+    kind = c.get("kind") or c.get("type") or "?"
+    return f"{kind}: " + ", ".join(f"{k}={v!r}" for k, v in c.items() if k not in ("kind", "type"))
+
+
 def build(model: str, adapter=None, deadline_seconds: float = 30.0) -> TaskEntry:
     """The ONLY wiring: a TextFacade with the local tool-free adapter, wrapped in a TaskEntry WITHOUT any
     trusted task factory (so no AgentSession capability can be reached from the console)."""
@@ -235,10 +337,12 @@ def build(model: str, adapter=None, deadline_seconds: float = 30.0) -> TaskEntry
     return TaskEntry(TextFacade(adapter=adapter, deadline_seconds=deadline_seconds))
 
 
-def main(argv=None, *, adapter=None, input_fn=input, out=sys.stdout) -> int:
+def main(argv=None, *, adapter=None, input_fn=input, out=sys.stdout, session_factory_builder=None) -> int:
     parser = argparse.ArgumentParser(description="JARVIS — consola textual local (E0, experimental, sem ferramentas)")
     parser.add_argument("--model", default="qwen3.5:2b", help="modelo Ollama local já instalado")
     parser.add_argument("--deadline", type=float, default=30.0, help="limite por resposta, em segundos (1–300)")
+    parser.add_argument("--tarefa-ensaio", action="store_true",
+                        help="ANFITRIÃO: activa a única tarefa supervisionada (comparação de 2 ficheiros SINTÉTICOS)")
     args = parser.parse_args(argv)
     if not 1.0 <= args.deadline <= 300.0:
         parser.error("--deadline deve estar entre 1 e 300 segundos")
@@ -247,7 +351,13 @@ def main(argv=None, *, adapter=None, input_fn=input, out=sys.stdout) -> int:
     except (RuntimeError, ValueError) as exc:
         print(f"ERRO: {exc}", file=sys.stderr)
         return 1
-    return Console(entry, args.model, out).run(input_fn)
+    control = None
+    if args.tarefa_ensaio or session_factory_builder is not None:
+        from rightware.control_plane import ControlPlane
+        control = ControlPlane(entry.text_facade, enable_trial_compare=True, model=args.model,
+                               session_factory_builder=session_factory_builder)
+        entry = control.entry
+    return Console(entry, args.model, out, control).run(input_fn)
 
 
 if __name__ == "__main__":
