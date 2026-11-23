@@ -1,0 +1,697 @@
+{
+ "pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+ "routes": [
+  {
+   "method": "GET",
+   "path": "/api/digest",
+   "source": "digest_routes.py:41",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/api/digest/audio",
+   "source": "digest_routes.py:59",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/api/digest/generate",
+   "source": "digest_routes.py:73",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/api/digest/history",
+   "source": "digest_routes.py:82",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/api/digest/schedule",
+   "source": "digest_routes.py:96",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/api/digest/schedule",
+   "source": "digest_routes.py:105",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/api/research",
+   "source": "research_router.py:569",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/comparison",
+   "source": "comparison.py:445",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/dashboard",
+   "source": "dashboard.py:429",
+   "decision": "SERVIDA PELO BUILD EST\u00c1TICO (p\u00e1gina SPA), rota original inacess\u00edvel"
+  },
+  {
+   "method": "GET",
+   "path": "/health",
+   "source": "routes.py:1388",
+   "decision": "PERMITIDA (app original, s\u00f3 leitura)"
+  },
+  {
+   "method": "GET",
+   "path": "/metrics",
+   "source": "api_routes.py:658",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/agents",
+   "source": "api_routes.py:105",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/agents",
+   "source": "api_routes.py:147",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/agents/errors",
+   "source": "agent_manager_routes.py:2332",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "WEBSOCKET",
+   "path": "/v1/agents/events",
+   "source": "ws_bridge.py:66",
+   "decision": "NEGADA (WebSocket 1008)"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/agents/health",
+   "source": "agent_manager_routes.py:2342",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v1/agents/{agent_id}",
+   "source": "api_routes.py:170",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/agents/{agent_id}/message",
+   "source": "api_routes.py:184",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/analytics/identity",
+   "source": "analytics_routes.py:54",
+   "decision": "PERMITIDA (bridge RIGHTWARE)"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/analytics/preference",
+   "source": "analytics_routes.py:106",
+   "decision": "PERMITIDA (bridge RIGHTWARE)"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/approvals/pending",
+   "source": "approval_routes.py:49",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/approvals/{action_id}/approve",
+   "source": "approval_routes.py:57",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/approvals/{action_id}/deny",
+   "source": "approval_routes.py:68",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/budget",
+   "source": "api_routes.py:637",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "PUT",
+   "path": "/v1/budget/limits",
+   "source": "api_routes.py:643",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/channels",
+   "source": "routes.py:1403",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/channels/send",
+   "source": "routes.py:1413",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/channels/sendblue/health",
+   "source": "agent_manager_routes.py:2573",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/channels/sendblue/register-webhook",
+   "source": "agent_manager_routes.py:2485",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/channels/sendblue/test",
+   "source": "agent_manager_routes.py:2524",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/channels/sendblue/verify",
+   "source": "agent_manager_routes.py:2418",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/channels/status",
+   "source": "routes.py:1437",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/chat/completions",
+   "source": "routes.py:158",
+   "decision": "PERMITIDA (bridge RIGHTWARE)"
+  },
+  {
+   "method": "WEBSOCKET",
+   "path": "/v1/chat/stream",
+   "source": "api_routes.py:766",
+   "decision": "NEGADA (WebSocket 1008)"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/cloud/reload",
+   "source": "routes.py:1218",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/connectors",
+   "source": "connectors_router.py:432",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/connectors/upload/ingest",
+   "source": "upload_router.py:130",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/connectors/upload/ingest/files",
+   "source": "upload_router.py:155",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/connectors/{connector_id}",
+   "source": "connectors_router.py:452",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/connectors/{connector_id}/connect",
+   "source": "connectors_router.py:508",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/connectors/{connector_id}/disconnect",
+   "source": "connectors_router.py:645",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/connectors/{connector_id}/oauth/callback",
+   "source": "connectors_router.py:790",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/connectors/{connector_id}/oauth/start",
+   "source": "connectors_router.py:743",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/connectors/{connector_id}/sync",
+   "source": "connectors_router.py:905",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/connectors/{connector_id}/sync",
+   "source": "connectors_router.py:885",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/feedback",
+   "source": "api_routes.py:1198",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/feedback/stats",
+   "source": "api_routes.py:1224",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/info",
+   "source": "routes.py:1373",
+   "decision": "PERMITIDA (app original, s\u00f3 leitura)"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/learning/policy",
+   "source": "api_routes.py:947",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/learning/stats",
+   "source": "api_routes.py:926",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents",
+   "source": "agent_manager_routes.py:1646",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents",
+   "source": "agent_manager_routes.py:1650",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v1/managed-agents/{agent_id}",
+   "source": "agent_manager_routes.py:1689",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}",
+   "source": "agent_manager_routes.py:1669",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v1/managed-agents/{agent_id}",
+   "source": "agent_manager_routes.py:1676",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/channels",
+   "source": "agent_manager_routes.py:1837",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/channels",
+   "source": "agent_manager_routes.py:1841",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v1/managed-agents/{agent_id}/channels/{binding_id}",
+   "source": "agent_manager_routes.py:2045",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/learning",
+   "source": "agent_manager_routes.py:2234",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/learning/run",
+   "source": "agent_manager_routes.py:2240",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/messages",
+   "source": "agent_manager_routes.py:2074",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/messages",
+   "source": "agent_manager_routes.py:2078",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/pause",
+   "source": "agent_manager_routes.py:1696",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/recover",
+   "source": "agent_manager_routes.py:1791",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/resume",
+   "source": "agent_manager_routes.py:1703",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/run",
+   "source": "agent_manager_routes.py:1710",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/state",
+   "source": "agent_manager_routes.py:2219",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/tasks",
+   "source": "agent_manager_routes.py:1800",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/managed-agents/{agent_id}/tasks",
+   "source": "agent_manager_routes.py:1804",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v1/managed-agents/{agent_id}/tasks/{task_id}",
+   "source": "agent_manager_routes.py:1830",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/tasks/{task_id}",
+   "source": "agent_manager_routes.py:1810",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "PATCH",
+   "path": "/v1/managed-agents/{agent_id}/tasks/{task_id}",
+   "source": "agent_manager_routes.py:1817",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/traces",
+   "source": "agent_manager_routes.py:2252",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/managed-agents/{agent_id}/traces/{trace_id}",
+   "source": "agent_manager_routes.py:2282",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/memory/config",
+   "source": "api_routes.py:287",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/memory/index",
+   "source": "api_routes.py:336",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/memory/search",
+   "source": "api_routes.py:251",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/memory/stats",
+   "source": "api_routes.py:272",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/memory/store",
+   "source": "api_routes.py:236",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/models",
+   "source": "routes.py:1106",
+   "decision": "PERMITIDA (bridge RIGHTWARE)"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/models/pull",
+   "source": "routes.py:1150",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v1/models/{model_name:path}",
+   "source": "routes.py:1188",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/optimize/runs",
+   "source": "api_routes.py:1235",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/optimize/runs",
+   "source": "api_routes.py:1285",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/optimize/runs/{run_id}",
+   "source": "api_routes.py:1255",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/recommended-model",
+   "source": "agent_manager_routes.py:2353",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/savings",
+   "source": "routes.py:1294",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/security/scan",
+   "source": "routes.py:1451",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/sessions",
+   "source": "api_routes.py:592",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/sessions/{session_id}",
+   "source": "api_routes.py:606",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/skills",
+   "source": "api_routes.py:554",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/skills",
+   "source": "api_routes.py:569",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v1/skills/{skill_name}",
+   "source": "api_routes.py:578",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/speech/health",
+   "source": "api_routes.py:1034",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/speech/synthesize",
+   "source": "api_routes.py:1131",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/speech/transcribe",
+   "source": "api_routes.py:993",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/speech/tts/health",
+   "source": "api_routes.py:1177",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/telemetry/energy",
+   "source": "api_routes.py:509",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/telemetry/reset",
+   "source": "routes.py:1349",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/telemetry/stats",
+   "source": "api_routes.py:482",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/templates",
+   "source": "agent_manager_routes.py:2320",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/templates/{template_id}/instantiate",
+   "source": "agent_manager_routes.py:2324",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/tools",
+   "source": "agent_manager_routes.py:2368",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/v1/tools/{tool_name}/credentials",
+   "source": "agent_manager_routes.py:2390",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/tools/{tool_name}/credentials/status",
+   "source": "agent_manager_routes.py:2408",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "DELETE",
+   "path": "/v1/tools/{tool_name}/credentials/{key}",
+   "source": "agent_manager_routes.py:2401",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/traces",
+   "source": "api_routes.py:427",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/v1/traces/{trace_id}",
+   "source": "api_routes.py:441",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/webhooks/bluebubbles",
+   "source": "webhook_routes.py:266",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/webhooks/sendblue",
+   "source": "webhook_routes.py:366",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/webhooks/twilio",
+   "source": "webhook_routes.py:109",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/webhooks/whatsapp",
+   "source": "webhook_routes.py:304",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "POST",
+   "path": "/webhooks/whatsapp",
+   "source": "webhook_routes.py:318",
+   "decision": "NEGADA"
+  },
+  {
+   "method": "GET",
+   "path": "/{full_path:path}",
+   "source": "app.py:550",
+   "decision": "NEGADA"
+  }
+ ],
+ "allowlist": [
+  "GET /health -> inner",
+  "GET /v1/info -> inner",
+  "GET /v1/models -> bridge",
+  "POST /v1/chat/completions -> bridge",
+  "GET /v1/analytics/identity -> bridge",
+  "POST /v1/analytics/preference -> bridge"
+ ]
+}

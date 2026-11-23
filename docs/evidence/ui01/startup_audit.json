@@ -1,0 +1,38 @@
+{
+  "kind": "UI-01 startup audit (REAL process, decoy proxy, temp HOME/OPENJARVIS_HOME)",
+  "startup_seconds": 1.52,
+  "exercised": {
+    "GET /": 200,
+    "GET /v1/models": 200,
+    "GET /health": 200,
+    "GET /v1/info": 200,
+    "GET /v1/analytics/identity": 200,
+    "GET /v1/managed-agents": 403,
+    "POST /v1/agents": 403,
+    "GET /v1/telemetry/stats": 403,
+    "POST /api/research": 403
+  },
+  "outbound_attempts_via_proxy": [],
+  "non_loopback_sockets": [],
+  "thread_names_last_sample": [
+    "python",
+    "python"
+  ],
+  "max_threads": 2,
+  "child_processes": [],
+  "files_created_in_HOME": [],
+  "files_created_in_OPENJARVIS_HOME": [],
+  "repository_status_changed": false,
+  "server_log_tail": [
+    "Failed to set up rate limiter: No module named 'openjarvis_rust'",
+    "INFO:     Started server process [11043]",
+    "INFO:     Waiting for application startup.",
+    "INFO:     Application startup complete.",
+    "INFO:     Uvicorn running on http://127.0.0.1:8011 (Press CTRL+C to quit)",
+    "INFO:     Shutting down",
+    "INFO:     Waiting for application shutdown.",
+    "INFO:     Application shutdown complete.",
+    "INFO:     Finished server process [11043]"
+  ],
+  "clean": true
+}

@@ -1,0 +1,9 @@
+{
+  "vendor_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "uv_lock_sha256": "c5ce789c90cca37a0cf6d8b5cd7226ab69572182ac71424c64665a4eefeed982",
+  "package_lock_sha256": "ed5d0ea1dc31e353a0e6fe9368c2591b2703d9a4bf86236151a89fb4c45074da",
+  "npm": "11.19.0",
+  "static_files": 79,
+  "static_tree_sha256": "3a1d0dac674087476fb458e1a1f9d3995840efd086f9689056ddee46e11e4cc1",
+  "config_sha256": "fca800d1b689549688eef2a4dbf84f0b36144b5eddc3ab0fe3cc1041153ac251"
+}

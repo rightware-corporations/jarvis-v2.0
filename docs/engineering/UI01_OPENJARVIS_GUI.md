@@ -1,6 +1,6 @@
 # UI-01 — interface original do OpenJarvis com o runtime RIGHTWARE
 
-Estado: **investigação e execução local concluídas; integração por implementar** (aguarda os gates G-MERGE e G-IMPL). Data: 23/11/2026. Base: `develop` `ba85c2a85d8290685eba9cd78dfe371eb3e29cc2`; vendor `f21d902f4d3bd7f0f3f138f1a4613019a394b549` (inalterado).
+Estado (Parte I, histórica): **investigação e execução local concluídas; integração por implementar** (aguarda os gates G-MERGE e G-IMPL). **Estado actual: ver a Parte II (G-IMPL implementado).** Data: 23/11/2026. Base: `develop` `ba85c2a85d8290685eba9cd78dfe371eb3e29cc2`; vendor `f21d902f4d3bd7f0f3f138f1a4613019a394b549` (inalterado).
 
 Legenda: **FACTO** = executado ou lido no código no pin; **INFERÊNCIA** = deduzido do código, sem execução; **NÃO VERIFICADO**.
 
@@ -123,3 +123,169 @@ O selector de modelo escolhe por omissão o primeiro modelo da lista (`qwen3.5:2
   3. host privado HTTPS com autenticação e runtime persistente.
 
   Todas exigem decisão do operador e um gate próprio.
+
+---
+
+# Parte II — G-IMPL implementado (23/11/2026, branch `integration/jrv-ui01-gui-20261123`)
+
+A Parte I descreve a investigação feita antes da implementação, quando a GUI original corria sem a camada RIGHTWARE. **Esta parte é o estado actual.**
+
+## 8. Arquitectura implementada
+
+```
+browser ──127.0.0.1:8000──> PolicyApp (rightware/gui/policy.py, camada EXTERNA deny-by-default)
+   │  allowlist exacta (método, caminho canónico) + build estático do frontend ORIGINAL (pin, inalterado)
+   ├─ GET /health, GET /v1/info ─────────────> app OpenJarvis ORIGINAL (create_app, sem agente/scheduler/…)
+   ├─ GET /v1/models, POST /v1/chat/completions, analytics (só "não partilhar") ─> ChatBridge (rightware/gui/bridge.py)
+   │       conversa  → TaskEntry/TextFacade RIGHTWARE (sem ferramentas; o anfitrião é dono do histórico)
+   │       /tarefas /tarefa /autorizar /estado /cancelar → o MESMO ControlPlane (P1 + goose/Gateway P3A)
+   └─ tudo o resto → 403 JSON / WebSocket 1008 + audit.jsonl (sem conteúdo)
+```
+
+**Como se corre:**
+
+```bash
+python jarvis.py gui setup
+python jarvis.py gui serve --model qwen3.5:2b --model qwen3.5:4b [--tarefa-ensaio] [--missao-goose --goose-bin B --goose-ollama-dir O --goose-models-dir D]
+```
+
+- `setup` corre uma vez: cria um venv isolado com `uv sync --frozen --extra server` a partir do lock do pin e faz o build do frontend original com `npx npm@11.19.0`. Tudo fica em `.runtime/gui`.
+- O vendor não é tocado.
+
+**Frontend:** o build do pin sem alterações. Não há fork, nem segundo frontend, nem segundo backend, nem um segundo mecanismo de autorização.
+
+## 9. Inventário deny-by-default (B1)
+
+Ficheiro: `docs/evidence/ui01/route_inventory.json`. Lista **114** rotas do servidor no pin, cada uma com `ficheiro:linha` e a decisão:
+- **6 PERMITIDAS**:
+  - `GET /health` e `GET /v1/info` (app original);
+  - `GET /v1/models`, `POST /v1/chat/completions`, `GET /v1/analytics/identity` e `POST /v1/analytics/preference` (bridge RIGHTWARE). A preferência de analytics só aceita `enabled:false`.
+- **7 páginas SPA** (`/`, `/dashboard`, `/settings`, `/get-started`, `/data-sources`, `/agents`, `/logs`): servem o `index.html` do build. As rotas originais com o mesmo caminho, como o `/dashboard` HTML do upstream, ficam inacessíveis.
+- **Todas as outras são NEGADAS**:
+  - agentes e agentes geridos, ferramentas e credenciais;
+  - aprovações, pesquisa (`/api/research`), upload e conectores;
+  - memória, skills, scheduler/digest, webhooks, canais;
+  - operações sobre modelos (pull, delete, `cloud/reload`);
+  - telemetria, learning, optimize, feedback, budget;
+  - WebSockets (`/v1/chat/stream`, `/v1/agents/events`);
+  - `/docs` e `/openapi.json`.
+
+O teste `test_every_route_of_the_pinned_openjarvis_server_is_denied_except_the_allowlist` percorre o mesmo inventário.
+
+**Formas alternativas recusadas, nunca normalizadas** (testes e browser):
+- maiúsculas, `//`, barra final, `./` e `../`, percent-encoding, backslash e não-ASCII;
+- métodos `HEAD`, `OPTIONS` e `PUT` sobre rotas permitidas;
+- `Host` que não seja loopback ou que venha duplicado;
+- `Origin` cruzado num POST;
+- `Upgrade` WebSocket.
+
+Um erro dentro da política dá 403 (fail-closed).
+
+**Browser:** CSP `connect-src 'self'`, de modo que PostHog e Supabase ficam bloqueados pelo próprio browser. Também `X-Frame-Options: DENY`, `nosniff` e `no-store`.
+
+**Startup limpo** (`labs/ui01/startup_audit.py`, processo real com proxy-isco; `docs/evidence/ui01/startup_audit.json`):
+- 0 tentativas de saída;
+- 0 sockets fora de loopback;
+- 0 processos-filho;
+- 0 ficheiros criados em `HOME`/`OPENJARVIS_HOME`;
+- 2 threads.
+
+Não há version check, porque nunca se passa por `jarvis serve`. Scheduler, canais, memória, speech, MCP e webhooks não são construídos. Telemetria, traces e analytics estão `false`; a config é recusada se não estiverem.
+
+## 10. Conversa real (B2)
+
+| Item | Resultado (FACTO) |
+|---|---|
+| Modelo | `qwen3.5:2b` (digest `0689d44085e0…`), Ollama 0.40.15, CPU com 4 vCPU e sem GPU, `num_ctx` 4096, `num_predict` 256 |
+| PT (B5.2) | "A capital de Moçambique é Maputo, e a língua oficial é o português." Acentos e UTF-8 correctos |
+| EN (B5.3) | "The capital of Japan is Tokyo." |
+| Continuidade e isolamento (B5.4) | Na mesma conversa a resposta foi "ZEBRA-41"; numa conversa nova foi "NENHUM". O histórico é do anfitrião: um turno de assistente forjado pelo cliente não é aceite (teste) |
+| Ferramentas | Não são oferecidas ao modelo. Um pedido com `tools`, `functions` ou `tool_choice` recebe 403 `TOOLS_NOT_ALLOWED` e fica registado |
+| Ollama parado (B5.10) | Erro visível e accionável: `[Erro de inferência] … (código: MODEL_UNAVAILABLE) Acção: confirme que o Ollama está a correr em 127.0.0.1:11434…`. Nenhuma resposta inventada. Depois do reinício responde "OK". Antes da correcção, a GUI original mostrava só "Pick a model first" |
+| Desempenho, N=10 por condição, pelo mesmo endpoint da GUI (`perf_qwen3.5-2b.json`) | **A frio** (modelo descarregado antes de cada pedido): p50 4,18 s, p95 15,6 s. **A quente**: p50 0,87 s, p95 1,76 s. **Modelo** (Ollama directo): 16,0 tokens/s (p50). 10/10 somas correctas e 10 respostas distintas |
+| Limites de desempenho (sem esconder) | 1. A bridge **não faz streaming de tokens**: a resposta chega inteira, por isso TTFT = tempo total. 2. Perguntas abertas demoram mais: 13–55 s com o 2B nos testes de browser. 3. Num caso o 2B gerou durante 4 min e foi cortado pelo prazo de 240 s (`TIMEOUT`, mostrado como erro). 4. Mitigações propostas, ainda não aplicadas: streaming no adaptador; `think`/`num_predict` configuráveis com registo; modelo 4B ou GPU no host de produção |
+
+## 11. Tarefas supervisionadas (B3)
+
+- Os comandos são os da consola, sobre o **mesmo** ControlPlane.
+- **A autorização é só o código do operador:**
+  - qualquer tentativa consome o código (fail-closed);
+  - `/autorizar` sem código é recusado sem consumir;
+  - um código expirado é recusado (teste com relógio);
+  - `POST /v1/approvals/*/approve` (o clique da UI original) recebe 403 e não inicia nada.
+- `/autorizar` lança a execução em background. `/estado` mostra o progresso e o resultado final decidido pelo verificador. `/cancelar` cancela através do ControlPlane.
+- **Distinção visual:** os rótulos de estado vêm em negrito. O comentário do modelo aparece como citação `⚠️ Comentário do modelo — NÃO verificado (não é evidência)`. As respostas de conversa levam o rodapé "NÃO verificada · sem ferramentas".
+- P1, goose, Gateway, verificador e recibos estão **inalterados**: o `git diff` contra `develop` desses ficheiros é vazio.
+
+## 12. Validação no browser original (B5): 10/10 cenários executados
+
+Evidência: `docs/evidence/ui01/b5_results.json` e `docs/evidence/ui01/gui/*.png`.
+
+| # | Acção | Obtido (FACTO) | Resultado |
+|---|---|---|---|
+| 1 | Abrir | Interface original: Chat, Dashboard, Data Sources, Agents, Logs, Settings | PASS |
+| 2 | PT real | Maputo/português, rótulo NÃO verificada, id `rw-fb75…` | PASS |
+| 3 | EN real | Tokyo, id `rw-17b2…` | PASS |
+| 4 | Sessão | ZEBRA-41 na mesma conversa; NENHUM noutra | PASS |
+| 5 | Pedido | `/tarefa comparar-versoes-ensaio` dá "Autorização necessária" e um código | PASS |
+| 6 | Autorizações | sem código, código errado e código consumido: recusados; clique na aprovação: 403; código válido: execução; reutilização com tarefa activa: recusada | PASS |
+| 7 | Execução e recibos | **P1**: `Resultado verificado por evidência`, COMPARISON_VERIFIED, 3 recibos (`fixture_read`, `fixture_read`, `fixture_compare`), 3 objectivos VERIFIED, alterações calculadas pelo código, comentário do modelo marcado NÃO verificado (99,9 s) | PASS |
+| 7b | Missão goose/Gateway P3A pela GUI (3 tentativas) | Ver abaixo | **não verificada** |
+| 8 | Cancelamento | `/cancelar` dá "Pedido cancelado". Estado final `Tarefa cancelada` (HALTED), pedidos de ferramenta seguintes DENIED | PASS |
+| 9 | Contornar | 20 sondas (rotas, métodos, `//`, barra final, `/docs`, `/openapi.json`, webhooks, `PUT` no chat, `tools` no chat, modelo não permitido) e WebSocket: tudo recusado e registado; tarefa não activada recusada | PASS |
+| 10 | Ollama parado | Erro explícito `MODEL_UNAVAILABLE` e recuperação após o reinício | PASS |
+
+**Missão goose pela GUI (FACTO; nenhuma terminou verificada):**
+- Isolamento verificado nas três: fixture e internet BLOCKED, 403 para clientes que não são o goose, imagem `sha256:fe85afae…`.
+- Em todas: cadeia válida, HTTP↔recibos exactos, 0 violações e chamadas = recibos.
+
+| Tentativa | Fim | Recibos e objectivos | Estado |
+|---|---|---|---|
+| 1 | `TIMED_OUT` aos 900 s | 5 recibos (5↔5) | EXECUCAO_PARCIAL `PROCESS_TIMED_OUT` |
+| 2 | `TIMED_OUT` aos 900 s | 5↔5 | EXECUCAO_PARCIAL |
+| 3 | goose terminou com código **1** aos 793 s, sem submeter o relatório | 4/4 objectivos observados, 503 recuperado, 6↔6 | **EXECUCAO_FALHADA `PROCESS_EXIT_NONZERO`** |
+
+Os gates R1 funcionaram: nunca houve "verificado" com timeout ou com saída diferente de 0. A latência por turno do 4B foi de 131–332 s, contra 15–83 s na corrida P3A real. A causa não foi determinada (NÃO VERIFICADO; provável contenção de CPU no anfitrião partilhado). **A missão goose fica sem resultado verificado pela GUI nesta entrega.**
+
+**Prova de backend real** (`docs/evidence/ui01/correlation.json`):
+- **Correlação:** cada id `rw-…` mostrado na GUI aparece no `audit.jsonl` do servidor (modelo, segundos, `facade_request_id`) e corresponde a um único `POST /api/chat` do Ollama, com a mesma hora UTC e a mesma duração (diferença ≤ 0,03 s; por exemplo, 54,856 s no servidor e 54,83 s no Ollama).
+- **Controlo:** com o Ollama parado não há nenhum pedido ao Ollama e aparece o erro explícito.
+- **Varrimento:** a bridge só tem textos fixos de **rótulos, recusas e erros**; não há respostas de cortesia. Entradas distintas dão respostas distintas (10/10).
+
+## 13. Regressões e integridade
+
+- Suite completa no venv fixado: **680 OK, 0 skipped**.
+- `tests/test_ui01_gui.py`: 20 testes FAKE/offline.
+- P1, P2, P3A e TE-P2A verdes.
+- Vendor (`f21d902`) e os seus ficheiros inalterados.
+- O build do frontend é o `vite build` do pin. O lint e o typecheck do frontend original não foram corridos: o `tsc -b` do script `build` foi substituído por `vite build` directo para o `outDir` externo. O typecheck do frontend fica NÃO VERIFICADO.
+
+## 14. Acesso
+
+- **Verificado:** `http://127.0.0.1:8000/` no ambiente de engenharia.
+  - `bash labs/ui01/start_and_verify.sh 8000 --tarefa-ensaio` arranca e verifica o bind só em 127.0.0.1, as rotas permitidas e as negações.
+- **Host privado HTTPS:** só preparação, em `docs/engineering/UI01_PRIVATE_HOST.md`. Nada foi instalado, publicado ou tunelado.
+
+## 15. INTEGRADO vs PENDENTE
+
+| Capacidade | Existe no OpenJarvis | Integrada com RIGHTWARE | Testada | Estado | Bloqueio / próxima acção |
+|---|---|---|---|---|---|
+| Interface original + conversa real PT/EN | sim | **sim** (bridge → TextFacade) | sim, no browser | **INTEGRADA** | streaming de tokens; i18n PT da UI (a UI está em inglês) |
+| Tarefa supervisionada P1 | n/a | **sim** (ControlPlane) | sim, verificada no browser | **INTEGRADA** | — |
+| Missão goose/Gateway P3A | n/a | **sim** (ControlPlane) | executada no browser, não verificada (3/3) | **PARCIAL** | desempenho do 4B no host; repetir em host com GPU/CPU dedicado |
+| Market Intelligence | pesquisa genérica (`/api/research`) | não | não | NÃO INTEGRADA | Internet autorizada, fontes datadas e verificador próprio; sem ordens financeiras |
+| Internet pública | `web_search`, research, browser | não (rotas negadas) | não | BLOQUEADA | política de rede da plataforma; TE-P2D parcial |
+| Voz | `/v1/speech/*` | não (negada) | não | NÃO INTEGRADA | extra `desktop` não instalado; hardware real |
+| Windows (acções locais) | ferramentas upstream | não | não | BLOQUEADA | companion autorizado no dispositivo; nunca shell genérica |
+| Shared Intelligence Core (SIC) | não | não | não | NÃO INTEGRADA | repositório separado; IAM e consentimento |
+| Router multi-IA | `cloud_router` (fornecedores pagos) | não (negado) | não | NÃO INTEGRADA | decisão de produto; sem despesas autorizadas |
+
+Na UI original, as páginas Data Sources, Agents, Dashboard (dados) e Settings (memória, cloud) continuam visíveis, mas as suas chamadas recebem 403 "não está integrada no JARVIS (RIGHTWARE)". **Nada é simulado.**
+
+## 16. Limitações e riscos
+
+- **Interface original:** em inglês. Mostra páginas de funções não integradas e um modal de opt-in (analytics e giveaway) na primeira visita. "Continue without sharing" funciona e qualquer opt-in é recusado e bloqueado pelo CSP. Removê-los exigiria alterar o frontend do vendor ou criar um overlay; decisão do operador.
+- **Desempenho:** a resposta não é streamed (sem tokens incrementais). O 2B pode gerar respostas longas até ao prazo. As missões goose 4B não terminaram verificadas neste host.
+- **Autenticação local:** não existe. A protecção é o bind só em loopback, a verificação de Host e Origin e o CSP. Qualquer processo local do mesmo utilizador pode usar a API permitida.
+- **Uma tarefa de cada vez para todo o processo:** o ControlPlane é global, portanto várias conversas partilham o mesmo estado de tarefa.
+- **Dependências de setup:** `uv`, `npx` e acesso ao PyPI e ao npm; linux/amd64 verificado.
