@@ -15,10 +15,10 @@ consola (python jarvis.py console --missao-goose …)  →  ControlPlane (autori
 
 - O goose só **propõe** operações. A AgentPolicy decide cada uma e cada uma gera recibo; nenhuma conclusão vem de texto do modelo.
 - **Isolamento verificado, não declarado:**
-  - **antes de o goose arrancar:** uma sonda feita da posição de rede do goose tem de encontrar a fixture e a internet bloqueadas, o Gateway acessível e uma recusa 403 para qualquer cliente que não seja o goose; o `docker inspect` do contentor tem de mostrar só a rede `jrv-agent` e zero mounts;
+  - **antes de o goose arrancar:** uma sonda feita da posição de rede do goose tem de encontrar a fixture e a internet bloqueadas, o Gateway acessível e uma recusa 403 para qualquer cliente que não seja o goose; o `docker inspect` do contentor tem de mostrar só a rede de agente **desta missão** (`jrv-p2-<id>-agent`), zero mounts e a etiqueta da missão; a Gateway tem de ter escrito a sua evidência de base (forçada pela recusa 403 da sonda);
   - **depois:** o registo de sessão do próprio goose tem de conter só chamadas ao Gateway, e só as 4 ferramentas do Gateway podem ter chegado ao modelo;
   - **qualquer violação** dá EXECUCAO_FALHADA e nunca "verificado".
-- **Estado:** RESULTADO_VERIFICADO só com `TASK_VERIFIED_LIMITED` e evidência consistente (correspondência HTTP↔recibos exacta, sem defeitos, cadeia de submissões válida). Os outros estados são:
+- **Estado:** RESULTADO_VERIFICADO só com `TASK_VERIFIED_LIMITED`, **processo goose terminado com código 0 e estado recolhido**, e evidência **completa** e consistente (correspondência HTTP↔recibos exacta, sem defeitos, cadeia de submissões válida contra a auditoria, chamadas observadas = recibos, inventário de ferramentas observado). Ver §8 (R1). Os outros estados são:
   - EXECUCAO_PARCIAL: há objectivos observados, mas não verificados;
   - RESULTADO_DESCONHECIDO: inclui EVIDENCE_INCONSISTENT;
   - TAREFA_CANCELADA;
@@ -110,3 +110,42 @@ Revisão humana desta PR. Se for aprovada e o merge verificado, segue-se um paco
 - a promoção do subconjunto do Gateway de `labs/` para `rightware/`;
 - a publicação reprodutível da imagem do Gateway;
 - N≥3 missões reais pré-registadas através do produto.
+
+## 8. Revisão JRV-P2-R1 (23/11/2026): quatro problemas da auditoria independente
+
+Código `1b292bb`. Testes **FAKE/offline** (daemon Docker simulado em memória e Gateway real em processo); não são evidência de isolamento real. A evidência real é a corrida 4, abaixo.
+
+| # | Problema (causa) | Correcção |
+|---|---|---|
+| 1 | **Propriedade dos recursos Docker.** Nomes fixos (`gateway`, `goose`, `jrv-agent`…) e um `docker rm -f` global no início e no fim. Isto removia contentores e redes alheios com o mesmo nome. | Cada missão recebe um id aleatório (`secrets.token_hex(4)`). Contentores e redes chamam-se `jrv-p2-<id>-<papel>` e levam a etiqueta `rightware.jarvis.mission=<id>`. A sub-rede `/24` é própria da missão e o IP do goose (`.10`) vai para `--allow-client`. Os nomes DNS internos (`gateway`, `ollama-tap`, `ollama`, `fixture`) passam a aliases nas redes da missão. Só se regista o **id Docker** devolvido por uma criação bem-sucedida. A limpeza remove só esses ids, do mais recente para o mais antigo, e só se a etiqueta ainda corresponder. Nunca se remove por nome. Uma falha na preparação limpa só o que foi criado. |
+| 2 | **Estados de conclusão.** `run_goose` não recolhia o código de saída e o `docker start` não era verificado. Recibos completos davam "verificado" mesmo com timeout ou saída ≠ 0. | `run_goose` devolve `end`, `exit_code`, `status` e `state_copied`. `process_ok` exige EXITED, código 0, `exited` e o estado copiado. Mapeamento: START_FAILED → `PROCESS_START_FAILED`; estado ilegível → `PROCESS_STATE_UNKNOWN`; saída ≠ 0 → `PROCESS_EXIT_NONZERO` (todos EXECUCAO_FALHADA); TIMED_OUT → PARCIAL ou DESCONHECIDO (`PROCESS_TIMED_OUT`, halt DEADLINE), nunca verificado; CANCELLED → CANCELADA. O texto do modelo não altera nada disto. Verificador e contrato te-p2b inalterados. |
+| 3 | **Evidência obrigatória.** `_jsonl` devolvia `[]` quando um ficheiro faltava ou estava corrompido, por isso a falta de evidência parecia "zero operações". | Leitor estrito: MISSING, UNREADABLE, TRUNCATED (falta o `\n` final) e CORRUPT dão RESULTADO_DESCONHECIDO `EVIDENCE_<problema>`. O anfitrião cria vazios `http.jsonl`, `model_requests.jsonl` e `audit.jsonl` antes de qualquer contentor; a Gateway escreve a sua base na recusa 403 da sonda, que é verificada antes do goose. O registo de sessão do goose é obrigatório. É exigido o inventário observado das ferramentas oferecidas ao modelo sempre que houve chamadas ou recibos, e o número de chamadas do goose à Gateway tem de ser igual ao número de recibos. `check_chain` passa a receber as linhas de auditoria. Zero operações com evidência completa dá DESCONHECIDO sem erro de evidência. |
+| 4 | **Readiness.** O valor devolvido por `wait_ready()` era ignorado. | Se a Gateway não fica pronta, `GATEWAY_NOT_READY` é lançado **antes** de o goose ser criado e a execução dá EXECUCAO_FALHADA `GATEWAY_NOT_READY`. A sonda de isolamento continua obrigatória e independente. |
+
+**Testes:**
+- P2: 43 OK (eram 24), entre eles:
+  - contentores e redes externos com nomes iguais ou parecidos (`gateway`, `goose`, `jrv-p2-x-gateway`, `jrv-p2-<id>-gateway-old`, outra missão, `jrv-agent`): intactos depois do ciclo completo e de falhas na preparação de cada papel;
+  - contentor externo com o mesmo nome e a mesma etiqueta: nunca adoptado;
+  - recibos completos com timeout, saída 1, estado ilegível, cópia falhada, arranque falhado ou cancelamento;
+  - cada ficheiro obrigatório apagado, truncado ou corrompido;
+  - registo de sessão em falta ou corrompido; chamadas ≠ recibos; inventário vazio; auditoria perdida; zero operações legítimas;
+  - readiness: timeout, Gateway terminada, arranque tardio.
+- Suite completa no venv fixado: **645 OK, 0 skipped**.
+- Mutação: `docs/evidence/p2/mutation_p2_r1.json`. Primeira passagem 41/44, final **44/44**: três sobreviventes (G14, R1-1c, R1-2e) eliminados reforçando os testes, sem alterar o produto.
+
+**Corrida real 4** (`1b292bb`, árvore limpa, mesmo comando de consola, mesmo catálogo sintético, qwen3.5:4b): **RESULTADO_VERIFICADO**.
+- Processo: TASK_VERIFIED_LIMITED; goose EXITED com código 0 e estado recolhido; 356,8 s de goose e 386,3 s no total.
+- Recibos: 7 (web_open, 5×web_follow com o 503, submit_report); 4/4 objectivos.
+- Verificação: 503 recuperado; HTTP↔recibos 6↔6; cadeia válida contra a auditoria; semântica PASS.
+- Coerência: 7 chamadas observadas = 7 recibos; inventário só com as 4 ferramentas da Gateway; 0 violações.
+- Isolamento: missão `6504e508`, rede `jrv-p2-6504e508-agent`, IP `172.30.121.10`, 0 mounts.
+- Propriedade dos recursos: antes da corrida foram criados de propósito contentores-isco `gateway`, `goose`, `ollama-tap`, `jrv-p2-decoy-gateway` e `fixture` (este último em execução). Depois da corrida todos os recursos externos tinham os mesmos ids e nomes, e todos os recursos da missão tinham sido removidos. Os iscos foram depois apagados pelo operador.
+- Duas recusas de transporte: 403 da sonda (antes do goose) e 400 "not initialized" a um pedido do goose anterior ao seu `initialize` (nenhuma ferramenta executada).
+- Evidência: `docs/evidence/p2/p2_r1_real_goose_mission_2026-11-23.json`.
+
+**Riscos que permanecem depois do R1:**
+- **Colisão de sub-redes:** a sub-rede deriva do id (200 valores). Duas missões simultâneas no mesmo host podem colidir; nesse caso o Docker recusa a criação da rede e a missão falha fechada (`DOCKER_CREATE_FAILED`).
+- **Remoção de recursos com a mesma etiqueta:** a limpeza confia no id e na etiqueta. Um processo com acesso ao daemon pode forjar etiquetas, mas só por id criado pela missão é que algo é removido.
+- **Amostra:** N=1 real depois do R1 (no total, 2 corridas limpas verificadas).
+- Mantêm-se os riscos do §6.
+

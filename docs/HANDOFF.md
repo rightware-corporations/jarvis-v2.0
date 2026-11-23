@@ -3579,3 +3579,25 @@ Nada disto foi iniciado.
 **TESTS:** P2 24 OK; full pinned venv **626 OK, 0 skipped**; plain Python OK. Mutation 25/25 (+F09 changes=None crash, +G16 readiness; G16 first survived → test now asserts readiness before goose creation). Doc `docs/engineering/P2_GOOSE_INTEGRATION.md` (closed file list reused/adapted/new, security boundaries, TE-P2C comparison: resume NOT exposed, no durability).
 
 **STATUS:** `JRV_P2_INTEGRATION_CANDIDATE` — not integrated in develop until an approved, verified merge. **NEXT:** single integration PR to `develop` (no merge without explicit approval); then decide labs→rightware promotion of the Gateway subset, reproducible Gateway image, N≥3 pre-registered real missions.
+
+## CHECKPOINT — 23/11/2026: JRV-P2-R1 — security/robustness review of PR #28 (four audit findings)
+
+**BRANCH:** `integration/jrv-p2-goose-20261122` (no new branch or PR). Gate 0: start HEAD `76205e07ecf4e80537bbea3538845518bb87b92a` local = remote, CI green, PR #28 Draft. Code commit `1b292bb7f7a1da73a866f25570cb60476a72d1c6` (CI WORK-05 run 45119377241 success, foundation 45119377224 success).
+
+**FIXES (`rightware/goose_adapter.py`):**
+1. **Docker ownership:** per-mission id; resources named `jrv-p2-<id>-<role>`, labelled `rightware.jarvis.mission=<id>`, with a per-mission `/24` and role DNS aliases. Only Docker ids from successful creates are recorded. Cleanup removes only those ids, and only while the label matches. No removal by name and no global pre-cleanup.
+2. **Completion:** `run_goose` collects the start result, exit code, status and state copy. Verified requires EXITED with exit 0 and the state collected. Non-zero exit, start failure or unknown state → EXECUCAO_FALHADA (`PROCESS_*`). Timeout is never verified. Verifier and te-p2b unchanged.
+3. **Mandatory evidence:** strict reader (MISSING/UNREADABLE/TRUNCATED/CORRUPT → RESULTADO_DESCONHECIDO). Host baselines; Gateway baseline forced by the probe's 403 and checked before goose; goose session store required; inventory observed; goose calls = receipts; chain checked with audit rows. Zero operations with complete evidence ≠ evidence error.
+4. **Readiness:** `wait_ready()` False → `GATEWAY_NOT_READY` before goose is created; probe still mandatory.
+
+**TESTS (FAKE/offline):** P2 43 OK; full pinned venv **645 OK, 0 skipped**; mutation 41/44 → **44/44** (`docs/evidence/p2/mutation_p2_r1.json`).
+
+**REAL (run 4, `1b292bb`, clean tree, same console command/catalogue/model qwen3.5:4b):** **RESULTADO_VERIFICADO** TASK_VERIFIED_LIMITED.
+- Process: goose exit 0, 356.8 s.
+- Evidence: 7 receipts = 7 observed calls; 4/4 objectives; 503 recovered; 6↔6; chain+audit valid; semantic PASS; 0 violations.
+- Isolation: mission `6504e508`.
+- Ownership: decoy external containers (`gateway`, `goose`, `ollama-tap`, `fixture` running, `jrv-p2-decoy-gateway`) kept identical ids; all mission resources removed.
+- Evidence file: `docs/evidence/p2/p2_r1_real_goose_mission_2026-11-23.json`.
+
+**REMAINING RISKS:** subnet collision between concurrent missions fails closed; N=1 after R1; risks in P2 doc §6.
+**STATUS:** PR #28 stays Draft, not merged; `main`, `develop` and PR #27 untouched. Recommendation: READY_FOR_OWNER_REVIEW.

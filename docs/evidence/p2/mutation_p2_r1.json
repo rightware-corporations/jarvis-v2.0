@@ -1,0 +1,243 @@
+{
+  "package": "JRV-P2-R1",
+  "tool": "labs/p2/mutation_p2.py",
+  "code_sha": "1b292bb7f7a1da73a866f25570cb60476a72d1c6",
+  "tests": "tests.test_p2_goose_integration + tests.test_p1_control_plane + tests.test_e0_console (FAKE/offline)",
+  "first_pass": {
+    "killed": 41,
+    "total": 44,
+    "survived": [
+      "G14 networks not internal",
+      "R1-1c failed create still recorded as owned",
+      "R1-2e unreadable process state treated as exited"
+    ],
+    "fix": "tests strengthened (both network creates asserted --internal; only successful creates recorded, squatter with forged mission label never recorded; Running-inspect failure asserted STATE_UNKNOWN). No product code changed for this."
+  },
+  "final": {
+    "killed": 44,
+    "total": 44,
+    "restored_identical": true
+  },
+  "mutants": [
+    {
+      "mutant": "F01 host status lines kept in commentary",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix1_verified_state_prevails_over_host_status_lines"
+    },
+    {
+      "mutant": "F02 trial workspace not closed after the run",
+      "result": "KILLED",
+      "killed_by": "NoEffects.test_workspace_is_host_owned_synthetic_and_removed"
+    },
+    {
+      "mutant": "F03 half-prepared workspace not removed",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix2_preparation_failure_cleans_and_resets"
+    },
+    {
+      "mutant": "F04 internal error shown as unauthorised",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix2_preparation_failure_cleans_and_resets, P1Fixes.test_fix4_internal_error_is_failure_not_authorization"
+    },
+    {
+      "mutant": "F05 running flag not reset",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_unverified_outcome_shows_no_changes, MissionCapability.test_preparation_error_is_a_failure_and_cleans_up, P1Fixes.test_fix2_preparation_failure_cleans_and_resets …"
+    },
+    {
+      "mutant": "F06 busy check removed",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix5_concurrency_is_atomic"
+    },
+    {
+      "mutant": "F07 banner ignores active mode",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix3_banner_and_capabilities_reflect_the_active_mode"
+    },
+    {
+      "mutant": "F08 console failure shown as invalid code",
+      "result": "KILLED",
+      "killed_by": "P1Fixes.test_fix4_internal_error_is_failure_not_authorization"
+    },
+    {
+      "mutant": "F09 verified result assumed to carry changes (real-run crash)",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_console_renders_a_verified_goose_outcome_without_changes"
+    },
+    {
+      "mutant": "G01 isolation probe ignored before start",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_bad_isolation_never_starts_goose"
+    },
+    {
+      "mutant": "G02 internet reachability ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected, DockerRunnerR1.test_probe_is_still_mandatory_after_readiness, MissionCapability.test_bad_isolation_never_starts_goose"
+    },
+    {
+      "mutant": "G03 host mounts ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "G04 extra networks ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "G05 non-goose client acceptance ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "G06 non-gateway executed calls ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_non_gateway_execution_or_inventory_is_a_failure"
+    },
+    {
+      "mutant": "G07 non-gateway tools reaching the model ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_non_gateway_execution_or_inventory_is_a_failure"
+    },
+    {
+      "mutant": "G08 verified without consistency",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_inconsistent_or_missing_receipts_are_unknown, CompletionAndEvidenceR1.test_audit_must_agree_with_the_submission_chain, CompletionAndEvidenceR1.test_complete_receipts_never_rescue_a_failed_process …"
+    },
+    {
+      "mutant": "G09 inconsistent evidence shown as partial",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_inconsistent_or_missing_receipts_are_unknown, CompletionAndEvidenceR1.test_audit_must_agree_with_the_submission_chain, CompletionAndEvidenceR1.test_observed_calls_must_match_receipts …"
+    },
+    {
+      "mutant": "G10 cancellation not distinguished",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_cancel_and_timeout, CompletionAndEvidenceR1.test_complete_receipts_never_rescue_a_failed_process"
+    },
+    {
+      "mutant": "G11 runner not cleaned up",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_bad_isolation_never_starts_goose, MissionCapability.test_preparation_error_is_a_failure_and_cleans_up"
+    },
+    {
+      "mutant": "G12 cancel not stopping goose",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_unauthorised_run_and_cancel"
+    },
+    {
+      "mutant": "G13 goose container gets a host mount",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "G14 networks not internal",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_full_lifecycle_touches_only_its_own_resources"
+    },
+    {
+      "mutant": "G15 tap allowlist widened",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "R1-1a cleanup by fixed global names (pre-R1 behaviour)",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_cleanup_skips_a_resource_whose_label_no_longer_matches, DockerRunnerR1.test_failed_preparation_cleans_only_what_it_created, DockerRunnerR1.test_full_lifecycle_touches_only_its_own_resources"
+    },
+    {
+      "mutant": "R1-1b ownership label not checked before removal",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_cleanup_skips_a_resource_whose_label_no_longer_matches"
+    },
+    {
+      "mutant": "R1-1c failed create still recorded as owned",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_failed_preparation_cleans_only_what_it_created, DockerRunnerR1.test_name_conflict_with_an_external_container_is_not_adopted"
+    },
+    {
+      "mutant": "R1-1d resources not labelled",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_cleanup_skips_a_resource_whose_label_no_longer_matches, DockerRunnerR1.test_failed_preparation_cleans_only_what_it_created, DockerRunnerR1.test_full_lifecycle_touches_only_its_own_resources …"
+    },
+    {
+      "mutant": "R1-2a exit code ignored",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_complete_receipts_never_rescue_a_failed_process, DockerRunnerR1.test_process_outcomes_are_collected_not_inferred"
+    },
+    {
+      "mutant": "R1-2b process failure not mapped to failed",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_complete_receipts_never_rescue_a_failed_process"
+    },
+    {
+      "mutant": "R1-2c verified without operational success",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_complete_receipts_never_rescue_a_failed_process"
+    },
+    {
+      "mutant": "R1-2d start failure ignored",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_process_outcomes_are_collected_not_inferred, DockerRunnerR1.test_readiness_failure_stops_before_goose_exists, DockerRunnerR1.test_timeout_and_cancel_are_explicit"
+    },
+    {
+      "mutant": "R1-2e unreadable process state treated as exited",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_process_outcomes_are_collected_not_inferred"
+    },
+    {
+      "mutant": "R1-3a lenient reader (empty list on missing file)",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_missing_truncated_or_corrupt_evidence_is_never_verified, CompletionAndEvidenceR1.test_strict_reader"
+    },
+    {
+      "mutant": "R1-3b corrupt lines skipped",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_missing_truncated_or_corrupt_evidence_is_never_verified"
+    },
+    {
+      "mutant": "R1-3c truncation accepted",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_missing_truncated_or_corrupt_evidence_is_never_verified"
+    },
+    {
+      "mutant": "R1-3d missing goose session store treated as no calls",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_goose_session_store_is_mandatory"
+    },
+    {
+      "mutant": "R1-3e observed calls not matched with receipts",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_observed_calls_must_match_receipts"
+    },
+    {
+      "mutant": "R1-3f tool inventory not required",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_tool_inventory_is_mandatory"
+    },
+    {
+      "mutant": "R1-3g audit not cross-checked with the chain",
+      "result": "KILLED",
+      "killed_by": "CompletionAndEvidenceR1.test_audit_must_agree_with_the_submission_chain"
+    },
+    {
+      "mutant": "R1-3h gateway evidence baseline ignored",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "R1-4a readiness result ignored",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_readiness_failure_stops_before_goose_exists"
+    },
+    {
+      "mutant": "R1-4b readiness skipped",
+      "result": "KILLED",
+      "killed_by": "DockerRunnerR1.test_readiness_failure_stops_before_goose_exists"
+    },
+    {
+      "mutant": "R1-4c exited gateway reported ready",
+      "result": "KILLED",
+      "killed_by": "Readiness.test_gateway_that_exited_is_not_ready"
+    }
+  ]
+}
