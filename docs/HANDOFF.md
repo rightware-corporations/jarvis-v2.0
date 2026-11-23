@@ -3830,3 +3830,26 @@ Nada disto foi iniciado.
 **NEXT:** operator decisions on G-MERGE (PR #29 into `develop`, merge commit) and G-IMPL (branch and file list). P3B not started.
 
 **NOTE:** this checkpoint moves `develop`, so PR #29 will again need a docs-only HANDOFF reconciliation before merging (same procedure as JRV-P3A-RECONCILE).
+
+## CHECKPOINT — 23/11/2026: JRV-P3A-MERGED — PR #29 integrated into develop (operator-authorised G-MERGE, UI-01)
+
+**AUTHORISATION:** the operator's G-MERGE: merge PR #29 into `develop` ONLY, conditional on reconciling conflicts, preserving HANDOFF in full, and confirming tests and CI.
+
+**DIVERGENCE CHECK:** `git diff 7393bf5 → PR head` was empty before reconciliation, so the reviewed content was unchanged and there was no material divergence.
+
+**RECONCILIATION:** merged `origin/develop` `5624290` into the PR branch with a merge commit `cf7f92332dbc6658141c05bfa2c491f549dd0f2c`; no rebase, no force push. `docs/HANDOFF.md` was resolved by ordered union: JRV-P3A-RECONCILE, then JRV-UI01-CP1 (including the PRODUCT-FIRST directive). An automated check confirmed every line of both parents is preserved in order (3770 and 3762 lines → 3832). No runtime change.
+
+**PRE-MERGE:**
+- Full pinned venv suite OK on the PR head.
+- CI on `cf7f923` 5/5 success: WORK-05 45137478002 (product); foundation 45137477985 (launcher, lab-tests, runner-capacity, windows-compat).
+- `mergeable_state` was clean.
+
+**MERGE:** merge commit (`merge_method=merge`, `expectedHeadSha=cf7f923`) → `develop` `015167f410f5e9ac47f6f8debfe03ddf30482f28`. The tree is identical to the PR head; pin `f21d902` unchanged.
+
+**POST-MERGE:**
+- Full suite OK.
+- CI push: WORK-05 45137754490 success; foundation 45137754607 success.
+
+**P3A STATUS:** INTEGRATED in `develop`. `main` `0cac8e8` and PR #27 untouched.
+
+**NEXT:** G-IMPL on the single branch `integration/jrv-ui01-gui-20261123`, with a single Draft PR.
