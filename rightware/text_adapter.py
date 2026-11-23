@@ -15,6 +15,46 @@ class InvalidModelReply(ValueError):
     """The model returned no usable text or a tool/effect-shaped response."""
 
 
+def abortable_client(base_url: str, timeout: float):
+    """UI-02 (R-4): an httpx client whose live sockets can be shut down from another thread. Closing an httpx client
+    does NOT interrupt a read already blocked in another thread (measured); shutting the socket down does, and the
+    local engine (Ollama) then sees the disconnect and stops generating."""
+    import socket
+    import threading
+
+    import httpcore
+    import httpx
+
+    class RecordingBackend(httpcore.SyncBackend):
+        def __init__(self):
+            super().__init__()
+            self.streams, self.lock = [], threading.Lock()
+
+        def connect_tcp(self, *args, **kwargs):
+            stream = super().connect_tcp(*args, **kwargs)
+            with self.lock:
+                self.streams.append(stream)
+            return stream
+
+        def abort_all(self) -> int:
+            with self.lock:
+                streams, self.streams = self.streams, []
+            n = 0
+            for stream in streams:
+                sock = getattr(stream, "_sock", None)
+                try:
+                    sock.shutdown(socket.SHUT_RDWR)
+                    n += 1
+                except (OSError, AttributeError):
+                    pass
+            return n
+
+    backend = RecordingBackend()
+    transport = httpx.HTTPTransport()
+    transport._pool = httpcore.ConnectionPool(network_backend=backend, max_connections=10, keepalive_expiry=5.0)
+    return httpx.Client(base_url=base_url, timeout=timeout, transport=transport), backend
+
+
 class LocalSimpleTextAdapter:
     """Call pinned SimpleAgent.run(text, context=AgentContext), never a tool agent.
 
@@ -72,8 +112,14 @@ class LocalSimpleTextAdapter:
             return self._agent
         if self._engine_factory is None:
             from openjarvis.engine.ollama import OllamaEngine
-            self._engine_factory = lambda: OllamaEngine(
-                host="http://127.0.0.1:11434", timeout=self.timeout_seconds)
+
+            def factory():
+                engine = OllamaEngine(host="http://127.0.0.1:11434", timeout=self.timeout_seconds)
+                client, self._abort_backend = abortable_client("http://127.0.0.1:11434", self.timeout_seconds)
+                engine._client.close()
+                engine._client = client                  # same base URL/timeout; sockets abortable (R-4)
+                return engine
+            self._engine_factory = factory
         if self._agent_factory is None:
             from openjarvis.agents.simple import SimpleAgent
             self._agent_factory = SimpleAgent
@@ -90,6 +136,9 @@ class LocalSimpleTextAdapter:
         facade as CANCELLED/TIMEOUT) and releases the lock. The next call builds a fresh engine and agent.
         Deliberately lock-free: the lock is held by the very call being aborted."""
         engine, self._engine, self._agent = self._engine, None, None
+        backend, self._abort_backend = getattr(self, "_abort_backend", None), None
+        if backend is not None:
+            backend.abort_all()                          # interrupts the blocked read of the running request
         if engine is None:
             return False
         close = getattr(engine, "close", None)

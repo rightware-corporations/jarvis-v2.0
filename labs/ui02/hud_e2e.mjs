@@ -127,7 +127,7 @@ const S = {
     const after = await send(page, MODE === 'fake' ? 'curto' : 'Quanto é 2+2? Responde só o número.', 120);
     rec('U4', 'Parar a geração liberta o modelo (cancelamento efectivo)', 'Pedido seguinte responde sem esperar pelo anterior',
       { next_seconds: after.seconds, next: after.reply.slice(0, 200), since_stop_s: (Date.now() - t0) / 1000 },
-      await shot(page, 'u4-stop'), !!after.rid && after.seconds < (MODE === 'fake' ? 5 : 20));
+      await shot(page, 'u4-stop'), !!after.rid && after.seconds < (MODE === 'fake' ? 5 : 20) && !/MODEL_BUSY|Pedido anterior ainda/.test(after.reply));
     await ctx.close();
   },
   async hud(browser) {

@@ -321,3 +321,59 @@ class OverlayManifest(unittest.TestCase):
             text = f.read_text()
             with self.subTest(file=f.name):
                 self.assertNotRegex(text, r"Math\.random|setTimeout\([^)]*fake|mock", "no invented state in the HUD")
+
+
+@unittest.skipIf(CP is None, "pinned OpenJarvis venv required")
+class AbortableEngineClient(unittest.TestCase):
+    """R-4 at the socket level: a request blocked waiting for the engine is interrupted by abort()."""
+
+    def test_abort_interrupts_a_blocked_request(self):
+        import http.server
+        from rightware.text_adapter import abortable_client
+        release = threading.Event()
+
+        class Slow(http.server.BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers.get("Content-Length", 0)))
+                release.wait(10)                          # an engine that is still generating
+                try:
+                    self.send_response(200)
+                    self.end_headers()
+                except OSError:
+                    pass
+
+            def log_message(self, *a):
+                pass
+        srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Slow)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        self.addCleanup(srv.shutdown)
+        self.addCleanup(release.set)
+        client, backend = abortable_client(f"http://127.0.0.1:{srv.server_address[1]}", 30)
+        box = {}
+
+        def call():
+            t0 = time.monotonic()
+            try:
+                client.post("/api/chat", json={})
+                box["result"] = "completed"
+            except Exception as exc:
+                box["result"] = type(exc).__name__
+            box["seconds"] = time.monotonic() - t0
+        th = threading.Thread(target=call)
+        th.start()
+        time.sleep(0.5)
+        self.assertEqual(backend.abort_all(), 1)
+        th.join(3)
+        self.assertFalse(th.is_alive())
+        self.assertNotEqual(box["result"], "completed")
+        self.assertLess(box["seconds"], 2)
+
+    def test_adapter_abort_uses_the_socket_backend(self):
+        from rightware.text_adapter import LocalSimpleTextAdapter
+        a = LocalSimpleTextAdapter("qwen3.5:2b")
+        calls = []
+        a._abort_backend = mock.Mock(abort_all=lambda: calls.append(1) or 1)
+        a._engine = mock.Mock()
+        self.assertTrue(a.abort())
+        self.assertEqual(calls, [1])
+        self.assertIsNone(a._engine)

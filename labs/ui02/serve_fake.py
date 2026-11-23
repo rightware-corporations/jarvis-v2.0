@@ -10,12 +10,19 @@ from rightware.gui import server as S
 
 
 class FakeText:
+    def __init__(self):
+        import threading
+        self.stop = threading.Event()
+
     def reply(self, text, history):
         if text.startswith("LONGO"):
-            time.sleep(30)
+            self.stop.clear()
+            if self.stop.wait(30):                         # aborted like the real engine socket
+                raise ConnectionError("[FAKE-CI] aborted")
         return f"[FAKE-CI] eco: {text} (histórico={len(history)})"
 
     def abort(self):
+        self.stop.set()
         return True
 
     def close(self):
