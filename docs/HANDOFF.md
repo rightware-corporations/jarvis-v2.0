@@ -4082,3 +4082,15 @@ Local mode is unchanged.
 3. Start JARVIS with the tunnel origin.
 4. External verification, then hand over.
 5. Close and revoke within 60 minutes.
+
+**ADDENDUM (23/11/2026, ~19:08 UTC): B6 live window run and closed.**
+- **Tunnel:** private (owner-only) Dev Tunnel on `use`, port 8000 only, 1 h expiry. The host was connected through the session proxy, so WebSocket transport works (FACT). JARVIS ran in B6 mode for the exact tunnel origin.
+- **External anonymous requests:** every one got a 302 to the Microsoft login before reaching JARVIS; none appears in JARVIS's audit (FACT).
+- **Real Qwen chat through the external URL:** not observed by Claude, because the operator's Microsoft login was required; operator confirmation is pending.
+- **Shutdown:** the hard limits fired (process timeout at ~59 min; in-app deadline at 19:06:54 UTC). Then:
+  - JARVIS stopped;
+  - tunnel deleted (`devtunnel list` shows no tunnels);
+  - CLI logged out;
+  - session-url file removed.
+- **External check after shutdown:** the URL returns 404 and no tunnel or JARVIS process remains.
+- **Untouched:** repository, PRs, models and CI. Only this branch was changed.
