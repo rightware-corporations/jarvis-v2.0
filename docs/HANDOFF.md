@@ -3601,3 +3601,55 @@ Nada disto foi iniciado.
 
 **REMAINING RISKS:** subnet collision between concurrent missions fails closed; N=1 after R1; risks in P2 doc §6.
 **STATUS:** PR #28 stays Draft, not merged; `main`, `develop` and PR #27 untouched. Recommendation: READY_FOR_OWNER_REVIEW.
+
+## CHECKPOINT — 23/11/2026: JRV-P2-MERGED — PR #28 integrated into develop (experimental, authorised)
+
+**PR / STRATEGY:** PR #28 (`integration/jrv-p2-goose-20261122` → `develop`). It was taken out of Draft, then merged with a **merge commit** (`merge_method=merge`, `expectedHeadSha` pinned to `0d072beb9a33eb7e831d0ceef30b08671887c7ba`). This keeps all 7 branch commits (`f71e11a` … `1b292bb`, `0d072be`) and their SHAs, which the evidence references. No force push.
+
+**GATE 0:**
+- PR HEAD = `0d072be`, which contains JRV-P2-R1 (`1b292bb`, `0d072be`).
+- PR checks were green on that SHA: WORK-05 product (run 45120161649); foundation launcher, lab-tests, runner-capacity and windows-compat (run 45120161671).
+- No conflicts: `develop` `b3e45ec` is an ancestor of the branch.
+- No commits beyond the reviewed ones.
+- `main` `0cac8e8d828d91cb9d849c67a33f62eb701bdb94`, vendor pin `f21d902` and PR #27 (Draft, `a1b88ef`) intact.
+
+**SHAs:** develop before `b3e45ec930278d83104bc297913a29a06e824651` → after `9a0eadbef578e2ef21de6cf354d918f1e1a79223`. The tree is identical to `0d072be`.
+
+**POST-MERGE VALIDATION on `9a0eadb`:**
+- Full pinned venv: **645 OK, 0 skipped**.
+- CI push: WORK-05 run 45120851235 success; foundation run 45120851279 success. CI pull_request: foundation run 45120857692 success.
+- Contract tests OK (FAKE/offline):
+  - goose OFF by default and host-only (`test_off_by_default_and_host_only`);
+  - unauthorised code refused, and cancellation works (`test_unauthorised_run_and_cancel`);
+  - the plain text entry gets no tools (`test_no_tools_by_default`);
+  - P1 comparison still verified from receipts and code (`test_verified_from_receipts_and_code`, `test_model_cannot_choose_paths_or_other_tools`).
+- No new real mission was run: the merged tree is byte-identical to the one real run 4 verified (`1b292bb` code), so there was no technical need.
+
+**INTEGRATED CAPABILITIES (develop):**
+1. Tool-free Portuguese console (default).
+2. P1 supervised synthetic comparison (`--tarefa-ensaio`).
+3. Supervised goose mission `pesquisa-fixture-goose` on a synthetic catalogue in isolated Docker:
+   - requires host flags `--missao-goose --goose-bin --goose-ollama-dir --goose-models-dir` plus the operator's single-use code;
+   - result only from receipts + RIGHTWARE verifier + goose process outcome;
+   - mission-owned Docker resources; mandatory evidence; readiness gate.
+
+**LIMITATIONS / RISKS:**
+- 2 clean real goose runs (N=2, CPU, qwen3.5:4b).
+- The Gateway image `jrv-gateway:te-p2a` is built locally and not published.
+- The product imports the Gateway subset from `labs/`.
+- MCP client authenticated by IP on an internal network.
+- Concurrent missions can collide on a subnet (fails closed).
+- Resume (TE-P2C) not exposed; no durability.
+- No public Internet (TE-P2D partial).
+- Nothing tested on Windows.
+- Not production; not E0/E1 acceptance.
+
+**STATE:**
+- `main` unchanged (`0cac8e8`); no `develop`→`main` promotion.
+- PR #27 open, Draft, unmerged (`a1b88ef`).
+- Branch `integration/jrv-p2-goose-20261122` is fully contained in develop. It was NOT deleted (not authorised in this mission); it can be deleted once confirmed.
+
+**NEXT AUTHORISED PACKAGE:** none authorised yet. Proposed (each needs its own authorisation):
+1. promote the Gateway subset from `labs/` to `rightware/` and publish the Gateway image reproducibly;
+2. run N≥3 pre-registered real goose missions through the product;
+3. delete the merged integration branch.
