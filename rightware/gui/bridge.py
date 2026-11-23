@@ -35,6 +35,7 @@ MAX_BODY = 256 * 1024
 MAX_MESSAGES = 64
 KEEPALIVE_SECONDS = 10.0
 TOOL_KEYS = ("tools", "functions", "tool_choice", "function_call")
+ANALYTICS_OFF = {"enabled": False, "anon_id": "", "host": "", "key": "", "choice_recorded": True}
 MODEL_FOOTER = "_RIGHTWARE · resposta do modelo local `{model}` — **NÃO verificada** · sem ferramentas · " \
                "sem memória persistente_"
 
@@ -91,8 +92,7 @@ class ChatBridge:
             return await send_json(send, 200, {"object": "list", "data": [
                 {"id": m, "object": "model", "owned_by": "rightware"} for m in models]})
         if scope["path"] == "/v1/analytics/identity":
-            return await send_json(send, 200, {"enabled": False, "anon_id": "", "host": "", "key": "",
-                                               "choice_recorded": True})
+            return await send_json(send, 200, ANALYTICS_OFF)
         body, too_big = b"", False
         while True:
             msg = await receive()
@@ -109,6 +109,10 @@ class ChatBridge:
             req = json.loads(body.decode("utf-8"))
         except (UnicodeDecodeError, ValueError):
             return await self._refuse(send, 400, "INVALID_JSON")
+        if scope["path"] == "/v1/analytics/preference":       # "Continue without sharing": accepted, no effect
+            if isinstance(req, dict) and req.get("enabled") is False:
+                return await send_json(send, 200, ANALYTICS_OFF)
+            return await self._refuse(send, 403, "ANALYTICS_DISABLED_BY_POLICY", scope["path"])
         if not isinstance(req, dict):
             return await self._refuse(send, 400, "INVALID_REQUEST")
         if any(req.get(k) for k in TOOL_KEYS):
@@ -154,8 +158,8 @@ class ChatBridge:
         await send({"type": "http.response.body", "body": b"data: [DONE]\n\n", "more_body": False})
         return None
 
-    async def _refuse(self, send, status, reason):
-        self.audit.record("http", "POST", "/v1/chat/completions", "DENY", reason)
+    async def _refuse(self, send, status, reason, path="/v1/chat/completions"):
+        self.audit.record("http", "POST", path, "DENY", reason)
         return await send_json(send, status, {"error": "BLOQUEADO_PELA_POLITICA_RIGHTWARE", "reason": reason})
 
     @staticmethod

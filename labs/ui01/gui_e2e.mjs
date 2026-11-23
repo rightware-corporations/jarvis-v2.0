@@ -40,9 +40,11 @@ async function send(page, text, timeoutS = 400) {
   }
   await page.waitForTimeout(800);
   const txt = await mainText(page);
-  const start = txt.lastIndexOf(text.slice(0, 60));
-  const end = rid ? txt.indexOf(rid, start) : -1;
-  const reply = start >= 0 ? txt.slice(start + Math.min(text.length, 60), end > 0 ? end + rid.length : undefined) : txt;
+  const ridAt = rid ? txt.lastIndexOf(rid) : txt.length;
+  // the user's own bubble is the sent line followed by a newline; search backwards from the reply's id
+  let start = txt.lastIndexOf(text + '\n', ridAt);
+  if (start < 0) start = txt.lastIndexOf(text.slice(0, 60), ridAt);
+  const reply = start >= 0 ? txt.slice(start + text.length, rid ? ridAt + rid.length : undefined) : txt;
   return { rid, seconds: (Date.now() - t0) / 1000, reply: reply.trim().slice(0, 3000) };
 }
 

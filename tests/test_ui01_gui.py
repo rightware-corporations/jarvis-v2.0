@@ -119,19 +119,23 @@ class Policy(unittest.TestCase):
 
     def test_allowlist_is_minimal_and_dispatched(self):
         self.assertEqual(set(P.ALLOW), {("GET", "/health"), ("GET", "/v1/info"), ("GET", "/v1/models"),
-                                        ("POST", "/v1/chat/completions"), ("GET", "/v1/analytics/identity")})
+                                        ("POST", "/v1/chat/completions"), ("GET", "/v1/analytics/identity"),
+                                        ("POST", "/v1/analytics/preference")})
         for (method, path), target in P.ALLOW.items():
             with self.subTest(path=path):
                 status, _, _, _ = run(call(self.app, method, path))
                 self.assertEqual(status, 200)
         self.assertEqual([c[2] for c in self.inner.calls], ["/health", "/v1/info"])
         self.assertEqual(sorted(c[2] for c in self.bridge.calls),
-                         ["/v1/analytics/identity", "/v1/chat/completions", "/v1/models"])
+                         ["/v1/analytics/identity", "/v1/analytics/preference", "/v1/chat/completions", "/v1/models"])
 
     def test_static_and_spa_pages_only(self):
         for path in ("/", "/settings", "/logs", "/index.html", "/assets/index-abc.js"):
             with self.subTest(path=path):
-                self.assertEqual(run(call(self.app, "GET", path))[0], 200)
+                status, _, _, sent = run(call(self.app, "GET", path))
+                self.assertEqual(status, 200)
+                headers = dict(sent[0]["headers"])
+                self.assertIn(b"connect-src 'self'", headers[b"content-security-policy"])
         self.assertEqual(run(call(self.app, "GET", "/unknown-page"))[0], 403)
         self.assertEqual(run(call(self.app, "POST", "/"))[0], 403)
 
@@ -294,6 +298,9 @@ class Bridge(unittest.TestCase):
             self.assertEqual(b.models(), ["qwen3.5:2b", "qwen3.5:4b"])
         ident = json.loads(run(call(b, "GET", "/v1/analytics/identity"))[1])
         self.assertEqual((ident["enabled"], ident["key"], ident["host"]), (False, "", ""))
+        off = run(call(b, "POST", "/v1/analytics/preference", body=b'{"enabled": false}'))
+        self.assertEqual((off[0], json.loads(off[1])["enabled"]), (200, False))
+        self.assertEqual(run(call(b, "POST", "/v1/analytics/preference", body=b'{"enabled": true}'))[0], 403)
 
     def test_commands_without_host_capabilities(self):
         self.make()

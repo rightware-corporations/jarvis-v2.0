@@ -23,6 +23,7 @@ ALLOW: dict[tuple[str, str], str] = {
     ("GET", "/v1/models"): "bridge",                # host-allowed models (∩ installed when Ollama answers)
     ("POST", "/v1/chat/completions"): "bridge",     # conversation + Control Plane commands (RIGHTWARE)
     ("GET", "/v1/analytics/identity"): "bridge",    # analytics forced OFF (no key, no host)
+    ("POST", "/v1/analytics/preference"): "bridge", # only the "do not share" choice is accepted (no effect)
 }
 # SPA pages of the original frontend (App.tsx routes). They only serve index.html; their data routes stay denied.
 SPA_PAGES = frozenset({"/", "/dashboard", "/settings", "/get-started", "/data-sources", "/agents", "/logs"})
@@ -35,6 +36,11 @@ CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; c
                  ".map": "application/json"}
 SECURITY_HEADERS = [(b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer"),
                     (b"x-frame-options", b"DENY"), (b"cache-control", b"no-store")]
+# The browser itself may only talk to this origin: the original frontend's optional analytics (PostHog) and
+# leaderboard (Supabase) calls are blocked even if a user opts in by mistake.
+CSP = (b"default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+       b"img-src 'self' data: blob:; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; "
+       b"object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 
 
 def canonical_path(scope: dict) -> str | None:
@@ -164,7 +170,7 @@ class PolicyApp:
             ctype = CONTENT_TYPES.get(file.suffix, "application/octet-stream").encode()
             await send({"type": "http.response.start", "status": 200,
                         "headers": [(b"content-type", ctype), (b"content-length", str(len(body)).encode()),
-                                    *SECURITY_HEADERS]})
+                                    (b"content-security-policy", CSP), *SECURITY_HEADERS]})
             await send({"type": "http.response.body", "body": body})
             return None
         self.audit.record(kind, method, path, "ALLOW", reason, target=target)
