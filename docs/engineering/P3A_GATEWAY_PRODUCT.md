@@ -194,6 +194,9 @@ A sonda de segurança `--network none` passou: uid 10001, 0 ficheiros setuid, `l
 
 ## 8. Próximo passo P3B (proposta, requer autorização)
 
+> **Prioridade de produto decidida (JRV-PRODUCT-DIRECTION-UI-REUSE, 23/11/2026):** a próxima prioridade é reutilizar e integrar a GUI existente do OpenJarvis, e não desenvolver outra interface. O P3B abaixo fica como proposta e **não** é iniciado automaticamente.
+
+
 - Tornar o build da imagem independente da rede: wheelhouse local verificado por hash, incluindo as ferramentas de build.
 - Reduzir a imagem a um conjunto mínimo de dependências: extrair de `rightware.agent.session` o que o Gateway usa.
 - N≥3 missões reais pré-registadas através do produto, com a imagem P3A.
