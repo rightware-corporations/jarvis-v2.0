@@ -4047,3 +4047,31 @@ Then a single UI-02 branch from `develop`. P3B not started.
 - WORK-05 failed once on the PR: `tests/test_ui02_hud.py` did not import without the venv. Fixed in `b1ca2b4`.
 - On `b1ca2b4` all checks passed: WORK-05 45188220888, foundation 45188221272, UI-02 PR 45188220928, UI-02 push 45188208713.
 - Merge NOT authorised.
+
+## CHECKPOINT — 23/11/2026: JRV-WEB01-W0W2 (implemented WITHOUT network)
+**Authorisation:** operator: "Avança com WEB-01 W0–W2 sem rede". W3 (real egress) is NOT authorised.
+
+**Branch:** `integration/jrv-web01-w0w2-20261123`, stacked on UI-02 (`5640f46`), because PR #31 is under review and must not grow.
+- Draft PR targets the UI-02 branch. It is retargeted to `develop` after #31 merges.
+- The branch is deleted after merge or close.
+
+**Implemented:** see `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § Estado.
+- **W0:** egress policy (fixture mode, network disabled; public mode refused without authorisation) and `EgressGuard`.
+- **W1:** local fixture corpus and search, read tools with hash-chained receipts, and a verifier that only accepts designated sources and detects tampering.
+- **W2:** `pesquisa-publica` capability (PARCIAL) in the same ControlPlane, with code authorisation and cancellation; sources shown in the HUD; CLI flag `--missao-pesquisa`.
+- **UI-02 gap closed:** the upstream engine-down banner is now translated (2 overlay strings).
+
+**Tests (FACT, no sockets):**
+- `tests/test_web01.py`: 15/15.
+- Full suite: venv 714 OK with 0 skips; plain Python OK.
+- tsc rc 0; Vitest 117/117.
+- FAKE E2E U1–U8: PASS.
+- Host CLI U8: PASS (`RESEARCH_VERIFIED`, 3/3).
+- Evidence: `docs/evidence/web01/`.
+
+**Not done:**
+- No real Internet access.
+- No goose/MCP exposure of the WEB-01 tools.
+- No Market Intelligence (W4).
+
+**Environment note:** Ollama on the host was found stopped (host restart). WEB-01 W0–W2 does not need the model.

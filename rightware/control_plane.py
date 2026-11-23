@@ -89,6 +89,9 @@ class TaskOutcome:
     error_code: str
     model_commentary_unverified: str
     seconds: float
+    # WEB-01: code-computed statements (each tied to a receipt) and the receipted sources behind them.
+    findings: tuple = ()
+    sources: tuple = ()
 
     def __post_init__(self):
         if self.verified != (self.state == State.RESULTADO_VERIFICADO):
@@ -184,7 +187,7 @@ class ControlPlane:
 
     def __init__(self, entry_text_facade: TextFacade, *, enable_trial_compare: bool = False,
                  session_factory_builder: Callable | None = None, model: str = "qwen3.5:2b", clock=time.monotonic,
-                 goose=None):
+                 goose=None, missions=()):
         if not isinstance(entry_text_facade, TextFacade):
             raise TypeError("expected a RIGHTWARE text facade")
         self.facade, self.model, self._clock = entry_text_facade, model, clock
@@ -203,6 +206,13 @@ class ControlPlane:
         if goose is not None:
             self._executors[goose.capability] = goose.run
             self._descriptions[goose.capability] = goose.description
+        self._missions = {}                  # WEB-01 and later host-registered executors (run/cancel/description)
+        for m in missions:
+            if m.capability in self._executors:
+                raise ValueError("capacidade duplicada")
+            self._missions[m.capability] = m
+            self._executors[m.capability] = m.run
+            self._descriptions[m.capability] = m.description
         self.capabilities = tuple(self._executors)
         self._pending: dict | None = None
         self._lock = threading.Lock()
@@ -306,6 +316,9 @@ class ControlPlane:
         if self._goose is not None and self._active == self._goose.capability:
             self._cancelled.set()
             return self._goose.cancel()
+        if self._active in self._missions:
+            self._cancelled.set()
+            return self._missions[self._active].cancel()
         return False
 
     def close(self) -> None:

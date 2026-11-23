@@ -156,7 +156,22 @@ const S = {
       await shot(page, 'u6-cpu'), out.chat <= 10 && out.hud <= 10);
     await ctx.close();
   },
-  async mission(browser) {
+  async mission(browser) { await runMission(browser, 'U7', MISSION); },
+  async research(browser) {
+    // WEB-01 W2: the real research executor over the local FIXTURE corpus (no network), via the same HUD flow.
+    const { page, ctx, st, timeline } = await runMission(browser, 'U8', 'pesquisa-publica', true);
+    const sources = await page.locator('.rw-sources li').count();
+    const supports = await page.locator('.rw-sources li[data-supports]').evaluateAll((els) => els.map((e) => e.getAttribute('data-supports')).filter(Boolean));
+    rec('U8', 'Pesquisa pública de leitura (WEB-01 W2, corpus fixture, sem rede) pela HUD',
+      'RESULTADO_VERIFICADO; fontes com URL, data, sha256 e bytes; cada objectivo suportado por uma fonte designada',
+      { last: st && st.last, sources, supports, timeline: timeline.slice(0, 900) }, await shot(page, 'u8-research-result'),
+      !!st?.last?.verified && st.last.operational_state === 'RESEARCH_VERIFIED_FIXTURE' && sources >= 1
+        && ['CAPITAL', 'MOEDA', 'BANCO_CENTRAL'].every((o) => supports.join(' ').includes(o)));
+    await ctx.close();
+  },
+};
+
+async function runMission(browser, id, MISSION, keep = false) {
     const { ctx, page } = await login(browser);
     await page.goto(BASE + '/agents', { waitUntil: 'load' });
     await page.waitForTimeout(2000);
@@ -180,14 +195,14 @@ const S = {
     const st = await waitMissionEnd(page, Number(process.env.UI02_MISSION_MAX_S || 1200));
     await page.waitForTimeout(2500);
     const timeline = await page.locator('.rw-timeline').first().innerText();
-    rec('U7', `Missão supervisionada pela HUD (${MISSION}) só com o código escrito`,
+    if (keep) return { page, ctx, st, timeline };
+    rec(id, `Missão supervisionada pela HUD (${MISSION}) só com o código escrito`,
       'sem código → 400; botão desactivado sem código; código errado recusado; código certo executa; resultado do verificador',
       { noCode, disabledBefore, wrong: wrong.match(/inválido[^\n]*/i)?.[0] || null, last: st && st.last, timeline: timeline.slice(0, 600) },
       [runningShot, await shot(page, `u7-mission-result-${MISSION}`)],
       noCode.status === 400 && disabledBefore && !!st?.last && (process.env.UI02_EXPECT_VERIFIED === '0' || st.last.verified));
     await ctx.close();
-  },
-};
+}
 
 const browser = await chromium.launch();
 try {

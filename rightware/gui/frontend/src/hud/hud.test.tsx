@@ -83,6 +83,22 @@ describe('verified vs NOT verified are visually distinct', () => {
   });
 });
 
+describe('WEB-01 research results show receipted sources', () => {
+  it('renders findings and sources with hash, date, size and supported claims', () => {
+    const research: Outcome = { ...verified, operational_state: 'RESEARCH_VERIFIED_FIXTURE', commentary_unverified: '',
+      findings: ['CAPITAL: A capital de Moçambique é Maputo. (recibo #2)'],
+      sources: [{ seq: 2, url: 'https://enciclopedia.fixture.example/wiki/Mocambique', fetched_at: '2026-11-23T14:00:00.0Z',
+        sha256: 'ab'.repeat(32), bytes: 771, supports: ['CAPITAL'] }] };
+    const html = renderToStaticMarkup(<ExecutionTimeline outcome={research} />);
+    expect(html).toContain(t('timeline.sources'));
+    expect(html).toContain('https://enciclopedia.fixture.example/wiki/Mocambique');
+    expect(html).toContain('sha256 abababababababab');
+    expect(html).toContain('data-supports="CAPITAL"');
+    expect(html).toContain('A capital de Moçambique é Maputo.');
+    expect(html).not.toContain('data-unverified');
+  });
+});
+
 describe('not-integrated capabilities are never simulated', () => {
   it('finance shows status and no price/quote/chart', () => {
     const html = renderToStaticMarkup(<FinanceIntelPanel />);

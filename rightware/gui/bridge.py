@@ -56,7 +56,10 @@ CAPABILITY_STATUS = {"comparar-versoes-ensaio": ("INTEGRADA", "Tarefa supervisio
                                                  "Comparação supervisionada de documentos (ensaio)"),
                      "pesquisa-fixture-goose": ("PARCIAL", "Missão goose em catálogo sintético isolado; "
                                                 "experimental, sujeita ao desempenho do anfitrião.",
-                                                "Missão de investigação goose (catálogo sintético)")}
+                                                "Missão de investigação goose (catálogo sintético)"),
+                     "pesquisa-publica": ("PARCIAL", "WEB-01 W2: pesquisa de leitura sobre corpus FIXTURE local, com "
+                                          "recibos e verificador; sem acesso à Internet (W3 exige autorização).",
+                                          "Pesquisa pública de leitura (fontes fixture)")}
 
 
 class _RecordingControl:
@@ -462,7 +465,9 @@ class ChatBridge:
                 "objectives": [{"id": o, "status": st, "receipt": seq} for o, st, seq in outcome.objectives],
                 "changes": [str(c) for c in (outcome.changes or ())] if outcome.verified else [],
                 "commentary_unverified": outcome.model_commentary_unverified or "",
-                "seconds": outcome.seconds, "error_code": outcome.error_code, "halt": outcome.halt_reason_code}
+                "seconds": outcome.seconds, "error_code": outcome.error_code, "halt": outcome.halt_reason_code,
+                "findings": list(getattr(outcome, "findings", ()) or ()),
+                "sources": [dict(s) for s in (getattr(outcome, "sources", ()) or ())]}
 
     def state(self) -> dict:
         """Everything the HUD shows comes from here (ControlPlane + facade + engine). Never the operator code."""

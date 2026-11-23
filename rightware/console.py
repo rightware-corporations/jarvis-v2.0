@@ -216,6 +216,15 @@ class Console:
                      + ", ".join(f"#{q} {t} {st}" for q, t, st in outcome.receipt_events))
         for oid, st, seq in outcome.objectives:
             self.say(f"  objectivo {oid}: {st}" + (f" (recibo #{seq})" if seq else ""))
+        if outcome.findings:                          # WEB-01: statements computed by code, each tied to a receipt
+            self.say("Resultado (calculado pelo código a partir dos recibos):")
+            for line in outcome.findings:
+                self.say("  " + line)
+        if outcome.sources:
+            self.say("Fontes (recibos de leitura):")
+            for s in outcome.sources:
+                self.say(f"  #{s['seq']} {s['url']} · {s['fetched_at']} · sha256 {str(s['sha256'])[:16]}… · "
+                         f"{s['bytes']} B" + (f" · suporta {', '.join(s['supports'])}" if s['supports'] else ""))
         if outcome.verified and outcome.changes:      # only executors that produce code-computed changes (P1)
             self.say("Alterações (calculadas pelo código e confirmadas pelo verificador):")
             for c in outcome.changes:

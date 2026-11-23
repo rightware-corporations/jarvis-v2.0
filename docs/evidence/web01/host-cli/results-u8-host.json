@@ -1,0 +1,98 @@
+[
+  {
+    "id": "U8",
+    "action": "Pesquisa pública de leitura (WEB-01 W2, corpus fixture, sem rede) pela HUD",
+    "expected": "RESULTADO_VERIFICADO; fontes com URL, data, sha256 e bytes; cada objectivo suportado por uma fonte designada",
+    "obtained": {
+      "last": {
+        "state": "RESULTADO_VERIFICADO",
+        "label": "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+        "verified": true,
+        "capability": "pesquisa-publica",
+        "operational_state": "RESEARCH_VERIFIED_FIXTURE",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_open_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "CAPITAL",
+            "status": "VERIFIED",
+            "receipt": 2
+          },
+          {
+            "id": "MOEDA",
+            "status": "VERIFIED",
+            "receipt": 2
+          },
+          {
+            "id": "BANCO_CENTRAL",
+            "status": "VERIFIED",
+            "receipt": 4
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "",
+        "seconds": 0.01,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Pergunta: Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.",
+          "CAPITAL: A capital de Moçambique é Maputo. (recibo #2)",
+          "MOEDA: A moeda oficial de Moçambique é o metical (MZN). (recibo #2)",
+          "BANCO_CENTRAL: O banco central emissor é o Banco de Moçambique. (recibo #4)"
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://enciclopedia.fixture.example/wiki/Mocambique",
+            "fetched_at": "2026-11-23T14:35:59.719953Z",
+            "sha256": "1919f76aa332125c97f61b524e5ed6ed5ea59b788f93a01bd3e1c4e017fb9341",
+            "bytes": 771,
+            "supports": [
+              "CAPITAL",
+              "MOEDA"
+            ]
+          },
+          {
+            "seq": 4,
+            "url": "https://banco-central.fixture.example/sobre",
+            "fetched_at": "2026-11-23T14:35:59.722745Z",
+            "sha256": "cbb953f121cb33c00285e498b264501c57b90d4f1ab6cce95cec87fd67ec03d7",
+            "bytes": 577,
+            "supports": [
+              "BANCO_CENTRAL"
+            ]
+          }
+        ]
+      },
+      "sources": 2,
+      "supports": [
+        "CAPITAL MOEDA",
+        "BANCO_CENTRAL"
+      ],
+      "timeline": "Resultado verificado por evidência (recibos + verificador RIGHTWARE) · RESEARCH_VERIFIED_FIXTURE · 0.0 s\nDecidido pelos recibos e pelo verificador RIGHTWARE\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_search_public OK\n#4 web_open_public OK\nOBJECTIVOS\nCAPITAL: VERIFIED (#2)\nMOEDA: VERIFIED (#2)\nBANCO_CENTRAL: VERIFIED (#4)\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nPergunta: Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.\nCAPITAL: A capital de Moçambique é Maputo. (recibo #2)\nMOEDA: A moeda oficial de Moçambique é o metical (MZN). (recibo #2)\nBANCO_CENTRAL: O banco central emissor é o Banco de Moçambique. (recibo #4)\nFONTES (RECIBOS DE LEITURA)\n#2 https://enciclopedia.fixture.example/wiki/Mocambique\n2026-11-23T14:35:59.719953Z · sha256 1919f76aa332125c… · 771 B · suporta CAPITAL, MOEDA\n#4 https://banco-"
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/host/u8-research-result.png",
+    "pass": true,
+    "mode": "real"
+  }
+]

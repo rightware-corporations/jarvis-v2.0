@@ -1,0 +1,266 @@
+[
+  {
+    "id": "U1",
+    "action": "Sessão local obrigatória; ligação do anfitrião abre a HUD",
+    "expected": "401 sem sessão; HUD após login",
+    "obtained": {
+      "blocked": {
+        "status": 401,
+        "text": "JARVIS\n\nSessão local necessária. Abra a ligação de início de sessão mostrada no terminal do anfitrião (também em .runtim"
+      },
+      "apiNoSession": 401,
+      "nav": "Conversa\nHUD\nMissões\nCapacidades\nRegistos\nDefinições"
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u1-login-ok.png",
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U2",
+    "action": "PT-MZ por omissão; inglês disponível",
+    "expected": "Conversa/Missões → Chat/Missions",
+    "obtained": {
+      "pt": "Conversa\nHUD\nMissões\nCapacidades\nRegistos\nDefinições",
+      "en": "Chat\nHUD\nMissions\nCapabilities\nLogs\nSettings"
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u2-english.png",
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U3",
+    "action": "Conversa pela HUD com id de conversa explícito",
+    "expected": "Resposta com id rw-… e cabeçalho X-Rightware-Conversation",
+    "obtained": {
+      "rid": "rw-6786bf01171484ee",
+      "seconds": 0.016,
+      "reply": "(histórico=0)\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-6786bf01171484ee",
+      "conversation_header": "mwtd95l54vbffq"
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u3-chat.png",
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U4",
+    "action": "Parar a geração liberta o modelo (cancelamento efectivo)",
+    "expected": "Pedido seguinte responde sem esperar pelo anterior",
+    "obtained": {
+      "next_seconds": 0.051,
+      "next": "(histórico=0)\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-d690b69e858a9636",
+      "since_stop_s": 1.594
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u4-stop.png",
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U5",
+    "action": "HUD com estado real (núcleo, missões, capacidades, voz, finanças)",
+    "expected": "núcleo ready; capacidades com estado; finanças sem dados",
+    "obtained": {
+      "mode": "ready",
+      "caps": [
+        [
+          "conversa",
+          "INTEGRADA"
+        ],
+        [
+          "missao-ci-fake",
+          "INTEGRADA"
+        ],
+        [
+          "pesquisa-publica",
+          "PARCIAL"
+        ],
+        [
+          "voz",
+          "NAO_INTEGRADA"
+        ],
+        [
+          "inteligencia-financeira",
+          "NAO_INTEGRADA"
+        ],
+        [
+          "internet-publica",
+          "BLOQUEADA"
+        ],
+        [
+          "memoria",
+          "NAO_INTEGRADA"
+        ],
+        [
+          "acoes-windows",
+          "BLOQUEADA"
+        ],
+        [
+          "sic",
+          "NAO_INTEGRADA"
+        ]
+      ],
+      "finance": "INTELIGÊNCIA FINANCEIRA\nNão integrada\n\nExige pesquisa web autorizada (WEB-01), fontes datadas e verificador. Sem cotações nem ordens.\n\nSem dados: nenhuma cotação, preço ou gráfico é mostrado até existir uma fonte verificada e autorizada."
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u5-hud.png",
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U6",
+    "action": "Orçamento de CPU da interface (idle 30 s, Chromium sem GPU)",
+    "expected": "≤ 10% de um núcleo",
+    "obtained": {
+      "chat": 3.4,
+      "hud": 3.5
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u6-cpu.png",
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U7",
+    "action": "Missão supervisionada pela HUD (missao-ci-fake) só com o código escrito",
+    "expected": "sem código → 400; botão desactivado sem código; código errado recusado; código certo executa; resultado do verificador",
+    "obtained": {
+      "noCode": {
+        "status": 400,
+        "body": {
+          "error": "CODIGO_EM_FALTA_OU_INVALIDO",
+          "state": "TAREFA_NAO_AUTORIZADA"
+        }
+      },
+      "disabledBefore": true,
+      "wrong": "inválido, expirado ou já usado. Nada foi executado.",
+      "last": {
+        "state": "RESULTADO_VERIFICADO",
+        "label": "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+        "verified": true,
+        "capability": "missao-ci-fake",
+        "operational_state": "FAKE_CI_VERIFIED",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "fake_tool",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "FAKE_OBJECTIVE",
+            "status": "VERIFIED",
+            "receipt": 1
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "[FAKE-CI] comentário do modelo",
+        "seconds": 4,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [],
+        "sources": []
+      },
+      "timeline": "Resultado verificado por evidência (recibos + verificador RIGHTWARE) · FAKE_CI_VERIFIED · 4.0 s\nDecidido pelos recibos e pelo verificador RIGHTWARE\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 fake_tool OK\nOBJECTIVOS\nFAKE_OBJECTIVE: VERIFIED (#1)\n⚠ COMENTÁRIO DO MODELO — NÃO VERIFICADO (NÃO É EVIDÊNCIA)\n[FAKE-CI] comentário do modelo"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u7-mission-running-missao-ci-fake.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u7-mission-result-missao-ci-fake.png"
+    ],
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U8",
+    "action": "Pesquisa pública de leitura (WEB-01 W2, corpus fixture, sem rede) pela HUD",
+    "expected": "RESULTADO_VERIFICADO; fontes com URL, data, sha256 e bytes; cada objectivo suportado por uma fonte designada",
+    "obtained": {
+      "last": {
+        "state": "RESULTADO_VERIFICADO",
+        "label": "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+        "verified": true,
+        "capability": "pesquisa-publica",
+        "operational_state": "RESEARCH_VERIFIED_FIXTURE",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_open_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "CAPITAL",
+            "status": "VERIFIED",
+            "receipt": 2
+          },
+          {
+            "id": "MOEDA",
+            "status": "VERIFIED",
+            "receipt": 2
+          },
+          {
+            "id": "BANCO_CENTRAL",
+            "status": "VERIFIED",
+            "receipt": 4
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "",
+        "seconds": 0.01,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Pergunta: Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.",
+          "CAPITAL: A capital de Moçambique é Maputo. (recibo #2)",
+          "MOEDA: A moeda oficial de Moçambique é o metical (MZN). (recibo #2)",
+          "BANCO_CENTRAL: O banco central emissor é o Banco de Moçambique. (recibo #4)"
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://enciclopedia.fixture.example/wiki/Mocambique",
+            "fetched_at": "2026-11-23T14:35:36.567849Z",
+            "sha256": "1919f76aa332125c97f61b524e5ed6ed5ea59b788f93a01bd3e1c4e017fb9341",
+            "bytes": 771,
+            "supports": [
+              "CAPITAL",
+              "MOEDA"
+            ]
+          },
+          {
+            "seq": 4,
+            "url": "https://banco-central.fixture.example/sobre",
+            "fetched_at": "2026-11-23T14:35:36.570659Z",
+            "sha256": "cbb953f121cb33c00285e498b264501c57b90d4f1ab6cce95cec87fd67ec03d7",
+            "bytes": 577,
+            "supports": [
+              "BANCO_CENTRAL"
+            ]
+          }
+        ]
+      },
+      "sources": 2,
+      "supports": [
+        "CAPITAL MOEDA",
+        "BANCO_CENTRAL"
+      ],
+      "timeline": "Resultado verificado por evidência (recibos + verificador RIGHTWARE) · RESEARCH_VERIFIED_FIXTURE · 0.0 s\nDecidido pelos recibos e pelo verificador RIGHTWARE\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_search_public OK\n#4 web_open_public OK\nOBJECTIVOS\nCAPITAL: VERIFIED (#2)\nMOEDA: VERIFIED (#2)\nBANCO_CENTRAL: VERIFIED (#4)\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nPergunta: Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.\nCAPITAL: A capital de Moçambique é Maputo. (recibo #2)\nMOEDA: A moeda oficial de Moçambique é o metical (MZN). (recibo #2)\nBANCO_CENTRAL: O banco central emissor é o Banco de Moçambique. (recibo #4)\nFONTES (RECIBOS DE LEITURA)\n#2 https://enciclopedia.fixture.example/wiki/Mocambique\n2026-11-23T14:35:36.567849Z · sha256 1919f76aa332125c… · 771 B · suporta CAPITAL, MOEDA\n#4 https://banco-"
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/web01/e2e/u8-research-result.png",
+    "pass": true,
+    "mode": "fake"
+  }
+]

@@ -40,6 +40,26 @@ export function ExecutionTimeline({ outcome, compact = false }: { outcome: Outco
           </ul>
         </>
       )}
+      {!!outcome.findings?.length && (
+        <>
+          <div className="rw-section">{t('timeline.findings')}</div>
+          <ul className="rw-objectives rw-findings">{outcome.findings.map((f) => <li key={f}>{f}</li>)}</ul>
+        </>
+      )}
+      {!compact && !!outcome.sources?.length && (
+        <>
+          <div className="rw-section">{t('timeline.sources')}</div>
+          <ol className="rw-receipts rw-sources">
+            {outcome.sources.map((s) => (
+              <li key={s.seq} data-supports={s.supports.join(' ')}>
+                <span className="rw-mono">#{s.seq}</span> <span className="rw-mono rw-src-url">{s.url}</span>
+                <div className="rw-muted rw-small rw-mono">{s.fetched_at} · sha256 {s.sha256.slice(0, 16)}… · {s.bytes} B
+                  {s.supports.length > 0 && <> · {t('timeline.supports')} <b>{s.supports.join(', ')}</b></>}</div>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
       {!compact && outcome.verified && !!outcome.changes?.length && (
         <>
           <div className="rw-section">{t('timeline.changes')}</div>

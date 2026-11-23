@@ -1,6 +1,6 @@
 # WEB-01 — Pesquisa web pública de leitura pelo RIGHTWARE Gateway (plano incremental)
 
-Estado: **plano de implementação; acesso externo à rede NÃO habilitado.** Data: 23/11/2026. Base: UI-02 (HUD) e P3A (Gateway). Abrir a rede pública exige uma **autorização específica do operador**, separada desta.
+Estado: **W0–W2 implementados sem rede (23/11/2026, ramo `integration/jrv-web01-w0w2-20261123`); W3–W4 por autorizar. Acesso externo à rede NÃO habilitado.** Data: 23/11/2026. Base: UI-02 (HUD) e P3A (Gateway). Abrir a rede pública exige uma **autorização específica do operador**, separada desta.
 
 ## Princípios (não negociáveis)
 - **Só leitura.** Nesta fase não há formulários, login, POST para terceiros, downloads executáveis nem pagamentos.
@@ -27,3 +27,26 @@ Estado: **plano de implementação; acesso externo à rede NÃO habilitado.** Da
 
 ## Fora de âmbito
 Navegação com sessão iniciada, compras, envio de dados pessoais, scraping massivo, contornar paywalls ou robots, voz, acções Windows e escrita de ficheiros (cada um com a sua própria autorização).
+
+## Estado da implementação W0–W2 (23/11/2026)
+Classificação: **FACTO** (testado neste host ou em CI); nenhum teste abriu um socket de rede (verificado por asserção).
+
+| Fase | Código | Testes / evidência |
+|---|---|---|
+| W0 | `configs/web01/egress.json` (modo `fixture`, `network_enabled=false`, `authorization_ref=null`); `rightware/web01/egress.py`: `EgressPolicy` (validação estrita), `build_fetcher` (o modo `public` é **recusado** sem autorização W3), `EgressGuard` (allowlist por salto, só GET, limites por resposta, orçamentos por missão, cancelamento, auditoria). `HttpxFetcher.fetch` recebeu limites por chamada que só podem **apertar** os máximos existentes, mais `Page.raw` (alteração aditiva). | `tests/test_web01.py::W0Policy`: políticas inválidas, recusa do modo público, recusa antes do fetch, orçamentos, limite de bytes, redireccionamento permitido e para fora da allowlist, e, com transporte injectado, IP privado, DNS misto (rebinding), redireccionamento para 169.254.169.254, re-verificação do peer. |
+| W1 | `rightware/web01/fixture/`: corpus local escrito pela RIGHTWARE em `*.fixture.example` (cada página declara ser fixture), motor de pesquisa determinístico, página de fórum com injecção de instruções. `rightware/web01/research.py`: `web_search_public` e `web_open_public` com **recibos encadeados por hash** (URL, `fetched_at` UTC, SHA-256, bytes, estado HTTP, recusa); o verificador re-hasheia os bytes guardados e aceita um objectivo **só** de fontes designadas. | `W1ToolsReceiptsVerifier`: cadeia, fórum (diz "Beira") nunca suporta a capital, adulteração de bytes, URL ou cadeia → `RESEARCH_INVALID_EVIDENCE`, especificação estrita. |
+| W2 | `rightware/web01/mission.py` (`ResearchMission`, capacidade `pesquisa-publica`, estado **PARCIAL**), registada no **mesmo** ControlPlane (`missions=`), com código do operador, uma tarefa de cada vez e cancelamento. `TaskOutcome.findings/sources` aparecem na consola, na bridge e na timeline da HUD (secção "Fontes"). CLI do anfitrião: `python -m rightware.gui serve --missao-pesquisa`. Evidência em `.runtime/web01-missions/` (fora do repositório). | `W2Mission` (verificado, cancelamento < 1,5 s, ControlPlane, bridge). Browser E2E **U8** (CI com `serve_fake.py` + executor WEB-01 real sobre o corpus) e no anfitrião via CLI: `docs/evidence/web01/`. |
+
+**Limites (honestos):**
+- O executor W2 é um plano de leitura **determinístico** definido pelo anfitrião: pesquisa, abertura de até N resultados permitidos, verificação. Nenhum modelo decide.
+- A exposição destas ferramentas ao goose via Gateway MCP fica para depois (com o mesmo `EgressGuard`).
+- O corpus é **fixture**: prova a política, os recibos, o verificador e a integração na HUD, não a qualidade de pesquisa na Internet real.
+- A capacidade `internet-publica` continua **BLOQUEADA** na HUD.
+
+**Para avançar para W3, o operador tem de autorizar especificamente:**
+1. a lista exacta de domínios;
+2. o motor de pesquisa público e as suas condições de uso;
+3. os limites;
+4. a execução apenas no anfitrião local.
+
+Depois disso, `authorization_ref` e `network_enabled=true` entram na política e o código W3 passa `allow_public=True` num ponto único e auditado.

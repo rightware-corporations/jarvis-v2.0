@@ -1,0 +1,52 @@
+{
+ "verdict": "RESEARCH_VERIFIED",
+ "problems": [],
+ "objectives": [
+  [
+   "CAPITAL",
+   "VERIFIED",
+   2
+  ],
+  [
+   "MOEDA",
+   "VERIFIED",
+   2
+  ],
+  [
+   "BANCO_CENTRAL",
+   "VERIFIED",
+   4
+  ]
+ ],
+ "sources": [
+  {
+   "seq": 2,
+   "url": "https://enciclopedia.fixture.example/wiki/Mocambique",
+   "fetched_at": "2026-11-23T14:35:59.719953Z",
+   "sha256": "1919f76aa332125c97f61b524e5ed6ed5ea59b788f93a01bd3e1c4e017fb9341",
+   "bytes": 771,
+   "supports": [
+    "CAPITAL",
+    "MOEDA"
+   ]
+  },
+  {
+   "seq": 4,
+   "url": "https://banco-central.fixture.example/sobre",
+   "fetched_at": "2026-11-23T14:35:59.722745Z",
+   "sha256": "cbb953f121cb33c00285e498b264501c57b90d4f1ab6cce95cec87fd67ec03d7",
+   "bytes": 577,
+   "supports": [
+    "BANCO_CENTRAL"
+   ]
+  }
+ ],
+ "claims": {
+  "CAPITAL": "A capital de Moçambique é Maputo.",
+  "MOEDA": "A moeda oficial de Moçambique é o metical (MZN).",
+  "BANCO_CENTRAL": "O banco central emissor é o Banco de Moçambique."
+ },
+ "mode": "fixture",
+ "policy_version": "web01.egress.v1",
+ "seconds": 0.01
+}

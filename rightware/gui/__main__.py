@@ -25,6 +25,8 @@ def main(argv=None) -> int:
     s.add_argument("--goose-ollama-dir", type=Path)
     s.add_argument("--goose-models-dir", type=Path)
     s.add_argument("--goose-model", default="qwen3.5:4b")
+    s.add_argument("--missao-pesquisa", action="store_true",
+                   help="ANFITRIÃO: activa a pesquisa pública de leitura WEB-01 (modo fixture, sem rede)")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
     if a.cmd == "setup":
@@ -53,9 +55,13 @@ def main(argv=None) -> int:
             p.error("--missao-goose exige --goose-bin, --goose-ollama-dir e --goose-models-dir (anfitrião)")
         from rightware.goose_adapter import GooseMission, GooseRuntime
         goose = GooseMission(GooseRuntime(a.goose_bin, a.goose_ollama_dir, a.goose_models_dir, a.goose_model))
+    missions = []
+    if a.missao_pesquisa:
+        from rightware.web01.mission import ResearchMission
+        missions.append(ResearchMission())       # refuses at start-up unless the policy is fixture (or W3-authorised)
     from rightware.gui.server import build_app, serve
     app, _ = build_app(port=a.port, models=a.model or ["qwen3.5:2b"], deadline=a.deadline, trial=a.tarefa_ensaio,
-                       goose=goose)
+                       goose=goose, missions=missions)
     print("JARVIS (RIGHTWARE JARVIS HUD sobre a interface OpenJarvis original), só em 127.0.0.1.", flush=True)
     print(f"Abra esta ligação de sessão local (uso pelo operador; não partilhar): {app.session_url}", flush=True)
     serve(app, a.port)

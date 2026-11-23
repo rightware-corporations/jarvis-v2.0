@@ -125,3 +125,5 @@ html.rw-busy .rw-core__tick { animation-play-state: running !important; }
 .rw-hud-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .rw-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .rw-card .rw-row { justify-content: space-between; }
+.rw-sources { gap: 6px; }
+.rw-src-url { word-break: break-all; color: var(--color-text); }

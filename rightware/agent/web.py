@@ -60,6 +60,7 @@ class Page:
     sha256: str
     truncated: bool
     markup: str = ""          # bounded raw HTML, for the semantic browser only (never sent to the model)
+    raw: bytes = b""          # WEB-01: the exact bytes hashed into ``sha256`` (receipts are re-verifiable)
 
 
 def _resolve(host: str) -> list[str]:
@@ -288,9 +289,14 @@ class HttpxFetcher:
         peer = stream.get_extra_info("server_addr")
         return bool(peer) and _global(str(peer[0]))
 
-    def fetch(self, url: str, host_allowed: Callable[[str], bool] | None = None) -> Page:
+    def fetch(self, url: str, host_allowed: Callable[[str], bool] | None = None, *, max_bytes: int = MAX_BYTES,
+              timeout: float = TIMEOUT_S, max_redirects: int = MAX_REDIRECTS) -> Page:
         """GET one page. ``host_allowed`` (WORK-07 browser) is enforced on the first URL AND on
-        every redirect hop, before any connection to that host."""
+        every redirect hop, before any connection to that host. WEB-01: an egress policy may only TIGHTEN the
+        module limits (bytes, timeout, redirects); larger values are clamped to them."""
+        max_bytes = max(1, min(int(max_bytes), MAX_BYTES))
+        timeout = max(0.1, min(float(timeout), TIMEOUT_S))
+        max_redirects = max(0, min(int(max_redirects), MAX_REDIRECTS))
         import httpx
 
         def scoped(target: str) -> str:
@@ -302,14 +308,14 @@ class HttpxFetcher:
 
         requested = scoped(url)
         current = requested
-        kwargs = {"timeout": TIMEOUT_S, "follow_redirects": False, "trust_env": False,
+        kwargs = {"timeout": timeout, "follow_redirects": False, "trust_env": False,
                   "headers": {"User-Agent": USER_AGENT, "Accept": "text/html,text/plain"}}
         if self.transport is not None:
             kwargs["transport"] = self.transport          # tests: deterministic MockTransport
         else:
             kwargs["transport"], self.backend = pinned_transport(self.resolver)
         with httpx.Client(**kwargs) as client:
-            for _ in range(MAX_REDIRECTS + 1):
+            for _ in range(max_redirects + 1):
                 client.cookies.clear()                     # never carry cookies between requests
                 with client.stream("GET", current) as resp:
                     if not self.peer_check(resp):
@@ -324,8 +330,8 @@ class HttpxFetcher:
                     chunks, size, truncated = [], 0, False
                     for chunk in resp.iter_bytes():
                         size += len(chunk)
-                        if size > MAX_BYTES:
-                            chunks.append(chunk[:MAX_BYTES - (size - len(chunk))])
+                        if size > max_bytes:
+                            chunks.append(chunk[:max_bytes - (size - len(chunk))])
                             truncated = True
                             break
                         chunks.append(chunk)
@@ -336,5 +342,5 @@ class HttpxFetcher:
                         text, truncated = text[:MAX_TEXT_CHARS], True
                     return Page(requested, current, resp.status_code, ctype, text,
                                 hashlib.sha256(raw).hexdigest(), truncated,
-                                text_raw if "html" in ctype else "")
+                                text_raw if "html" in ctype else "", raw)
         raise WebRefused("demasiados redireccionamentos")

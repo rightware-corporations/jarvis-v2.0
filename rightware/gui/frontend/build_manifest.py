@@ -37,6 +37,9 @@ STRINGS = {
         ("</kbd> for new line", "</kbd> {__rwT('chat.newLine')}", 1),
         ('title="Stop generating"', "title={__rwT('chat.stop')}", 1),
         ("title={selectedModel ? 'Send message' : 'Pick a model first (⌘K)'}", "title={__rwT('chat.send')}", 1)],
+    "src/components/Layout.tsx": [
+        ("<span>Cannot reach OpenJarvis backend</span>", "<span>{__rwT('banner.engineDown')}</span>", 1),
+        ("            Change URL\n", "            {__rwT('banner.settings')}\n", 1)],
     "src/components/Sidebar/ConversationList.tsx": [
         ("'No matching chats'", "__rwT('sidebar.noMatch')", 1), ("'No conversations yet'", "__rwT('sidebar.empty')", 1)],
 }
