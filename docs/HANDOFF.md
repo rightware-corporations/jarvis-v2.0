@@ -3664,3 +3664,51 @@ Nada disto foi iniciado.
 - move the runtime modules to `rightware/gateway/` and the synthetic material to `rightware/gateway/synthetic/`, with labs aliases (no duplicate code);
 - reproducible image from a versioned Dockerfile;
 - adapter integration, parity tests, a real run, then the PR.
+
+## CHECKPOINT — 23/11/2026: JRV-P3A-CP2 — Tool Gateway as a RIGHTWARE runtime component; reproducible image; real mission verified
+
+**BRANCH:** `integration/jrv-p3a-gateway-20261123` (from `develop` `5ae4ddf`). Code commit `719137dc3db2`.
+
+**GATE 1:**
+- Moved to `rightware/gateway/`: `gateway`, `mcp_http`, `model_tap`, `report_contract`, `verify`. Synthetic trial material moved to `rightware/gateway/synthetic/`: `fixture_transport`, `site`, `score_semantic`.
+- Changes are limited to imports, docstrings and the unreachable TE-P2D paths, which now refuse explicitly. They are recorded in `PARITY.json` and checked against the `a1b88ef` blobs.
+- The old `labs/` module names are `sys.modules` aliases, so there is no duplicated code. There are no `labs` imports anywhere in `rightware/`.
+
+**GATE 2:**
+- Build files: `configs/gateway/Dockerfile` and `python -m rightware.gateway.image build`.
+- Inputs: base pinned by digest, `uv` installed with `--require-hashes`, runtime dependencies from the vendor `uv.lock` at pin `f21d902`.
+- Minimal staged context: 995 files.
+- Runtime user 10001; no setuid; labels bind the image to the source digest.
+- Two `--no-cache` builds gave the identical image id `sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c`, after 3 failed iterations that are documented.
+- The old `jrv-gateway:te-p2a` is refused (`GATEWAY_IMAGE_UNVERIFIED`).
+- Not pushed to any registry.
+
+**GATE 3:**
+- The adapter starts gateway, tap and fixture by the verified image id, with: non-root user, `--read-only`, `--cap-drop ALL`, no-new-privileges, tmpfs `/tmp`, and the evidence dir as the only mount.
+- Gate 3 guarantees kept: OFF by default, host activation plus operator code, isolated Docker, mission-owned resources, readiness check, mandatory evidence, process state check, cancellation and cleanup, no public Internet.
+
+**GATE 4 (tests FAKE/offline):**
+- P3A tests: 15. P2 tests: 43. Historical TE-P2A tests: 32 (through the aliases).
+- Full pinned venv: **660 OK, 0 skipped**. Plain Python: OK.
+- Mutation: P3A 19/19; P2 44/44.
+- Parity: P2 real run-4 evidence re-evaluated with the moved verifier gives 14/14 identical fields.
+- **REAL run P3A-1** (`719137d`, qwen3.5:4b, same console and catalogue): **RESULTADO_VERIFICADO** TASK_VERIFIED_LIMITED.
+  - goose exit 0 after 271.9 s.
+  - 7 receipts = 7 observed calls; 4/4 objectives; 503 recovered; 6↔6; chain valid; semantic PASS; 0 violations.
+  - Gateway-image containers ran as 10001, read-only, `CapDrop=ALL`.
+  - Cleanup complete.
+- Evidence in `docs/evidence/p3a/`; full write-up in `docs/engineering/P3A_GATEWAY_PRODUCT.md`.
+
+**RISKS:**
+- Vendor build backend (hatchling, hatch-vcs) not hash-pinned.
+- amd64 only.
+- Image ~472 MB.
+- Build needs PyPI.
+- Reproducibility shown on one host only.
+- N=1 real run.
+
+**STATUS:** single PR to `develop`; no merge without approval. `main`, PR #27 and the pin are untouched. **NEXT (P3B, needs authorisation):**
+- offline hash-verified wheelhouse, including build tools;
+- minimal dependency set for the image;
+- N≥3 pre-registered real missions;
+- signed internal registry publication.

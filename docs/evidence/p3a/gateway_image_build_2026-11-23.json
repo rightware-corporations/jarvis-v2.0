@@ -1,0 +1,103 @@
+{
+  "kind": "Gateway image build and reproducibility (local build in the authorised remote environment; NOT pushed to any registry)",
+  "date": "2026-11-23",
+  "procedure": "vendor/openjarvis/.venv/bin/python -m rightware.gateway.image build --ca <proxy CA bundle> --network host --no-cache",
+  "final": {
+    "build_A": {
+      "image_tag": "rightware/jarvis-gateway:p3a",
+      "image_id": "sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c",
+      "source_digest": "6802563c5a584321551992e3bc782d211dbdfc3d8f17aebd8e5af45fad344394",
+      "context_digest": "9cf603c35fc64297ede31f71bfb7f2a5db8ca3602a0c3cfa84b5865f9bfd717a",
+      "context_files": 995,
+      "base_image": "mirror.gcr.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+      "vendor_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+      "uv_lock_sha256": "c5ce789c90cca37a0cf6d8b5cd7226ab69572182ac71424c64665a4eefeed982",
+      "build_requirements": [
+        "uv==0.11.32 --hash=sha256:3da76cd4e2697de30928b8a8524bd39183ac1e08cb7e72833807c022b7cba6c4"
+      ],
+      "runtime_user": "10001:10001",
+      "size_bytes": 469490634,
+      "security_checks": {
+        "uid": 10001,
+        "gid": 10001,
+        "setuid_files": [],
+        "imports_ok": true,
+        "labs_importable": false,
+        "app_writable": false,
+        "distributions": 59,
+        "distributions_sha256": "5a4dcad05455b98195e0e48467cfb83b1d0ab48aee80d0a1861b337edc28fde3",
+        "python": "3.12.16",
+        "runtime_tree_sha256": "d93e1921d353a37786a3c2e31c11ffb45dcbba5ceb41496fc07acf40a29b6b99",
+        "problems": []
+      },
+      "repository_head": "719137dc3db2dea1d573848c59b450c5af68b4ba"
+    },
+    "build_B": {
+      "image_tag": "rightware/jarvis-gateway:p3a",
+      "image_id": "sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c",
+      "source_digest": "6802563c5a584321551992e3bc782d211dbdfc3d8f17aebd8e5af45fad344394",
+      "context_digest": "9cf603c35fc64297ede31f71bfb7f2a5db8ca3602a0c3cfa84b5865f9bfd717a",
+      "context_files": 995,
+      "base_image": "mirror.gcr.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+      "vendor_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+      "uv_lock_sha256": "c5ce789c90cca37a0cf6d8b5cd7226ab69572182ac71424c64665a4eefeed982",
+      "build_requirements": [
+        "uv==0.11.32 --hash=sha256:3da76cd4e2697de30928b8a8524bd39183ac1e08cb7e72833807c022b7cba6c4"
+      ],
+      "runtime_user": "10001:10001",
+      "size_bytes": 469490634,
+      "security_checks": {
+        "uid": 10001,
+        "gid": 10001,
+        "setuid_files": [],
+        "imports_ok": true,
+        "labs_importable": false,
+        "app_writable": false,
+        "distributions": 59,
+        "distributions_sha256": "5a4dcad05455b98195e0e48467cfb83b1d0ab48aee80d0a1861b337edc28fde3",
+        "python": "3.12.16",
+        "runtime_tree_sha256": "d93e1921d353a37786a3c2e31c11ffb45dcbba5ceb41496fc07acf40a29b6b99",
+        "problems": []
+      },
+      "repository_head": "719137dc3db2dea1d573848c59b450c5af68b4ba"
+    },
+    "identical_image_id": true,
+    "identical_runtime_tree": true
+  },
+  "iterations_negative_results": [
+    {
+      "builds": "1-2 (no timestamp control)",
+      "image_ids_equal": false,
+      "runtime_tree_equal": false,
+      "cause": "build-stage import check wrote .pyc files with embedded timestamps; uv wrote dist-info/uv_cache.json with build time"
+    },
+    {
+      "builds": "3-4 (no bytecode, uv_cache.json removed)",
+      "image_ids_equal": false,
+      "runtime_tree_equal": true,
+      "cause": "layer tar mtimes (rewrite-timestamp is not applied by the classic docker image store exporter)"
+    },
+    {
+      "builds": "5-6 (venv/context mtimes = pin commit time)",
+      "image_ids_equal": false,
+      "runtime_tree_equal": true,
+      "cause": "/opt and /app parent dirs created by COPY at build time; whiteouts for passwd-/group- removed in the user RUN"
+    },
+    {
+      "builds": "7-8 (tree staged under /out and touched; no removals)",
+      "image_ids_equal": true,
+      "runtime_tree_equal": true,
+      "cause": "none: bit-identical"
+    }
+  ],
+  "old_image": {
+    "ref": "jrv-gateway:te-p2a",
+    "origin": "docker run + docker commit in TE-P2A (no Dockerfile, no labels)",
+    "adapter_result": "GATEWAY_IMAGE_UNVERIFIED (refused)"
+  },
+  "leak_checks": {
+    "proxy_or_ca_in_image_history": 0,
+    "/run/secrets_in_image": "absent",
+    "build_source_tree_in_image": "absent (/src not present)"
+  }
+}

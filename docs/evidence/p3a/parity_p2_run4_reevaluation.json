@@ -1,0 +1,39 @@
+{
+  "source": "P2-R1 real run 4 evidence (mission 6504e508, code 1b292bb), re-evaluated with rightware.gateway at 719137d",
+  "fields_compared": [
+    "verdict",
+    "objectives",
+    "recovered_from_503",
+    "http_receipt_correspondence",
+    "receipt_defects",
+    "report_semantic",
+    "chain_check",
+    "violations",
+    "executed_calls",
+    "forwarded_tools",
+    "calls_match_receipts",
+    "evidence_gaps",
+    "state",
+    "error_code"
+  ],
+  "equal": {
+    "verdict": true,
+    "objectives": true,
+    "recovered_from_503": true,
+    "http_receipt_correspondence": true,
+    "receipt_defects": true,
+    "report_semantic": true,
+    "chain_check": true,
+    "violations": true,
+    "executed_calls": true,
+    "forwarded_tools": true,
+    "calls_match_receipts": true,
+    "evidence_gaps": true,
+    "state": true,
+    "error_code": true
+  },
+  "all_equal": true,
+  "state": "RESULTADO_VERIFICADO",
+  "receipts": 7,
+  "note": "prep.gateway_image injected (that run predates image ids); every other input is the stored evidence"
+}
