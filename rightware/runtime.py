@@ -181,14 +181,15 @@ def chat_command(model):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="RIGHTWARE Jarvis v2 — local text baseline")
-    parser.add_argument("command", choices=("setup", "doctor", "chat", "voice", "diagnose", "agent", "task", "console"))
+    parser.add_argument("command", choices=("setup", "doctor", "chat", "voice", "diagnose", "agent", "task", "console",
+                                                "gui"))
     parser.add_argument("--model", help="Installed local Ollama model (chat/voice)")
     parser.add_argument("--voice", action="store_true",
                         help="setup: also install local speech-to-text (upstream 'speech' extra)")
     parser.add_argument("--kokoro", action="store_true",
                         help="setup: also install Kokoro TTS (upstream 'voice' extra; large, needs espeak-ng)")
     args, extra = parser.parse_known_args(argv)
-    if extra and args.command not in ("voice", "diagnose", "agent", "task", "console"):
+    if extra and args.command not in ("voice", "diagnose", "agent", "task", "console", "gui"):
         parser.error("unrecognized arguments: " + " ".join(extra))
     try:
         if args.command == "setup":
@@ -224,6 +225,16 @@ def main(argv=None):
                 raise RuntimeError("Run python jarvis.py setup first")
             extra = ["--model", args.model or config["intelligence"]["default_model"], *extra]
             return call_foreground(console_command(extra), cwd=ROOT, env=voice_environment())
+        elif args.command == "gui":
+            # UI-01: original OpenJarvis GUI on the RIGHTWARE runtime (isolated runtime in .runtime/gui, 127.0.0.1).
+            verify_source()
+            gui_python = STATE / "gui" / "venv" / "bin" / "python"
+            launcher = str(gui_python) if gui_python.is_file() else sys.executable
+            extra = extra or ["serve"]
+            if args.model:
+                extra = [*extra, "--model", args.model]
+            return call_foreground([launcher, "-m", "rightware.gui", *extra], cwd=ROOT,
+                                   env={**os.environ, "PYTHONPATH": str(ROOT)})
         elif args.command == "diagnose":
             # Read-only. Prefer the upstream venv so speech libraries are checked.
             if args.model:
