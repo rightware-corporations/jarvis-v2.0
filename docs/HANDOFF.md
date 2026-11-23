@@ -3768,3 +3768,65 @@ Nada disto foi iniciado.
 - `docs/engineering/P3A_GATEWAY_PRODUCT.md` §8 now states that the decided product priority is reuse and integration of the existing OpenJarvis GUI; P3B stays a proposal and is NOT started automatically.
 
 **STATUS:** PR #29 remains Draft; no merge without operator approval. The next product work follows JRV-PRODUCT-DIRECTION-UI-REUSE (Gate GUI on the pinned OpenJarvis).
+## CHECKPOINT — 23/11/2026: JRV-UI01-CP1 — G-MERGE pending; original OpenJarvis GUI run locally; integration map; continuous-product directive
+
+> **PRODUCT DIRECTIVE (operator, 23/11/2026, verbatim):** "A apresentação ao Issa é um marco de aceitação da aplicação real, não um projecto de demonstração. Todo o trabalho apresentado deve integrar o mesmo código-base que continuará a ser desenvolvido. Não criar componentes descartáveis para a apresentação."
+>
+> **Verifiable corollaries:**
+> - no interface mocks, canned responses or fictitious data;
+> - capabilities that are not integrated are shown as NOT INTEGRATED / unavailable, never simulated;
+> - any component created for the presentation exists in the product codebase, with tests and an owner;
+> - existing components, features and research are preserved.
+
+**PRESERVED INVENTORY (not to be discarded):**
+- tool-free PT console (E0-01/02);
+- P1 Control Plane and synthetic comparison;
+- P2 goose adapter and R1 fixes;
+- P3A Gateway component and reproducible image (PR #29, not merged);
+- TE-P2A/B/C research (PR #27 Draft) and TE-P2D partial;
+- launcher, WORK-05 agent, receipts and verifiers;
+- SIC (separate repository).
+
+**STATE:**
+- `develop` `ba85c2a85d8290685eba9cd78dfe371eb3e29cc2`; `main` `0cac8e8`; PR #27 at `a1b88ef`.
+- Pin `f21d902` (gitlink identical on `develop` and on the PR #29 branch).
+- PR #29 head `7393bf506ef01687f75b0f3c24b9d4ae57be4c2c`: clean, 5/5 checks green (WORK-05 45130904767, foundation 45130904852).
+- **G-MERGE presented to the operator; NO authorisation received → P3A NOT INTEGRATED.**
+
+**UI-01 (local, isolated, 127.0.0.1):**
+- The original GUI at the pin was built from a `git archive` copy outside the repository, with `uv sync --frozen --extra server` and `npx npm@11.19.0 ci/build`. The vendor was not touched.
+- Served by the upstream `jarvis serve` with no agent and no telemetry/analytics.
+- **FACT:**
+  - a PT question through the GUI was answered by real `qwen3.5:2b`: GUI → `POST /v1/chat/completions` → Ollama `POST /api/chat` 200;
+  - with Ollama stopped, the GUI sent nothing and fabricated nothing, but showed no explicit error (UX gap).
+- **CRITICAL FINDING:** the upstream defaults include paths that bypass RIGHTWARE policy:
+  - the `orchestrator` server agent with `think`, `calculator` and `web_search`;
+  - `/v1/agents` spawn with arbitrary tools;
+  - managed agents, research, connectors, uploads, webhooks and channel send;
+  - the scheduler, model pull/delete, approvals, memory writes;
+  - the startup version check and PostHog analytics.
+- The GUI must NOT be used by Issa before a deny-by-default RIGHTWARE adapter exists.
+- Map a–f, the path classification and the capability table are in `docs/engineering/UI01_OPENJARVIS_GUI.md`; screenshots in `docs/evidence/ui01/`.
+
+**G-IMPL (pending operator authorisation):**
+- Branch `integration/jrv-ui01-gui-20261123`.
+- Files outside the vendor:
+  - `rightware/gui/{server,route_policy,chat_bridge,analytics_off}.py`
+  - `configs/gui/openjarvis-gui.toml`
+  - `jarvis.py gui`
+  - `tests/test_ui01_gui_policy.py`
+  - `labs/ui01/gui_e2e.py`
+- No frontend fork.
+
+**CAPABILITIES:**
+- financial research: NOT INTEGRATED;
+- Internet: BLOCKED;
+- voice: NOT INTEGRATED;
+- memory: NOT INTEGRATED;
+- computer access: BLOCKED;
+- real conversation through the original GUI: PARTIAL (upstream direct, not through RIGHTWARE);
+- supervised tasks in the GUI: NOT INTEGRATED.
+
+**NEXT:** operator decisions on G-MERGE (PR #29 into `develop`, merge commit) and G-IMPL (branch and file list). P3B not started.
+
+**NOTE:** this checkpoint moves `develop`, so PR #29 will again need a docs-only HANDOFF reconciliation before merging (same procedure as JRV-P3A-RECONCILE).
