@@ -53,6 +53,7 @@ if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--port", type=int, default=8010)
     args = a.parse_args()
-    app, _ = S.build_app(port=args.port, models=["qwen3.5:2b"], goose=FakeMission(), adapter_factory=lambda m: FakeText())
+    app, bridge = S.build_app(port=args.port, models=["qwen3.5:2b"], goose=FakeMission(), adapter_factory=lambda m: FakeText())
+    bridge.installed_models = lambda: {"qwen3.5:2b"}          # [FAKE-CI] engine probe: CI has no Ollama
     print("FAKE-CI GUI:", app.session_url, flush=True)
     S.serve(app, args.port)
