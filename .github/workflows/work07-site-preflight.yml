@@ -1,0 +1,115 @@
+# WORK-07 Phase 4: real RFC Editor site preflight with the semantic browser. NO model. INERT.
+# Runs only when a push to `develop` changes ops/work07_site_preflight_request.json, under the same
+# authorisation protocol as WORK-06 (approved code SHA, request-only commit, single-use request_id,
+# no re-runs, fixed plan digest). One site (www.rfc-editor.org), GET only, no JS, no downloads.
+name: WORK-07 RFC Editor site preflight (request-triggered, no model)
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - ops/work07_site_preflight_request.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: work07-site-preflight
+  cancel-in-progress: false
+
+env:
+  BRANCH: develop
+  PIN: f21d902f4d3bd7f0f3f138f1a4613019a394b549
+  UV_VERSION: "0.11.32"
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout the pushed revision (pinned submodule)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: GATE 0 — authorisation, ref, pin
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/$BRANCH" ] || { echo "unexpected ref"; exit 1; }
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$GITHUB_SHA" "origin/$BRANCH"
+          test "$(git ls-tree HEAD vendor/openjarvis | awk '{print $3}')" = "$PIN"
+          test -z "$(git status --porcelain)"
+          EVID="$RUNNER_TEMP/preflight-evidence"; mkdir -p "$EVID"
+          cp ops/work07_site_preflight_request.json "$EVID/request.json"
+          python3 -E -s -m labs.work07_rfc_gate.gate --check-request site-preflight --run-attempt "$GITHUB_RUN_ATTEMPT" > "$EVID/authorisation.json"
+          APPROVED=$(python3 -I -c 'import json,sys;print(json.load(open(sys.argv[1]))["approved_code_sha"])' "$EVID/authorisation.json")
+          { echo "EVID=$EVID"; echo "APPROVED_SHA=$APPROVED"; } >> "$GITHUB_ENV"
+          printf '{"gate":"0","status":"PASS","trigger_sha":"%s","approved_code_sha":"%s"}\n' "$GITHUB_SHA" "$APPROVED" >> "$EVID/gates.jsonl"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: '3.12'
+
+      - name: GATE 2 — pinned OpenJarvis venv and the full product suite (no skips)
+        env:
+          HOME: ${{ runner.temp }}/home
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check "uv==${UV_VERSION}"
+          uv sync --project vendor/openjarvis --frozen --no-dev --python "$(which python)" 2>&1 | tail -3
+          vendor/openjarvis/.venv/bin/python -m unittest discover -s tests -v > "$EVID/product-tests.txt" 2>&1
+          ! grep -q " skipped" "$EVID/product-tests.txt"
+          printf '{"gate":"2","status":"PASS"}\n' >> "$EVID/gates.jsonl"
+
+      - name: "TECHNICAL EXECUTION — site preflight runner (green = the runner completed; NOT an acceptance verdict)"
+        run: |
+          set -euo pipefail
+          set +e
+          vendor/openjarvis/.venv/bin/python -m labs.work07_rfc_gate.gate --run site-preflight --approved-code-sha "$APPROVED_SHA" \
+            --evidence-dir "$EVID/preflight" > "$EVID/preflight-console.log" 2>&1
+          RC=$?
+          set -e
+          echo "$RC" > "$EVID/technical-exit.txt"
+          tail -5 "$EVID/preflight-console.log"
+          printf '{"gate":"technical","technical_exit":%s}\n' "$RC" >> "$EVID/gates.jsonl"
+          exit $RC
+
+      - name: "ACCEPTANCE VERDICT — fails unless the verdict is READY (NOT_READY / FAIL / INCOMPLETE are never accepted)"
+        if: always()
+        run: |
+          set +e -uo pipefail   # the runner shell is "bash -e": keep going to record the verdict, then exit $ACC
+          EVID="${EVID:-$RUNNER_TEMP/preflight-evidence}"; mkdir -p "$EVID"
+          TECH=$(cat "$EVID/technical-exit.txt" 2>/dev/null || echo -1)
+          python3 -E -s -m labs.work07_rfc_gate.gate --acceptance site-preflight --technical-exit "$TECH" \
+            --evidence-dir "$EVID/preflight" > "$EVID/acceptance.json"
+          ACC=$?
+          if [ ! -s "$EVID/acceptance.json" ]; then
+            printf '{"operation":"site-preflight","technical_exit":%s,"verdict":"NO_VERDICT","accepted":false}\n' "$TECH" > "$EVID/acceptance.json"
+            ACC=1
+          fi
+          cat "$EVID/acceptance.json"
+          { echo "## WORK-07 site preflight: technical execution vs acceptance"
+            echo '```json'; cat "$EVID/acceptance.json"; echo '```'
+            echo "Accepted only if technical_execution = COMPLETED and verdict = READY. The evidence artifact is uploaded in every case."
+          } >> "$GITHUB_STEP_SUMMARY"
+          printf '{"gate":"acceptance","accepted_exit":%s}\n' "$ACC" >> "$EVID/gates.jsonl"
+          exit $ACC
+
+      - name: Preserve evidence (always)
+        if: always()
+        run: |
+          EVID="${EVID:-$RUNNER_TEMP/preflight-evidence}"; mkdir -p "$EVID"
+          ( cd "$EVID" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS ) || true
+
+      - name: Upload evidence (always)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: work07-site-preflight-${{ github.run_id }}
+          path: ${{ runner.temp }}/preflight-evidence
+          if-no-files-found: warn
+          retention-days: 30

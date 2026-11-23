@@ -1,0 +1,31 @@
+RIGHTWARE JARVIS WORK-07 PHASE 5 | REAL QWEN3.5:4b | request_id 3 | historical FAIL
+Run ID: 43189355873
+Run attempt: 1
+Run URL: https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43189355873
+Artifact ID: 13930551641
+Artifact URL: https://github.com/rightware-corporations/jarvis-v2.0/actions/runs/43189355873/artifacts/13930551641
+Approved code SHA: 5aba773a06f3d6a81c00bb2b0ee017a463e8bbd4
+Trigger SHA: 122797880ce850f4d154f9cc5f13a23c80ec3b64
+Plan SHA256: 44d9664812cd98648f17691508f4adf9710463ef20354b09ed4d12e144a02d94
+Original archive ZIP SHA256: debbfca867ac73f20e006c8b6f6f7a97d4cdd635e067499feba3bdd211743eaf
+GitHub original artifact digest: sha256:debbfca867ac73f20e006c8b6f6f7a97d4cdd635e067499feba3bdd211743eaf
+Integrity independently confirmed: 11/11 source SHA256SUMS entries match archive file bytes.
+
+Original SHA256SUMS (file digest, file path):
+4308fdbe1e746f7c6a814247383db492f5d347483464810e506d1530b65e0d98  ./acceptance.json
+b124c0aef816ac5bbb8248ad458e4b929e78753a21150308ce8334280931d791  ./authorisation.json
+63fb9218eb0c2a28be2d932c121e4d9c50dddc58c059d5b3bb57cd28cd427e1c  ./gate-console.log
+1b81b7bcd02f1cb7e8842d184f3d384b00d77b7d07ae3712eada049f39ad70b4  ./gate/audit.jsonl
+460bed40291a9a955c38e137bbdf401a31a384861a989ee2f062bf70dd840af8  ./gate/qwen_gate.json
+b835e5dfad75a1061ceda25dda1d5a3aa22a4e328eb03c60856971dffa7a065e  ./gates.jsonl
+59cd744b8a7998b638491782ac2d2b28258eaad41e864a826e6cc1e7c5f91c20  ./ollama-server.tail.log
+3f031840f510548fbc72d9ab044d9813236053227bbc8d6c9694d5066d84f06e  ./ollama-tags.json
+b82ddd0d44f19ff8f3cf7a685854284d069e69fffbe8077bf9d723b5b78c20e8  ./product-tests.txt
+9e7311ba5d762333dfc275283fe530dad7d3c49858b94e7f39f65c36e8d93ffa  ./request.json
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3ab86aa  ./technical-exit.txt
+
+GATE 0/1/2/3: PASS
+Technical: COMPLETED exit 0
+Acceptance verdict: FAIL; accepted false
+Model calls proposed: 8; model turns: 9; browser page loads OK: 5; audit approved-without-outcome: 1.
+Original file: GitHub Actions artifact; this text is a persistent index only.

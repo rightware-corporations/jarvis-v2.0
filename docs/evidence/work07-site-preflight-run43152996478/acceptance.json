@@ -1,0 +1,1 @@
+{"operation": "site-preflight", "technical_execution": "COMPLETED", "technical_exit": 0, "verdict": "NOT_READY", "accepted": false, "required_verdict": "READY", "reasons": ["no traversable result link to RFC 9110", "no traversable result link to RFC 9112"]}

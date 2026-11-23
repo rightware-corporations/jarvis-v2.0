@@ -1,0 +1,3 @@
+GitHub Actions run 43113524962 (work05-qwen-smoke.yml), trigger commit 4d6aa4c3a06cdaad2e67db699847147e88c1acb6, approved code 25ccf216c8d3053701827635d4e340411cf6d114, request_id 1
+artifact 13896154747 sha256:63fbb88b23091d354b685a00161d55c19bc9605b7a061571bd55a06852f87426 (downloaded ZIP sha256 matched; 4/4 SHA256SUMS OK)
+result: INCOMPLETE — blocked at GATE 2 by a test-suite defect (contract test required the request file to be absent). GATE 3 and the smoke step were skipped: no model download, NO inference.

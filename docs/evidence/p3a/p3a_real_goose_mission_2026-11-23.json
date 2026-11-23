@@ -1,0 +1,212 @@
+{
+  "kind": "REAL supervised goose mission through the product console on the P3A Gateway component/image (N=1)",
+  "date": "2026-11-23",
+  "code_sha": "719137dc3db2dea1d573848c59b450c5af68b4ba",
+  "tracked_tree_dirty": false,
+  "conditions": {
+    "goose": "1.60.1 sha256 4db5cf70…",
+    "goose_model": "qwen3.5:4b",
+    "ollama": "0.40.15 (internal-network container)",
+    "docker": "29.9.2",
+    "hardware": "CPU, no GPU",
+    "catalogue": "synthetic fixture (same as P2)",
+    "gateway_image": "sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c"
+  },
+  "console_exit_code": 0,
+  "total_seconds": 282.05,
+  "steps": [
+    {
+      "input": "/tarefas",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": []
+    },
+    {
+      "input": "/tarefa pesquisa-fixture-goose",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": [
+        "Autorização necessária — nada foi executado ainda"
+      ]
+    },
+    {
+      "input": "/autorizar <código mostrado pelo anfitrião>",
+      "seconds": 281.79,
+      "end": "PROMPT",
+      "labels": [
+        "Tarefa em execução",
+        "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+        "{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}",
+        "\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\""
+      ]
+    },
+    {
+      "input": "/estado",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": []
+    },
+    {
+      "input": "/sair",
+      "seconds": 0.08,
+      "end": "EOF",
+      "labels": []
+    }
+  ],
+  "gateway_image_containers": [
+    {
+      "name": "/jrv-p2-d1187188-gateway",
+      "image": "sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c",
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": "[ALL]",
+      "security_opt": "[no-new-privileges]",
+      "mounts": "/evidence ",
+      "label": "d1187188"
+    },
+    {
+      "name": "/jrv-p2-d1187188-fixture",
+      "image": "sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c",
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": "[ALL]",
+      "security_opt": "[no-new-privileges]",
+      "mounts": "/evidence ",
+      "label": "d1187188"
+    },
+    {
+      "name": "/jrv-p2-d1187188-ollama-tap",
+      "image": "sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c",
+      "user": "10001:10001",
+      "read_only": true,
+      "cap_drop": "[ALL]",
+      "security_opt": "[no-new-privileges]",
+      "mounts": "/evidence ",
+      "label": "d1187188"
+    }
+  ],
+  "isolation": {
+    "probe": {
+      "fixture": "BLOCKED URLError",
+      "internet": "BLOCKED URLError",
+      "gateway": "REACHED 405",
+      "non_goose_initialize": "403"
+    },
+    "goose_container": {
+      "networks": [
+        "jrv-p2-d1187188-agent"
+      ],
+      "mounts": [],
+      "ip": "172.30.29.10",
+      "label": "d1187188"
+    },
+    "mission": "d1187188",
+    "agent_network": "jrv-p2-d1187188-agent",
+    "gateway_image": "sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c",
+    "baseline": []
+  },
+  "run": {
+    "end": "EXITED",
+    "exit_code": 0,
+    "status": "exited",
+    "seconds": 271.9,
+    "state_copied": true
+  },
+  "process_ok": true,
+  "verdict": "TASK_VERIFIED_LIMITED",
+  "objectives": [
+    [
+      "CATALOG",
+      "PAGE_OBSERVED",
+      2
+    ],
+    [
+      "ATLASBOARD",
+      "PAGE_OBSERVED",
+      3
+    ],
+    [
+      "NOVAVIEW",
+      "PAGE_OBSERVED",
+      5
+    ],
+    [
+      "TERRALENS_FACTSHEET",
+      "PAGE_OBSERVED",
+      6
+    ]
+  ],
+  "recovered_from_503": true,
+  "http_receipt_correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+  },
+  "receipt_defects": [],
+  "report_semantic": {
+    "semantic_gate": "PASS",
+    "recommended": "TerraLens",
+    "products_found": [
+      "atlasboard",
+      "novaview",
+      "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [],
+    "factsheet_source_cited": true
+  },
+  "chain_check": {
+    "valid": true,
+    "problems": [],
+    "submissions": 1,
+    "accepted": 1
+  },
+  "violations": [],
+  "executed_calls": [
+    "gateway_8790_mcp__web_open",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__submit_report"
+  ],
+  "forwarded_tools": [
+    "gateway_8790_mcp__submit_report",
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open"
+  ],
+  "inventory_seen": true,
+  "calls_match_receipts": true,
+  "evidence_gaps": [],
+  "blocked_in_model_output": [],
+  "state": "RESULTADO_VERIFICADO",
+  "error_code": "NONE",
+  "transport_rejections": [
+    {
+      "client": "172.30.29.5",
+      "code": 403,
+      "reason": "client not allowed"
+    },
+    {
+      "client": "172.30.29.10",
+      "code": 400,
+      "reason": "not initialized"
+    }
+  ],
+  "cleanup": "after the run: 0 containers, 0 mission-labelled networks",
+  "evidence_files_sha256": {
+    "audit.jsonl": "536675d8300b8cbcfcb3cae755f819ed0c704c55af0f45c799109e02098bf846",
+    "http.jsonl": "69b1fce59b0b5b8310f49c926bae8086f9af06a2150abf97f67c7aaaa7cb2f02",
+    "model_requests.jsonl": "0fddc78d11394faacfa7b7757300d395b5a7915fbef4fcc7675bbbe99c2d99f6",
+    "receipts.jsonl": "fd90bb80dcd18ced2313c48b10f96f1364764a563c1b3cf706144e34e3526fd6",
+    "submission_chain.jsonl": "4ae3da099c70dcc1b4e1234b8172b39dff9f5b89ac81d1117ffdf8b48b010762",
+    "submissions.jsonl": "8d691d6b9d3d0a69d8a57ce40a22bffda3745de96a7fc292acb1f005a4957585",
+    "submitted_texts.jsonl": "8d691d6b9d3d0a69d8a57ce40a22bffda3745de96a7fc292acb1f005a4957585",
+    "transport_rejections.jsonl": "e385b05869cb3bac9e6777c543009b8e886106554be5feb6838c198d068be20e",
+    "verification.json": "bd6e6fa8ddea755c5cddde1bfaf7d6f77a324867491b21a629cd885913f1aede"
+  },
+  "evidence_dir": "local only (.runtime/, not committed)"
+}

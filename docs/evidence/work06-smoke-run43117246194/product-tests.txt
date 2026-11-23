@@ -1,0 +1,171 @@
+test_agent_flags_pass_through_and_local_only_environment (test_agent_launcher.AgentLauncher.test_agent_flags_pass_through_and_local_only_environment) ... ok
+test_agent_runs_in_upstream_venv_with_capabilities_off_by_default (test_agent_launcher.AgentLauncher.test_agent_runs_in_upstream_venv_with_capabilities_off_by_default) ... ok
+test_other_commands_still_reject_unknown_flags (test_agent_launcher.AgentLauncher.test_other_commands_still_reject_unknown_flags) ... usage: python -m unittest [-h] [--model MODEL] [--voice] [--kokoro]
+                          {setup,doctor,chat,voice,diagnose,agent}
+python -m unittest: error: unrecognized arguments: --allow-web
+ok
+test_malformed_urls_are_refused_without_resolution (test_agent_network.MalformedUrls.test_malformed_urls_are_refused_without_resolution) ... ok
+test_default_fetcher_uses_the_pinned_transport (test_agent_network.PinnedConnection.test_default_fetcher_uses_the_pinned_transport) ... ok
+test_dns_rebinding_to_private_at_connect_time_never_opens_a_socket (test_agent_network.PinnedConnection.test_dns_rebinding_to_private_at_connect_time_never_opens_a_socket) ... ok
+test_environment_proxies_are_ignored (test_agent_network.PinnedConnection.test_environment_proxies_are_ignored) ... ok
+test_ports_and_unix_sockets_refused_at_the_socket_layer (test_agent_network.PinnedConnection.test_ports_and_unix_sockets_refused_at_the_socket_layer) ... ok
+test_redirect_host_is_validated_again_and_pinned (test_agent_network.PinnedConnection.test_redirect_host_is_validated_again_and_pinned) ... ok
+test_socket_connects_to_the_validated_ip_not_to_a_fresh_resolution (test_agent_network.PinnedConnection.test_socket_connects_to_the_validated_ip_not_to_a_fresh_resolution) ... ok
+test_tls_verification_and_conservative_connection_limits (test_agent_network.PinnedConnection.test_tls_verification_and_conservative_connection_limits) ... ok
+test_cancelled_or_expired_session_denies_the_batch (test_agent_policy_r1.BatchAtomicity.test_cancelled_or_expired_session_denies_the_batch) ... ok
+test_capability_failure_anywhere_denies_the_whole_batch (test_agent_policy_r1.BatchAtomicity.test_capability_failure_anywhere_denies_the_whole_batch) ... ok
+test_global_budget_counted_across_the_batch (test_agent_policy_r1.BatchAtomicity.test_global_budget_counted_across_the_batch) ... ok
+test_malformed_arguments_deny_the_batch (test_agent_policy_r1.BatchAtomicity.test_malformed_arguments_deny_the_batch) ... ok
+test_per_tool_quota_counted_across_the_batch (test_agent_policy_r1.BatchAtomicity.test_per_tool_quota_counted_across_the_batch) ... ok
+test_quota_already_used_plus_batch (test_agent_policy_r1.BatchAtomicity.test_quota_already_used_plus_batch) ... ok
+test_valid_batch_still_executes (test_agent_policy_r1.BatchAtomicity.test_valid_batch_still_executes) ... ok
+test_cancel_rechecked_at_execution (test_agent_policy_r1.BoundaryRecheck.test_cancel_rechecked_at_execution) ... ok
+test_deadline_rechecked_at_execution (test_agent_policy_r1.BoundaryRecheck.test_deadline_rechecked_at_execution) ... ok
+test_audit_failure_after_execution_is_reported (test_agent_policy_r1.MandatoryAudit.test_audit_failure_after_execution_is_reported) ... ok
+test_unpersistable_audit_denies_without_side_effects (test_agent_policy_r1.MandatoryAudit.test_unpersistable_audit_denies_without_side_effects) ... ok
+test_working_audit_records_before_state_changes (test_agent_policy_r1.MandatoryAudit.test_working_audit_records_before_state_changes) ... ok
+test_body_and_text_limits (test_agent_policy_web.Fetcher.test_body_and_text_limits) ... ok
+test_get_only_fixed_headers_no_cookies_follow_checked_redirects (test_agent_policy_web.Fetcher.test_get_only_fixed_headers_no_cookies_follow_checked_redirects) ... ok
+test_redirect_loop_and_bad_content_type (test_agent_policy_web.Fetcher.test_redirect_loop_and_bad_content_type) ... ok
+test_redirect_to_private_target_is_refused (test_agent_policy_web.Fetcher.test_redirect_to_private_target_is_refused) ... ok
+test_unprovable_or_private_peer_fails_closed (test_agent_policy_web.Fetcher.test_unprovable_or_private_peer_fails_closed) ... ok
+test_audit_has_no_full_url_query_or_conversation_text (test_agent_policy_web.Policy.test_audit_has_no_full_url_query_or_conversation_text) ... ok
+test_batch_with_one_invalid_call_denies_all (test_agent_policy_web.Policy.test_batch_with_one_invalid_call_denies_all) ... ok
+test_budgets_cancel_and_halt (test_agent_policy_web.Policy.test_budgets_cancel_and_halt) ... ok
+test_closed_registry_and_exact_schema (test_agent_policy_web.Policy.test_closed_registry_and_exact_schema) ... ok
+test_deadline (test_agent_policy_web.Policy.test_deadline) ... ok
+test_session_capability_must_be_enabled (test_agent_policy_web.Policy.test_session_capability_must_be_enabled) ... ok
+test_single_use_approval_bound_to_exact_arguments (test_agent_policy_web.Policy.test_single_use_approval_bound_to_exact_arguments) ... ok
+test_frame_has_random_boundary_and_neutralises_forged_markers (test_agent_policy_web.TextAndFrame.test_frame_has_random_boundary_and_neutralises_forged_markers) ... ok
+test_html_to_text_keeps_visible_text_only (test_agent_policy_web.TextAndFrame.test_html_to_text_keeps_visible_text_only) ... ok
+test_audited_upstream_guard_blocks_literal_private_ips (test_agent_policy_web.UrlChecks.test_audited_upstream_guard_blocks_literal_private_ips) ... ok
+test_local_and_private_destinations (test_agent_policy_web.UrlChecks.test_local_and_private_destinations) ... ok
+test_missing_upstream_guard_fails_closed (test_agent_policy_web.UrlChecks.test_missing_upstream_guard_fails_closed) ... ok
+test_public_https_and_http_accepted (test_agent_policy_web.UrlChecks.test_public_https_and_http_accepted) ... ok
+test_schemes_credentials_ports_and_control_chars (test_agent_policy_web.UrlChecks.test_schemes_credentials_ports_and_control_chars) ... ok
+test_unresolvable_host_fails_closed (test_agent_policy_web.UrlChecks.test_unresolvable_host_fails_closed) ... ok
+test_upstream_ssrf_verdict_is_enforced (test_agent_policy_web.UrlChecks.test_upstream_ssrf_verdict_is_enforced) ... ok
+test_no_benchmark_code_in_the_product_agent (test_agent_session.ProductBoundary.test_no_benchmark_code_in_the_product_agent) ... ok
+test_unsafe_upstream_tools_are_not_used (test_agent_session.ProductBoundary.test_unsafe_upstream_tools_are_not_used) ... ok
+test_audit_records_tools_but_not_conversation_or_full_url (test_agent_session.VerticalSlice.test_audit_records_tools_but_not_conversation_or_full_url) ... ok
+test_batch_with_unknown_tool_executes_nothing (test_agent_session.VerticalSlice.test_batch_with_unknown_tool_executes_nothing) ... ok
+test_claimed_read_without_successful_read_is_flagged (test_agent_session.VerticalSlice.test_claimed_read_without_successful_read_is_flagged) ... ok
+test_consequential_action_needs_human_confirmation_and_reports_real_outcome (test_agent_session.VerticalSlice.test_consequential_action_needs_human_confirmation_and_reports_real_outcome) ... ok
+test_declined_confirmation_never_launches_and_false_claim_is_flagged (test_agent_session.VerticalSlice.test_declined_confirmation_never_launches_and_false_claim_is_flagged) ... ok
+test_engine_failure_is_an_error_not_a_success (test_agent_session.VerticalSlice.test_engine_failure_is_an_error_not_a_success) ... ok
+test_loops_are_bounded_by_per_tool_and_global_budgets (test_agent_session.VerticalSlice.test_loops_are_bounded_by_per_tool_and_global_budgets) ... ok
+test_page_injection_cannot_trigger_an_action_when_actions_are_off (test_agent_session.VerticalSlice.test_page_injection_cannot_trigger_an_action_when_actions_are_off) ... ok
+test_public_read_answer_carries_code_checked_sources (test_agent_session.VerticalSlice.test_public_read_answer_carries_code_checked_sources) ... ok
+test_refused_url_is_reported_honestly (test_agent_session.VerticalSlice.test_refused_url_is_reported_honestly) ... ok
+test_unauthorized_session_actions_refused_even_if_confirmed (test_agent_session.VerticalSlice.test_unauthorized_session_actions_refused_even_if_confirmed) ... ok
+test_web_off_means_no_tool_offered_and_no_fetch (test_agent_session.VerticalSlice.test_web_off_means_no_tool_offered_and_no_fetch) ... ok
+test_audit_lost_after_execution_is_an_error_not_a_success (test_agent_session_r1.SessionR1.test_audit_lost_after_execution_is_an_error_not_a_success) ... ok
+test_audit_unavailable_before_execution_means_nothing_runs (test_agent_session_r1.SessionR1.test_audit_unavailable_before_execution_means_nothing_runs) ... ok
+test_empty_page_is_not_a_source (test_agent_session_r1.SessionR1.test_empty_page_is_not_a_source) ... ok
+test_full_batch_prevalidation_through_the_orchestrator (test_agent_session_r1.SessionR1.test_full_batch_prevalidation_through_the_orchestrator) ... ok
+test_halted_and_error_replies_state_incompleteness (test_agent_session_r1.SessionR1.test_halted_and_error_replies_state_incompleteness) ... ok
+test_http_error_is_not_a_source (test_agent_session_r1.SessionR1.test_http_error_is_not_a_source) ... ok
+test_only_refused_tools_is_not_an_answered_success (test_agent_session_r1.SessionR1.test_only_refused_tools_is_not_an_answered_success) ... ok
+test_refusal_and_failure_messages_reach_the_user (test_agent_session_r1.SessionR1.test_refusal_and_failure_messages_reach_the_user) ... ok
+test_sources_never_claim_factual_verification (test_agent_session_r1.SessionR1.test_sources_never_claim_factual_verification) ... ok
+test_truncated_page_is_disclosed (test_agent_session_r1.SessionR1.test_truncated_page_is_disclosed) ... ok
+test_approved_sha_outside_history_is_refused (test_agent_smoke.AuthorisationGit.test_approved_sha_outside_history_is_refused) ... fatal: path 'ops/work05_smoke_request.json' exists on disk, but not in 'HEAD^'
+fatal: bad object cccccccccccccccccccccccccccccccccccccccc
+ok
+test_code_changed_in_the_request_commit_is_refused (test_agent_smoke.AuthorisationGit.test_code_changed_in_the_request_commit_is_refused) ... fatal: path 'ops/work05_smoke_request.json' exists on disk, but not in 'HEAD^'
+ok
+test_first_authorised_request_passes (test_agent_smoke.AuthorisationGit.test_first_authorised_request_passes) ... fatal: path 'ops/work05_smoke_request.json' exists on disk, but not in 'HEAD^'
+ok
+test_missing_request_file_fails_closed (test_agent_smoke.AuthorisationGit.test_missing_request_file_fails_closed) ... fatal: path 'ops/work05_smoke_request.json' does not exist in 'HEAD'
+ok
+test_preflight_accepts_only_the_request_file_beyond_the_approved_code (test_agent_smoke.AuthorisationGit.test_preflight_accepts_only_the_request_file_beyond_the_approved_code) ... ok
+test_preflight_refuses_running_code_that_differs_from_the_approved_code (test_agent_smoke.AuthorisationGit.test_preflight_refuses_running_code_that_differs_from_the_approved_code) ... ok
+test_replaying_an_old_request_id_is_refused (test_agent_smoke.AuthorisationGit.test_replaying_an_old_request_id_is_refused) ... ok
+test_rerun_of_the_same_request_is_refused (test_agent_smoke.AuthorisationGit.test_rerun_of_the_same_request_is_refused) ... fatal: path 'ops/work05_smoke_request.json' exists on disk, but not in 'HEAD^'
+ok
+test_second_request_with_next_id_passes (test_agent_smoke.AuthorisationGit.test_second_request_with_next_id_passes) ... ok
+test_each_rule_refuses (test_agent_smoke.AuthorisationPure.test_each_rule_refuses) ... ok
+test_empty_authorized_by_and_non_dict (test_agent_smoke.AuthorisationPure.test_empty_authorized_by_and_non_dict) ... ok
+test_valid_request (test_agent_smoke.AuthorisationPure.test_valid_request) ... ok
+test_external_page_problems_are_incomplete_not_model_failures (test_agent_smoke.Classification.test_external_page_problems_are_incomplete_not_model_failures) ... ok
+test_fail_conditions (test_agent_smoke.Classification.test_fail_conditions) ... ok
+test_model_must_have_proposed_the_tool_itself (test_agent_smoke.Classification.test_model_must_have_proposed_the_tool_itself) ... ok
+test_page_term_overlap_is_reported_not_required (test_agent_smoke.Classification.test_page_term_overlap_is_reported_not_required) ... ok
+test_pass_requires_everything (test_agent_smoke.Classification.test_pass_requires_everything) ... ok
+test_scripted_or_unpinned_runs_are_never_pass (test_agent_smoke.Classification.test_scripted_or_unpinned_runs_are_never_pass) ... ok
+test_plan_is_fixed_read_only_and_calls_no_model (test_agent_smoke.Runner.test_plan_is_fixed_read_only_and_calls_no_model) ... ok
+test_preflight_requires_full_sha_fixed_digest_and_approved_code (test_agent_smoke.Runner.test_preflight_requires_full_sha_fixed_digest_and_approved_code) ... fatal: bad object 0000000000000000000000000000000000000000
+ok
+test_recording_engine_sees_only_what_the_engine_returned (test_agent_smoke.Runner.test_recording_engine_sees_only_what_the_engine_returned) ... ok
+test_session_is_built_with_web_only_and_no_actions (test_agent_smoke.Runner.test_session_is_built_with_web_only_and_no_actions) ... ok
+test_contract_tests_pass_when_a_request_file_is_present (test_agent_smoke.SuiteOnARequestCommit.test_contract_tests_pass_when_a_request_file_is_present) ... ok
+test_authorisation_gate_runs_before_any_install_or_model (test_agent_smoke.WorkflowContract.test_authorisation_gate_runs_before_any_install_or_model) ... ok
+test_inert_until_an_authorised_request_file_exists (test_agent_smoke.WorkflowContract.test_inert_until_an_authorised_request_file_exists) ... ok
+test_minimal_permissions_pinned_actions_no_secrets_evidence_always (test_agent_smoke.WorkflowContract.test_minimal_permissions_pinned_actions_no_secrets_evidence_always) ... ok
+test_atomic_evidence_creates_directory (test_compare_models.CompareModelsTests.test_atomic_evidence_creates_directory) ... ok
+test_cloud_model_argument_fails_before_inference (test_compare_models.CompareModelsTests.test_cloud_model_argument_fails_before_inference) ... usage: compare [-h] [--models MODELS [MODELS ...]] [--output OUTPUT]
+compare: error: Only installed local Ollama model names are allowed.
+ok
+test_corpus_is_six_fixed_synthetic_turns (test_compare_models.CompareModelsTests.test_corpus_is_six_fixed_synthetic_turns) ... ok
+test_gpu_offload_classification (test_compare_models.CompareModelsTests.test_gpu_offload_classification) ... ok
+test_missing_4b_fails_closed (test_compare_models.CompareModelsTests.test_missing_4b_fails_closed) ... ok
+test_previous_report_is_preserved_not_overwritten (test_compare_models.CompareModelsTests.test_previous_report_is_preserved_not_overwritten) ... ok
+test_stale_profile_rejected_before_model_request (test_compare_models.CompareModelsTests.test_stale_profile_rejected_before_model_request) ... ok
+test_prompt_and_corpus_match_repository_sources (test_no_token_notebook.NoTokenKaggleNotebookTests.test_prompt_and_corpus_match_repository_sources) ... ok
+test_single_cell_and_nested_evaluator_syntax (test_no_token_notebook.NoTokenKaggleNotebookTests.test_single_cell_and_nested_evaluator_syntax) ... ok
+test_notebook_is_parseable_and_has_fixed_evidence_flow (test_notebook_contract.KaggleNotebookContracts.test_notebook_is_parseable_and_has_fixed_evidence_flow) ... ok
+test_cloud_credentials_removed_without_changing_parent (test_runtime.LocalRuntimeTests.test_cloud_credentials_removed_without_changing_parent) ... ok
+test_cloud_model_rejected (test_runtime.LocalRuntimeTests.test_cloud_model_rejected) ... ok
+test_existing_config_preserved_and_cloud_rejected (test_runtime.LocalRuntimeTests.test_existing_config_preserved_and_cloud_rejected) ... ok
+test_local_model_routes_to_simple_ollama (test_runtime.LocalRuntimeTests.test_local_model_routes_to_simple_ollama) ... ok
+test_ctrl_c_is_not_blocked_by_a_long_native_call (test_voice.InterruptibleTests.test_ctrl_c_is_not_blocked_by_a_long_native_call)
+A KeyboardInterrupt raised in the main thread while the worker is ... ok
+test_result_and_errors_cross_the_thread (test_voice.InterruptibleTests.test_result_and_errors_cross_the_thread) ... ok
+test_unknown_flags_rejected_outside_voice (test_voice.LauncherTests.test_unknown_flags_rejected_outside_voice) ... usage: python -m unittest [-h] [--model MODEL] [--voice] [--kokoro]
+                          {setup,doctor,chat,voice,diagnose,agent}
+python -m unittest: error: unrecognized arguments: --allow-actions
+ok
+test_voice_command_runs_module_in_upstream_venv (test_voice.LauncherTests.test_voice_command_runs_module_in_upstream_venv) ... ok
+test_voice_process_forces_utf8_stdio (test_voice.LauncherTests.test_voice_process_forces_utf8_stdio) ... ok
+test_voice_setup_uses_frozen_upstream_extras_only (test_voice.LauncherTests.test_voice_setup_uses_frozen_upstream_extras_only) ... ok
+test_missing_portuguese_voice_is_reported (test_voice.SapiTests.test_missing_portuguese_voice_is_reported) ... ok
+test_text_goes_through_environment_not_command_line (test_voice.SapiTests.test_text_goes_through_environment_not_command_line) ... ok
+test_voice_listing_and_wav_mode (test_voice.SapiTests.test_voice_listing_and_wav_mode) ... ok
+test_action_request_never_reaches_the_model (test_voice.VoiceLoopTests.test_action_request_never_reaches_the_model) ... ok
+test_authorized_action_asks_confirmation_and_reports_real_outcome (test_voice.VoiceLoopTests.test_authorized_action_asks_confirmation_and_reports_real_outcome) ... ok
+test_ctrl_c_at_prompt_ends_session (test_voice.VoiceLoopTests.test_ctrl_c_at_prompt_ends_session) ... ok
+test_ctrl_c_cancels_step_but_not_session (test_voice.VoiceLoopTests.test_ctrl_c_cancels_step_but_not_session) ... ok
+test_microphone_failure_falls_back_to_typing (test_voice.VoiceLoopTests.test_microphone_failure_falls_back_to_typing) ... ok
+test_ollama_down_and_tts_failure_degrade_to_text (test_voice.VoiceLoopTests.test_ollama_down_and_tts_failure_degrade_to_text) ... ok
+test_spoken_question_goes_to_openjarvis_and_answer_is_spoken (test_voice.VoiceLoopTests.test_spoken_question_goes_to_openjarvis_and_answer_is_spoken) ... ok
+test_two_actions_at_once_are_refused (test_voice.VoiceLoopTests.test_two_actions_at_once_are_refused) ... ok
+test_unverified_effect_claim_from_model_is_flagged (test_voice.VoiceLoopTests.test_unverified_effect_claim_from_model_is_flagged) ... ok
+test_confirmation_is_explicit (test_windows_actions.DetectionTests.test_confirmation_is_explicit) ... ok
+test_explicit_requests (test_windows_actions.DetectionTests.test_explicit_requests) ... ok
+test_questions_negations_and_mentions_do_not_trigger (test_windows_actions.DetectionTests.test_questions_negations_and_mentions_do_not_trigger) ... ok
+test_two_targets_are_both_reported (test_windows_actions.DetectionTests.test_two_targets_are_both_reported) ... ok
+test_audit_has_outcomes_but_no_conversation_text (test_windows_actions.ExecutionTests.test_audit_has_outcomes_but_no_conversation_text) ... ok
+test_confirmed_launch_uses_fixed_path_without_shell_and_verifies (test_windows_actions.ExecutionTests.test_confirmed_launch_uses_fixed_path_without_shell_and_verifies) ... ok
+test_declined_or_interrupted_confirmation_cancels (test_windows_actions.ExecutionTests.test_declined_or_interrupted_confirmation_cancels) ... ok
+test_launch_error_is_failed (test_windows_actions.ExecutionTests.test_launch_error_is_failed) ... ok
+test_modern_calculator_process_counts_as_verification (test_windows_actions.ExecutionTests.test_modern_calculator_process_counts_as_verification) ... ok
+test_no_new_process_is_not_reported_as_opened (test_windows_actions.ExecutionTests.test_no_new_process_is_not_reported_as_opened) ... ok
+test_non_windows_host_is_blocked (test_windows_actions.ExecutionTests.test_non_windows_host_is_blocked) ... ok
+test_process_that_vanishes_is_not_verified (test_windows_actions.ExecutionTests.test_process_that_vanishes_is_not_verified) ... ok
+test_transient_launcher_pid_is_not_proof_but_handover_is (test_windows_actions.ExecutionTests.test_transient_launcher_pid_is_not_proof_but_handover_is) ... ok
+test_unauthorized_session_never_asks_or_launches (test_windows_actions.ExecutionTests.test_unauthorized_session_never_asks_or_launches) ... ok
+test_diagnose_is_read_only_and_reports_json (test_windows_readiness.DiagnoseTests.test_diagnose_is_read_only_and_reports_json) ... ok
+test_ollama_check_never_uses_a_proxy (test_windows_readiness.DiagnoseTests.test_ollama_check_never_uses_a_proxy) ... ok
+test_profile_check_flags_wrong_identity_and_stale_prompt (test_windows_readiness.DiagnoseTests.test_profile_check_flags_wrong_identity_and_stale_prompt) ... ok
+test_sanitize_removes_home_user_and_host (test_windows_readiness.DiagnoseTests.test_sanitize_removes_home_user_and_host) ... ok
+test_bom_and_crlf_for_windows_powershell_5 (test_windows_readiness.PowerShellScriptContract.test_bom_and_crlf_for_windows_powershell_5) ... ok
+test_default_mode_is_read_only_check (test_windows_readiness.PowerShellScriptContract.test_default_mode_is_read_only_check) ... ok
+test_install_and_actions_require_typed_authorization (test_windows_readiness.PowerShellScriptContract.test_install_and_actions_require_typed_authorization) ... ok
+test_logs_are_sanitized_and_conversation_not_captured (test_windows_readiness.PowerShellScriptContract.test_logs_are_sanitized_and_conversation_not_captured) ... ok
+test_python_probe_has_no_double_quotes (test_windows_readiness.PowerShellScriptContract.test_python_probe_has_no_double_quotes) ... ok
+test_script_never_launches_apps_or_changes_the_system_itself (test_windows_readiness.PowerShellScriptContract.test_script_never_launches_apps_or_changes_the_system_itself) ... ok
+
+----------------------------------------------------------------------
+Ran 150 tests in 1.636s
+
+OK

@@ -1,0 +1,27 @@
+# RIGHTWARE JARVIS — configuration of the ORIGINAL OpenJarvis application when it runs behind the RIGHTWARE
+# GUI entry layer (UI-01). Copied to .runtime/gui/home/config.toml (OPENJARVIS_HOME). No secrets here.
+# Effect-capable subsystems are OFF; the RIGHTWARE policy layer denies their routes in any case.
+
+[engine]
+default = "ollama"
+
+[engine.ollama]
+host = "http://127.0.0.1:11434"
+
+[intelligence]
+default_model = "qwen3.5:2b"
+
+[server]
+host = "127.0.0.1"
+port = 8000
+agent = ""                 # no OpenJarvis server agent: chat is answered by the RIGHTWARE bridge (tool-free)
+
+[telemetry]
+enabled = false
+
+[traces]
+enabled = false
+
+[analytics]
+enabled = false
+choice_recorded = true

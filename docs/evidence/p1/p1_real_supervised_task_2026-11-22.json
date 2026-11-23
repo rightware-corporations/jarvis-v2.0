@@ -1,0 +1,122 @@
+{
+  "package": "JRV-P1 Gate 4",
+  "date": "2026-11-22",
+  "kind": "REAL local inference, supervised synthetic task",
+  "hardware": "Linux cloud container, Intel Xeon 2.1 GHz 4 vCPU, 15 GiB, no GPU; not Windows, not Issa's computer",
+  "ollama": "0.40.15 on 127.0.0.1:11434 only, OLLAMA_NO_CLOUD=1",
+  "models": {
+    "qwen3.5:4b": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04 (Q4_K_M)",
+    "qwen3.5:2b": "0689d44085e06d165161a8a9a1731344278cfb5aade63a3c3dbdb48ab54b130a (Q8_0)"
+  },
+  "executor_limits": "AgentSession allow={files}, max_calls 6, deadline 120 s, max_turns 6, max_tokens 768, temperature 0.2",
+  "workspace": "host-written temp dir with versao_a.txt / versao_b.txt (synthetic), removed after the run",
+  "privacy": "synthetic content only; authorization code shown in output is single-use and already consumed",
+  "runs": {
+    "qwen3.5:4b": {
+      "kind": "REAL local-model supervised task (JRV-P1 Gate 4)",
+      "command": "jarvis.py console --model qwen3.5:4b --tarefa-ensaio --deadline 120",
+      "repository_head": "da3cb57245aab1dbf9164e76e77e5f1dd4c40081",
+      "tracked_tree_dirty": false,
+      "model": "qwen3.5:4b",
+      "exit_code": 0,
+      "total_seconds": 45.55,
+      "steps": [
+        {
+          "input": "/tarefas",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/tarefas\n  comparar-versoes-ensaio: Comparar duas versões SINTÉTICAS de um documento de ensaio (A e B), criadas pelo anfitrião numa pasta temporária. Só leitura; o resultado vem dos recibos e do verificador RIGHTWARE.\nPara pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.\ntu> "
+        },
+        {
+          "input": "/tarefa comparar-versoes-ensaio",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [
+            "Autorização necessária — nada foi executado ainda"
+          ],
+          "output": "/tarefa comparar-versoes-ensaio\n[Autorização necessária — nada foi executado ainda]\nComparar duas versões SINTÉTICAS de um documento de ensaio (A e B), criadas pelo anfitrião numa pasta temporária. Só leitura; o resultado vem dos recibos e do verificador RIGHTWARE.\nPara autorizar esta execução escreve exactamente: /autorizar AE7370  (uso único, 2 minutos)\ntu> "
+        },
+        {
+          "input": "/autorizar <código mostrado pelo anfitrião>",
+          "seconds": 45.16,
+          "end": "PROMPT",
+          "labels": [
+            "Tarefa em execução",
+            "Resultado verificado por evidência (recibos + verificador RIGHTWARE)"
+          ],
+          "output": "/autorizar AE7370\n[Tarefa em execução] (Ctrl+C cancela)\n[Resultado verificado por evidência (recibos + verificador RIGHTWARE)]\nEstado do executor: COMPARISON_VERIFIED · recibos: 3 · 45.2 s\nRecibos (ferramentas efectivamente executadas): #1 fixture_read OK, #2 fixture_read OK, #3 fixture_compare OK\n  objectivo READ_A: VERIFIED (recibo #1)\n  objectivo READ_B: VERIFIED (recibo #2)\n  objectivo COMPARE: VERIFIED (recibo #3)\nAlterações (calculadas pelo código e confirmadas pelo verificador):\n  modified: a_line=2, b_line=2, before='receitas: 100', after='receitas: 120'\n  removed: a_line=3, text='custos: 80'\n  added: b_line=4, text='anexo: tabela 2'\nComentário do modelo (NÃO verificado):\n  **Relatório de Comparação das Versões A e B**\n  \n  A comparação entre as duas versões do documento identificou as seguintes alterações:\n  \n  *   **Modificação:** O valor de \"receitas\" alterou-se de 100 (na versão A) para 120 (na versão B).\n  *   **Remoção:** A linha contendo \"custos: 80\" foi removida na versão B.\n  *   **Adição:** Foi adicionada uma nova linha com o conteúdo \"anexo: tabela 2\" na versão B.\n  \n  Em total, foram realizadas 1 adição, 1 remoção e 1 modificação de conteúdo.\n  Estado: não foi possível concluir o pedido com as ferramentas.\n  Estado da tarefa (fixture-two-versions-compare): COMPARISON_VERIFIED: leituras e comparação verificadas deterministicamente pelo código. A narrativa do modelo não foi verificada.\ntu> "
+        },
+        {
+          "input": "/estado",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/estado\nSessão: 2a7a6af2… (efémera, só em memória)\nModelo: qwen3.5:4b\nPedidos nesta sessão: 0\nContexto: 0 trocas, 0 de 6000 caracteres (máx. 6 trocas)\nÚltimo estado: nenhum\nPedido em curso: não\nFerramentas activas: nenhuma fora de uma tarefa autorizada\nTarefas supervisionadas activadas pelo anfitrião: comparar-versoes-ensaio\nTarefa em execução: não\nMemória persistente: nenhuma (o histórico é apagado ao sair)\ntu> "
+        },
+        {
+          "input": "/sair",
+          "seconds": 0.24,
+          "end": "EOF",
+          "labels": [],
+          "output": "/sair\nSessão terminada. Nada foi guardado.\n"
+        }
+      ],
+      "cold_preload_ms": 111822,
+      "raw_sha256": "fe4a46471623e046a93e1ec66ade748a200b9adc6b50b35d33337d810033cfd5"
+    },
+    "qwen3.5:2b": {
+      "kind": "REAL local-model supervised task (JRV-P1 Gate 4)",
+      "command": "jarvis.py console --model qwen3.5:2b --tarefa-ensaio --deadline 120",
+      "repository_head": "da3cb57245aab1dbf9164e76e77e5f1dd4c40081",
+      "tracked_tree_dirty": false,
+      "model": "qwen3.5:2b",
+      "exit_code": 0,
+      "total_seconds": 20.79,
+      "steps": [
+        {
+          "input": "/tarefas",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/tarefas\n  comparar-versoes-ensaio: Comparar duas versões SINTÉTICAS de um documento de ensaio (A e B), criadas pelo anfitrião numa pasta temporária. Só leitura; o resultado vem dos recibos e do verificador RIGHTWARE.\nPara pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.\ntu> "
+        },
+        {
+          "input": "/tarefa comparar-versoes-ensaio",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [
+            "Autorização necessária — nada foi executado ainda"
+          ],
+          "output": "/tarefa comparar-versoes-ensaio\n[Autorização necessária — nada foi executado ainda]\nComparar duas versões SINTÉTICAS de um documento de ensaio (A e B), criadas pelo anfitrião numa pasta temporária. Só leitura; o resultado vem dos recibos e do verificador RIGHTWARE.\nPara autorizar esta execução escreve exactamente: /autorizar 344FCD  (uso único, 2 minutos)\ntu> "
+        },
+        {
+          "input": "/autorizar <código mostrado pelo anfitrião>",
+          "seconds": 20.3,
+          "end": "PROMPT",
+          "labels": [
+            "Tarefa em execução",
+            "Resultado verificado por evidência (recibos + verificador RIGHTWARE)"
+          ],
+          "output": "/autorizar 344FCD\n[Tarefa em execução] (Ctrl+C cancela)\n[Resultado verificado por evidência (recibos + verificador RIGHTWARE)]\nEstado do executor: COMPARISON_VERIFIED · recibos: 3 · 20.3 s\nRecibos (ferramentas efectivamente executadas): #1 fixture_read OK, #2 fixture_read OK, #3 fixture_compare OK\n  objectivo READ_A: VERIFIED (recibo #1)\n  objectivo READ_B: VERIFIED (recibo #2)\n  objectivo COMPARE: VERIFIED (recibo #3)\nAlterações (calculadas pelo código e confirmadas pelo verificador):\n  modified: a_line=2, b_line=2, before='receitas: 100', after='receitas: 120'\n  removed: a_line=3, text='custos: 80'\n  added: b_line=4, text='anexo: tabela 2'\nComentário do modelo (NÃO verificado):\n  Aqui está o relatório das diferenças entre a Versão A e a Versão B, conforme calculado pelo código:\n  \n  **Diferenças Identificadas:**\n  *   **Adicionado (1):** O valor de receitas aumentou de 100 para 120.\n  *   **Removido (1):** O campo \"custos\" foi removido da Versão A.\n  *   **Modificado (1):** O campo \"notas\" foi removido e substituído por um novo campo \"anexo: tabela 2\".\n  \n  **Resumo:** A Versão B apresenta uma receita mais alta, mas elimina os custos originais e adiciona uma referência a um anexo.\n  Estado: não foi possível concluir o pedido com as ferramentas.\n  Estado da tarefa (fixture-two-versions-compare): COMPARISON_VERIFIED: leituras e comparação verificadas deterministicamente pelo código. A narrativa do modelo não foi verificada.\ntu> "
+        },
+        {
+          "input": "/estado",
+          "seconds": 0.0,
+          "end": "PROMPT",
+          "labels": [],
+          "output": "/estado\nSessão: b1a70c23… (efémera, só em memória)\nModelo: qwen3.5:2b\nPedidos nesta sessão: 0\nContexto: 0 trocas, 0 de 6000 caracteres (máx. 6 trocas)\nÚltimo estado: nenhum\nPedido em curso: não\nFerramentas activas: nenhuma fora de uma tarefa autorizada\nTarefas supervisionadas activadas pelo anfitrião: comparar-versoes-ensaio\nTarefa em execução: não\nMemória persistente: nenhuma (o histórico é apagado ao sair)\ntu> "
+        },
+        {
+          "input": "/sair",
+          "seconds": 0.27,
+          "end": "EOF",
+          "labels": [],
+          "output": "/sair\nSessão terminada. Nada foi guardado.\n"
+        }
+      ],
+      "cold_preload_ms": 87255,
+      "raw_sha256": "e4e6c7390475aec636622ada93f0b0c582195c04175a8e2dad4530634778e753"
+    }
+  }
+}

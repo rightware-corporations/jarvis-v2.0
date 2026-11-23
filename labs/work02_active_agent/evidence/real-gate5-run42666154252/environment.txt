@@ -1,0 +1,29 @@
+## Environment
+Linux runnervm7aw5e 7.0.0-1017-azure #17~24.04.1-Ubuntu SMP PREEMPT Thu Sep 24 18:46:57 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+4
+CPU(s):                                  4
+Model name:                              AMD EPYC 7763 64-Core Processor
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc 
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       1.1Gi        13Gi        42Mi       1.0Gi        14Gi
+Swap:          3.0Gi          0B       3.0Gi
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       145G   59G   86G  41% /
+/dev/root       145G   59G   86G  41% /
+/dev/root       145G   59G   86G  41% /
+Python 3.12.3
+rustc 1.99.1 (58cf8f9c3 2026-10-13)
+openjarvis 0.0.1.dev1+unknown.gf21d902f4
+359M	vendor/openjarvis/.venv
+## after Ollama install
+77M	/home/runner/work/_temp/ollama
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       145G   60G   86G  41% /
+## after model pull
+3.1G	/home/runner/work/_temp/ollama-models
+77M	/home/runner/work/_temp/ollama
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/root       145G   63G   83G  44% /
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       1.4Gi       9.7Gi        45Mi       4.9Gi        14Gi
+Swap:          3.0Gi          0B       3.0Gi

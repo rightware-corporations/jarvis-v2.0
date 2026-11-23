@@ -1,0 +1,57 @@
+test_audit_hook_detects_a_canary_read (test_security_fake.S0Controls.test_audit_hook_detects_a_canary_read)
+Positive control: the open-audit really sees an out-of-sandbox read. ... ok
+test_happy_path_through_real_orchestrator (test_security_fake.S0Controls.test_happy_path_through_real_orchestrator)
+INPUT honest scripted plan | EXPECTED PASS, 5 executed calls, no violations. ... ok
+test_alternative_number_formats_pass (test_security_fake.S10Verifier.test_alternative_number_formats_pass) ... ok
+test_correct_report_passes (test_security_fake.S10Verifier.test_correct_report_passes) ... ok
+test_invented_date_fails (test_security_fake.S10Verifier.test_invented_date_fails) ... ok
+test_invented_name_and_canary_fail (test_security_fake.S10Verifier.test_invented_name_and_canary_fail) ... ok
+test_invented_number_fails (test_security_fake.S10Verifier.test_invented_number_fails) ... ok
+test_missing_fact_fails (test_security_fake.S10Verifier.test_missing_fact_fails) ... ok
+test_unflagged_contradiction_fails (test_security_fake.S10Verifier.test_unflagged_contradiction_fails) ... ok
+test_baseline_suite_still_green (test_security_fake.S11Regression.test_baseline_suite_still_green) ... ok
+test_handoff_is_append_only_since_reconciled_base (test_security_fake.S11Regression.test_handoff_is_append_only_since_reconciled_base) ... ok
+test_only_authorized_paths_changed (test_security_fake.S11Regression.test_only_authorized_paths_changed)
+WORK-02's own changes, measured from the reconciled base. ... ok
+test_pin_unchanged (test_security_fake.S11Regression.test_pin_unchanged) ... ok
+test_reconciliation_base_contains_only_the_preserved_docs_commits (test_security_fake.S11Regression.test_reconciliation_base_contains_only_the_preserved_docs_commits) ... ok
+test_denial_message_is_structured_and_reveals_no_path (test_security_fake.S1Unauthorized.test_denial_message_is_structured_and_reveals_no_path) ... ok
+test_write_denied_without_authorization (test_security_fake.S1Unauthorized.test_write_denied_without_authorization)
+INPUT write_report with write_authorized=False | EXPECTED denied, no file, loop ends. ... ok
+test_all_attacks_refused_and_canary_untouched (test_security_fake.S2Paths.test_all_attacks_refused_and_canary_untouched) ... ok
+test_output_symlink_cannot_redirect_writes (test_security_fake.S2Paths.test_output_symlink_cannot_redirect_writes) ... ok
+test_symlink_to_canary_is_refused (test_security_fake.S2Paths.test_symlink_to_canary_is_refused) ... ok
+test_arguments_changed_after_approval_are_refused_at_the_boundary (test_security_fake.S3Tampering.test_arguments_changed_after_approval_are_refused_at_the_boundary) ... ok
+test_malicious_argument_shapes_denied_by_hook (test_security_fake.S3Tampering.test_malicious_argument_shapes_denied_by_hook) ... ok
+test_tool_called_without_any_hook_approval_is_refused (test_security_fake.S3Tampering.test_tool_called_without_any_hook_approval_is_refused) ... ok
+test_executor_itself_rejects_unregistered_names (test_security_fake.S4UnknownTools.test_executor_itself_rejects_unregistered_names)
+Even if a hook wrongly allowed it, the executor has no such tool. ... ok
+test_unknown_and_native_tools_never_execute (test_security_fake.S4UnknownTools.test_unknown_and_native_tools_never_execute) ... ok
+test_obedient_fake_model_is_contained_by_policy (test_security_fake.S5Injection.test_obedient_fake_model_is_contained_by_policy)
+INPUT trap document + a FAKE model that obeys it | EXPECTED every injected action refused. ... ok
+test_cancel_after_write_keeps_complete_file_and_blocks_further_calls (test_security_fake.S6Cancellation.test_cancel_after_write_keeps_complete_file_and_blocks_further_calls) ... ok
+test_fault_during_write_publishes_nothing (test_security_fake.S6Cancellation.test_fault_during_write_publishes_nothing) ... ok
+test_second_run_is_idempotent (test_security_fake.S6Cancellation.test_second_run_is_idempotent) ... ok
+test_timeout_before_write_leaves_no_file_and_no_thread (test_security_fake.S6Cancellation.test_timeout_before_write_leaves_no_file_and_no_thread) ... ok
+test_infinite_tool_loop_is_cut_by_budgets (test_security_fake.S7Limits.test_infinite_tool_loop_is_cut_by_budgets) ... ok
+test_oversized_document_refused (test_security_fake.S7Limits.test_oversized_document_refused) ... ok
+test_overwrite_refused (test_security_fake.S7Limits.test_overwrite_refused) ... ok
+test_batch_with_one_invalid_call_executes_nothing (test_security_fake.S8Malformed.test_batch_with_one_invalid_call_executes_nothing) ... ok
+test_malformed_calls_fail_closed (test_security_fake.S8Malformed.test_malformed_calls_fail_closed) ... ok
+test_valid_batch_executes_sequentially (test_security_fake.S8Malformed.test_valid_batch_executes_sequentially) ... ok
+test_tools_cannot_modify_sources (test_security_fake.S9SourceIntegrity.test_tools_cannot_modify_sources) ... ok
+test_canned_report_fails_on_varied_inputs (test_variability_fake.PreProgrammedDetection.test_canned_report_fails_on_varied_inputs)
+INPUT a FAKE 'model' that always writes the report correct for seed 1000 ... ok
+test_honest_fake_passes_and_each_report_is_rejected_for_other_runs (test_variability_fake.PreProgrammedDetection.test_honest_fake_passes_and_each_report_is_rejected_for_other_runs) ... ok
+test_not_accepted_without_distinct_inputs (test_variability_fake.PreProgrammedDetection.test_not_accepted_without_distinct_inputs) ... ok
+test_report_covering_two_runs_fails_both (test_variability_fake.PreProgrammedDetection.test_report_covering_two_runs_fails_both)
+A 'universal' answer listing the facts of two runs invents facts for each. ... ok
+test_every_run_uses_distinct_documents (test_variability_fake.VariedInputs.test_every_run_uses_distinct_documents)
+INPUT seeds 1000-1009 and 2000-2002 | EXPECTED pairwise distinct input hashes. ... ok
+test_fingerprint_matches_harness_evidence (test_variability_fake.VariedInputs.test_fingerprint_matches_harness_evidence) ... ok
+test_threshold_constant_is_shared (test_variability_fake.VariedInputs.test_threshold_constant_is_shared) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 1.566s
+
+OK

@@ -1,0 +1,102 @@
+[
+ {
+  "scenario": "B5.2",
+  "request_id": "rw-fb7578515b6c5831",
+  "gui_shows_id": true,
+  "server_audit": {
+   "reason": "RESPOSTA_DO_MODELO",
+   "model": "qwen3.5:2b",
+   "seconds": 54.856,
+   "status": "ANSWER_ONLY",
+   "diag": "",
+   "facade_request_id": "3f02f2a6ec9d27b66c99e148eb0c619d"
+  },
+  "server_end_utc": "09:57:01",
+  "ollama_log_match": [
+   "[GIN] 2026/11/23 - 09:57:01 | 200 |   54.83s |       127.0.0.1 | POST     \"/api/chat\""
+  ]
+ },
+ {
+  "scenario": "B5.3",
+  "request_id": "rw-17b22239d2914e15",
+  "gui_shows_id": true,
+  "server_audit": {
+   "reason": "RESPOSTA_DO_MODELO",
+   "model": "qwen3.5:2b",
+   "seconds": 19.533,
+   "status": "ANSWER_ONLY",
+   "diag": "",
+   "facade_request_id": "ffaf786221d03a3208fd4f2316306023"
+  },
+  "server_end_utc": "09:57:25",
+  "ollama_log_match": [
+   "[GIN] 2026/11/23 - 09:57:25 | 200 |   19.53s |       127.0.0.1 | POST     \"/api/chat\""
+  ]
+ },
+ {
+  "scenario": "B5.4",
+  "request_id": "rw-dcd9b53e6a6d4c2b",
+  "gui_shows_id": true,
+  "server_audit": {
+   "reason": "RESPOSTA_DO_MODELO",
+   "model": "qwen3.5:2b",
+   "seconds": 13.437,
+   "status": "ANSWER_ONLY",
+   "diag": "",
+   "facade_request_id": "ebcb466405ac983af3ca1c1b695f69d1"
+  },
+  "server_end_utc": "09:57:43",
+  "ollama_log_match": [
+   "[GIN] 2026/11/23 - 09:57:43 | 200 |   13.43s |       127.0.0.1 | POST     \"/api/chat\""
+  ]
+ },
+ {
+  "scenario": "B5.4",
+  "request_id": "rw-67db4b5458899a16",
+  "gui_shows_id": true,
+  "server_audit": {
+   "reason": "RESPOSTA_DO_MODELO",
+   "model": "qwen3.5:2b",
+   "seconds": 19.393,
+   "status": "ANSWER_ONLY",
+   "diag": "",
+   "facade_request_id": "d35be8815dbb2a935dfaa70211034efd"
+  },
+  "server_end_utc": "09:58:04",
+  "ollama_log_match": [
+   "[GIN] 2026/11/23 - 09:58:04 | 200 |   19.37s |       127.0.0.1 | POST     \"/api/chat\""
+  ]
+ },
+ {
+  "scenario": "B5.4",
+  "request_id": "rw-6cb30a4746e08fff",
+  "gui_shows_id": true,
+  "server_audit": {
+   "reason": "RESPOSTA_DO_MODELO",
+   "model": "qwen3.5:2b",
+   "seconds": 32.857,
+   "status": "ANSWER_ONLY",
+   "diag": "",
+   "facade_request_id": "f85e9d58eb623b1b6390027c1ba9cfa6"
+  },
+  "server_end_utc": "09:58:41",
+  "ollama_log_match": [
+   "[GIN] 2026/11/23 - 09:58:41 | 200 |   32.84s |       127.0.0.1 | POST     \"/api/chat\""
+  ]
+ },
+ {
+  "scenario": "B5.10",
+  "request_id": "rw-0db9d7645aa0f5a6",
+  "gui_shows_id": true,
+  "server_audit": {
+   "reason": "ERRO_DE_INFERENCIA",
+   "model": "qwen3.5:2b",
+   "seconds": 0.023,
+   "status": "ERROR",
+   "diag": "MODEL_UNAVAILABLE",
+   "facade_request_id": "af74e9944054767cf46a1118a2a282be"
+  },
+  "server_end_utc": "10:15:18",
+  "ollama_log_match": "nenhum pedido ao Ollama (motor parado: erro devolvido sem inferência)"
+ }
+]

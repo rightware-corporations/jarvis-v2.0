@@ -1,0 +1,295 @@
+{
+  "kind": "UI-01 B2.5 performance (REAL qwen via the RIGHTWARE GUI API)",
+  "model": "qwen3.5:2b",
+  "host": {
+    "cpu_count": 4,
+    "machine": "x86_64",
+    "gpu": "none detected"
+  },
+  "options": {
+    "num_ctx": 4096,
+    "num_predict": 256,
+    "temperature": 0.2,
+    "bridge_streaming": false
+  },
+  "model_digest": "0689d44085e06d165161a8a9a1731344278cfb5aade63a3c3dbdb48ab54b130a",
+  "cold": [
+    {
+      "rid": "rw-7e727b86e7acef64",
+      "ttft_s": 15.584,
+      "total_s": 15.584,
+      "answer_head": "30.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-35ff0dea41cce980",
+      "ttft_s": 3.639,
+      "total_s": 3.639,
+      "answer_head": "33.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-e68c33c2b197f2c8",
+      "ttft_s": 4.237,
+      "total_s": 4.238,
+      "answer_head": "36.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-3f309408afda3311",
+      "ttft_s": 4.311,
+      "total_s": 4.311,
+      "answer_head": "39.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-8913a61ff90a1df4",
+      "ttft_s": 4.183,
+      "total_s": 4.183,
+      "answer_head": "42.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-9e4ffa984291f870",
+      "ttft_s": 3.896,
+      "total_s": 3.896,
+      "answer_head": "45.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-6d5163e3aabe47dc",
+      "ttft_s": 3.976,
+      "total_s": 3.976,
+      "answer_head": "48.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-79d1142736c116e7",
+      "ttft_s": 4.557,
+      "total_s": 4.557,
+      "answer_head": "51.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-228cdb181d360011",
+      "ttft_s": 4.02,
+      "total_s": 4.02,
+      "answer_head": "54.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-ba0220f4fb7bf600",
+      "ttft_s": 4.111,
+      "total_s": 4.111,
+      "answer_head": "57.",
+      "error": false,
+      "correct": true
+    }
+  ],
+  "warm": [
+    {
+      "rid": "rw-45801f2175597a80",
+      "ttft_s": 0.871,
+      "total_s": 0.871,
+      "answer_head": "30.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-30e0ec71ab04b676",
+      "ttft_s": 0.824,
+      "total_s": 0.824,
+      "answer_head": "33.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-b850749776a407da",
+      "ttft_s": 0.832,
+      "total_s": 0.832,
+      "answer_head": "36.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-0f601de2f9646221",
+      "ttft_s": 1.386,
+      "total_s": 1.387,
+      "answer_head": "39.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-294064e4d9170d81",
+      "ttft_s": 0.817,
+      "total_s": 0.817,
+      "answer_head": "42.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-3d9ff1d9cc895fa2",
+      "ttft_s": 0.905,
+      "total_s": 0.905,
+      "answer_head": "45.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-b3d397e2f2c8e09d",
+      "ttft_s": 0.877,
+      "total_s": 0.877,
+      "answer_head": "48.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-1ff96082f8ea77a9",
+      "ttft_s": 0.84,
+      "total_s": 0.84,
+      "answer_head": "51.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-2e21b3f8a57f5a64",
+      "ttft_s": 0.829,
+      "total_s": 0.829,
+      "answer_head": "54.",
+      "error": false,
+      "correct": true
+    },
+    {
+      "rid": "rw-bdbacd8630e4c270",
+      "ttft_s": 1.758,
+      "total_s": 1.759,
+      "answer_head": "O resultado de 19 mais 38 é 57.",
+      "error": false,
+      "correct": true
+    }
+  ],
+  "direct_ollama": [
+    {
+      "eval_count": 256,
+      "eval_s": 16.518,
+      "tokens_per_s": 15.5,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 16.328,
+      "tokens_per_s": 15.68,
+      "load_s": 0.004
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 16.017,
+      "tokens_per_s": 15.98,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 16.248,
+      "tokens_per_s": 15.76,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 15.765,
+      "tokens_per_s": 16.24,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 15.252,
+      "tokens_per_s": 16.79,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 15.318,
+      "tokens_per_s": 16.71,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 16.343,
+      "tokens_per_s": 15.66,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 15.817,
+      "tokens_per_s": 16.19,
+      "load_s": 0.001
+    },
+    {
+      "eval_count": 256,
+      "eval_s": 16.325,
+      "tokens_per_s": 15.68,
+      "load_s": 0.001
+    }
+  ],
+  "summary": {
+    "cold_total": {
+      "n_ok": 10,
+      "n_err": 0,
+      "p50": 4.183,
+      "p95": 15.584,
+      "min": 3.639,
+      "max": 15.584,
+      "mean": 5.252
+    },
+    "cold_ttft": {
+      "n_ok": 10,
+      "n_err": 0,
+      "p50": 4.183,
+      "p95": 15.584,
+      "min": 3.639,
+      "max": 15.584,
+      "mean": 5.251
+    },
+    "warm_total": {
+      "n_ok": 10,
+      "n_err": 0,
+      "p50": 0.871,
+      "p95": 1.759,
+      "min": 0.817,
+      "max": 1.759,
+      "mean": 0.994
+    },
+    "warm_ttft": {
+      "n_ok": 10,
+      "n_err": 0,
+      "p50": 0.871,
+      "p95": 1.758,
+      "min": 0.817,
+      "max": 1.758,
+      "mean": 0.994
+    },
+    "tokens_per_s": {
+      "n_ok": 10,
+      "n_err": 0,
+      "p50": 15.98,
+      "p95": 16.79,
+      "min": 15.5,
+      "max": 16.79,
+      "mean": 16.019
+    },
+    "correct_answers": {
+      "cold": 10,
+      "warm": 10,
+      "n": 10
+    },
+    "distinct_answers_warm": 10
+  }
+}

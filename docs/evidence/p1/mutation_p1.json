@@ -1,0 +1,100 @@
+{
+  "package": "JRV-P1",
+  "tool": "labs/p1/mutation_p1.py",
+  "tests": "tests.test_p1_control_plane + tests.test_e0_console",
+  "first_pass": {
+    "killed": 14,
+    "survived": [
+      "P13 /autorizar matched anywhere in a line",
+      "P16 unverified changes printed"
+    ],
+    "fix": "added test_embedded_authorize_command_is_not_obeyed and test_unverified_outcome_shows_no_changes"
+  },
+  "final": {
+    "killed": 16,
+    "total": 16,
+    "restored_identical": true
+  },
+  "mutants": [
+    {
+      "mutant": "P01 any code authorises",
+      "result": "KILLED",
+      "killed_by": "Authorization.test_wrong_expired_reused_and_unknown"
+    },
+    {
+      "mutant": "P02 code not single-use on failure",
+      "result": "KILLED",
+      "killed_by": "Authorization.test_wrong_expired_reused_and_unknown"
+    },
+    {
+      "mutant": "P03 expiry ignored",
+      "result": "KILLED",
+      "killed_by": "Authorization.test_wrong_expired_reused_and_unknown"
+    },
+    {
+      "mutant": "P04 unknown capability accepted",
+      "result": "KILLED",
+      "killed_by": "Authorization.test_wrong_expired_reused_and_unknown, DefaultAndRouting.test_no_tools_by_default"
+    },
+    {
+      "mutant": "P05 incomplete shown as verified",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_unverified_outcome_shows_no_changes, NoEffects.test_model_cannot_choose_paths_or_other_tools, Outcomes.test_partial …"
+    },
+    {
+      "mutant": "P06 cancellation not distinguished",
+      "result": "KILLED",
+      "killed_by": "Outcomes.test_cancel_during_execution"
+    },
+    {
+      "mutant": "P07 failure not distinguished",
+      "result": "KILLED",
+      "killed_by": "Outcomes.test_failure"
+    },
+    {
+      "mutant": "P08 partial not distinguished",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_unverified_outcome_shows_no_changes, Outcomes.test_partial"
+    },
+    {
+      "mutant": "P09 executor wired although the host did not enable it",
+      "result": "KILLED",
+      "killed_by": "DefaultAndRouting.test_no_tools_by_default"
+    },
+    {
+      "mutant": "P10 trial workspace not removed",
+      "result": "KILLED",
+      "killed_by": "NoEffects.test_workspace_is_host_owned_synthetic_and_removed"
+    },
+    {
+      "mutant": "P11 cancel not delegated to the executor",
+      "result": "KILLED",
+      "killed_by": "Outcomes.test_cancel_during_execution"
+    },
+    {
+      "mutant": "P12 capabilities enabled by default",
+      "result": "KILLED",
+      "killed_by": "DefaultAndRouting.test_no_tools_by_default"
+    },
+    {
+      "mutant": "P13 /autorizar matched anywhere in a line",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_embedded_authorize_command_is_not_obeyed"
+    },
+    {
+      "mutant": "P14 /autorizar accepts any length",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_malformed_task_commands_are_unknown"
+    },
+    {
+      "mutant": "P15 console tasks enabled without the host flag",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_console_without_host_flag_has_no_tasks"
+    },
+    {
+      "mutant": "P16 unverified changes printed",
+      "result": "KILLED",
+      "killed_by": "ConsoleIntegration.test_unverified_outcome_shows_no_changes"
+    }
+  ]
+}

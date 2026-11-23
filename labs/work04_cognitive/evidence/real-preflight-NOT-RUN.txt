@@ -1,0 +1,2 @@
+PREFLIGHT FAIL: Ollama not reachable (URLError)
+exit=2

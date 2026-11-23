@@ -1,0 +1,203 @@
+{
+  "results": [
+    {
+      "id": "B5.1",
+      "action": "Abrir a aplicação (interface original OpenJarvis)",
+      "expected": "Interface original carregada",
+      "obtained": "qwen3.5:2b | ⌘K | No conversations yet | Chat | Dashboard | Data Sources | Agents | Logs | Settings | Get Started | Good morning |  | Ask anythi",
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-01-open.png",
+      "pass": true
+    },
+    {
+      "id": "B5.2",
+      "action": "Conversa real em português",
+      "expected": "Resposta do modelo real, rotulada NÃO verificada, com id de pedido",
+      "obtained": {
+        "rid": "rw-fb7578515b6c5831",
+        "seconds": 55.878,
+        "reply": "Olá! A capital de Moçambique é Maputo, e a língua oficial é o português.\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-fb7578515b6c5831",
+        "net": [
+          "200 POST /v1/chat/completions rw-fb7578515b6c5831"
+        ]
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-02-pt.png",
+      "pass": true
+    },
+    {
+      "id": "B5.3",
+      "action": "Conversa real em inglês",
+      "expected": "Resposta real em inglês",
+      "obtained": {
+        "rid": "rw-17b22239d2914e15",
+        "seconds": 20.433,
+        "reply": "The capital of Japan is Tokyo.\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-17b22239d2914e15",
+        "net": [
+          "200 POST /v1/chat/completions rw-17b22239d2914e15"
+        ]
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-03-en.png",
+      "pass": true
+    },
+    {
+      "id": "B5.4",
+      "action": "Continuidade na mesma sessão e isolamento entre sessões",
+      "expected": "A 2.ª resposta contém ZEBRA-41; a nova conversa não o conhece",
+      "obtained": {
+        "first": "Entendido.\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-dcd9b53e6a6d4c2b",
+        "same_session": "ZEBRA-41\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-67db4b5458899a16",
+        "other_session": "NENHUM\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-6cb30a4746e08fff",
+        "rids": [
+          "rw-dcd9b53e6a6d4c2b",
+          "rw-67db4b5458899a16",
+          "rw-6cb30a4746e08fff"
+        ]
+      },
+      "evidence": [
+        "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-04-session-a.png",
+        "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-04-session-b.png"
+      ],
+      "pass": true
+    },
+    {
+      "id": "B5.5",
+      "action": "Pedido de tarefa",
+      "expected": "AUTORIZACAO_NECESSARIA + código de uso único mostrado",
+      "obtained": {
+        "tarefas": "comparar-versoes-ensaio: Comparar duas versões SINTÉTICAS de um documento de ensaio (A e B), criadas pelo anfitrião numa pasta temporária. Só leitura; o resultado vem dos recibos e do verificador RIGHTWARE. pesquisa-fixture-goose: Missão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE. Para pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.\n\nrw-ba7e3eeb5e383f4e",
+        "pedido": "[Autorização necessária — nada foi executado ainda]\n\nComparar duas versões SINTÉTICAS de um documento de ensaio (A e B), criadas pelo anfitrião numa pasta temporária. Só leitura; o resultado vem dos recibos e do verificador RIGHTWARE. Para autorizar esta execução escreve exactamente: /autorizar 2F97D7 (uso único, 2 minutos)\n\nrw-d4a869d6800e4102",
+        "code_shown": true
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-05-task-request.png",
+      "pass": true
+    },
+    {
+      "id": "B5.6",
+      "action": "Autorização inválida (ausente, errada, clique sem código, reutilizada) e válida",
+      "expected": "Inválidas recusadas sem execução; só o código do operador autoriza",
+      "obtained": {
+        "missing": "[Tarefa não autorizada]\n\nFalta o código do operador. A autorização exige /autorizar CÓDIGO com o código de uso único mostrado pelo anfitrião. Nada foi executado.\n\nrw-36fd2ea400d838b4",
+        "wrong": "[Tarefa não autorizada — nada foi executado]\n\nCódigo inválido, expirado ou já usado. Nada foi executado.\n\nrw-bb2a49da39211c3c",
+        "original_after_wrong": "[Tarefa não autorizada — nada foi executado]\n\nCódigo inválido, expirado ou já usado. Nada foi executado.\n\nrw-78373828d0a37920",
+        "click_approve": {
+          "status": 403,
+          "body": "{\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está integrada no JARVIS (RIGHTWARE).\"}"
+        },
+        "valid": "[Tarefa em execução] (/cancelar cancela)\n\nA tarefa continua em execução. Use /estado para acompanhar e /cancelar para cancelar.\n\nrw-a006ad2e8e022987",
+        "reused": "[Tarefa não autorizada]\n\nJá há uma tarefa em execução. Nada foi iniciado. Use /estado ou /cancelar.\n\nrw-30edf75bbda17ce9"
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-06-authorize.png",
+      "pass": true
+    },
+    {
+      "id": "B5.7",
+      "action": "Execução supervisionada e recibos",
+      "expected": "Estado final decidido pelo verificador; recibos visíveis",
+      "obtained": {
+        "estado": "text\nCopy\nSessão: 28ee8798… (efémera, só em memória)\nModelo: qwen3.5:2b\nPedidos nesta sessão: 0\nContexto: 0 trocas, 0 de 6000 caracteres (máx. 6 trocas)\nÚltimo estado: nenhum\nPedido em curso: não\nFerramentas activas: nenhuma fora de uma tarefa autorizada\nTarefas supervisionadas activadas pelo anfitrião: comparar-versoes-ensaio, pesquisa-fixture-goose\nTarefa em execução: não\nMemória persistente: nenhuma (o histórico é apagado ao sair)\n\n\nÚltima tarefa supervisionada (terminada, 104 s desde a autorização):\n\n[Tarefa em execução] (/cancelar cancela)\n\n[Resultado verificado por evidência (recibos + verificador RIGHTWARE)]\n\nEstado do executor: COMPARISON_VERIFIED · recibos: 3 · 99.9 s Recibos (ferramentas efectivamente executadas): #1 fixture_read OK, #2 fixture_read OK, #3 fixture_compare OK objectivo READ_A: VERIFIED (recibo #1) objectivo READ_B: VERIFIED (recibo #2) objectivo COMPARE: VERIFIED (recibo #3) Alterações (calculadas pelo código e confirmadas pelo verificador): modified: a_line=2, b_line=2, before='receitas: 100', after='receitas: 120' removed: a_line=3, text='custos: 80' added: b_line=4, text='anexo: tabela 2'\n\n⚠️ Comentário do modelo — NÃO verificado (não é evidência) Aqui está o relatório de comparação entre a Versão A e a Versão B, conforme solicitado pelo anfitrião:\n\nDiferenças Identificadas:\n\nAdicionado (1 linha):\nLinha 4 da Versão B contém: anexo: tabela 2\nRemovido (1 linha):\nA linha de custos na Versão A (custos: 80) foi removida.\nModificado (1 linha):\nA linha de receitas na Versão B (receitas: 120) substituiu a da Versão A (receitas: 100).\n\nConclusão: A Versão B apresenta uma receita aumentada para 120, mas perde o detalhe dos custos originais (80) e adiciona um anexo de tabela.\n\nrw-4184f4b615724f19"
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-07-result.png",
+      "pass": true
+    },
+    {
+      "id": "B5.8",
+      "action": "Cancelamento",
+      "expected": "Cancelamento efectivo pelo Control Plane; estado final Tarefa cancelada",
+      "obtained": {
+        "start": "[Tarefa em execução] (/cancelar cancela)\n\nA tarefa continua em execução. Use /estado para acompanhar e /cancelar para cancelar.\n\nrw-c21f23499fd061db",
+        "cancel": "Pedido cancelado.\n\nrw-1fc35226ff4f71b0",
+        "estado": "text\nCopy\nSessão: 28ee8798… (efémera, só em memória)\nModelo: qwen3.5:2b\nPedidos nesta sessão: 0\nContexto: 0 trocas, 0 de 6000 caracteres (máx. 6 trocas)\nÚltimo estado: nenhum\nPedido em curso: não\nFerramentas activas: nenhuma fora de uma tarefa autorizada\nTarefas supervisionadas activadas pelo anfitrião: comparar-versoes-ensaio, pesquisa-fixture-goose\nTarefa em execução: não\nMemória persistente: nenhuma (o histórico é apagado ao sair)\n\n\nÚltima tarefa supervisionada (terminada, 19 s desde a autorização):\n\n[Tarefa em execução] (/cancelar cancela)\n\n[Tarefa cancelada]\n\nEstado do executor: HALTED · recibos: 2 · 18.6 s Recibos (ferramentas efectivamente executadas): #1 fixture_read DENIED, #2 fixture_read DENIED objectivo READ_A: MISSING objectivo READ_B: MISSING objectivo COMPARE: MISSING\n\n⚠️ Comentário do modelo — NÃO verificado (não é evidência) [Jarvis] tarefa cancelada. (3 pedido(s) de ferramenta recusado(s) pela política.)\n\nrw-15bddca1a87446d2"
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-08-cancel.png",
+      "pass": true
+    },
+    {
+      "id": "B5.9",
+      "action": "Tentativas de contornar a política (rotas, métodos, WebSocket, ferramentas, modelo, tarefa não activada)",
+      "expected": "Tudo recusado e registado",
+      "obtained": {
+        "probes": {
+          "POST /v1/agents [tools]": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /v1/managed-agents": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /api/research": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /v1/approvals/1/approve": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /v1/models/pull": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "DELETE /v1/models/qwen3.5:2b": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /v1/connectors/upload/ingest": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /v1/memory/store": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /v1/channels/send": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "GET /V1/MODELS": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "GET //v1/agents": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NON_CANONICAL_PATH\", \"detail\": \"Esta função não está",
+          "GET /v1/agents/": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NON_CANONICAL_PATH\", \"detail\": \"Esta função não está",
+          "GET /docs": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "GET /openapi.json": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /webhooks/twilio": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "PUT /v1/chat/completions": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "GET /v1/skills": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /api/digest/generate": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está i",
+          "POST /v1/chat/completions [tools]": "403 {\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"TOOLS_NOT_ALLOWED\"}",
+          "POST /v1/chat/completions [modelo não permitido]": "200 Modelo não permitido {\"id\": \"rw-c12b7b0d1100137c\", \"object\": \"chat.completion\", \"model\": \"modelo-nao-permitido\", \"choices\": [{\"inde",
+          "websocket": "REFUSED"
+        },
+        "tarefa_nao_activada": "[Tarefa não autorizada — nada foi executado]\n\nEssa tarefa não existe ou não foi activada pelo anfitrião.\n\nrw-f1e6180908ec1ef0"
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-09-bypass.png",
+      "pass": true
+    },
+    {
+      "id": "B5.10",
+      "action": "Falha do Ollama (serviço parado)",
+      "expected": "Erro visível, explícito e accionável; nenhuma resposta inventada",
+      "obtained": {
+        "rid": "rw-0db9d7645aa0f5a6",
+        "reply": "[Erro de inferência]\n\nNão foi possível obter uma resposta válida do modelo local. Confirma o Ollama e o modelo instalado.\n\n(código: MODEL_UNAVAILABLE)\n\nAcção: confirme que o Ollama está a correr em 127.0.0.1:11434 com o modelo qwen3.5:2b instalado e tente de novo. Nenhuma resposta foi gerada.\n\nrw-0db9d7645aa0f5a6",
+        "net": [
+          "200 POST /v1/chat/completions rw-0db9d7645aa0f5a6"
+        ]
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/b5-10-ollama-down.png",
+      "pass": true
+    }
+  ],
+  "goose_task_through_gui": [
+    {
+      "id": "B5.5",
+      "action": "Pedido de tarefa",
+      "expected": "AUTORIZACAO_NECESSARIA + código de uso único mostrado",
+      "obtained": {
+        "tarefas": "comparar-versoes-ensaio: Comparar duas versões SINTÉTICAS de um documento de ensaio (A e B), criadas pelo anfitrião numa pasta temporária. Só leitura; o resultado vem dos recibos e do verificador RIGHTWARE. pesquisa-fixture-goose: Missão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE. Para pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.\n\nrw-f915de4cce1c63bf",
+        "pedido": "[Autorização necessária — nada foi executado ainda]\n\nMissão goose SUPERVISIONADA num catálogo SINTÉTICO isolado (sem Internet, sem ficheiros do anfitrião, sem shell): o goose só propõe; cada operação passa pela política RIGHTWARE, gera recibo, e o resultado é decidido pelo verificador RIGHTWARE. Para autorizar esta execução escreve exactamente: /autorizar 732163 (uso único, 2 minutos)\n\nrw-15462dd8d56d0c54",
+        "code_shown": true
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/goose/b5-05-task-request.png",
+      "pass": true
+    },
+    {
+      "id": "B5.6",
+      "action": "Autorização inválida (ausente, errada, clique sem código, reutilizada) e válida",
+      "expected": "Inválidas recusadas sem execução; só o código do operador autoriza",
+      "obtained": {
+        "missing": "[Tarefa não autorizada]\n\nFalta o código do operador. A autorização exige /autorizar CÓDIGO com o código de uso único mostrado pelo anfitrião. Nada foi executado.\n\nrw-9cf2c945dde50db9",
+        "wrong": "[Tarefa não autorizada — nada foi executado]\n\nCódigo inválido, expirado ou já usado. Nada foi executado.\n\nrw-66ff48e9ffe4d6fd",
+        "original_after_wrong": "[Tarefa não autorizada — nada foi executado]\n\nCódigo inválido, expirado ou já usado. Nada foi executado.\n\nrw-81d13a572b68c1a1",
+        "click_approve": {
+          "status": 403,
+          "body": "{\"error\": \"BLOQUEADO_PELA_POLITICA_RIGHTWARE\", \"reason\": \"NOT_IN_ALLOWLIST\", \"detail\": \"Esta função não está integrada no JARVIS (RIGHTWARE).\"}"
+        },
+        "valid": "[Tarefa em execução] (/cancelar cancela)\n\nA tarefa continua em execução. Use /estado para acompanhar e /cancelar para cancelar.\n\nrw-555287e92204e7c7",
+        "reused": "[Tarefa não autorizada]\n\nJá há uma tarefa em execução. Nada foi iniciado. Use /estado ou /cancelar.\n\nrw-4605ea8c024da365"
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/goose/b5-06-authorize.png",
+      "pass": true
+    },
+    {
+      "id": "B5.7",
+      "action": "Execução supervisionada e recibos",
+      "expected": "Estado final decidido pelo verificador; recibos visíveis",
+      "obtained": {
+        "estado": "text\nCopy\nSessão: 28ee8798… (efémera, só em memória)\nModelo: qwen3.5:2b\nPedidos nesta sessão: 0\nContexto: 0 trocas, 0 de 6000 caracteres (máx. 6 trocas)\nÚltimo estado: nenhum\nPedido em curso: não\nFerramentas activas: nenhuma fora de uma tarefa autorizada\nTarefas supervisionadas activadas pelo anfitrião: comparar-versoes-ensaio, pesquisa-fixture-goose\nTarefa em execução: não\nMemória persistente: nenhuma (o histórico é apagado ao sair)\n\n\nÚltima tarefa supervisionada (terminada, 809 s desde a autorização):\n\n[Tarefa em execução] (/cancelar cancela)\n\n[Execução falhada]\n\nEstado do executor: NOT_VERIFIED · recibos: 6 · 801.5 s Recibos (ferramentas efectivamente executadas): #1 web_open OK, #2 web_follow OK, #3 web_follow OK, #4 web_follow HTTP_ERROR, #5 web_follow OK, #6 web_follow OK objectivo CATALOG: PAGE_OBSERVED (recibo #2) objectivo ATLASBOARD: PAGE_OBSERVED (recibo #5) objectivo NOVAVIEW: PAGE_OBSERVED (recibo #3) objectivo TERRALENS_FACTSHEET: PAGE_OBSERVED (recibo #6)\n\nrw-98d4a83dfe667be8"
+      },
+      "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui01/final/goose/b5-07-result.png",
+      "pass": false
+    }
+  ]
+}
