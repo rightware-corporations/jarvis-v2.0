@@ -3909,3 +3909,71 @@ Nada disto foi iniciado.
 - Frontend `tsc`/lint not run (NOT VERIFIED).
 
 **NEXT:** operator review of the G-IMPL PR. P3B not started.
+
+## CHECKPOINT — 23/11/2026: JRV-UI01-REVIEW — PR #30 merge review, goose-through-GUI performance root cause, UI-02 HUD plan
+
+**STATE:**
+- PR #30 Draft, reviewed head `d50e946`; base `develop` `9e22f6a` contained in it (no conflicts).
+- CI 5/5 green on `d50e946`.
+- Pin `f21d902`; `main` `0cac8e8` untouched; PR #27 untouched. No merge performed.
+
+**REVIEW** (`docs/engineering/UI01_PR30_REVIEW.md`):
+- Pinned frontend checks, first run: `tsc -b` rc 0; vitest 23 files / 117 tests passed (upstream code).
+- **Fix applied in the PR:** R-11. The bridge kept buffering an oversized body without limit; it is now drained. New test added. Full suite **681 OK, 0 skipped**.
+- Concrete risks:
+  - R-1: operator code returned to the HTTP requester. High outside single-operator loopback.
+  - R-2: no authentication or CSRF token. Blocking for B6.
+  - R-3: conversations served serially (FACT).
+  - R-4: a client disconnect or timeout does not stop generation. FACT: a short request from another conversation waited 13.97 s instead of 0.65 s.
+  - R-5: continuity depends on the exact transcript echo; facade limits 6 turns / 6000 chars / 2048 input chars.
+  - R-6: one global task state.
+  - R-7: CPU contention from the browser (below).
+  - R-8: upstream pages and opt-in modal.
+  - R-9: E2E and frontend not in CI.
+  - R-10: no audit rotation.
+  - R-12: service-worker cache.
+  - R-13: unpinned build tooling.
+- **Recommendation:** merge as the UI-01 base for single-operator local use (requires explicit operator approval). Goose through the GUI stays PARTIAL/FAILED. R-1 and R-2 block any non-local access.
+
+**GOOSE PERFORMANCE INVESTIGATION** (`docs/engineering/GOOSE_GUI_PERF_INVESTIGATION.md`, `docs/evidence/ui01/goose_gui_perf_investigation.json`):
+- Same model workload in every run (tokens and messages per turn); only time per turn grew 3–9×.
+- Controlled runs on a freshly rebooted host:
+
+  | Path | Result | Turn gaps (s) | Ollama container CPU |
+  |---|---|---|---|
+  | CLI | **VERIFIED**, 294.6 s | 61, 16, 32, 17, 74, 18 | 364% |
+  | GUI | FAILED, exit 1 at 873 s | 202, 60, 148, 166 | 254%; chrome-headless 132% |
+
+- Refuted: host inference overlap, memory pressure, hypervisor steal, bridge/server overhead.
+- **Measured cause** (4B micro-benchmark):
+  - E0, no browser: 4.61 tok/s.
+  - E1, original GUI page open: browser 241% CPU, **1.01 tok/s**.
+  - E2, reduced motion: browser 0.4%, 5.14 tok/s.
+  - E3, one busy core: 0.79 tok/s.
+  - Mitigation `num_thread=3`: 4.35 tok/s with the browser, 4.54 without.
+- Interpretation: the original UI's animations in a GPU-less browser take 1.3–2.4 cores, and llama.cpp with threads equal to cores collapses about 5×.
+
+**Goose GUI attempts:** 4 in total (3 earlier, plus 1 controlled). None verified. Goose is NOT declared complete.
+
+**UI-02 PLAN** (`docs/engineering/UI02_HUD_PLAN.md`):
+- Reproducible overlay outside the vendor: hash-pinned manifest; Vite `resolveId` plugin swapping 9 small upstream modules; new components under `rightware/gui/frontend`.
+- Components:
+  - JarvisCore (state-driven, CPU-budgeted);
+  - ExecutionTimeline;
+  - MissionsPanel (code-only authorisation);
+  - VoicePanel and FinanceIntelPanel (NOT INTEGRATED, no numbers);
+  - CapabilityBadge;
+  - PT-MZ i18n;
+  - theme.
+- Backend `/v1/rightware/*` on the existing bridge, plus the R-4, R-5, R-7 and R-10 fixes.
+- 12 acceptance criteria, including the CPU budget and one VERIFIED goose mission through the HUD.
+
+**NEXT:** operator decisions:
+1. Merge of PR #30.
+2. R-1 (where the operator code is shown).
+3. R-2 (local session token).
+4. CI frontend job.
+5. R-7 mitigation location.
+6. Visual identity.
+
+Then a single UI-02 branch from `develop`. P3B not started.

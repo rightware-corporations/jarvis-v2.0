@@ -267,6 +267,23 @@ class Bridge(unittest.TestCase):
         self.assertIn("Modelo não permitido", text)
         self.assertEqual(self.model.seen, [])
 
+    def test_oversized_body_is_drained_not_buffered(self):
+        b = self.make()
+        chunks = [{"type": "http.request", "body": b"x" * 200_000, "more_body": True} for _ in range(20)]
+        chunks.append({"type": "http.request", "body": b"", "more_body": False})
+        seen = []
+
+        async def receive():
+            return chunks.pop(0)
+
+        async def send(m):
+            seen.append(m)
+        scope = {"type": "http", "method": "POST", "path": "/v1/chat/completions", "headers": [(b"host", HOST)]}
+        with mock.patch.object(B.json, "loads", side_effect=AssertionError("must not parse")):
+            run(b(scope, receive, send))
+        self.assertEqual(seen[0]["status"], 413)
+        self.assertEqual(chunks, [])                          # the whole stream was consumed (drained)
+
     def test_continuity_is_host_owned_and_conversations_are_isolated(self):
         self.make()
         _, first, _ = self.chat([{"role": "user", "content": "um"}])

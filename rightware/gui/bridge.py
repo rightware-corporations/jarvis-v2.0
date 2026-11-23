@@ -98,9 +98,10 @@ class ChatBridge:
             msg = await receive()
             if msg["type"] == "http.disconnect":
                 return None
-            body += msg.get("body", b"")
-            if len(body) > MAX_BODY:
-                too_big = True
+            if not too_big:                                     # never buffer beyond the limit (drain only)
+                body += msg.get("body", b"")
+                if len(body) > MAX_BODY:
+                    too_big, body = True, b""
             if not msg.get("more_body"):
                 break
         if too_big:
