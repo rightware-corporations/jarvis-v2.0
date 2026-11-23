@@ -3653,3 +3653,14 @@ Nada disto foi iniciado.
 1. promote the Gateway subset from `labs/` to `rightware/` and publish the Gateway image reproducibly;
 2. run N≥3 pre-registered real goose missions through the product;
 3. delete the merged integration branch.
+
+## CHECKPOINT — 23/11/2026: JRV-P3A-CP1 — Gateway productisation: reconciliation and dependency matrix
+
+**BRANCH:** single temporary integration branch `integration/jrv-p3a-gateway-20261123`, created from `develop` `5ae4ddf29ec52a67a6c589bfca1bb7ad8ebdbc66`. Plan: one PR to `develop`, no stacking, no merge without approval.
+
+**GATE 0:** tree clean; CI green on `5ae4ddf` (WORK-05 45121050993, foundation 45121051050); PR #28 merged; PR #27 Draft at `a1b88ef`; pin `f21d902`. The current `jrv-gateway:te-p2a` image was made with `docker run` + `docker commit` (no versioned Dockerfile or manifest), so it is not reproducible from the repository. The real dependencies and the per-module classification (product runtime, fixture, test, historical, shared) are in `docs/engineering/P3A_GATEWAY_PRODUCT.md` §1.
+
+**NEXT:**
+- move the runtime modules to `rightware/gateway/` and the synthetic material to `rightware/gateway/synthetic/`, with labs aliases (no duplicate code);
+- reproducible image from a versioned Dockerfile;
+- adapter integration, parity tests, a real run, then the PR.
