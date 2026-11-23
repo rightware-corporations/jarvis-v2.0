@@ -3977,3 +3977,39 @@ Nada disto foi iniciado.
 6. Visual identity.
 
 Then a single UI-02 branch from `develop`. P3B not started.
+
+## CHECKPOINT — 23/11/2026: JRV-UI01-MERGED + UI-02 AUTHORISATION
+
+**MERGE:** PR #30 merged into `develop` under the operator's express authorisation, using a normal merge commit pinned to head `fec25c26e4d87b2d6b8f919c4c0800abe83440f3`.
+- Pre-checks: the head was unchanged, `mergeable_state` was clean, and checks were 5/5 green on that head (WORK-05 45164030671; foundation 45164030734).
+- Result: `develop` = `e78f076064f17667e63a736f836a003791830282`. Its tree is identical to `fec25c2`; pin `f21d902` unchanged.
+- CI push on the merge commit: WORK-05 45179867509 success; foundation 45179867405 success.
+- `main` `0cac8e8` and PR #27 untouched.
+- Status: UI-01 INTEGRATED for single-operator local use. Goose through the GUI stays PARTIAL/FAILED (4 attempts, none verified).
+
+**OPERATOR TECHNICAL DECISIONS (23/11/2026):**
+- Reuse the original OpenJarvis React frontend; the RIGHTWARE JARVIS HUD becomes the permanent visual layer.
+- Local authentication and explicit session ids in UI-02.
+- Authorisation by operator code only; no automatic approval by click.
+- Node/TypeScript/Vitest and E2E tests added to CI.
+- Fix inference cancellation.
+- `num_thread` configured and tested through a controlled Model Tap mechanism.
+- Preserve the Control Plane, goose, Gateway, receipts and verifier.
+
+**UI-02 AUTHORISED:** implementation on a single branch from the updated `develop`, ending in a single Draft PR. Merging that PR needs a new review.
+
+**UI-02 SCOPE:**
+1. Reproducible overlay, with the vendor untouched.
+2. JARVIS core animated from real backend states.
+3. MissionsPanel, ExecutionTimeline and capabilities panel.
+4. PT-MZ interface, with English supported.
+5. Local authentication and explicit sessions.
+6. Effective inference cancellation.
+7. CPU contention mitigation and controlled `num_thread`.
+8. Authorisation by operator code only.
+9. Frontend, TypeScript, Vitest and E2E tests in CI.
+10. At least one real goose mission through the GUI with a VERIFIED result, or the blocker declared without simulating success.
+
+**NEXT FUNCTIONAL FRONT (after UI-02):** WEB-01, real public web research through the RIGHTWARE Gateway with explicit egress policies. First use case: informational Market Intelligence. Network access needs its own authorisation. Then voice, files, authorised local actions and the Shared Intelligence Core.
+
+**LIMITS:** no public deploy, no installs on third-party machines, no paid APIs, no financial operations. P3B not started.
