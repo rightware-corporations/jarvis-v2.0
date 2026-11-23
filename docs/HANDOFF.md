@@ -3653,6 +3653,65 @@ Nada disto foi iniciado.
 1. promote the Gateway subset from `labs/` to `rightware/` and publish the Gateway image reproducibly;
 2. run N≥3 pre-registered real goose missions through the product;
 3. delete the merged integration branch.
+
+## CHECKPOINT — 23/11/2026: JRV-P3A-CP1 — Gateway productisation: reconciliation and dependency matrix
+
+**BRANCH:** single temporary integration branch `integration/jrv-p3a-gateway-20261123`, created from `develop` `5ae4ddf29ec52a67a6c589bfca1bb7ad8ebdbc66`. Plan: one PR to `develop`, no stacking, no merge without approval.
+
+**GATE 0:** tree clean; CI green on `5ae4ddf` (WORK-05 45121050993, foundation 45121051050); PR #28 merged; PR #27 Draft at `a1b88ef`; pin `f21d902`. The current `jrv-gateway:te-p2a` image was made with `docker run` + `docker commit` (no versioned Dockerfile or manifest), so it is not reproducible from the repository. The real dependencies and the per-module classification (product runtime, fixture, test, historical, shared) are in `docs/engineering/P3A_GATEWAY_PRODUCT.md` §1.
+
+**NEXT:**
+- move the runtime modules to `rightware/gateway/` and the synthetic material to `rightware/gateway/synthetic/`, with labs aliases (no duplicate code);
+- reproducible image from a versioned Dockerfile;
+- adapter integration, parity tests, a real run, then the PR.
+
+## CHECKPOINT — 23/11/2026: JRV-P3A-CP2 — Tool Gateway as a RIGHTWARE runtime component; reproducible image; real mission verified
+
+**BRANCH:** `integration/jrv-p3a-gateway-20261123` (from `develop` `5ae4ddf`). Code commit `719137dc3db2`.
+
+**GATE 1:**
+- Moved to `rightware/gateway/`: `gateway`, `mcp_http`, `model_tap`, `report_contract`, `verify`. Synthetic trial material moved to `rightware/gateway/synthetic/`: `fixture_transport`, `site`, `score_semantic`.
+- Changes are limited to imports, docstrings and the unreachable TE-P2D paths, which now refuse explicitly. They are recorded in `PARITY.json` and checked against the `a1b88ef` blobs.
+- The old `labs/` module names are `sys.modules` aliases, so there is no duplicated code. There are no `labs` imports anywhere in `rightware/`.
+
+**GATE 2:**
+- Build files: `configs/gateway/Dockerfile` and `python -m rightware.gateway.image build`.
+- Inputs: base pinned by digest, `uv` installed with `--require-hashes`, runtime dependencies from the vendor `uv.lock` at pin `f21d902`.
+- Minimal staged context: 995 files.
+- Runtime user 10001; no setuid; labels bind the image to the source digest.
+- Two `--no-cache` builds gave the identical image id `sha256:fe85afaed08f48918ff26d71f59f17b3b2331a9f12cae19e002b36ec4bceca6c`, after 3 failed iterations that are documented.
+- The old `jrv-gateway:te-p2a` is refused (`GATEWAY_IMAGE_UNVERIFIED`).
+- Not pushed to any registry.
+
+**GATE 3:**
+- The adapter starts gateway, tap and fixture by the verified image id, with: non-root user, `--read-only`, `--cap-drop ALL`, no-new-privileges, tmpfs `/tmp`, and the evidence dir as the only mount.
+- Gate 3 guarantees kept: OFF by default, host activation plus operator code, isolated Docker, mission-owned resources, readiness check, mandatory evidence, process state check, cancellation and cleanup, no public Internet.
+
+**GATE 4 (tests FAKE/offline):**
+- P3A tests: 15. P2 tests: 43. Historical TE-P2A tests: 32 (through the aliases).
+- Full pinned venv: **660 OK, 0 skipped**. Plain Python: OK.
+- Mutation: P3A 19/19; P2 44/44.
+- Parity: P2 real run-4 evidence re-evaluated with the moved verifier gives 14/14 identical fields.
+- **REAL run P3A-1** (`719137d`, qwen3.5:4b, same console and catalogue): **RESULTADO_VERIFICADO** TASK_VERIFIED_LIMITED.
+  - goose exit 0 after 271.9 s.
+  - 7 receipts = 7 observed calls; 4/4 objectives; 503 recovered; 6↔6; chain valid; semantic PASS; 0 violations.
+  - Gateway-image containers ran as 10001, read-only, `CapDrop=ALL`.
+  - Cleanup complete.
+- Evidence in `docs/evidence/p3a/`; full write-up in `docs/engineering/P3A_GATEWAY_PRODUCT.md`.
+
+**RISKS:**
+- Vendor build backend (hatchling, hatch-vcs) not hash-pinned.
+- amd64 only.
+- Image ~472 MB.
+- Build needs PyPI.
+- Reproducibility shown on one host only.
+- N=1 real run.
+
+**STATUS:** single PR to `develop`; no merge without approval. `main`, PR #27 and the pin are untouched. **NEXT (P3B, needs authorisation):**
+- offline hash-verified wheelhouse, including build tools;
+- minimal dependency set for the image;
+- N≥3 pre-registered real missions;
+- signed internal registry publication.
 ## CHECKPOINT — 23/11/2026: JRV-PRODUCT-DIRECTION-UI-REUSE — direcção do produto e interface OpenJarvis (DECISÃO EXPLÍCITA)
 
 **AUTORIDADE / CLASSIFICAÇÃO:** decisão explícita do operador RIGHTWARE nesta conversa, em 23/11/2026 (Africa/Maputo). **DIRECÇÃO DE PRODUTO APROVADA**; este checkpoint é **DOCUMENTAL**. Não constitui implementação das integrações, aceitação E0/E1, aprovação de produção, autorização para instalar no computador do operador/Issa, acesso a dados privados, utilização financeira automática, publicação pública ou escolha de fornecedor pago. O objectivo do JARVIS do Issa já existia desde a origem; **não** foi descoberto ou redefinido nesta data.
@@ -3698,6 +3757,17 @@ Nada disto foi iniciado.
 
 **EVIDÊNCIA DESTA ADENDA:** decisão declarada na conversa em 23/11/2026; inspecção do GitHub no mesmo dia de `develop`, `AGENTS.md`, README upstream no pin e estrutura `src/openjarvis`/`frontend`; este commit contém apenas `docs/HANDOFF.md`, sem novos testes de runtime. CI deste novo SHA deve ser verificada depois do push.
 
+## CHECKPOINT — 23/11/2026: JRV-P3A-RECONCILE — PR #29 branch reconciled with develop `ba85c2a`
+
+**CAUSE:** PR #29 had `mergeable_state=dirty`. `develop` had advanced from `5ae4ddf` to `ba85c2a85d8290685eba9cd78dfe371eb3e29cc2`, which adds the official checkpoint JRV-PRODUCT-DIRECTION-UI-REUSE. That commit only touches `docs/HANDOFF.md`, and both sides had appended at the end of the file.
+
+**RESOLUTION:**
+- Merged `origin/develop` into `integration/jrv-p3a-gateway-20261123` with a merge commit; no rebase, no force push.
+- `docs/HANDOFF.md` keeps both sides verbatim. A check confirmed that every line of `3122a11` and of `ba85c2a` is preserved, in order: JRV-P3A-CP1, JRV-P3A-CP2, then JRV-PRODUCT-DIRECTION-UI-REUSE, then this entry.
+- No runtime, test, vendor or workflow change. Pin `f21d902`, `main` `0cac8e8` and PR #27 are untouched.
+- `docs/engineering/P3A_GATEWAY_PRODUCT.md` §8 now states that the decided product priority is reuse and integration of the existing OpenJarvis GUI; P3B stays a proposal and is NOT started automatically.
+
+**STATUS:** PR #29 remains Draft; no merge without operator approval. The next product work follows JRV-PRODUCT-DIRECTION-UI-REUSE (Gate GUI on the pinned OpenJarvis).
 ## CHECKPOINT — 23/11/2026: JRV-UI01-CP1 — G-MERGE pending; original OpenJarvis GUI run locally; integration map; continuous-product directive
 
 > **PRODUCT DIRECTIVE (operator, 23/11/2026, verbatim):** "A apresentação ao Issa é um marco de aceitação da aplicação real, não um projecto de demonstração. Todo o trabalho apresentado deve integrar o mesmo código-base que continuará a ser desenvolvido. Não criar componentes descartáveis para a apresentação."

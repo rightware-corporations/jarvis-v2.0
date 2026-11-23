@@ -1,0 +1,99 @@
+{
+ "origin_commit": "a1b88efc9db00f501d7c6772c31d01ce69622dff",
+ "rule": "file == HEADER + original blob with exactly these (old -> new) substitutions, each applied once",
+ "files": {
+  "rightware/gateway/gateway.py": {
+   "origin_path": "labs/te_p2a_gateway/gateway.py",
+   "origin_blob": "21362bef7187f707baaffee68d7524ca3b28b069",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p2a_gateway/gateway.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": [
+    [
+     "from labs.te_p2a_gateway import report_contract as RC",
+     "from rightware.gateway import report_contract as RC"
+    ],
+    [
+     "        return RC\n    from labs.te_p2d_public import research_contract as RESEARCH      # TE-P2D (labs)\n    if contract_id == RESEARCH.CONTRACT_ID:\n        return RESEARCH\n",
+     "        return RC\n"
+    ]
+   ]
+  },
+  "rightware/gateway/mcp_http.py": {
+   "origin_path": "labs/te_p2a_gateway/mcp_http.py",
+   "origin_blob": "9fa4773e8d657f515045a0459cc5c0256d77274e",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p2a_gateway/mcp_http.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": [
+    [
+     "python -m labs.te_p2a_gateway.mcp_http",
+     "python -m rightware.gateway.mcp_http"
+    ],
+    [
+     "from labs.te_p2a_gateway.fixture_transport import SYNTHETIC_HOST, fixture_fetcher",
+     "from rightware.gateway.synthetic.fixture_transport import SYNTHETIC_HOST, fixture_fetcher"
+    ],
+    [
+     "from labs.te_p2a_gateway.gateway import Gateway",
+     "from rightware.gateway.gateway import Gateway"
+    ],
+    [
+     "        from labs.te_p2d_public.egress import EgressPolicy\n        from labs.te_p2d_public.transport import EgressFetcher\n        if not a.site or not a.prefix:\n            raise SystemExit(\"--egress-socket requires explicit --site and --prefix allowlists\")\n        sites, fetcher = tuple(a.site), EgressFetcher(a.egress_socket, EgressPolicy(tuple(a.site), tuple(a.prefix)))\n",
+     "        raise SystemExit(\"TE-P2D public egress is not part of the RIGHTWARE product runtime\")\n"
+    ]
+   ]
+  },
+  "rightware/gateway/model_tap.py": {
+   "origin_path": "labs/te_p2a_gateway/model_tap.py",
+   "origin_blob": "28f54cf5922775eeb9b69c743d9ceb5438de720c",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p2a_gateway/model_tap.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": [
+    [
+     "python -m labs.te_p2a_gateway.model_tap",
+     "python -m rightware.gateway.model_tap"
+    ]
+   ]
+  },
+  "rightware/gateway/report_contract.py": {
+   "origin_path": "labs/te_p2a_gateway/report_contract.py",
+   "origin_blob": "9bd2fab662ddc94e59cd1cc116c1b40f8b245510",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p2a_gateway/report_contract.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": []
+  },
+  "rightware/gateway/verify.py": {
+   "origin_path": "labs/te_p2a_gateway/verify.py",
+   "origin_blob": "95162e6218106d9ecaecfa17af9aae85447de390",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p2a_gateway/verify.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": [
+    [
+     "from labs.te_p1_bakeoff.score_semantic import check",
+     "from rightware.gateway.synthetic.score_semantic import check"
+    ],
+    [
+     "from labs.te_p2a_gateway.fixture_transport import BASE_URL, SYNTHETIC_HOST",
+     "from rightware.gateway.synthetic.fixture_transport import BASE_URL, SYNTHETIC_HOST"
+    ]
+   ]
+  },
+  "rightware/gateway/synthetic/fixture_transport.py": {
+   "origin_path": "labs/te_p2a_gateway/fixture_transport.py",
+   "origin_blob": "b3d25a4d2c35f6629084e1ad6297d9cd5234be24",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p2a_gateway/fixture_transport.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": []
+  },
+  "rightware/gateway/synthetic/site.py": {
+   "origin_path": "labs/te_p1_bakeoff/site.py",
+   "origin_blob": "a8a2466800509eb9d72f0c91df9dd6adc3496329",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p1_bakeoff/site.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": [
+    [
+     "python -m labs.te_p1_bakeoff.site",
+     "python -m rightware.gateway.synthetic.site"
+    ]
+   ]
+  },
+  "rightware/gateway/synthetic/score_semantic.py": {
+   "origin_path": "labs/te_p1_bakeoff/score_semantic.py",
+   "origin_blob": "0dc666f2e358ca7eae717fdcaa781c2eeead6ced",
+   "header": "# RIGHTWARE runtime component (JRV-P3A): moved from labs/te_p1_bakeoff/score_semantic.py @ a1b88ef; changes declared in rightware/gateway/PARITY.json.\n",
+   "substitutions": []
+  }
+ }
+}

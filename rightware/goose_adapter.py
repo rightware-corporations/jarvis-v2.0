@@ -1,15 +1,18 @@
 """JRV-P2: goose as a SECOND supervised executor behind the JRV-P1 Control Plane (experimental, OFF by default).
 
     ControlPlane (authority) → GooseMission (this adapter) → RIGHTWARE Tool Gateway (MCP) → AgentPolicy
-      → receipts → RIGHTWARE verifier (labs.te_p2a_gateway.verify) → Control Plane state
+      → receipts → RIGHTWARE verifier (rightware.gateway.verify) → Control Plane state
 
 What this adapter does and does NOT do
 --------------------------------------
 * It is registered only when the HOST enables it (console flag ``--missao-goose`` plus host paths). The operator
   must still authorise each run with the Control Plane's single-use code. goose only PROPOSES operations.
-* It reuses, unchanged, the experimental Gateway validated in TE-P2A/B/C (``labs/te_p2a_gateway``: AgentPolicy +
-  ReceiptLedger, contract ``te-p2b.report.v1`` for the receipted ``submit_report``, bidirectional model-boundary
-  tool filter in ``model_tap`` that contains goose's internal ``load_skill``) and its verifier.
+* It uses the RIGHTWARE Tool Gateway runtime component ``rightware.gateway`` (moved from the TE-P2A/B/C lab
+  without semantic change in JRV-P3A: AgentPolicy + ReceiptLedger, contract ``te-p2b.report.v1`` for the receipted
+  ``submit_report``, bidirectional model-boundary tool filter in ``model_tap`` that contains goose's internal
+  ``load_skill``) and its verifier. Gateway, tap and synthetic fixture run from the reproducible gateway image
+  (``rightware.gateway.image``), started ONLY by the image id of a local image whose labels match this source tree,
+  as an unprivileged user with a read-only root fs, no capabilities and no host mounts except the evidence dir.
 * Topology (Docker, two ``--internal`` networks, no route out): goose (fixed IP, NO host mounts, ``--no-profile``,
   only the Gateway MCP extension) and the model tap/Ollama on the mission's agent network; the synthetic fixture only
   on the mission's fixture network; the Gateway on both. Isolation is VERIFIED, not assumed: a probe from goose's network position
@@ -26,6 +29,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import os
 import re
 import secrets
 import shutil
@@ -37,6 +41,7 @@ import time
 from pathlib import Path
 
 from rightware.control_plane import State, TaskOutcome
+from rightware.gateway import image as GI
 
 ROOT = Path(__file__).resolve().parents[1]
 CAPABILITY = "pesquisa-fixture-goose"
@@ -54,8 +59,7 @@ INSTRUCTION = (
 ).format(base=BASE)
 GATEWAY_TOOLS = ("web_open", "web_follow", "web_find", "submit_report")
 EXT_PREFIX = "gateway_8790_mcp__"
-PY_IMAGE = "mirror.gcr.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b"
-GW_IMAGE = "jrv-gateway:te-p2a"
+PY_IMAGE = GI.BASE_IMAGE           # ollama, probes and goose: the same digest-pinned base as the gateway image
 MAX_TURNS = 20
 TIMEOUT_SECONDS = 900
 GOOSE_ENV = {"HOME": "/root", "GOOSE_DISABLE_KEYRING": "1", "GOOSE_PROVIDER": "ollama",
@@ -107,13 +111,20 @@ class DockerGooseRunner:
         self.name = {r: f"jrv-p2-{self.mission}-{r}" for r in ROLES}
         self.created: list[tuple[str, str]] = []           # (kind, docker id) in creation order
         self.goose_ready = False
+        self.gw_image: str | None = None                   # verified image id (sha256:…), set by prepare()
+        uid = getattr(os, "getuid", lambda: 0)()
+        # Gateway-image containers never run as root: as the (non-root) host user, else the image's own user.
+        self.user = GI.RUNTIME_USER if uid == 0 else f"{uid}:{os.getgid()}"
 
     def _label(self) -> list[str]:
         return ["--label", f"{LABEL}={self.mission}"]
 
+    def _gw(self) -> list[str]:
+        """Run flags + image for containers started from the verified gateway image (tap, fixture, gateway)."""
+        return ["--user", self.user, *GI.hardening_args(), "-v", f"{self.out.resolve()}:/evidence",
+                self.gw_image or GI.IMAGE_TAG, "python", "-m"]
+
     def commands(self) -> dict:
-        ev = str(self.out.resolve())
-        labs = f"{ROOT}/labs:/app/labs:ro"
         rt, N, A, F = self.rt, self.name, self.net["agent"], self.net["fixture"]
         return {
             "ollama": ["docker", "run", "-d", "--name", N["ollama"], *self._label(), "--network", A,
@@ -123,18 +134,14 @@ class DockerGooseRunner:
                        "-e", "OLLAMA_KEEP_ALIVE=30m", "-e", "OLLAMA_CONTEXT_LENGTH=65536", PY_IMAGE,
                        "/opt/ollama/bin/ollama", "serve"],
             "ollama-tap": ["docker", "run", "-d", "--name", N["ollama-tap"], *self._label(), "--network", A,
-                           "--network-alias", "ollama-tap", "-v", labs,
-                           "-v", f"{ev}:/evidence", "-w", "/app", PY_IMAGE, "python", "-m", "labs.te_p2a_gateway.model_tap",
+                           "--network-alias", "ollama-tap", *self._gw(), "rightware.gateway.model_tap",
                            "--upstream", "http://ollama:11434", "--log", "/evidence/model_requests.jsonl",
                            *sum((["--allow-suffix", "__" + t] for t in GATEWAY_TOOLS), [])],
             "fixture": ["docker", "run", "-d", "--name", N["fixture"], *self._label(), "--network", F,
-                        "--network-alias", "fixture", "-v", labs,
-                        "-v", f"{ev}:/evidence", "-w", "/app", PY_IMAGE, "python", "-m", "labs.te_p1_bakeoff.site",
+                        "--network-alias", "fixture", *self._gw(), "rightware.gateway.synthetic.site",
                         "--port", "8765", "--bind", "0.0.0.0", "--evidence", "/evidence/http.jsonl"],
             "gateway": ["docker", "run", "-d", "--name", N["gateway"], *self._label(), "--network", F,
-                        "--network-alias", "gateway", "-v", f"{ROOT}:/app:ro",
-                        "-v", f"{ev}:/evidence", "-w", "/app", "-e", "PYTHONPATH=/app", GW_IMAGE,
-                        "/opt/ojvenv/bin/python", "-m", "labs.te_p2a_gateway.mcp_http", "--task", "JRV-P2-T1",
+                        "--network-alias", "gateway", *self._gw(), "rightware.gateway.mcp_http", "--task", "JRV-P2-T1",
                         "--attempt", self.mission, "--evidence", "/evidence", "--allow-client", self.goose_ip,
                         "--report-contract", "te-p2b.report.v1"],
             "goose": ["docker", "create", "--name", N["goose"], *self._label(), "--network", A, "--ip", self.goose_ip,
@@ -155,10 +162,16 @@ class DockerGooseRunner:
         return rid
 
     def prepare(self) -> dict:
-        if sh(["docker", "image", "inspect", GW_IMAGE]).returncode != 0:
-            raise RuntimeError("GATEWAY_IMAGE_MISSING")
+        try:                                               # P3A: only the verified image of THIS tree
+            self.gw_image = GI.local_image()
+        except GI.ImageError as exc:
+            raise RuntimeError(str(exc)) from None
         for name in HOST_BASELINE:
             (self.out / name).touch(exist_ok=True)
+        if self.user == GI.RUNTIME_USER:                   # root host: hand the evidence dir to the gateway user
+            uid, gid = map(int, GI.RUNTIME_USER.split(":"))
+            for p in (self.out, *(self.out / n for n in HOST_BASELINE)):
+                os.chown(p, uid, gid)
         self._create("network", ["docker", "network", "create", "--internal", "--subnet", self.subnet, *self._label(),
                                  self.net["agent"]])
         self._create("network", ["docker", "network", "create", "--internal", *self._label(), self.net["fixture"]])
@@ -175,7 +188,8 @@ class DockerGooseRunner:
             raise RuntimeError("GOOSE_BINARY_COPY_FAILED")
         self.goose_ready = True
         return {"probe": probe, "goose_container": self.inspect_goose(), "mission": self.mission,
-                "agent_network": self.net["agent"], "baseline": baseline_problems(self.out)}
+                "agent_network": self.net["agent"], "gateway_image": self.gw_image,
+                "baseline": baseline_problems(self.out)}
 
     def wait_ready(self, timeout: float = 60.0) -> bool:
         """Wait until the Gateway announces it is listening (its startup line). Readiness never replaces the
@@ -361,6 +375,8 @@ def isolation_problems(prep: dict) -> list[str]:
         problems.append("goose container attached to other networks")
     if g.get("mounts"):
         problems.append("goose container has host mounts")
+    if not str(prep.get("gateway_image") or "").startswith("sha256:"):
+        problems.append("gateway image not verified")
     if not prep.get("mission") or g.get("label") != prep["mission"]:
         problems.append("goose container is not owned by this mission")
     problems += [f"evidence baseline: {b}" for b in prep.get("baseline") or ()]
@@ -375,8 +391,8 @@ def process_ok(run: dict) -> bool:
 
 def evaluate(out: Path, run: dict, prep: dict, cancelled: bool, seconds: float) -> TaskOutcome:
     """Pure mapping from RIGHTWARE evidence to a Control Plane outcome (no model text is evidence)."""
-    from labs.te_p2a_gateway import report_contract as RC
-    from labs.te_p2a_gateway.verify import verify
+    from rightware.gateway import report_contract as RC
+    from rightware.gateway.verify import verify
     from rightware.agent.receipts import ExecutionReceipt
 
     def outcome(state, err, verdict="NOT_EVALUATED", objectives=(), receipts=(), commentary=""):

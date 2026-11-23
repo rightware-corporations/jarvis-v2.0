@@ -1,0 +1,112 @@
+{
+  "package": "JRV-P3A",
+  "tool": "labs/p3a/mutation_p3a.py",
+  "code_sha": "719137dc3db2",
+  "tests": "tests.test_p3a_gateway_component + tests.test_p2_goose_integration + tests.test_te_p2a_gateway (FAKE/offline)",
+  "first_pass": {
+    "killed": 19,
+    "total": 19
+  },
+  "p2_mutation_rerun": {
+    "killed": 44,
+    "total": 44,
+    "tool": "labs/p2/mutation_p2.py"
+  },
+  "mutants": [
+    {
+      "mutant": "P01 unlabelled (unknown-build) image accepted",
+      "result": "KILLED",
+      "killed_by": "ImageIdentity.test_only_the_image_built_from_this_tree_is_accepted"
+    },
+    {
+      "mutant": "P02 stale image (other sources) accepted",
+      "result": "KILLED",
+      "killed_by": "ImageIdentity.test_only_the_image_built_from_this_tree_is_accepted"
+    },
+    {
+      "mutant": "P03 image user not checked",
+      "result": "KILLED",
+      "killed_by": "ImageIdentity.test_only_the_image_built_from_this_tree_is_accepted"
+    },
+    {
+      "mutant": "P04 uv.lock not part of the source digest",
+      "result": "KILLED",
+      "killed_by": "ImageIdentity.test_source_digest_tracks_every_runtime_and_build_file"
+    },
+    {
+      "mutant": "P05 read-only root fs dropped",
+      "result": "KILLED",
+      "killed_by": "ImageIdentity.test_hardening_flags, MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "P06 capabilities not dropped",
+      "result": "KILLED",
+      "killed_by": "ImageIdentity.test_hardening_flags, MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "P07 vendor gitlink not checked against the pin",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_vendor_must_be_the_pin"
+    },
+    {
+      "mutant": "P08 failed build not reported",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_failed_build_is_a_code_not_an_image"
+    },
+    {
+      "mutant": "P09 security check ignores root user",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_security_check_rejects_privileged_or_leaky_images"
+    },
+    {
+      "mutant": "P10 security check ignores setuid files",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_security_check_rejects_privileged_or_leaky_images"
+    },
+    {
+      "mutant": "P11 security check ignores labs in the image",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_security_check_rejects_privileged_or_leaky_images"
+    },
+    {
+      "mutant": "P12 security check ignores writable app dir",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_security_check_rejects_privileged_or_leaky_images"
+    },
+    {
+      "mutant": "P13 adapter skips image verification",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_mission_reports_image_failure_as_failed_without_starting, BuildAndStartupFailures.test_unverified_image_stops_preparation_before_any_resource, DockerRunnerR1.test_full_lifecycle_touches_only_its_own_resources"
+    },
+    {
+      "mutant": "P14 adapter runs the mutable tag instead of the verified id",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "P15 repository mounted into gateway containers again",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "P16 gateway containers run as root",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_gateway_containers_never_run_as_root, MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "P17 hardening flags not applied",
+      "result": "KILLED",
+      "killed_by": "MissionCapability.test_runner_commands_isolation"
+    },
+    {
+      "mutant": "P18 unverified gateway image ignored by isolation check",
+      "result": "KILLED",
+      "killed_by": "AdapterEvaluation.test_isolation_problems_are_detected"
+    },
+    {
+      "mutant": "P19 evidence not handed to the unprivileged user on a root host",
+      "result": "KILLED",
+      "killed_by": "BuildAndStartupFailures.test_gateway_containers_never_run_as_root"
+    }
+  ]
+}
