@@ -1,0 +1,123 @@
+/* RIGHTWARE JARVIS HUD theme (UI-02). Loaded after the pinned index.css.
+ * CPU budget (R-7, measured): the pinned full-screen `hud-grid-drift` (background-position animation, repainted every
+ * frame in software rendering) and backdrop blurs are disabled; continuous motion is limited to the small JARVIS core
+ * and stops entirely while the model or a mission works (html.rw-busy) or when the user prefers reduced motion. */
+
+html.rw-hud,
+html.rw-hud.dark {
+  --color-bg: #050912;
+  --color-bg-secondary: #0b1422;
+  --color-bg-tertiary: #122035;
+  --color-surface: #0a1220;
+  --color-sidebar: #070d18;
+  --color-border: rgba(94, 200, 255, 0.14);
+  --color-border-subtle: rgba(94, 200, 255, 0.07);
+  --color-text: #e3f4ff;
+  --color-text-secondary: #94b6cc;
+  --color-text-tertiary: #5f7d92;
+  --color-accent: #39c6ff;
+  --color-accent-hover: #6fd6ff;
+  --color-accent-subtle: rgba(57, 198, 255, 0.10);
+  --color-accent-glow: rgba(57, 198, 255, 0.35);
+  --rw-ok: #3ddc97;
+  --rw-warn: #ffb547;
+  --rw-bad: #ff5c6c;
+  --rw-muted: #6f8ba0;
+  color-scheme: dark;
+}
+
+/* Static backdrop: keep the pinned gradient/grid look, without per-frame repaint or blur. */
+html.rw-hud .hud-backdrop::before { animation: none !important; }
+html.rw-hud *, html.rw-hud *::before, html.rw-hud *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
+/* While the model or a mission works: no decorative motion anywhere (upstream included). */
+html.rw-busy *, html.rw-busy *::before, html.rw-busy *::after { animation-play-state: paused !important; transition: none !important; }
+html.rw-busy .rw-core__tick { animation-play-state: running !important; }
+
+/* ---------------------------------------------------------------- JARVIS core */
+.rw-core { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; }
+.rw-core svg { overflow: visible; }
+.rw-core circle { fill: none; stroke: var(--color-accent); }
+.rw-core__halo { stroke-width: 1; opacity: 0.18; }
+.rw-core__ring--outer circle { stroke-width: 2; opacity: 0.55; }
+.rw-core__ring--mid circle { stroke-width: 3; opacity: 0.8; }
+.rw-core__ring--inner { stroke-width: 1.5; opacity: 0.45; }
+.rw-core__heart { fill: var(--color-accent) !important; stroke: none !important; opacity: 0.85; }
+.rw-core__tick rect { fill: var(--color-accent); opacity: 0; }
+.rw-core__ring { transform-origin: 100px 100px; transform-box: view-box; }
+.rw-core__tick { transform-origin: 100px 100px; transform-box: view-box; }
+.rw-core__label { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text); }
+.rw-core__sub { font-size: 11px; color: var(--color-text-secondary); font-family: ui-monospace, monospace; }
+
+/* idle/ready: one slow rotation of two small rings (transform only → compositor-friendly) */
+.rw-core[data-mode="ready"] .rw-core__ring--outer { animation: rw-spin 24s linear infinite; }
+.rw-core[data-mode="ready"] .rw-core__ring--mid { animation: rw-spin 36s linear infinite reverse; }
+/* working: no continuous animation; a 1 Hz stepped tick shows liveness at ~1 repaint per second */
+.rw-core[data-mode="thinking"] .rw-core__tick rect,
+.rw-core[data-mode="mission"] .rw-core__tick rect { opacity: 0.9; }
+.rw-core[data-mode="thinking"] .rw-core__tick { animation: rw-spin 8s steps(8, end) infinite; }
+.rw-core[data-mode="mission"] .rw-core__tick { animation: rw-spin 12s steps(12, end) infinite; }
+.rw-core[data-mode="mission"] circle { stroke: var(--rw-warn); }
+.rw-core[data-mode="mission"] .rw-core__heart { fill: var(--rw-warn) !important; }
+.rw-core[data-mode="verified"] circle { stroke: var(--rw-ok); }
+.rw-core[data-mode="verified"] .rw-core__heart { fill: var(--rw-ok) !important; }
+.rw-core[data-mode="unverified"] circle { stroke: var(--rw-warn); }
+.rw-core[data-mode="unverified"] .rw-core__heart { fill: var(--rw-warn) !important; }
+.rw-core[data-mode="failed"] circle { stroke: var(--rw-bad); }
+.rw-core[data-mode="failed"] .rw-core__heart { fill: var(--rw-bad) !important; }
+.rw-core[data-mode="offline"] circle { stroke: var(--rw-muted); }
+.rw-core[data-mode="offline"] .rw-core__heart { fill: var(--rw-muted) !important; opacity: 0.4; }
+@keyframes rw-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .rw-core * { animation: none !important; }
+}
+
+/* ---------------------------------------------------------------- panels */
+.rw-side { width: 300px; min-width: 300px; height: 100%; overflow-y: auto; background: var(--color-bg);
+  border-left: 1px solid var(--color-border); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.rw-side__head { justify-content: space-between; }
+.rw-label { font-size: 11px; letter-spacing: 0.16em; color: var(--color-accent); font-weight: 600; }
+.rw-icon-btn { padding: 4px; border-radius: 6px; color: var(--color-text-secondary); cursor: pointer; }
+.rw-panel { border: 1px solid var(--color-border); border-radius: 10px; padding: 12px; background: var(--color-surface); }
+.rw-panel__title { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); margin: 0 0 6px; }
+.rw-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rw-col { display: flex; flex-direction: column; gap: 12px; }
+.rw-center { text-align: center; align-items: center; display: flex; flex-direction: column; }
+.rw-muted { color: var(--color-text-secondary); }
+.rw-small { font-size: 12px; }
+.rw-mono { font-family: ui-monospace, SFMono-Regular, monospace; }
+.rw-section { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary); margin: 8px 0 2px; }
+.rw-msg { font-size: 12px; color: var(--rw-warn); }
+.rw-btn { margin-top: 6px; font-size: 12px; padding: 5px 10px; border-radius: 7px; border: 1px solid var(--color-border);
+  color: var(--color-text); background: var(--color-bg-secondary); cursor: pointer; }
+.rw-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.rw-btn--primary { border-color: var(--color-accent); color: var(--color-accent); }
+.rw-btn--danger { border-color: var(--rw-bad); color: var(--rw-bad); }
+.rw-input { display: block; margin-top: 4px; width: 9ch; padding: 4px 6px; border-radius: 6px; font-size: 14px;
+  letter-spacing: 0.2em; background: var(--color-bg); color: var(--color-text); border: 1px solid var(--color-border); }
+.rw-code { color: var(--color-accent); font-size: 14px; letter-spacing: 0.18em; }
+.rw-auth, .rw-running { margin-top: 10px; padding: 8px; border: 1px dashed var(--color-border); border-radius: 8px; }
+.rw-missions, .rw-caps, .rw-receipts, .rw-objectives { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rw-receipts { gap: 2px; font-size: 12px; }
+.rw-receipts li[data-status="OK"] b { color: var(--rw-ok); }
+.rw-receipts li:not([data-status="OK"]) b { color: var(--rw-warn); }
+.rw-objectives { gap: 2px; font-size: 12px; }
+.rw-badge { font-size: 10px; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; letter-spacing: 0.04em; }
+.rw-badge--integrada { color: var(--rw-ok); }
+.rw-badge--parcial { color: var(--rw-warn); }
+.rw-badge--nao_integrada { color: var(--rw-muted); }
+.rw-badge--bloqueada { color: var(--rw-bad); }
+.rw-timeline { margin-top: 10px; font-size: 13px; }
+.rw-verdict { font-weight: 600; }
+.rw-verdict--verified { color: var(--rw-ok); }
+.rw-verdict--unverified { color: var(--rw-warn); }
+.rw-verdict--failed { color: var(--rw-bad); }
+.rw-unverified { margin: 8px 0 0; padding: 8px 10px; border-left: 3px solid var(--rw-warn);
+  background: rgba(255, 181, 71, 0.07); border-radius: 0 8px 8px 0; }
+.rw-unverified__text { font-size: 12px; color: var(--color-text-secondary); white-space: pre-wrap; }
+.rw-page { padding: 20px; display: flex; flex-direction: column; gap: 14px; height: 100%; overflow-y: auto; position: relative; z-index: 1; }
+.rw-page__core { display: flex; justify-content: center; }
+.rw-title { font-size: 14px; letter-spacing: 0.22em; color: var(--color-accent); margin: 0; }
+.rw-hud-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.rw-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.rw-card .rw-row { justify-content: space-between; }

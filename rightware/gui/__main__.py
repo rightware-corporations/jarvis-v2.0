@@ -13,6 +13,7 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("setup", help="prepara .runtime/gui a partir do pin (venv isolado + build do frontend original)")
     sub.add_parser("check", help="mostra o manifesto do runtime preparado")
+    sub.add_parser("frontend-check", help="TypeScript + Vitest do overlay HUD sobre o frontend do pin")
     s = sub.add_parser("serve", help="arranca a interface em http://127.0.0.1:PORT/")
     s.add_argument("--port", type=int, default=8000)
     s.add_argument("--model", action="append", default=[],
@@ -29,6 +30,11 @@ def main(argv=None) -> int:
     if a.cmd == "setup":
         print(json.dumps(R.setup(), indent=2))
         return 0
+    if a.cmd == "frontend-check":
+        res = R.frontend_check()
+        for name, r in res.items():
+            print(f"== {name}: rc={r['rc']}\n{r['tail']}")
+        return 0 if all(r["rc"] == 0 for r in res.values()) else 1
     if a.cmd == "check":
         m = R.paths()["manifest"]
         if not m.is_file():
