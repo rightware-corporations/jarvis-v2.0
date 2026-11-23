@@ -25,6 +25,9 @@ def main(argv=None) -> int:
     s.add_argument("--goose-ollama-dir", type=Path)
     s.add_argument("--goose-models-dir", type=Path)
     s.add_argument("--goose-model", default="qwen3.5:4b")
+    s.add_argument("--public-origin", help="B6: origem HTTPS exacta de um túnel privado autenticado (ex.: "
+                   "https://<id>-8000.euw.devtunnels.ms); activa o modo de acesso privado temporário")
+    s.add_argument("--public-minutes", type=float, default=60.0, help="B6: duração máxima do acesso privado (1–60)")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
     if a.cmd == "setup":
@@ -47,6 +50,8 @@ def main(argv=None) -> int:
     if not R.paths()["static"].joinpath("index.html").is_file():
         print("Runtime da interface não preparado: corra `python -m rightware.gui setup`.", file=sys.stderr)
         return 2
+    if a.public_origin is not None and (a.missao_goose or not 1 <= a.public_minutes <= 60):
+        p.error("modo de acesso privado: sem --missao-goose e --public-minutes entre 1 e 60")
     goose = None
     if a.missao_goose:
         if not (a.goose_bin and a.goose_ollama_dir and a.goose_models_dir):
@@ -55,9 +60,16 @@ def main(argv=None) -> int:
         goose = GooseMission(GooseRuntime(a.goose_bin, a.goose_ollama_dir, a.goose_models_dir, a.goose_model))
     from rightware.gui.server import build_app, serve
     app, _ = build_app(port=a.port, models=a.model or ["qwen3.5:2b"], deadline=a.deadline, trial=a.tarefa_ensaio,
-                       goose=goose)
+                       goose=goose, public_origin=a.public_origin,
+                       public_minutes=a.public_minutes if a.public_origin else None)
     print("JARVIS (RIGHTWARE JARVIS HUD sobre a interface OpenJarvis original), só em 127.0.0.1.", flush=True)
-    print(f"Abra esta ligação de sessão local (uso pelo operador; não partilhar): {app.session_url}", flush=True)
+    if a.public_origin:                          # never print the login link: it would land in logs
+        import time
+        print(f"ACESSO PRIVADO B6 activo para {a.public_origin} até "
+              f"{time.strftime('%H:%M:%S UTC', time.gmtime(app.public_until))}. Ligação de uso único (15 min) em "
+              f"{R.paths()['runtime'] / 'session-url'} (0600); não é impressa.", flush=True)
+    else:
+        print(f"Abra esta ligação de sessão local (uso pelo operador; não partilhar): {app.session_url}", flush=True)
     serve(app, a.port)
     return 0
 

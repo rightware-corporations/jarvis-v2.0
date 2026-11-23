@@ -49,7 +49,8 @@ def build_entries(models: list[str], deadline: float, adapter_factory=None) -> d
 
 def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: bool = False, goose=None,
               runtime: Path | None = None, inner=None, adapter_factory=None, session_factory_builder=None,
-              auth: LocalAuth | None = None, static_dir: Path | None = None):
+              auth: LocalAuth | None = None, static_dir: Path | None = None, public_origin: str | None = None,
+              public_minutes: float | None = None):
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
     entries = build_entries(models, deadline, adapter_factory)
@@ -62,10 +63,19 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
         entries[models[0]] = control.entry
     bridge = ChatBridge(entries=entries, default_model=models[0], control=control, audit=audit)
     inner = inner if inner is not None else build_inner(models[0], p["home"])
+    public_until = None
+    if public_origin is not None:                 # B6 private access: single-use link, expiring sessions and access
+        if not (public_minutes and 1 <= public_minutes <= 60):
+            raise ValueError("private access needs 1..60 minutes")
+        import time as _time
+        public_until = _time.time() + public_minutes * 60
+        auth = auth or LocalAuth(single_use=True, token_ttl=15 * 60, session_ttl=public_minutes * 60,
+                                 max_failures=20)
     auth = auth or LocalAuth()
     app = PolicyApp(inner=inner, bridge=bridge, static_dir=static_dir or p["static"], port=port, audit=audit,
-                    auth=auth)
-    app.session_url = auth.write_url(p["runtime"] / "session-url", port)
+                    auth=auth, public_origin=public_origin, public_until=public_until)
+    app.public_until = public_until
+    app.session_url = auth.write_url(p["runtime"] / "session-url", port, base=public_origin)
     return app, bridge
 
 

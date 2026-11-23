@@ -114,16 +114,44 @@ async def send_json(send, status: int, payload: dict, extra_headers=()) -> None:
     await send({"type": "http.response.body", "body": body})
 
 
+PUBLIC_ORIGIN_RE = re.compile(r"https://([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+)")
+
+
+def parse_public_origin(origin: str) -> tuple[bytes, bytes]:
+    """B6: exactly one HTTPS origin, no port, path, query, user info or wildcard. Returns (origin, host)."""
+    if not isinstance(origin, str) or not PUBLIC_ORIGIN_RE.fullmatch(origin):
+        raise ValueError("public origin must be exactly https://<lowercase-host> (no port, path or wildcard)")
+    host = origin[len("https://"):]
+    if host in ("localhost",) or host.endswith((".localhost", ".local")):
+        raise ValueError("public origin must not be a local name")
+    return origin.encode(), host.encode()
+
+
 class PolicyApp:
-    """Outermost ASGI app: deny-by-default router for the GUI process."""
+    """Outermost ASGI app: deny-by-default router for the GUI process.
+
+    B6 private-access mode (``public_origin`` set, for a temporary authenticated tunnel that forwards to this
+    loopback server): the strict rules apply to EVERY request, whatever Host the relay forwards — the Host must be
+    loopback or the public host; every route (static bundle files included) needs a session, except the login
+    link; a state-changing request must carry ``Origin`` equal to the public origin; the session cookie is Secure;
+    and after ``public_until`` every request is refused and all sessions are revoked (a real time limit)."""
 
     def __init__(self, *, inner, bridge, static_dir: Path | None, port: int, audit: AuditLog, auth,
-                 allow: dict | None = None):
+                 allow: dict | None = None, public_origin: str | None = None, public_until: float | None = None,
+                 clock=time.time):
         """``auth``: a ``LocalAuth`` (UI-02, required in the product); ``None`` only in unit tests of routing."""
         self.inner, self.bridge, self.port, self.audit, self.auth = inner, bridge, port, audit, auth
         self.allow = dict(ALLOW if allow is None else allow)
         self.hosts = {f"127.0.0.1:{port}".encode(), f"localhost:{port}".encode()}
         self.origins = {f"http://127.0.0.1:{port}".encode(), f"http://localhost:{port}".encode()}
+        self.public = public_origin is not None
+        self.clock, self.public_until, self._expired = clock, public_until, False
+        if self.public:
+            if auth is None or public_until is None:
+                raise ValueError("private-access mode needs authentication and an expiry")
+            self.public_origin, self.public_host = parse_public_origin(public_origin)
+            self.hosts = self.hosts | {self.public_host}
+            self.origins = {self.public_origin}
         self.static: dict[str, Path] = {}
         if static_dir is not None and static_dir.is_dir():
             root = static_dir.resolve()
@@ -150,6 +178,11 @@ class PolicyApp:
         if path is None:
             return "deny", "NON_CANONICAL_PATH"
         headers = self._headers(scope)
+        if self.public and self.clock() > self.public_until:
+            if not self._expired:
+                self._expired = True
+                self.auth.revoke_all()
+            return "deny", "PUBLIC_ACCESS_EXPIRED"
         if headers.get(b"host") not in self.hosts:
             return "deny", "HOST_NOT_LOOPBACK"
         if scope["type"] == "websocket":
@@ -157,11 +190,15 @@ class PolicyApp:
         origin = headers.get(b"origin")
         if method not in ("GET",) and origin is not None and origin not in self.origins:
             return "deny", "CROSS_ORIGIN"
+        if self.public and method not in ("GET",) and origin is None:
+            return "deny", "ORIGIN_REQUIRED"
         if method == "GET" and path == LOGIN_PATH and self.auth is not None:
             return "login", "LOGIN"
         target = self.allow.get((method, path))
         if not target and method == "GET" and path in self.static and path != "/index.html":
-            return "static", "STATIC_FILE"                  # bundle files: public, no data
+            if not self.public:
+                return "static", "STATIC_FILE"              # local mode: bundle files are public, no data
+            target = "static"                               # private-access mode: session required
         if not target and method == "GET" and (path in SPA_PAGES or path == "/index.html") \
                 and "/index.html" in self.static:
             target = "spa"
@@ -172,6 +209,8 @@ class PolicyApp:
             if sid is None:
                 return ("login_page" if target == "spa" else "unauth"), "AUTH_REQUIRED"
             scope["rightware.session"] = sid
+        if target == "static":
+            return "static", "STATIC_FILE_SESSION"
         return target, ("SPA_PAGE" if target == "spa" else "ALLOWLISTED")
 
     async def __call__(self, scope, receive, send):
@@ -220,7 +259,7 @@ class PolicyApp:
             if sid is None:
                 return await send_json(send, 403, {"error": "LIGACAO_DE_SESSAO_INVALIDA"})
             await send({"type": "http.response.start", "status": 303,
-                        "headers": [(b"location", b"/"), (b"set-cookie", self.auth.cookie_header(sid)),
+                        "headers": [(b"location", b"/"), (b"set-cookie", self.auth.cookie_header(sid, secure=self.public)),
                                     (b"content-length", b"0"), *SECURITY_HEADERS]})
             return await send({"type": "http.response.body", "body": b""})
         self.audit.record(kind, method, path, "DENY", "AUTH_REQUIRED")
