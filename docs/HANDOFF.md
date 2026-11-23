@@ -3853,3 +3853,59 @@ Nada disto foi iniciado.
 **P3A STATUS:** INTEGRATED in `develop`. `main` `0cac8e8` and PR #27 untouched.
 
 **NEXT:** G-IMPL on the single branch `integration/jrv-ui01-gui-20261123`, with a single Draft PR.
+
+## CHECKPOINT — 23/11/2026: JRV-UI01-IMPL — original OpenJarvis GUI on the RIGHTWARE runtime (G-IMPL, single branch/PR)
+
+**BRANCH:** `integration/jrv-ui01-gui-20261123`, created from `develop` `9e22f6a` (after JRV-P3A-MERGED). One Draft PR to `develop`; NOT merged; G-IMPL merge needs a later review. `main` `0cac8e8`, PR #27 and pin `f21d902` untouched. The vendor working tree and files are unmodified.
+
+**IMPLEMENTED (outside the vendor):**
+- `rightware/gui/{policy,bridge,server,runtime,__main__}.py`
+- `configs/gui/openjarvis-gui.toml`
+- `jarvis.py gui` (via `rightware/runtime.py`)
+- `tests/test_ui01_gui.py`
+- `labs/ui01/{gui_e2e.mjs,startup_audit.py,perf.py,start_and_verify.sh}`
+- `docs/engineering/UI01_OPENJARVIS_GUI.md` Part II and `UI01_PRIVATE_HOST.md`
+
+**Architecture:**
+- The ORIGINAL frontend build (pin, unchanged) and the ORIGINAL `create_app` are used, the latter WITHOUT agent, scheduler, channels, memory, speech, MCP or webhooks, and with telemetry, traces and analytics off.
+- They sit behind an external deny-by-default ASGI layer: loopback Host/Origin checks, strict canonical paths, CSP `connect-src 'self'`.
+- Chat goes through the RIGHTWARE TextFacade (tool-free).
+- `/tarefas`, `/tarefa`, `/autorizar`, `/estado` and `/cancelar` go to the SAME ControlPlane (P1, plus goose/Gateway P3A). Authorisation is ONLY the operator code; a click gets 403.
+
+**EVIDENCE (`docs/evidence/ui01/`):**
+- Route inventory: 114 pinned routes, 6 allowed, 7 SPA pages served from the static build, the rest denied.
+- Startup audit is clean: 0 outbound attempts via the decoy proxy, 0 non-loopback sockets, 0 children, 0 files, 2 threads.
+- Browser B5: 10/10 PASS.
+  - PT and EN with real qwen3.5:2b (`0689d440…`);
+  - session continuity and isolation;
+  - authorisation (missing, wrong, consumed, click, reused, valid);
+  - **P1 supervised task VERIFIED through the GUI** (COMPARISON_VERIFIED, 3 receipts);
+  - cancellation (Tarefa cancelada);
+  - 20 bypass probes and WebSocket refused;
+  - Ollama down gives explicit `MODEL_UNAVAILABLE`, then recovery.
+- Backend-real correlation: GUI id = audit row = Ollama `/api/chat`, with duration Δ ≤ 0.03 s.
+- Performance, N=10 through the GUI API, CPU 4 vCPU, no GPU:
+  - cold p50 4.18 s / p95 15.6 s;
+  - warm p50 0.87 s / p95 1.76 s;
+  - 16.0 tok/s.
+  - The bridge does not stream tokens, so TTFT equals the total time.
+- **Goose/Gateway mission through the GUI: 3 attempts, none verified.**
+  - 2× `TIMED_OUT` at 900 s → EXECUCAO_PARCIAL.
+  - 1× goose exit 1 without a report, 4/4 objectives observed, 6↔6 → EXECUCAO_FALHADA `PROCESS_EXIT_NONZERO`.
+  - Chain valid and 0 violations in all three. R1 gates held.
+  - 4B turn latency was 131–332 s versus 15–83 s in P3A; cause NOT VERIFIED.
+- Tests: full pinned venv **680 OK, 0 skipped**; UI-01 tests 20.
+
+**CAPABILITIES:**
+- INTEGRATED: GUI conversation PT/EN; P1 supervised task.
+- PARTIAL: goose mission through the GUI.
+- NOT INTEGRATED: Market Intelligence, voice, SIC, multi-AI router.
+- BLOCKED: public Internet, Windows.
+
+**LIMITS:**
+- English UI; upstream pages for functions that are not integrated (their calls get 403); first-visit opt-in modal (opt-out works).
+- No token streaming.
+- No local authentication beyond loopback, Host/Origin and CSP.
+- Frontend `tsc`/lint not run (NOT VERIFIED).
+
+**NEXT:** operator review of the G-IMPL PR. P3B not started.
