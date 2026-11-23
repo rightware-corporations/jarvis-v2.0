@@ -4047,3 +4047,38 @@ Then a single UI-02 branch from `develop`. P3B not started.
 - WORK-05 failed once on the PR: `tests/test_ui02_hud.py` did not import without the venv. Fixed in `b1ca2b4`.
 - On `b1ca2b4` all checks passed: WORK-05 45188220888, foundation 45188221272, UI-02 PR 45188220928, UI-02 push 45188208713.
 - Merge NOT authorised.
+
+## CHECKPOINT — 23/11/2026: JRV-B6-PRIVATE-ACCESS (code ready; tunnel NOT opened)
+**Context:** live presentation to Issa via Microsoft Dev Tunnels, as authorised by the operator: private tunnel, authentication at both the Dev Tunnels layer and the JARVIS layer, ≤60 min, no anonymous access.
+
+**Branch:** `integration/jrv-b6-private-access-20261123`, from the validated UI-02 (`5640f46`). PR #31 and WEB-01 untouched. No merge.
+
+**Connectivity (FACT):**
+- **Reachable:** relay `euw` and `euw-data`, `login.microsoftonline.com`, and the CLI download host `tunnelsassetsprod.blob.core.windows.net`.
+- **Not reachable:** `github.com/login/device` returned 403. Use a Microsoft account for login.
+- **CLI:** devtunnel 1.0.2115, sha256 `723d6aeb…302c3f`, kept in the scratchpad only.
+- **Not yet verified:** WebSocket transport through the session proxy.
+
+**B6 code (`5f89574`), private-access mode `--public-origin https://<id>-8000.<cluster>.devtunnels.ms --public-minutes N`:**
+- exactly one HTTPS origin;
+- a session for every route, static included;
+- Origin required on state changes;
+- Secure cookie;
+- single-use 15-minute login link written only to a 0600 file, never printed or audited;
+- brute-force lock;
+- expiring sessions and a hard in-app deadline that revokes all sessions;
+- goose refused in this mode.
+
+Local mode is unchanged.
+
+**Tests (FACT):**
+- `tests/test_b6_private_access.py`: 9/9.
+- Full suite: venv OK with 0 skips; plain Python OK.
+- Loopback smoke test with the real Qwen through the public Host (no tunnel): anonymous 401/403; login 303 with a Secure cookie; replay 403; chat 200; POST without Origin 403; token in 0 logs.
+
+**Next steps:**
+1. The operator's Microsoft device-code login.
+2. Create a private tunnel on port 8000.
+3. Start JARVIS with the tunnel origin.
+4. External verification, then hand over.
+5. Close and revoke within 60 minutes.
