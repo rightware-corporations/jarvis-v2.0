@@ -1,0 +1,28 @@
+[
+  {
+    "id": "U3",
+    "action": "Conversa pela HUD com id de conversa explícito",
+    "expected": "Resposta com id rw-… e cabeçalho X-Rightware-Conversation",
+    "obtained": {
+      "rid": "rw-9dcd9d7c385a75f2",
+      "seconds": 0.056,
+      "reply": "(histórico=0)\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-9dcd9d7c385a75f2",
+      "conversation_header": "mwtb0ydimj05ab"
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui02/fake/u3-chat.png",
+    "pass": true,
+    "mode": "fake"
+  },
+  {
+    "id": "U6",
+    "action": "Orçamento de CPU da interface (idle 30 s, Chromium sem GPU)",
+    "expected": "≤ 10% de um núcleo",
+    "obtained": {
+      "chat": 3.7,
+      "hud": 3.6
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui02/fake/u6-cpu.png",
+    "pass": true,
+    "mode": "fake"
+  }
+]

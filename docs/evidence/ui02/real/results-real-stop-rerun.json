@@ -1,0 +1,15 @@
+[
+  {
+    "id": "U4",
+    "action": "Parar a geração liberta o modelo (cancelamento efectivo)",
+    "expected": "Pedido seguinte responde sem esperar pelo anterior",
+    "obtained": {
+      "next_seconds": 8.141,
+      "next": "4\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-e9feab3d7ba03f72",
+      "since_stop_s": 9.695
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui02/real-stop/u4-stop.png",
+    "pass": true,
+    "mode": "real"
+  }
+]

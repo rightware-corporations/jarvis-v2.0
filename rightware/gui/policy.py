@@ -24,7 +24,19 @@ ALLOW: dict[tuple[str, str], str] = {
     ("POST", "/v1/chat/completions"): "bridge",     # conversation + Control Plane commands (RIGHTWARE)
     ("GET", "/v1/analytics/identity"): "bridge",    # analytics forced OFF (no key, no host)
     ("POST", "/v1/analytics/preference"): "bridge", # only the "do not share" choice is accepted (no effect)
+    # UI-02: RIGHTWARE HUD state and missions (the SAME ControlPlane; authorisation only by operator code)
+    ("GET", "/v1/rightware/state"): "bridge",
+    ("POST", "/v1/rightware/tasks/request"): "bridge",
+    ("POST", "/v1/rightware/tasks/authorize"): "bridge",
+    ("POST", "/v1/rightware/tasks/cancel"): "bridge",
 }
+LOGIN_PATH = "/rw-login"
+LOGIN_REQUIRED_HTML = (
+    "<!doctype html><html lang=\"pt\"><head><meta charset=\"utf-8\"><title>JARVIS — sessão local</title></head>"
+    "<body style=\"font-family:system-ui;background:#05070d;color:#cfe8ff;padding:3rem\"><h1>JARVIS</h1>"
+    "<p>Sessão local necessária. Abra a ligação de início de sessão mostrada no terminal do anfitrião "
+    "(também em <code>.runtime/gui/session-url</code>).</p><p lang=\"en\">Local session required: open the login "
+    "link printed by the host.</p></body></html>").encode()
 # SPA pages of the original frontend (App.tsx routes). They only serve index.html; their data routes stay denied.
 SPA_PAGES = frozenset({"/", "/dashboard", "/settings", "/get-started", "/data-sources", "/agents", "/logs"})
 _CANONICAL = re.compile(r"^/(?:[A-Za-z0-9_.@~:+-]+(?:/[A-Za-z0-9_.@~:+-]+)*)?$")
@@ -68,8 +80,9 @@ def canonical_path(scope: dict) -> str | None:
 class AuditLog:
     """Append-only sanitised decision log (JSON lines). Thread-safe; failures to write never open the gate."""
 
-    def __init__(self, path: Path | None):
+    def __init__(self, path: Path | None, max_bytes: int = 5 * 1024 * 1024, keep: int = 3):
         self.path, self._lock, self.failures = path, threading.Lock(), 0
+        self.max_bytes, self.keep = max_bytes, keep                 # UI-02 (R-10): size-based rotation
         if path is not None:
             path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -80,8 +93,15 @@ class AuditLog:
         if self.path is None:
             return
         try:
-            with self._lock, self.path.open("a", encoding="utf-8") as f:
-                f.write(json.dumps(row, ensure_ascii=True) + "\n")
+            with self._lock:
+                if self.path.exists() and self.path.stat().st_size >= self.max_bytes:
+                    for i in range(self.keep - 1, 0, -1):
+                        older = self.path.with_name(f"{self.path.name}.{i}")
+                        if older.exists():
+                            older.replace(self.path.with_name(f"{self.path.name}.{i + 1}"))
+                    self.path.replace(self.path.with_name(f"{self.path.name}.1"))
+                with self.path.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps(row, ensure_ascii=True) + "\n")
         except OSError:
             self.failures += 1
 
@@ -97,9 +117,10 @@ async def send_json(send, status: int, payload: dict, extra_headers=()) -> None:
 class PolicyApp:
     """Outermost ASGI app: deny-by-default router for the GUI process."""
 
-    def __init__(self, *, inner, bridge, static_dir: Path | None, port: int, audit: AuditLog,
+    def __init__(self, *, inner, bridge, static_dir: Path | None, port: int, audit: AuditLog, auth,
                  allow: dict | None = None):
-        self.inner, self.bridge, self.port, self.audit = inner, bridge, port, audit
+        """``auth``: a ``LocalAuth`` (UI-02, required in the product); ``None`` only in unit tests of routing."""
+        self.inner, self.bridge, self.port, self.audit, self.auth = inner, bridge, port, audit, auth
         self.allow = dict(ALLOW if allow is None else allow)
         self.hosts = {f"127.0.0.1:{port}".encode(), f"localhost:{port}".encode()}
         self.origins = {f"http://127.0.0.1:{port}".encode(), f"http://localhost:{port}".encode()}
@@ -136,14 +157,22 @@ class PolicyApp:
         origin = headers.get(b"origin")
         if method not in ("GET",) and origin is not None and origin not in self.origins:
             return "deny", "CROSS_ORIGIN"
+        if method == "GET" and path == LOGIN_PATH and self.auth is not None:
+            return "login", "LOGIN"
         target = self.allow.get((method, path))
-        if target:
-            return target, "ALLOWLISTED"
-        if method == "GET" and path in self.static:
-            return "static", "STATIC_FILE"
-        if method == "GET" and path in SPA_PAGES and "/index.html" in self.static:
-            return "spa", "SPA_PAGE"
-        return "deny", "NOT_IN_ALLOWLIST"
+        if not target and method == "GET" and path in self.static and path != "/index.html":
+            return "static", "STATIC_FILE"                  # bundle files: public, no data
+        if not target and method == "GET" and (path in SPA_PAGES or path == "/index.html") \
+                and "/index.html" in self.static:
+            target = "spa"
+        if not target:
+            return "deny", "NOT_IN_ALLOWLIST"
+        if self.auth is not None:
+            sid = self.auth.session_from_cookie(headers.get(b"cookie"))
+            if sid is None:
+                return ("login_page" if target == "spa" else "unauth"), "AUTH_REQUIRED"
+            scope["rightware.session"] = sid
+        return target, ("SPA_PAGE" if target == "spa" else "ALLOWLISTED")
 
     async def __call__(self, scope, receive, send):
         kind = scope["type"]
@@ -157,6 +186,8 @@ class PolicyApp:
         except Exception:                          # policy error → fail closed
             target, reason = "deny", "POLICY_ERROR"
         path = scope.get("path", "")
+        if target in ("login", "login_page", "unauth"):
+            return await self._auth_response(target, scope, send, kind, method, path)
         if target == "deny":
             self.audit.record(kind, method, path, "DENY", reason)
             if kind == "websocket":
@@ -176,3 +207,25 @@ class PolicyApp:
         self.audit.record(kind, method, path, "ALLOW", reason, target=target)
         app = self.inner if target == "inner" else self.bridge
         return await app(scope, receive, send)
+
+    async def _auth_response(self, target, scope, send, kind, method, path):
+        if target == "unauth":
+            self.audit.record(kind, method, path, "DENY", "AUTH_REQUIRED")
+            return await send_json(send, 401, {"error": "SESSAO_LOCAL_NECESSARIA", "reason": "AUTH_REQUIRED"})
+        if target == "login":
+            query = bytes(scope.get("query_string") or b"").decode("ascii", "replace")
+            token = [p[2:] for p in query.split("&") if p.startswith("t=")]
+            sid = self.auth.login(token[0]) if len(token) == 1 else None
+            self.audit.record(kind, method, path, "LOGIN_OK" if sid else "DENY", "LOGIN" if sid else "BAD_TOKEN")
+            if sid is None:
+                return await send_json(send, 403, {"error": "LIGACAO_DE_SESSAO_INVALIDA"})
+            await send({"type": "http.response.start", "status": 303,
+                        "headers": [(b"location", b"/"), (b"set-cookie", self.auth.cookie_header(sid)),
+                                    (b"content-length", b"0"), *SECURITY_HEADERS]})
+            return await send({"type": "http.response.body", "body": b""})
+        self.audit.record(kind, method, path, "DENY", "AUTH_REQUIRED")
+        await send({"type": "http.response.start", "status": 401,
+                    "headers": [(b"content-type", b"text/html; charset=utf-8"),
+                                (b"content-length", str(len(LOGIN_REQUIRED_HTML)).encode()),
+                                (b"content-security-policy", CSP), *SECURITY_HEADERS]})
+        return await send({"type": "http.response.body", "body": LOGIN_REQUIRED_HTML})

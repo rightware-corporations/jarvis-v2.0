@@ -25,6 +25,7 @@ VENDOR = ROOT / "vendor" / "openjarvis"
 VENDOR_PATHS = ("pyproject.toml", "uv.lock", "README.md", "LICENSE", "src", "scripts/install", "deploy/windows",
                 "frontend")
 CONFIG = ROOT / "configs" / "gui" / "openjarvis-gui.toml"
+OVERLAY = ROOT / "rightware" / "gui" / "frontend"          # UI-02 RIGHTWARE JARVIS HUD overlay (outside the vendor)
 
 
 def pin() -> str:
@@ -33,7 +34,7 @@ def pin() -> str:
 
 
 def paths(runtime: Path = RUNTIME) -> dict:
-    return {"oj": runtime / "oj", "venv": runtime / "venv", "static": runtime / "static",
+    return {"runtime": runtime, "oj": runtime / "oj", "venv": runtime / "venv", "static": runtime / "static",
             "home": runtime / "home", "python": runtime / "venv" / "bin" / "python",
             "manifest": runtime / "manifest.json", "audit": runtime / "audit.jsonl"}
 
@@ -83,14 +84,40 @@ def setup(runtime: Path = RUNTIME) -> dict:
         raise RuntimeError("NPX_NOT_FOUND")
     fenv = {**os.environ, "VITE_API_URL": "", "VITE_SUPABASE_ANON_KEY": "", "npm_config_update_notifier": "false"}
     _run([npx, "-y", f"npm@{npm_version}", "ci", "--no-audit", "--no-fund"], cwd=fe, env=fenv)
+    stage_overlay(fe)
     shutil.rmtree(p["static"], ignore_errors=True)
-    _run([npx, "-y", f"npm@{npm_version}", "exec", "--", "vite", "build", "--outDir", str(p["static"]),
-          "--emptyOutDir"], cwd=fe, env=fenv)
+    _run([npx, "-y", f"npm@{npm_version}", "exec", "--", "vite", "build", "--config", "rightware/vite.rightware.ts",
+          "--outDir", str(p["static"]), "--emptyOutDir"], cwd=fe, env=fenv)
     p["home"].mkdir(parents=True, exist_ok=True)
     shutil.copyfile(CONFIG, p["home"] / "config.toml")
     n, tree = _tree_sha(p["static"])
     manifest = {"vendor_pin": pin(), "uv_lock_sha256": _sha(p["oj"] / "uv.lock"),
+                "overlay_tree_sha256": _tree_sha(OVERLAY)[1],
                 "package_lock_sha256": _sha(fe / "package-lock.json"), "npm": npm_version,
                 "static_files": n, "static_tree_sha256": tree, "config_sha256": _sha(CONFIG)}
     p["manifest"].write_text(json.dumps(manifest, indent=2) + "\n")
     return manifest
+
+
+def stage_overlay(fe: Path) -> None:
+    """Copy the RIGHTWARE overlay next to the pinned frontend copy (as ``rightware/``), without node_modules."""
+    dest = fe / "rightware"
+    shutil.rmtree(dest, ignore_errors=True)
+    shutil.copytree(OVERLAY, dest, ignore=shutil.ignore_patterns("node_modules", "__pycache__", "*.py"))
+
+
+def frontend_check(runtime: Path = RUNTIME) -> dict:
+    """TypeScript (overlay + the pinned modules it imports) and Vitest (RIGHTWARE + non-replaced upstream tests).
+    Requires a prepared runtime (``setup``)."""
+    fe = paths(runtime)["oj"] / "frontend"
+    if not (fe / "node_modules").is_dir():
+        raise RuntimeError("GUI_RUNTIME_NOT_PREPARED")
+    stage_overlay(fe)
+    npm_version = json.loads((fe / "package.json").read_text())["packageManager"].split("@", 1)[1]
+    npx = shutil.which("npx")
+    results = {}
+    for name, cmd in (("tsc", ["exec", "--", "tsc", "-p", "rightware/tsconfig.json", "--noEmit"]),
+                      ("vitest", ["exec", "--", "vitest", "run", "--config", "rightware/vite.rightware.ts"])):
+        r = subprocess.run([npx, "-y", f"npm@{npm_version}", *cmd], cwd=fe, capture_output=True, text=True)
+        results[name] = {"rc": r.returncode, "tail": (r.stdout + r.stderr)[-3000:]}
+    return results

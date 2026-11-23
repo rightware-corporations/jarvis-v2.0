@@ -1,0 +1,49 @@
+name: RIGHTWARE UI-02 HUD frontend
+
+# UI-02: the RIGHTWARE JARVIS HUD overlay on the PINNED OpenJarvis frontend.
+# Builds the isolated GUI runtime from the vendor pin (uv --frozen + npm ci), then runs:
+#   1. TypeScript (overlay + the pinned modules it imports) and Vitest (RIGHTWARE + non-replaced upstream tests);
+#   2. browser E2E in headless Chromium against labs/ui02/serve_fake.py — FAKE text model and FAKE mission,
+#      every reply labelled [FAKE-CI]. This is interface/contract evidence only, never model evidence.
+on:
+  push:
+    branches: [develop, 'integration/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hud:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare GUI runtime from the pin (uv frozen venv + HUD overlay build)
+        run: |
+          python -m pip install --disable-pip-version-check "uv==0.11.32"
+          python -m rightware.gui setup
+      - name: TypeScript + Vitest (overlay and pinned frontend)
+        run: python -m rightware.gui frontend-check
+      - name: Browser E2E against the FAKE backend (labelled [FAKE-CI])
+        env:
+          UI02_MODE: fake
+          UI02_SESSION_FILE: .runtime/gui/session-url
+        run: |
+          npm install --no-save --no-audit --no-fund --prefix "$RUNNER_TEMP/pw" playwright@1.63.0
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+          PYTHONPATH="$PWD" .runtime/gui/venv/bin/python labs/ui02/serve_fake.py --port 8010 > "$RUNNER_TEMP/fake.log" 2>&1 &
+          for i in $(seq 1 60); do grep -q "Uvicorn running" "$RUNNER_TEMP/fake.log" && break; sleep 1; done
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node labs/ui02/hud_e2e.mjs "$RUNNER_TEMP/e2e" 8010
+      - name: E2E results
+        if: always()
+        run: cat "$RUNNER_TEMP/e2e/results-fake.json" || true

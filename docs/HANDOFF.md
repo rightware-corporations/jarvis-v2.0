@@ -4013,3 +4013,37 @@ Then a single UI-02 branch from `develop`. P3B not started.
 **NEXT FUNCTIONAL FRONT (after UI-02):** WEB-01, real public web research through the RIGHTWARE Gateway with explicit egress policies. First use case: informational Market Intelligence. Network access needs its own authorisation. Then voice, files, authorised local actions and the Shared Intelligence Core.
 
 **LIMITS:** no public deploy, no installs on third-party machines, no paid APIs, no financial operations. P3B not started.
+
+## CHECKPOINT — 23/11/2026: JRV-UI02-IMPL (HUD implemented; Draft PR to `develop`)
+**Branch:** `integration/jrv-ui02-hud-20261123`, created from `develop` `19ab8f7`. Pin `f21d902` unchanged; vendor not written. `main` and PR #27 untouched.
+
+**IMPLEMENTED:** the 10 UI-02 items. Details in `docs/engineering/UI02_HUD.md`.
+- Reproducible overlay, hash-checked: 10 module replacements and 21 declared string patches.
+- JARVIS core driven only by backend state.
+- Missions, Timeline and Capabilities panels.
+- PT-MZ interface with English.
+- Local authentication (`rw_session` cookie, 0600 session URL) and an explicit conversation id.
+- Socket-level inference abort: Ollama logs 499 when Stop is pressed.
+- CPU budget: idle 3.7–4 % (was 241 %).
+- `num_thread` via derived Model Tap models, declared in PARITY.
+- Mission authorisation only by typed code.
+- CI workflow: tsc, Vitest and FAKE browser E2E.
+
+**EVIDENCE:**
+- Real E2E U1–U7: PASS, with the U4 re-run after the abort fix. Run 1 U4 was a false pass; this is disclosed in the doc.
+- **Real goose mission through the HUD: RESULTADO_VERIFICADO.**
+  - `TASK_VERIFIED_LIMITED`; 490 s; Qwen 3.5 4b; `num_thread_pinned=3`.
+  - Evidence in `docs/evidence/ui02/goose-real/`.
+  - This is one verified run only, so the capability stays PARCIAL.
+- CI: UI-02 run 45185214218 failed on U5 because the runner has no Ollama. The FAKE engine probe was fixed in `df46209`, and run 45186592222 passed.
+
+**NEXT:**
+- Review of the UI-02 Draft PR. Merge NOT authorised.
+- WEB-01 plan in `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md`: W0–W2 need no network. W3 (real egress) needs a specific authorisation.
+- P3B not started.
+
+**ADDENDUM (23/11/2026):**
+- Draft PR #31 (`integration/jrv-ui02-hud-20261123` → `develop`) opened.
+- WORK-05 failed once on the PR: `tests/test_ui02_hud.py` did not import without the venv. Fixed in `b1ca2b4`.
+- On `b1ca2b4` all checks passed: WORK-05 45188220888, foundation 45188221272, UI-02 PR 45188220928, UI-02 push 45188208713.
+- Merge NOT authorised.

@@ -1,0 +1,20 @@
+{
+ "mission": "p2-p7ygr7gx",
+ "window_utc": [
+  "13:39:53",
+  "13:48:18"
+ ],
+ "model": "qwen3.5:4b",
+ "num_thread_pinned": [
+  3
+ ],
+ "model_forwarded": [
+  "qwen3.5:4b-rw-t3"
+ ],
+ "chat_requests": 6,
+ "monitor_samples": 69,
+ "host_busy_pct_mean": 58.9,
+ "chromium_top_cpu_pct_mean": 3.1,
+ "chromium_top_cpu_pct_max": 15.9,
+ "note": "Host 4 vCPU; monitor = /proc sampling every ~5 s; chromium value counts only processes that appeared in the per-sample top list (0 when absent)."
+}

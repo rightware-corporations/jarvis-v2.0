@@ -112,6 +112,9 @@ class DockerGooseRunner:
         self.created: list[tuple[str, str]] = []           # (kind, docker id) in creation order
         self.goose_ready = False
         self.gw_image: str | None = None                   # verified image id (sha256:…), set by prepare()
+        # UI-02 R-7: leave one core free so a GUI/browser on the same CPU-only host cannot collapse llama.cpp's
+        # thread barrier (measured ~5x slowdown with one busy core); enforced through the model tap.
+        self.num_thread = max(1, (os.cpu_count() or 2) - 1)
         uid = getattr(os, "getuid", lambda: 0)()
         # Gateway-image containers never run as root: as the (non-root) host user, else the image's own user.
         self.user = GI.RUNTIME_USER if uid == 0 else f"{uid}:{os.getgid()}"
@@ -136,7 +139,8 @@ class DockerGooseRunner:
             "ollama-tap": ["docker", "run", "-d", "--name", N["ollama-tap"], *self._label(), "--network", A,
                            "--network-alias", "ollama-tap", *self._gw(), "rightware.gateway.model_tap",
                            "--upstream", "http://ollama:11434", "--log", "/evidence/model_requests.jsonl",
-                           *sum((["--allow-suffix", "__" + t] for t in GATEWAY_TOOLS), [])],
+                           *sum((["--allow-suffix", "__" + t] for t in GATEWAY_TOOLS), []),
+                           "--num-thread", str(self.num_thread)],
             "fixture": ["docker", "run", "-d", "--name", N["fixture"], *self._label(), "--network", F,
                         "--network-alias", "fixture", *self._gw(), "rightware.gateway.synthetic.site",
                         "--port", "8765", "--bind", "0.0.0.0", "--evidence", "/evidence/http.jsonl"],
@@ -188,7 +192,7 @@ class DockerGooseRunner:
             raise RuntimeError("GOOSE_BINARY_COPY_FAILED")
         self.goose_ready = True
         return {"probe": probe, "goose_container": self.inspect_goose(), "mission": self.mission,
-                "agent_network": self.net["agent"], "gateway_image": self.gw_image,
+                "agent_network": self.net["agent"], "gateway_image": self.gw_image, "num_thread": self.num_thread,
                 "baseline": baseline_problems(self.out)}
 
     def wait_ready(self, timeout: float = 60.0) -> bool:

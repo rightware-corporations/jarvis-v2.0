@@ -139,8 +139,56 @@ class ResponseToolFilter:
         return json.dumps(data).encode("utf-8")
 
 
-def make_handler(upstream: str, log: Path, lock: threading.Lock, allowed_suffixes: tuple[str, ...] = ()):
+# UI-02 (R-7): controlled CPU-thread pinning. Ollama ignores options.num_thread on its OpenAI-compatible endpoint
+# (measured), but honours a model-level parameter. With --num-thread N the tap creates, idempotently and only in the
+# mission's own Ollama, a derived model "<model>-rw-t<N>" (manifest only, same weights) with num_thread=N, and
+# forwards chat requests to it. Both the requested and the forwarded model are logged. Nothing else changes.
+CHAT_PATHS = ("/v1/chat/completions", "/api/chat", "/api/generate")
+
+
+def pin_threads(path: str, body: bytes, num_thread: int, ensure) -> tuple[bytes, dict]:
+    if path.split("?")[0] not in CHAT_PATHS:
+        return body, {}
+    try:
+        data = json.loads(body or b"{}")
+    except ValueError:
+        return body, {}
+    model = data.get("model") if isinstance(data, dict) else None
+    if not isinstance(model, str) or not model or model.endswith(f"-rw-t{num_thread}"):
+        return body, {}
+    derived = f"{model}-rw-t{num_thread}"
+    if not ensure(model, derived):
+        return body, {"num_thread_pinned": False, "model_forwarded": model}       # fail open to the SAME model
+    data["model"] = derived
+    return json.dumps(data).encode("utf-8"), {"num_thread_pinned": num_thread, "model_forwarded": derived}
+
+
+def make_ensure(upstream: str, num_thread: int):
+    u, done, lock = urlsplit(upstream), set(), threading.Lock()
+
+    def ensure(model: str, derived: str) -> bool:
+        with lock:
+            if derived in done:
+                return True
+            try:
+                conn = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=600)
+                conn.request("POST", "/api/create", body=json.dumps({"model": derived, "from": model, "stream": False,
+                                                                     "parameters": {"num_thread": num_thread}}),
+                             headers={"Content-Type": "application/json"})
+                ok = conn.getresponse().status == 200
+                conn.close()
+            except OSError:
+                ok = False
+            if ok:
+                done.add(derived)
+            return ok
+    return ensure
+
+
+def make_handler(upstream: str, log: Path, lock: threading.Lock, allowed_suffixes: tuple[str, ...] = (),
+                 num_thread: int | None = None):
     u = urlsplit(upstream)
+    ensure = make_ensure(upstream, num_thread) if num_thread else None
 
     class Tap(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -151,6 +199,9 @@ def make_handler(upstream: str, log: Path, lock: threading.Lock, allowed_suffixe
                 row = summarise(self.path, body)
                 body, forwarded = filter_tools(body, allowed_suffixes)
                 row["forwarded_tool_names"] = forwarded
+                if ensure is not None:
+                    body, pinned = pin_threads(self.path, body, num_thread, ensure)
+                    row.update(pinned)
                 with lock, log.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(row) + "\n")
             conn = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=1800)
@@ -208,10 +259,14 @@ def main(argv=None):
     p.add_argument("--port", type=int, default=11434)
     p.add_argument("--allow-suffix", action="append", default=[],
                    help="only tools whose name ends with one of these reach the model (RIGHTWARE allowlist)")
+    p.add_argument("--num-thread", type=int, default=None,
+                   help="UI-02: pin the model's CPU threads via a derived model (1..256)")
     a = p.parse_args(argv)
+    if a.num_thread is not None and not 1 <= a.num_thread <= 256:
+        p.error("--num-thread must be 1..256")
     a.log.parent.mkdir(parents=True, exist_ok=True)
     with ThreadingHTTPServer(("0.0.0.0", a.port), make_handler(a.upstream, a.log, threading.Lock(),
-                                                                tuple(a.allow_suffix))) as s:
+                                                                tuple(a.allow_suffix), a.num_thread)) as s:
         s.serve_forever()
 
 

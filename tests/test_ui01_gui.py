@@ -37,7 +37,9 @@ async def call(app, method="GET", path="/", body=b"", headers=None, raw_path=Non
     msgs = [{"type": "http.request", "body": body, "more_body": False}]
 
     async def receive():
-        return msgs.pop(0) if msgs else {"type": "http.disconnect"}
+        if msgs:
+            return msgs.pop(0)
+        await asyncio.Event().wait()                  # a connected client: no disconnect until the response ends
 
     async def send(m):
         sent.append(m)
@@ -111,7 +113,7 @@ class Policy(unittest.TestCase):
         (self.tmp / "static/assets/index-abc.js").write_text("js")
         self.inner, self.bridge = Inner(), Inner()
         self.audit = P.AuditLog(self.tmp / "audit.jsonl")
-        self.app = P.PolicyApp(inner=self.inner, bridge=self.bridge, static_dir=self.tmp / "static", port=PORT,
+        self.app = P.PolicyApp(inner=self.inner, bridge=self.bridge, static_dir=self.tmp / "static", port=PORT, auth=None,
                                audit=self.audit)
 
     def audit_rows(self):
@@ -120,14 +122,18 @@ class Policy(unittest.TestCase):
     def test_allowlist_is_minimal_and_dispatched(self):
         self.assertEqual(set(P.ALLOW), {("GET", "/health"), ("GET", "/v1/info"), ("GET", "/v1/models"),
                                         ("POST", "/v1/chat/completions"), ("GET", "/v1/analytics/identity"),
-                                        ("POST", "/v1/analytics/preference")})
+                                        ("POST", "/v1/analytics/preference"), ("GET", "/v1/rightware/state"),
+                                        ("POST", "/v1/rightware/tasks/request"), ("POST", "/v1/rightware/tasks/authorize"),
+                                        ("POST", "/v1/rightware/tasks/cancel")})
         for (method, path), target in P.ALLOW.items():
             with self.subTest(path=path):
                 status, _, _, _ = run(call(self.app, method, path))
                 self.assertEqual(status, 200)
         self.assertEqual([c[2] for c in self.inner.calls], ["/health", "/v1/info"])
         self.assertEqual(sorted(c[2] for c in self.bridge.calls),
-                         ["/v1/analytics/identity", "/v1/analytics/preference", "/v1/chat/completions", "/v1/models"])
+                         ["/v1/analytics/identity", "/v1/analytics/preference", "/v1/chat/completions", "/v1/models",
+                          "/v1/rightware/state", "/v1/rightware/tasks/authorize", "/v1/rightware/tasks/cancel",
+                          "/v1/rightware/tasks/request"])
 
     def test_static_and_spa_pages_only(self):
         for path in ("/", "/settings", "/logs", "/index.html", "/assets/index-abc.js"):

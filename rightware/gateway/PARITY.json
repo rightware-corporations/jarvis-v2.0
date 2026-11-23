@@ -48,6 +48,26 @@
     [
      "python -m labs.te_p2a_gateway.model_tap",
      "python -m rightware.gateway.model_tap"
+    ],
+    [
+     "def make_handler(upstream: str, log: Path, lock: threading.Lock, allowed_suffixes: tuple[str, ...] = ()):\n    u = urlsplit(upstream)\n",
+     "# UI-02 (R-7): controlled CPU-thread pinning. Ollama ignores options.num_thread on its OpenAI-compatible endpoint\n# (measured), but honours a model-level parameter. With --num-thread N the tap creates, idempotently and only in the\n# mission's own Ollama, a derived model \"<model>-rw-t<N>\" (manifest only, same weights) with num_thread=N, and\n# forwards chat requests to it. Both the requested and the forwarded model are logged. Nothing else changes.\nCHAT_PATHS = (\"/v1/chat/completions\", \"/api/chat\", \"/api/generate\")\n\n\ndef pin_threads(path: str, body: bytes, num_thread: int, ensure) -> tuple[bytes, dict]:\n    if path.split(\"?\")[0] not in CHAT_PATHS:\n        return body, {}\n    try:\n        data = json.loads(body or b\"{}\")\n    except ValueError:\n        return body, {}\n    model = data.get(\"model\") if isinstance(data, dict) else None\n    if not isinstance(model, str) or not model or model.endswith(f\"-rw-t{num_thread}\"):\n        return body, {}\n    derived = f\"{model}-rw-t{num_thread}\"\n    if not ensure(model, derived):\n        return body, {\"num_thread_pinned\": False, \"model_forwarded\": model}       # fail open to the SAME model\n    data[\"model\"] = derived\n    return json.dumps(data).encode(\"utf-8\"), {\"num_thread_pinned\": num_thread, \"model_forwarded\": derived}\n\n\ndef make_ensure(upstream: str, num_thread: int):\n    u, done, lock = urlsplit(upstream), set(), threading.Lock()\n\n    def ensure(model: str, derived: str) -> bool:\n        with lock:\n            if derived in done:\n                return True\n            try:\n                conn = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=600)\n                conn.request(\"POST\", \"/api/create\", body=json.dumps({\"model\": derived, \"from\": model, \"stream\": False,\n                                                                     \"parameters\": {\"num_thread\": num_thread}}),\n                             headers={\"Content-Type\": \"application/json\"})\n                ok = conn.getresponse().status == 200\n                conn.close()\n            except OSError:\n                ok = False\n            if ok:\n                done.add(derived)\n            return ok\n    return ensure\n\n\ndef make_handler(upstream: str, log: Path, lock: threading.Lock, allowed_suffixes: tuple[str, ...] = (),\n                 num_thread: int | None = None):\n    u = urlsplit(upstream)\n    ensure = make_ensure(upstream, num_thread) if num_thread else None\n",
+     "UI-02 R-7 controlled num_thread"
+    ],
+    [
+     "                body, forwarded = filter_tools(body, allowed_suffixes)\n                row[\"forwarded_tool_names\"] = forwarded\n",
+     "                body, forwarded = filter_tools(body, allowed_suffixes)\n                row[\"forwarded_tool_names\"] = forwarded\n                if ensure is not None:\n                    body, pinned = pin_threads(self.path, body, num_thread, ensure)\n                    row.update(pinned)\n",
+     "UI-02 R-7 controlled num_thread"
+    ],
+    [
+     "                   help=\"only tools whose name ends with one of these reach the model (RIGHTWARE allowlist)\")\n    a = p.parse_args(argv)",
+     "                   help=\"only tools whose name ends with one of these reach the model (RIGHTWARE allowlist)\")\n    p.add_argument(\"--num-thread\", type=int, default=None,\n                   help=\"UI-02: pin the model's CPU threads via a derived model (1..256)\")\n    a = p.parse_args(argv)\n    if a.num_thread is not None and not 1 <= a.num_thread <= 256:\n        p.error(\"--num-thread must be 1..256\")",
+     "UI-02 R-7 controlled num_thread"
+    ],
+    [
+     "                                                                tuple(a.allow_suffix))) as s:",
+     "                                                                tuple(a.allow_suffix), a.num_thread)) as s:",
+     "UI-02 R-7 controlled num_thread"
     ]
    ]
   },
