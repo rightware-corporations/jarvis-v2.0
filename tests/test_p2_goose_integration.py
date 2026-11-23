@@ -48,7 +48,7 @@ AGENT = f"jrv-p2-{MID}-agent"
 GOOD_PROBE = {"probe": {"fixture": "BLOCKED URLError", "internet": "BLOCKED URLError", "gateway": "REACHED 405",
                         "non_goose_initialize": "403"},
               "goose_container": {"networks": [AGENT], "mounts": [], "label": MID},
-              "mission": MID, "agent_network": AGENT, "baseline": []}
+              "mission": MID, "agent_network": AGENT, "gateway_image": "sha256:" + "ab" * 32, "baseline": []}
 # Operational success of the goose PROCESS as run_goose reports it (R1 gate 2).
 OK_RUN = {"end": "EXITED", "exit_code": 0, "status": "exited", "seconds": 1.0, "state_copied": True}
 
@@ -208,6 +208,8 @@ class AdapterEvaluation(unittest.TestCase):
             self.assertTrue(G.isolation_problems({**GOOD_PROBE, "goose_container": gc}))
         self.assertTrue(G.isolation_problems({**GOOD_PROBE, "baseline": ["receipts.jsonl: MISSING"]}))
         self.assertTrue(G.isolation_problems({k: v for k, v in GOOD_PROBE.items() if k != "mission"}))
+        self.assertIn("gateway image not verified",
+                      G.isolation_problems({k: v for k, v in GOOD_PROBE.items() if k != "gateway_image"}))
         self.assertEqual(G.isolation_problems(GOOD_PROBE), [])
 
     def test_inconsistent_or_missing_receipts_are_unknown(self):
@@ -372,6 +374,21 @@ class MissionCapability(unittest.TestCase):
                          ["__" + t for t in G.GATEWAY_TOOLS])
         gw = cmds["gateway"]
         self.assertEqual(gw[gw.index("--allow-client") + 1], r.goose_ip)
+        r.gw_image = GOOD_PROBE["gateway_image"]
+        cmds = r.commands()
+        for role, module in (("gateway", "rightware.gateway.mcp_http"), ("ollama-tap", "rightware.gateway.model_tap"),
+                             ("fixture", "rightware.gateway.synthetic.site")):
+            with self.subTest(role=role):                     # P3A: verified image, hardened, no repo mounts
+                c = cmds[role]
+                self.assertEqual(c[c.index("python") - 1], r.gw_image)
+                self.assertEqual(c[c.index("-m") + 1], module)
+                self.assertEqual([c[i + 1] for i, a in enumerate(c) if a == "-v"],
+                                 [f"{Path('/tmp/p2-x').resolve()}:/evidence"])
+                self.assertNotEqual(c[c.index("--user") + 1].split(":")[0], "0")
+                for flag in ("--read-only", "no-new-privileges"):
+                    self.assertIn(flag, c)
+                self.assertEqual(c[c.index("--cap-drop") + 1], "ALL")
+        self.assertFalse(any("labs" in a for c in cmds.values() for a in c))
         for role, c in cmds.items():                          # every resource is named AND labelled per mission
             with self.subTest(role=role):
                 self.assertEqual(c[c.index("--name") + 1], f"jrv-p2-{MID}-{role}")
@@ -501,6 +518,7 @@ class DockerRunnerR1(unittest.TestCase):
         r = G.DockerGooseRunner(self.rt, self.out, mission_id=mid)
         self.patch = mock.patch.object(G, "sh", side_effect=docker)
         self.patch.start()
+        mock.patch.object(G.GI, "local_image", return_value=GOOD_PROBE["gateway_image"]).start()
         self.addCleanup(self.patch.stop)
         mock.patch.object(G.time, "sleep").start()
         self.addCleanup(mock.patch.stopall)
