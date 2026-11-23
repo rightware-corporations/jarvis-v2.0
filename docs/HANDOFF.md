@@ -4075,3 +4075,9 @@ Then a single UI-02 branch from `develop`. P3B not started.
 - No Market Intelligence (W4).
 
 **Environment note:** Ollama on the host was found stopped (host restart). WEB-01 W0–W2 does not need the model.
+
+**ADDENDUM (23/11/2026):**
+- Draft PR #32 (stacked on the UI-02 branch) is open at `9a3e391`.
+- UI-02 HUD frontend CI passed: PR run 45196332174 and push run 45196270568. These cover tsc, Vitest and E2E U1–U8.
+- WORK-05 and foundation only run on PRs whose base is `develop`/`main`, so they have NOT run on #32. The Python suite was run locally only (venv 714 OK, 0 skips). Both will run once #32 is retargeted to `develop` after #31.
+- Merge NOT authorised.
