@@ -4041,3 +4041,9 @@ Then a single UI-02 branch from `develop`. P3B not started.
 - Review of the UI-02 Draft PR. Merge NOT authorised.
 - WEB-01 plan in `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md`: W0–W2 need no network. W3 (real egress) needs a specific authorisation.
 - P3B not started.
+
+**ADDENDUM (23/11/2026):**
+- Draft PR #31 (`integration/jrv-ui02-hud-20261123` → `develop`) opened.
+- WORK-05 failed once on the PR: `tests/test_ui02_hud.py` did not import without the venv. Fixed in `b1ca2b4`.
+- On `b1ca2b4` all checks passed: WORK-05 45188220888, foundation 45188221272, UI-02 PR 45188220928, UI-02 push 45188208713.
+- Merge NOT authorised.
