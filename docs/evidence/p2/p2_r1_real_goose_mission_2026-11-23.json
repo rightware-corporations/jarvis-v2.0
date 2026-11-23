@@ -1,0 +1,207 @@
+{
+  "kind": "REAL supervised goose mission through the product console after JRV-P2-R1 fixes (N=1)",
+  "date": "2026-11-23",
+  "code_sha": "1b292bb7f7a1da73a866f25570cb60476a72d1c6",
+  "tracked_tree_dirty": false,
+  "conditions": {
+    "goose": "1.60.1 sha256 4db5cf70…",
+    "goose_model": "qwen3.5:4b",
+    "ollama": "0.40.15 (internal-network container)",
+    "docker": "29.9.2",
+    "hardware": "CPU, no GPU",
+    "catalogue": "synthetic fixture (same as P2)"
+  },
+  "console_exit_code": 0,
+  "total_seconds": 386.55,
+  "steps": [
+    {
+      "input": "/tarefas",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": []
+    },
+    {
+      "input": "/tarefa pesquisa-fixture-goose",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": [
+        "Autorização necessária — nada foi executado ainda"
+      ]
+    },
+    {
+      "input": "/autorizar <código mostrado pelo anfitrião>",
+      "seconds": 386.34,
+      "end": "PROMPT",
+      "labels": [
+        "Tarefa em execução",
+        "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+        "{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}",
+        "\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/terralens-factsheet\""
+      ]
+    },
+    {
+      "input": "/estado",
+      "seconds": 0.0,
+      "end": "PROMPT",
+      "labels": []
+    },
+    {
+      "input": "/sair",
+      "seconds": 0.08,
+      "end": "EOF",
+      "labels": []
+    }
+  ],
+  "mission_id": "6504e508",
+  "isolation": {
+    "probe": {
+      "fixture": "BLOCKED URLError",
+      "internet": "BLOCKED URLError",
+      "gateway": "REACHED 405",
+      "non_goose_initialize": "403"
+    },
+    "goose_container": {
+      "networks": [
+        "jrv-p2-6504e508-agent"
+      ],
+      "mounts": [],
+      "ip": "172.30.121.10",
+      "label": "6504e508"
+    },
+    "mission": "6504e508",
+    "agent_network": "jrv-p2-6504e508-agent",
+    "baseline": []
+  },
+  "process": {
+    "end": "EXITED",
+    "exit_code": 0,
+    "status": "exited",
+    "seconds": 356.8,
+    "state_copied": true
+  },
+  "process_ok": true,
+  "verdict": "TASK_VERIFIED_LIMITED",
+  "objectives": [
+    [
+      "CATALOG",
+      "PAGE_OBSERVED",
+      2
+    ],
+    [
+      "ATLASBOARD",
+      "PAGE_OBSERVED",
+      5
+    ],
+    [
+      "NOVAVIEW",
+      "PAGE_OBSERVED",
+      3
+    ],
+    [
+      "TERRALENS_FACTSHEET",
+      "PAGE_OBSERVED",
+      6
+    ]
+  ],
+  "recovered_from_503": true,
+  "http_receipt_correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+  },
+  "receipt_defects": [],
+  "report_semantic": {
+    "semantic_gate": "PASS",
+    "recommended": "TerraLens",
+    "products_found": [
+      "atlasboard",
+      "novaview",
+      "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [],
+    "factsheet_source_cited": true
+  },
+  "chain_check": {
+    "valid": true,
+    "problems": [],
+    "submissions": 1,
+    "accepted": 1
+  },
+  "violations": [],
+  "executed_calls": [
+    "gateway_8790_mcp__web_open",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__submit_report"
+  ],
+  "forwarded_tools": [
+    "gateway_8790_mcp__submit_report",
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open"
+  ],
+  "inventory_seen": true,
+  "calls_match_receipts": true,
+  "evidence_gaps": [],
+  "blocked_in_model_output": [],
+  "state": "RESULTADO_VERIFICADO",
+  "error_code": "NONE",
+  "transport_rejections": [
+    {
+      "client": "172.30.121.5",
+      "code": 403,
+      "reason": "client not allowed"
+    },
+    {
+      "client": "172.30.121.10",
+      "code": 400,
+      "reason": "not initialized"
+    }
+  ],
+  "transport_rejections_note": "403 = the isolation probe's non-goose initialize (forced Gateway baseline dump, before goose existed); 400 'not initialized' = one goose request before its MCP initialize, refused by the Gateway (no tool executed).",
+  "docker_ownership": {
+    "external_resources_before": [
+      "02b6bd8012c48b3056b115f626eb453a976ad995fe01c2b6a49984163a98b1ff fixture Up 1 second",
+      "f037c3552cba949d1795138243070b5348f2286267ccd309fdd2c432211eb05b jrv-p2-decoy-gateway Created",
+      "86d0635e25cd2bb32db850314e0cfd171f713f0c80ff4f3600d3a3466768abd5 ollama-tap Created",
+      "ea78da63b3e93f6fb6c5d75a3462d98e03742225772eeb778d30c722bd345133 goose Created",
+      "38c530f931ee84b914274c15320c6cacd00b33e7bb7affaee8acbc36250cc2b7 gateway Created",
+      "2c2fb2917d8cb7492ebe6af97854b0442530a701ed13b425d623985bb5f54752 bridge",
+      "d9387f63ef5095e7d558a0a00710c027ccf813fb0a08f94fac12968c8a0c7d0a host",
+      "8d3671dffd73ca361ae0431ece9019b8323759d223dd6808c1fd437b069fb4d6 jrv-internal",
+      "d51ed550edcd3019565172ef0c545ccb9cc47cc0429a3a9e2a1f5905a1dba42e jrv-probe",
+      "afa28930e352e7e59ee70be110c54b749c4c48ced5b90c7c152392c9aa30704f none"
+    ],
+    "external_resources_after": [
+      "02b6bd8012c48b3056b115f626eb453a976ad995fe01c2b6a49984163a98b1ff fixture Up 6 minutes",
+      "f037c3552cba949d1795138243070b5348f2286267ccd309fdd2c432211eb05b jrv-p2-decoy-gateway Created",
+      "86d0635e25cd2bb32db850314e0cfd171f713f0c80ff4f3600d3a3466768abd5 ollama-tap Created",
+      "ea78da63b3e93f6fb6c5d75a3462d98e03742225772eeb778d30c722bd345133 goose Created",
+      "38c530f931ee84b914274c15320c6cacd00b33e7bb7affaee8acbc36250cc2b7 gateway Created",
+      "2c2fb2917d8cb7492ebe6af97854b0442530a701ed13b425d623985bb5f54752 bridge",
+      "d9387f63ef5095e7d558a0a00710c027ccf813fb0a08f94fac12968c8a0c7d0a host",
+      "8d3671dffd73ca361ae0431ece9019b8323759d223dd6808c1fd437b069fb4d6 jrv-internal",
+      "d51ed550edcd3019565172ef0c545ccb9cc47cc0429a3a9e2a1f5905a1dba42e jrv-probe",
+      "afa28930e352e7e59ee70be110c54b749c4c48ced5b90c7c152392c9aa30704f none"
+    ],
+    "identical_ids_and_names": true,
+    "note": "Decoys created by the operator before the run: containers gateway, goose, ollama-tap, jrv-p2-decoy-gateway (created) and fixture (running), plus pre-existing networks jrv-internal/jrv-probe. During the run only jrv-p2-6504e508-* containers/networks labelled rightware.jarvis.mission=6504e508 existed for the mission; after the run all of them were gone and every external resource kept its id and state."
+  },
+  "evidence_files_sha256": {
+    "audit.jsonl": "4cebad3d3fbe995fc1bda366f6962341af450ca69f950607bf11d53ac458108e",
+    "http.jsonl": "feab62322d172129df83f30bde5a65c19a21e48de89989ea2c461cfed4d8e940",
+    "model_requests.jsonl": "680b10726afb50f1ca3a8da84acf40d3638a976a73111b7044ec6a8da630afb7",
+    "receipts.jsonl": "6c524450a8c25759b2e7aaf1cc24ad75e4a7872874972f7ed8a42c9e04e3e138",
+    "submission_chain.jsonl": "303fbbfd20c3ef0c2264907e8ba9e3a13fdae65d1d207cd4e9e214fec1450190",
+    "submissions.jsonl": "e71eab918ed01201497bf9e29aeeda76db0c07b688a32a5ae5d78d54cb0b8879",
+    "submitted_texts.jsonl": "e71eab918ed01201497bf9e29aeeda76db0c07b688a32a5ae5d78d54cb0b8879",
+    "transport_rejections.jsonl": "7ec1271864c63e8abb85c8d5c68f4e1e37528bdc331e246b24f578d9c239aa9f",
+    "verification.json": "3523563a0356a29d8bc6e5168d738498f189418a50683a31b39406b33b39bd15"
+  },
+  "evidence_dir": "local only (.runtime/, not committed)"
+}

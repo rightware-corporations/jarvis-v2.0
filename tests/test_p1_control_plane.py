@@ -101,7 +101,7 @@ class DefaultAndRouting(_CP):
     def test_independent_sessions_and_codes(self):
         a, b = self.plane(), self.plane()
         _, code_a = a.request(CP.TRIAL_COMPARE)
-        self.assertEqual(b.authorize_and_run(code_a), CP.State.TAREFA_NAO_AUTORIZADA)
+        self.assertEqual(b.authorize_and_run(code_a), CP.Refusal(CP.State.TAREFA_NAO_AUTORIZADA, "CODE_INVALID"))
         self.assertNotEqual(a.session, b.session)
         self.assertIsInstance(a.authorize_and_run(code_a), CP.TaskOutcome)
 
@@ -111,14 +111,14 @@ class Authorization(_CP):
         now = [0.0]
         cp = self.plane(clock=lambda: now[0])
         _, code = cp.request(CP.TRIAL_COMPARE)
-        self.assertEqual(cp.authorize_and_run("000000"), CP.State.TAREFA_NAO_AUTORIZADA)
-        self.assertEqual(cp.authorize_and_run(code), CP.State.TAREFA_NAO_AUTORIZADA)   # consumed by the wrong try
+        self.assertEqual(cp.authorize_and_run("000000"), CP.Refusal(CP.State.TAREFA_NAO_AUTORIZADA, "CODE_INVALID"))
+        self.assertEqual(cp.authorize_and_run(code), CP.Refusal(CP.State.TAREFA_NAO_AUTORIZADA, "CODE_INVALID"))   # consumed by the wrong try
         _, code = cp.request(CP.TRIAL_COMPARE)
         now[0] += CP.CODE_TTL_SECONDS + 1
-        self.assertEqual(cp.authorize_and_run(code), CP.State.TAREFA_NAO_AUTORIZADA)   # expired
+        self.assertEqual(cp.authorize_and_run(code), CP.Refusal(CP.State.TAREFA_NAO_AUTORIZADA, "CODE_INVALID"))   # expired
         _, code = cp.request(CP.TRIAL_COMPARE)
         self.assertIsInstance(cp.authorize_and_run(code.lower()), CP.TaskOutcome)
-        self.assertEqual(cp.authorize_and_run(code), CP.State.TAREFA_NAO_AUTORIZADA)   # single use
+        self.assertEqual(cp.authorize_and_run(code), CP.Refusal(CP.State.TAREFA_NAO_AUTORIZADA, "CODE_INVALID"))   # single use
         self.assertEqual(cp.request("ler-documentos-reais"), (CP.State.TAREFA_NAO_AUTORIZADA, ""))
         self.assertEqual(len(self.made), 1)
         self.assertEqual([e["event"] for e in cp.audit].count("authorized"), 1)
@@ -127,7 +127,7 @@ class Authorization(_CP):
         def widen(kw, ws):
             return {**kw, "budgets": Budgets(max_calls=50, deadline_seconds=60)}
         cp = self.plane(mutate=widen)
-        self.assertEqual(self.run_ok(cp), CP.State.TAREFA_NAO_AUTORIZADA)
+        self.assertEqual(self.run_ok(cp), CP.Refusal(CP.State.TAREFA_NAO_AUTORIZADA, "ENVELOPE_REFUSED"))
 
 
 class Outcomes(_CP):

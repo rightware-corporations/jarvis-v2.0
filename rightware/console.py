@@ -15,6 +15,7 @@ session is closed and the local adapter released. This is an experimental E0 ent
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 import re
 import sys
 import threading
@@ -111,7 +112,13 @@ class Console:
     def banner(self) -> None:
         self.say(IDENTITY)
         self.say(f"Modelo local: {self.model} (Ollama neste computador).")
-        self.say(LIMITS_LINE)
+        caps = self.control.capabilities if self.control is not None else ()
+        if caps:                                        # JRV-P2 fix 3: say what is REALLY active
+            self.say("Modo com tarefas supervisionadas: o anfitrião activou " + ", ".join(caps) + ". Cada execução "
+                     "exige /tarefa e /autorizar com um código de uso único; fora disso não há ferramentas. "
+                     "Sem memória persistente. As respostas do modelo NÃO são factos verificados.")
+        else:
+            self.say(LIMITS_LINE)
         self.say("Escreve /ajuda para ver os comandos.")
 
     # -- host commands --------------------------------------------------------------------------
@@ -140,13 +147,12 @@ class Console:
 
     # -- JRV-P1 supervised tasks (host commands only) ------------------------------------------------
     def task_list(self) -> None:
-        from rightware.control_plane import CAPABILITY_TEXT
         caps = self.control.capabilities if self.control is not None else ()
         if not caps:
             self.say("Nenhuma tarefa supervisionada foi activada pelo anfitrião nesta sessão.")
             return
         for c in caps:
-            self.say(f"  {c}: {CAPABILITY_TEXT[c]}")
+            self.say(f"  {c}: {self.control.describe(c)}")
         self.say("Para pedir: /tarefa ID. Nada é executado sem /autorizar com o código mostrado.")
 
     def task_request(self, capability: str) -> None:
@@ -158,8 +164,7 @@ class Console:
         state, code = self.control.request(capability)
         self.say(f"[{LABELS[state]}]")
         if state == State.AUTORIZACAO_NECESSARIA:
-            from rightware.control_plane import CAPABILITY_TEXT
-            self.say(CAPABILITY_TEXT[capability])
+            self.say(self.control.describe(capability))
             self.say(f"Para autorizar esta execução escreve exactamente: /autorizar {code}  (uso único, 2 minutos)")
         else:
             self.say("Essa tarefa não existe ou não foi activada pelo anfitrião.")
@@ -171,8 +176,12 @@ class Console:
             return
         box: dict = {}
         on_start = lambda: self.say(f"[{LABELS[State.TAREFA_EM_EXECUCAO]}] (Ctrl+C cancela)")
-        worker = threading.Thread(target=lambda: box.update(r=self.control.authorize_and_run(code, on_start)),
-                                  daemon=True, name="jarvis-p1-task")
+        def work():
+            try:
+                box["r"] = self.control.authorize_and_run(code, on_start)
+            except BaseException as exc:                # never shown as an authorization problem
+                box["error"] = type(exc).__name__
+        worker = threading.Thread(target=work, daemon=True, name="jarvis-p1-task")
         self._busy.set()
         worker.start()
         cancel_pending = False
@@ -186,10 +195,18 @@ class Console:
                     cancel_pending = False
         finally:
             self._busy.clear()
+        from rightware.control_plane import Refusal
         outcome = box.get("r")
-        if not isinstance(outcome, TaskOutcome):
-            self.say(f"[{LABELS[State.TAREFA_NAO_AUTORIZADA]}]")
-            self.say("Código inválido, expirado ou já usado. Nada foi executado.")
+        if "error" in box or (outcome is not None and not isinstance(outcome, (TaskOutcome, Refusal))):
+            self.say(f"[{LABELS[State.EXECUCAO_FALHADA]}]")      # JRV-P2 fix 4: failure, not "invalid code"
+            self.say("Erro interno do anfitrião ao executar a tarefa. Nenhum resultado foi verificado.")
+            return
+        if isinstance(outcome, Refusal):
+            self.say(f"[{LABELS[outcome.state]}]")
+            self.say({"CODE_INVALID": "Código inválido, expirado ou já usado. Nada foi executado.",
+                      "BUSY": "Já há uma tarefa em execução. Nada foi iniciado.",
+                      "ENVELOPE_REFUSED": "O executor não estava dentro do envelope aprovado. Nada foi executado."}
+                     .get(outcome.reason, "Nada foi executado."))
             return
         self.say(f"[{LABELS[outcome.state]}]")
         self.say(f"Estado do executor: {outcome.operational_state} · recibos: {outcome.receipts_count} · "
@@ -199,7 +216,7 @@ class Console:
                      + ", ".join(f"#{q} {t} {st}" for q, t, st in outcome.receipt_events))
         for oid, st, seq in outcome.objectives:
             self.say(f"  objectivo {oid}: {st}" + (f" (recibo #{seq})" if seq else ""))
-        if outcome.verified:
+        if outcome.verified and outcome.changes:      # only executors that produce code-computed changes (P1)
             self.say("Alterações (calculadas pelo código e confirmadas pelo verificador):")
             for c in outcome.changes:
                 self.say("  " + _change_line(c))
@@ -214,7 +231,10 @@ class Console:
         elif line == "/estado":
             self.say(self.status_text())
         elif line == "/capacidades":
-            self.say(CAPABILITIES)
+            self.say(CAPABILITIES if not (self.control is not None and self.control.capabilities) else
+                     CAPABILITIES.replace("  - ferramentas de qualquer tipo", "  - ferramentas fora das tarefas abaixo")
+                     + "\nTarefas supervisionadas activadas pelo anfitrião (só com /tarefa + /autorizar):\n"
+                     + "\n".join(f"  - {c}: {self.control.describe(c)}" for c in self.control.capabilities))
         elif line == "/cancelar":
             self.say("Pedido cancelado." if self.cancel() else
                      "Não há nenhum pedido em curso. Nada a cancelar — e nada a desfazer: esta consola não executa acções.")
@@ -340,12 +360,19 @@ def build(model: str, adapter=None, deadline_seconds: float = 30.0) -> TaskEntry
     return TaskEntry(TextFacade(adapter=adapter, deadline_seconds=deadline_seconds))
 
 
-def main(argv=None, *, adapter=None, input_fn=input, out=sys.stdout, session_factory_builder=None) -> int:
+def main(argv=None, *, adapter=None, input_fn=input, out=sys.stdout, session_factory_builder=None,
+         goose_mission=None) -> int:
     parser = argparse.ArgumentParser(description="JARVIS — consola textual local (E0, experimental, sem ferramentas)")
     parser.add_argument("--model", default="qwen3.5:2b", help="modelo Ollama local já instalado")
     parser.add_argument("--deadline", type=float, default=30.0, help="limite por resposta, em segundos (1–300)")
     parser.add_argument("--tarefa-ensaio", action="store_true",
                         help="ANFITRIÃO: activa a única tarefa supervisionada (comparação de 2 ficheiros SINTÉTICOS)")
+    parser.add_argument("--missao-goose", action="store_true",
+                        help="ANFITRIÃO (experimental): activa a missão goose num catálogo SINTÉTICO isolado em Docker")
+    parser.add_argument("--goose-bin", type=Path, help="ANFITRIÃO: binário goose verificado")
+    parser.add_argument("--goose-ollama-dir", type=Path, help="ANFITRIÃO: directório do Ollama para o contentor")
+    parser.add_argument("--goose-models-dir", type=Path, help="ANFITRIÃO: directório de modelos do Ollama")
+    parser.add_argument("--goose-model", default="qwen3.5:4b", help="modelo do goose (local)")
     args = parser.parse_args(argv)
     if not 1.0 <= args.deadline <= 300.0:
         parser.error("--deadline deve estar entre 1 e 300 segundos")
@@ -355,10 +382,18 @@ def main(argv=None, *, adapter=None, input_fn=input, out=sys.stdout, session_fac
         print(f"ERRO: {exc}", file=sys.stderr)
         return 1
     control = None
-    if args.tarefa_ensaio or session_factory_builder is not None:
+    goose = goose_mission
+    if args.missao_goose and goose is None:
+        if not (args.goose_bin and args.goose_ollama_dir and args.goose_models_dir):
+            parser.error("--missao-goose exige --goose-bin, --goose-ollama-dir e --goose-models-dir (anfitrião)")
+        from rightware.goose_adapter import GooseMission, GooseRuntime
+        goose = GooseMission(GooseRuntime(args.goose_bin, args.goose_ollama_dir, args.goose_models_dir,
+                                          args.goose_model))
+    trial = args.tarefa_ensaio or session_factory_builder is not None
+    if trial or goose is not None:
         from rightware.control_plane import ControlPlane
-        control = ControlPlane(entry.text_facade, enable_trial_compare=True, model=args.model,
-                               session_factory_builder=session_factory_builder)
+        control = ControlPlane(entry.text_facade, enable_trial_compare=trial, model=args.model,
+                               session_factory_builder=session_factory_builder, goose=goose)
         entry = control.entry
     return Console(entry, args.model, out, control).run(input_fn)
 
