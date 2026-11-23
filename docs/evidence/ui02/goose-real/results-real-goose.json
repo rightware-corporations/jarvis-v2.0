@@ -1,0 +1,96 @@
+[
+  {
+    "id": "U7",
+    "action": "Missão supervisionada pela HUD (pesquisa-fixture-goose) só com o código escrito",
+    "expected": "sem código → 400; botão desactivado sem código; código errado recusado; código certo executa; resultado do verificador",
+    "obtained": {
+      "noCode": {
+        "status": 400,
+        "body": {
+          "error": "CODIGO_EM_FALTA_OU_INVALIDO",
+          "state": "TAREFA_NAO_AUTORIZADA"
+        }
+      },
+      "disabledBefore": true,
+      "wrong": "inválido, expirado ou já usado. Nada foi executado.",
+      "last": {
+        "state": "RESULTADO_VERIFICADO",
+        "label": "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+        "verified": true,
+        "capability": "pesquisa-fixture-goose",
+        "operational_state": "TASK_VERIFIED_LIMITED",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_open",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_follow",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_follow",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_follow",
+            "status": "HTTP_ERROR"
+          },
+          {
+            "seq": 5,
+            "tool": "web_follow",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_follow",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "submit_report",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "CATALOG",
+            "status": "PAGE_OBSERVED",
+            "receipt": 2
+          },
+          {
+            "id": "ATLASBOARD",
+            "status": "PAGE_OBSERVED",
+            "receipt": 3
+          },
+          {
+            "id": "NOVAVIEW",
+            "status": "PAGE_OBSERVED",
+            "receipt": 5
+          },
+          {
+            "id": "TERRALENS_FACTSHEET",
+            "status": "PAGE_OBSERVED",
+            "receipt": 6
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "Relatório submetido pelo goose (texto do modelo; o veredicto vem do verificador): {\"report_schema_version\":\"te-p2b.report.v1\",\"recommendation\":\"TerraLens\",\"products\":[{\"name\":\"AtlasBoard\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":false,\"price_usd_month\":0},{\"name\":\"NovaView\",\"mac_support\":true,\"csv_support\":true,\"offline\":false,\"scheduled_automation\":true,\"price_usd_month\":9},{\"name\":\"TerraLens\",\"mac_support\":true,\"csv_support\":true,\"offline\":true,\"scheduled_automation\":true,\"price_usd_month\":12}],\"sources\":[\"https://catalog.fixture.example/\",\"https://catalog.fixture.example/catalog\",\"https://catalog.fixture.example/vendors/atlasboard\",\"https://catalog.fixture.example/vendors/novaview\",\"https://catalog.fixture.example/vendors/terralens-factsheet\"]}",
+        "seconds": 490.27,
+        "error_code": "NONE",
+        "halt": "NONE"
+      },
+      "timeline": "Resultado verificado por evidência (recibos + verificador RIGHTWARE) · TASK_VERIFIED_LIMITED · 490.3 s\nDecidido pelos recibos e pelo verificador RIGHTWARE\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_open OK\n#2 web_follow OK\n#3 web_follow OK\n#4 web_follow HTTP_ERROR\n#5 web_follow OK\n#6 web_follow OK\n#7 submit_report OK\nOBJECTIVOS\nCATALOG: PAGE_OBSERVED (#2)\nATLASBOARD: PAGE_OBSERVED (#3)\nNOVAVIEW: PAGE_OBSERVED (#5)\nTERRALENS_FACTSHEET: PAGE_OBSERVED (#6)\n⚠ COMENTÁRIO DO MODELO — NÃO VERIFICADO (NÃO É EVIDÊNCIA)\nRelatório submetido pelo goose (texto do modelo; o veredicto vem do verificador): {\"rep"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui02/goose/u7-mission-running-pesquisa-fixture-goose.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/ui02/goose/u7-mission-result-pesquisa-fixture-goose.png"
+    ],
+    "pass": true,
+    "mode": "real"
+  }
+]

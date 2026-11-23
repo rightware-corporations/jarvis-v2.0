@@ -52,7 +52,33 @@ Classificação das afirmações: **FACTO** (medido ou testado neste host ou em 
   - Declarado em `PARITY.json` com o motivo "UI-02 R-7 controlled num_thread"; `model_requests.jsonl` regista `num_thread_pinned` e `model_forwarded`.
 
 ## 4. Missão goose real pela GUI
-**PENDENTE (23/11/2026 13:44 UTC):** missão `pesquisa-fixture-goose` autorizada pela HUD com código escrito e em execução com Qwen 3.5 4b (`num_thread_pinned=3`, modelo `qwen3.5:4b-rw-t3`). Resultado a registar aqui; nenhum sucesso é assumido antes do veredicto do verificador.
+**FACTO: RESULTADO VERIFICADO.** Missão `pesquisa-fixture-goose` (p2-p7ygr7gx), em 23/11/2026, das 13:39:53 às 13:48:18 UTC, com o Qwen 3.5 4b real no Ollama local.
+- **Pedido e autorização na HUD (Missões), no Chromium:**
+  - sem código: 400;
+  - botão desactivado até haver um código válido;
+  - código `000000`: recusado ("inválido… Nada foi executado");
+  - o código correcto, escrito, iniciou a missão.
+- **Veredicto do verificador RIGHTWARE:** `TASK_VERIFIED_LIMITED`; `verified=true`; 490,3 s.
+  - 7 recibos: `web_open`, 5×`web_follow` (um `HTTP_ERROR` recuperado de 503), `submit_report`.
+  - 4/4 objectivos `PAGE_OBSERVED`.
+  - Correspondência HTTP↔recibos: 6/6.
+  - Gate semântico do relatório: PASS.
+  - Cadeia de submissão válida; 0 violações.
+  - Isolamento confirmado: a fixture e a Internet estão BLOQUEADAS para o contentor goose; só o Gateway é alcançável.
+- **`num_thread`:** todos os 6 pedidos de chat com `num_thread_pinned=3` e `model_forwarded=qwen3.5:4b-rw-t3`.
+- **CPU durante a missão:**
+  - anfitrião (4 vCPU): 58,9 % em média;
+  - Chromium com a HUD aberta: 3,1 % em média, máximo 15,9 %.
+- **Evidência:** `docs/evidence/ui02/goose-real/`:
+  - `results-real-goose.json`;
+  - `verification.json`;
+  - `cpu_threads_summary.json`;
+  - capturas de ecrã "em execução" e "resultado".
+- **Limites honestos:**
+  - É **uma** execução verificada. Na UI-01 houve 4 tentativas pela GUI sem verificação, antes das mitigações R-7.
+  - Uma execução não estabelece taxa de sucesso, por isso a capacidade continua marcada **PARCIAL** na HUD.
+  - O catálogo é SINTÉTICO (fixture isolada), não é Internet pública.
+  - A captura "em execução" foi tirada 2,5 s após o clique, antes de o pedido de autorização regressar (≤ 3 s); por isso ainda mostra o estado anterior (recusa do código errado). Não é um erro de execução.
 
 ## 5. Testes e CI
 - **Python:** `vendor/openjarvis/.venv/bin/python -m unittest discover -s tests`, com `tests/test_ui02_hud.py` novo e `tests/test_ui01_gui.py` actualizado.

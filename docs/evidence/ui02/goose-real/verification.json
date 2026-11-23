@@ -1,0 +1,102 @@
+{
+  "run": {
+    "end": "EXITED",
+    "exit_code": 0,
+    "status": "exited",
+    "seconds": 479.4,
+    "state_copied": true
+  },
+  "isolation": {
+    "probe": {
+      "fixture": "BLOCKED URLError",
+      "internet": "BLOCKED URLError",
+      "gateway": "REACHED 405",
+      "non_goose_initialize": "403"
+    },
+    "goose_container": {
+      "networks": [
+        "jrv-p2-dee10eb2-agent"
+      ],
+      "mounts": [],
+      "ip": "172.30.42.10",
+      "label": "dee10eb2"
+    },
+    "mission": "dee10eb2",
+    "agent_network": "jrv-p2-dee10eb2-agent",
+    "gateway_image": "sha256:3343f0071801ad1a6df2ef138c52cac131ba0b49720928507ed69538419a654a",
+    "num_thread": 3,
+    "baseline": []
+  },
+  "process_ok": true,
+  "verdict": "TASK_VERIFIED_LIMITED",
+  "objectives": [
+    [
+      "CATALOG",
+      "PAGE_OBSERVED",
+      2
+    ],
+    [
+      "ATLASBOARD",
+      "PAGE_OBSERVED",
+      3
+    ],
+    [
+      "NOVAVIEW",
+      "PAGE_OBSERVED",
+      5
+    ],
+    [
+      "TERRALENS_FACTSHEET",
+      "PAGE_OBSERVED",
+      6
+    ]
+  ],
+  "recovered_from_503": true,
+  "http_receipt_correspondence": {
+    "match": true,
+    "first_mismatch_index": null,
+    "receipt_requests": 6,
+    "fixture_requests": 6
+  },
+  "receipt_defects": [],
+  "report_semantic": {
+    "semantic_gate": "PASS",
+    "recommended": "TerraLens",
+    "products_found": [
+      "atlasboard",
+      "novaview",
+      "terralens"
+    ],
+    "values_complete_for_all_three": true,
+    "value_errors": [],
+    "factsheet_source_cited": true
+  },
+  "chain_check": {
+    "valid": true,
+    "problems": [],
+    "submissions": 1,
+    "accepted": 1
+  },
+  "violations": [],
+  "executed_calls": [
+    "gateway_8790_mcp__web_open",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__submit_report"
+  ],
+  "forwarded_tools": [
+    "gateway_8790_mcp__submit_report",
+    "gateway_8790_mcp__web_find",
+    "gateway_8790_mcp__web_follow",
+    "gateway_8790_mcp__web_open"
+  ],
+  "inventory_seen": true,
+  "calls_match_receipts": true,
+  "evidence_gaps": [],
+  "blocked_in_model_output": [],
+  "state": "RESULTADO_VERIFICADO",
+  "error_code": "NONE"
+}
