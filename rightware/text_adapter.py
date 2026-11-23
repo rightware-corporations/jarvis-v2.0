@@ -84,6 +84,22 @@ class LocalSimpleTextAdapter:
         )
         return self._agent
 
+    def abort(self) -> bool:
+        """UI-02 (R-4): stop an in-flight generation. Closing the engine's HTTP client drops the connection, which
+        makes Ollama stop generating; the running ``reply`` then fails (its result is already discarded by the
+        facade as CANCELLED/TIMEOUT) and releases the lock. The next call builds a fresh engine and agent.
+        Deliberately lock-free: the lock is held by the very call being aborted."""
+        engine, self._engine, self._agent = self._engine, None, None
+        if engine is None:
+            return False
+        close = getattr(engine, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:                          # the request in flight may already be failing
+                pass
+        return True
+
     def reply(self, text: str, history: tuple[tuple[str, str], ...]) -> str:
         with self._lock:
             agent = self._ensure_agent()

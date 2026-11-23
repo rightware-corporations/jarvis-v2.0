@@ -50,7 +50,8 @@ def main(argv=None) -> int:
     from rightware.gui.server import build_app, serve
     app, _ = build_app(port=a.port, models=a.model or ["qwen3.5:2b"], deadline=a.deadline, trial=a.tarefa_ensaio,
                        goose=goose)
-    print(f"JARVIS (interface OpenJarvis original + runtime RIGHTWARE): http://127.0.0.1:{a.port}/", flush=True)
+    print("JARVIS (RIGHTWARE JARVIS HUD sobre a interface OpenJarvis original), só em 127.0.0.1.", flush=True)
+    print(f"Abra esta ligação de sessão local (uso pelo operador; não partilhar): {app.session_url}", flush=True)
     serve(app, a.port)
     return 0
 

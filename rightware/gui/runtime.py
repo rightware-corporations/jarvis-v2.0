@@ -33,7 +33,7 @@ def pin() -> str:
 
 
 def paths(runtime: Path = RUNTIME) -> dict:
-    return {"oj": runtime / "oj", "venv": runtime / "venv", "static": runtime / "static",
+    return {"runtime": runtime, "oj": runtime / "oj", "venv": runtime / "venv", "static": runtime / "static",
             "home": runtime / "home", "python": runtime / "venv" / "bin" / "python",
             "manifest": runtime / "manifest.json", "audit": runtime / "audit.jsonl"}
 

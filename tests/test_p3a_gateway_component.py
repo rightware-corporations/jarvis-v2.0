@@ -46,17 +46,22 @@ class Parity(unittest.TestCase):
                 text = (ROOT / new).read_text()
                 self.assertTrue(text.startswith(m["header"]))
                 text = text[len(m["header"]):]
-                for old, replacement in m["substitutions"]:
+                for old, replacement, *_ in reversed(m["substitutions"]):
                     self.assertEqual(text.count(replacement), 1)   # deletions are recorded with their anchor line
                     text = text.replace(replacement, old)
                 self.assertEqual(git_blob(text.encode()), m["origin_blob"])
 
     def test_declared_changes_are_imports_and_te_p2d_fail_closed_only(self):
         manifest = json.loads((ROOT / "rightware/gateway/PARITY.json").read_text())
+        allowed_reasons = {"UI-02 R-7 controlled num_thread"}          # later, separately reviewed changes
         for new, m in manifest["files"].items():
-            for old, replacement in m["substitutions"]:
+            for old, replacement, *reason in m["substitutions"]:
                 with self.subTest(file=new, old=old[:40]):
-                    self.assertTrue("labs." in old)
+                    if reason:
+                        self.assertIn(reason[0], allowed_reasons)
+                        self.assertEqual(new, "rightware/gateway/model_tap.py")
+                    else:
+                        self.assertTrue("labs." in old)
                     self.assertNotIn("labs.", replacement)
 
     def test_historical_names_are_the_same_module_objects(self):

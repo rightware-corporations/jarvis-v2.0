@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from rightware.gui.auth import LocalAuth
 from rightware.gui.bridge import ChatBridge
 from rightware.gui.policy import AuditLog, PolicyApp
 from rightware.gui.runtime import paths
@@ -47,7 +48,8 @@ def build_entries(models: list[str], deadline: float, adapter_factory=None) -> d
 
 
 def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: bool = False, goose=None,
-              runtime: Path | None = None, inner=None, adapter_factory=None, session_factory_builder=None):
+              runtime: Path | None = None, inner=None, adapter_factory=None, session_factory_builder=None,
+              auth: LocalAuth | None = None, static_dir: Path | None = None):
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
     entries = build_entries(models, deadline, adapter_factory)
@@ -60,7 +62,11 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
         entries[models[0]] = control.entry
     bridge = ChatBridge(entries=entries, default_model=models[0], control=control, audit=audit)
     inner = inner if inner is not None else build_inner(models[0], p["home"])
-    return PolicyApp(inner=inner, bridge=bridge, static_dir=p["static"], port=port, audit=audit), bridge
+    auth = auth or LocalAuth()
+    app = PolicyApp(inner=inner, bridge=bridge, static_dir=static_dir or p["static"], port=port, audit=audit,
+                    auth=auth)
+    app.session_url = auth.write_url(p["runtime"] / "session-url", port)
+    return app, bridge
 
 
 def serve(app, port: int) -> None:
