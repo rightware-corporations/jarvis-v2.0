@@ -25,6 +25,7 @@ try:
     from tests.test_ui01_gui import FakeMission, Inner, TextModel, call, run
 except ImportError:
     CP = None
+    TextModel = object                                   # module must still import; the classes below are skipped
 
 PORT = 8000
 HOST = (b"host", f"127.0.0.1:{PORT}".encode())
