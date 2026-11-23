@@ -46,8 +46,9 @@ export function MissionsPanel({ compact = false }: { compact?: boolean }) {
       <ul className="rw-missions">
         {missions.map((m) => (
           <li key={m.id}>
-            <div className="rw-row"><b>{m.id}</b> <CapabilityBadge status={m.status} /></div>
-            {!compact && <div className="rw-muted rw-small">{m.label}</div>}
+            <div className="rw-row"><b>{m.label}</b> <CapabilityBadge status={m.status} /></div>
+            <div className="rw-muted rw-small rw-mono">{m.id}</div>
+            {!compact && m.description && <div className="rw-muted rw-small">{m.description}</div>}
             <button type="button" className="rw-btn" disabled={busy || !!running} onClick={() => ask(m.id)}>
               {t('missions.request')}
             </button>

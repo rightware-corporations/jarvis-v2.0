@@ -7,6 +7,7 @@ export const en: Record<string, string> = {
   'chat.subtitle': 'Ask anything. The model runs locally; model answers are not verified facts.',
   'chat.connectSources': 'JARVIS capabilities', 'chat.channels': 'Messaging channels (not integrated)',
   'chat.generating': 'Generating…', 'chat.researching': 'Researching…', 'chat.noResponse': 'No response was generated. Please try again.',
+  'chat.placeholder': 'Message JARVIS…', 'chat.pickModel': 'Pick a model first (⌘K)…', 'chat.toSend': 'to send', 'chat.newLine': 'for new line', 'chat.stop': 'Stop generating', 'chat.send': 'Send message',
   'chat.deepResearch': 'Deep research (not integrated)',
   'core.offline': 'Local engine unavailable', 'core.ready': 'Ready', 'core.thinking': 'Thinking',
   'core.mission': 'Mission running', 'core.verified': 'Verified result', 'core.unverified': 'Unverified result',

@@ -1,6 +1,6 @@
 // Typed client of the RIGHTWARE HUD API (same origin; the local session cookie is sent by the browser).
 export type CapabilityStatus = 'INTEGRADA' | 'PARCIAL' | 'NAO_INTEGRADA' | 'BLOQUEADA';
-export interface Capability { id: string; label: string; status: CapabilityStatus; reason: string; mission?: boolean }
+export interface Capability { id: string; label: string; status: CapabilityStatus; reason: string; mission?: boolean; description?: string }
 export interface Receipt { seq: number; tool: string; status: string }
 export interface Objective { id: string; status: string; receipt: number | null }
 export interface Outcome {

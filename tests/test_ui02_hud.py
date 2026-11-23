@@ -274,3 +274,50 @@ class ModelTapThreadPinning(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+VENDOR_FE = ROOT / "vendor/openjarvis/frontend"
+
+
+@unittest.skipIf(CP is None or not VENDOR_FE.is_dir(), "pinned vendor checkout required")
+class OverlayManifest(unittest.TestCase):
+    """The HUD overlay must match the PINNED frontend exactly (drift fails here and in the build)."""
+
+    def setUp(self):
+        import hashlib
+        self.sha = lambda p: hashlib.sha256((VENDOR_FE / p).read_bytes()).hexdigest()
+        self.m = json.loads((ROOT / "rightware/gui/frontend/overlay.manifest.json").read_text())
+
+    def test_pin_and_replaced_modules(self):
+        from rightware.runtime import PIN
+        self.assertEqual(self.m["pin"], PIN)
+        self.assertGreaterEqual(len(self.m["replacements"]), 10)
+        for r in self.m["replacements"]:
+            with self.subTest(upstream=r["upstream"]):
+                self.assertEqual(self.sha(r["upstream"]), r["sha256"])
+                self.assertTrue((ROOT / "rightware/gui/frontend" / r["replacement"]).is_file())
+                self.assertTrue(r["reason"])
+
+    def test_string_patches_match_the_pinned_files_exactly(self):
+        for s in self.m["strings"] + [self.m["html"]]:
+            text = (VENDOR_FE / s["file"]).read_text()
+            self.assertEqual(self.sha(s["file"]), s["sha256"])
+            for it in s["items"]:
+                with self.subTest(file=s["file"], find=it["find"][:40]):
+                    self.assertEqual(text.count(it["find"]), it["count"])
+
+    def test_replaced_tests_exist_upstream_and_overlay_has_no_vendor_writes(self):
+        for t in self.m["replacedTests"]:
+            self.assertTrue((VENDOR_FE / t).is_file(), t)
+        cfg = (ROOT / "rightware/gui/frontend/vite.rightware.ts").read_text()
+        self.assertIn("RIGHTWARE overlay drift", cfg)
+        self.assertNotIn("writeFile", cfg)
+
+    def test_no_simulated_data_in_hud_sources(self):
+        src = ROOT / "rightware/gui/frontend/src"
+        for f in list((src / "hud").glob("*.tsx")) + list((src / "overrides").glob("*.tsx")):
+            if f.name.endswith(".test.tsx"):
+                continue
+            text = f.read_text()
+            with self.subTest(file=f.name):
+                self.assertNotRegex(text, r"Math\.random|setTimeout\([^)]*fake|mock", "no invented state in the HUD")

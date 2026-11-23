@@ -52,9 +52,11 @@ PENDING_CAPABILITIES = (
     ("acoes-windows", "Acções locais no computador", "BLOQUEADA", "Exige companion autorizado no dispositivo."),
     ("sic", "Shared Intelligence Core", "NAO_INTEGRADA", "Repositório separado; IAM e consentimento pendentes."),
 )
-CAPABILITY_STATUS = {"comparar-versoes-ensaio": ("INTEGRADA", "Tarefa supervisionada P1 (catálogo sintético)."),
+CAPABILITY_STATUS = {"comparar-versoes-ensaio": ("INTEGRADA", "Tarefa supervisionada P1 (catálogo sintético).",
+                                                 "Comparação supervisionada de documentos (ensaio)"),
                      "pesquisa-fixture-goose": ("PARCIAL", "Missão goose em catálogo sintético isolado; "
-                                                "experimental, sujeita ao desempenho do anfitrião.")}
+                                                "experimental, sujeita ao desempenho do anfitrião.",
+                                                "Missão de investigação goose (catálogo sintético)")}
 
 
 class _RecordingControl:
@@ -440,9 +442,9 @@ class ChatBridge:
         caps = [{"id": "conversa", "label": "Conversa com o modelo local", "status": "INTEGRADA",
                  "reason": "Sem ferramentas; respostas do modelo NÃO verificadas."}]
         for c in (self.control.capabilities if self.control is not None else ()):
-            status, reason = CAPABILITY_STATUS.get(c, ("INTEGRADA", ""))
-            caps.append({"id": c, "label": self.control.describe(c), "status": status, "reason": reason,
-                         "mission": True})
+            status, reason, label = CAPABILITY_STATUS.get(c, ("INTEGRADA", "", c))
+            caps.append({"id": c, "label": label, "description": self.control.describe(c), "status": status,
+                         "reason": reason, "mission": True})
         caps += [{"id": i, "label": label, "status": st, "reason": why} for i, label, st, why in PENDING_CAPABILITIES]
         return caps
 

@@ -30,10 +30,17 @@ STRINGS = {
         ("'No response was generated. Please try again.'", "__rwT('chat.noResponse')", 1),
         ("onClick={() => setDeepResearch(!deepResearch)}", "onClick={() => undefined}", 1),
         ("            Deep Research\n", "            {__rwT('chat.deepResearch')}\n", 1),
-        ("'Deep Research: on'", "__rwT('chat.deepResearch')", 1), ("'Deep Research: off'", "__rwT('chat.deepResearch')", 1)],
+        ("'Deep Research: on'", "__rwT('chat.deepResearch')", 1), ("'Deep Research: off'", "__rwT('chat.deepResearch')", 1),
+        ("'Message OpenJarvis...'", "__rwT('chat.placeholder')", 1),
+        ("'Pick a model first (⌘K)...'", "__rwT('chat.pickModel')", 1),
+        ("<kbd className=\"font-mono\">Enter</kbd> to send &middot;", "<kbd className=\"font-mono\">Enter</kbd> {__rwT('chat.toSend')} &middot;", 1),
+        ("</kbd> for new line", "</kbd> {__rwT('chat.newLine')}", 1),
+        ('title="Stop generating"', "title={__rwT('chat.stop')}", 1),
+        ("title={selectedModel ? 'Send message' : 'Pick a model first (⌘K)'}", "title={__rwT('chat.send')}", 1)],
     "src/components/Sidebar/ConversationList.tsx": [
         ("'No matching chats'", "__rwT('sidebar.noMatch')", 1), ("'No conversations yet'", "__rwT('sidebar.empty')", 1)],
 }
+HTML = {"file": "index.html", "items": [("<title>OpenJarvis</title>", "<title>RIGHTWARE JARVIS</title>", 1)]}
 # Upstream tests whose subject module is replaced by the overlay (they test code that is no longer shipped).
 REPLACED_TESTS = ["src/components/OptInModal.test.tsx", "src/lib/analytics-invitation.test.ts",
                   "src/pages/DataSourcesPage.lifecycle.test.tsx"]
@@ -44,6 +51,8 @@ out = {"pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
                         for u, r, why in REPLACEMENTS],
        "strings": [{"file": f, "sha256": sha(f), "items": [{"find": a, "replace": b, "count": n} for a, b, n in items]}
                    for f, items in STRINGS.items()],
+       "html": {"file": HTML["file"], "sha256": sha(HTML["file"]),
+                "items": [{"find": a, "replace": b, "count": n} for a, b, n in HTML["items"]]},
        "replacedTests": REPLACED_TESTS}
 (ROOT / "rightware/gui/frontend/overlay.manifest.json").write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
 print("ok", len(out["replacements"]), sum(len(s["items"]) for s in out["strings"]))

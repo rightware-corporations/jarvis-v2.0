@@ -7,6 +7,7 @@ export const ptMZ: Record<string, string> = {
   'chat.subtitle': 'Pergunte o que quiser. O modelo corre localmente; as respostas do modelo não são factos verificados.',
   'chat.connectSources': 'Capacidades do JARVIS', 'chat.channels': 'Canais de mensagens (não integrados)',
   'chat.generating': 'A gerar…', 'chat.researching': 'A pesquisar…', 'chat.noResponse': 'Nenhuma resposta foi gerada. Tente novamente.',
+  'chat.placeholder': 'Escreva ao JARVIS…', 'chat.pickModel': 'Escolha primeiro um modelo (⌘K)…', 'chat.toSend': 'para enviar', 'chat.newLine': 'para nova linha', 'chat.stop': 'Parar a geração', 'chat.send': 'Enviar mensagem',
   'chat.deepResearch': 'Pesquisa aprofundada (não integrada)',
   'core.offline': 'Motor local indisponível', 'core.ready': 'Pronto', 'core.thinking': 'A pensar',
   'core.mission': 'Missão em execução', 'core.verified': 'Resultado verificado', 'core.unverified': 'Resultado não verificado',

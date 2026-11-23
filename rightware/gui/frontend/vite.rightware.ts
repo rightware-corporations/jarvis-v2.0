@@ -26,6 +26,7 @@ export function rightwareOverlay(): Plugin {
   for (const r of manifest.replacements) swap.set(checkPinned(r.upstream, r.sha256), path.resolve(HERE, r.replacement));
   const strings = new Map<string, { find: string; replace: string; count: number }[]>();
   for (const s of manifest.strings) strings.set(checkPinned(s.file, s.sha256), s.items);
+  checkPinned(manifest.html.file, manifest.html.sha256);
   return {
     name: 'rightware-overlay',
     enforce: 'pre',
@@ -33,6 +34,15 @@ export function rightwareOverlay(): Plugin {
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
       const id = resolved?.id.split('?')[0];
       return id && swap.has(id) ? swap.get(id)! : null;
+    },
+    transformIndexHtml(html) {
+      let out = html;
+      for (const it of manifest.html.items) {
+        const n = out.split(it.find).length - 1;
+        if (n !== it.count) throw new Error(`RIGHTWARE html patch: "${it.find}" found ${n}x, expected ${it.count}`);
+        out = out.split(it.find).join(it.replace);
+      }
+      return out;
     },
     transform(code, id) {
       const items = strings.get(id.split('?')[0]);

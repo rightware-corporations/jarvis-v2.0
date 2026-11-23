@@ -137,6 +137,36 @@
      "find": "'Deep Research: off'",
      "replace": "__rwT('chat.deepResearch')",
      "count": 1
+    },
+    {
+     "find": "'Message OpenJarvis...'",
+     "replace": "__rwT('chat.placeholder')",
+     "count": 1
+    },
+    {
+     "find": "'Pick a model first (⌘K)...'",
+     "replace": "__rwT('chat.pickModel')",
+     "count": 1
+    },
+    {
+     "find": "<kbd className=\"font-mono\">Enter</kbd> to send &middot;",
+     "replace": "<kbd className=\"font-mono\">Enter</kbd> {__rwT('chat.toSend')} &middot;",
+     "count": 1
+    },
+    {
+     "find": "</kbd> for new line",
+     "replace": "</kbd> {__rwT('chat.newLine')}",
+     "count": 1
+    },
+    {
+     "find": "title=\"Stop generating\"",
+     "replace": "title={__rwT('chat.stop')}",
+     "count": 1
+    },
+    {
+     "find": "title={selectedModel ? 'Send message' : 'Pick a model first (⌘K)'}",
+     "replace": "title={__rwT('chat.send')}",
+     "count": 1
     }
    ]
   },
@@ -157,6 +187,17 @@
    ]
   }
  ],
+ "html": {
+  "file": "index.html",
+  "sha256": "67af018da40a4ed4e2523c515d9edf5d726a71a3acc16e0c46311f93d1d32d91",
+  "items": [
+   {
+    "find": "<title>OpenJarvis</title>",
+    "replace": "<title>RIGHTWARE JARVIS</title>",
+    "count": 1
+   }
+  ]
+ },
  "replacedTests": [
   "src/components/OptInModal.test.tsx",
   "src/lib/analytics-invitation.test.ts",
