@@ -51,7 +51,7 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
               runtime: Path | None = None, inner=None, adapter_factory=None, session_factory_builder=None,
               auth: LocalAuth | None = None, static_dir: Path | None = None, public_origin: str | None = None,
               public_minutes: float | None = None, environment: str = "unknown", tool_sites: tuple[str, ...] = (),
-              browser_fetcher=None, tool_label: str = ""):
+              browser_fetcher=None, tool_label: str = "", tool_search_template: str = ""):
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
     adapters: dict = {}
@@ -61,11 +61,13 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
                  if tool_sites else ())
 
         def adapter_factory(m):
-            prompt = system_prompt(RuntimeFacts(model=m, environment=environment, tools=tools, sites=tuple(tool_sites)))
+            prompt = system_prompt(RuntimeFacts(model=m, environment=environment, tools=tools, sites=tuple(tool_sites),
+                                                search_template=tool_search_template))
             if tool_sites:
                 from rightware.assistant_tools import ToolChatAdapter
                 adapters[m] = ToolChatAdapter(m, sites=tuple(tool_sites), persona=prompt, browser_fetcher=browser_fetcher,
-                                              timeout_seconds=deadline)
+                                              timeout_seconds=deadline,
+                                              search_template=tool_search_template or None)
             else:
                 from rightware.text_adapter import LocalSimpleTextAdapter
                 adapters[m] = LocalSimpleTextAdapter(m, timeout_seconds=min(deadline, 300.0), system_prompt=prompt)

@@ -36,7 +36,7 @@ MAX_MESSAGES = 64
 KEEPALIVE_SECONDS = 10.0
 TOOL_KEYS = ("tools", "functions", "tool_choice", "function_call")
 ANALYTICS_OFF = {"enabled": False, "anon_id": "", "host": "", "key": "", "choice_recorded": True}
-MODEL_FOOTER = "_RIGHTWARE · resposta do modelo local `{model}` — **NÃO verificada** · sem ferramentas · " \
+MODEL_FOOTER = "_JARVIS · resposta do modelo local `{model}` — **NÃO verificada** · {tools} · " \
                "sem memória persistente_"
 
 
@@ -349,10 +349,10 @@ class ChatBridge:
             self._abort_adapter(entry)                      # never leave an orphan generation holding the model
         state = classify(result)
         if state == "RESPOSTA_DO_MODELO":
-            out = result.text.strip() + "\n\n---\n" + MODEL_FOOTER.format(model=model)
+            out = result.text.strip() + "\n\n---\n" + MODEL_FOOTER.format(model=model, tools=self.tools_label(model))
         elif state == "PLANO_SEM_EXECUCAO":
             out = (f"**[{STATES[state]}]**\n\n" + result.text.strip() + "\n\n---\n"
-                   + MODEL_FOOTER.format(model=model))
+                   + MODEL_FOOTER.format(model=model, tools=self.tools_label(model)))
         else:
             out = f"**[{STATES.get(state, state)}]**\n\n{result.text}"
             if result.diagnostics:
@@ -485,6 +485,12 @@ class ChatBridge:
             "last": self.outcome_dict(self.task_outcome) if not running else None,
             "activity": self.activity(),
         }
+
+    def tools_label(self, model: str) -> str:
+        """OP01: the footer states the REAL tool configuration of this model's adapter."""
+        adapter = (getattr(self, "adapters", None) or {}).get(model)
+        sites = getattr(adapter, "sites", None) if hasattr(adapter, "activity") else None
+        return f"pesquisa só em {', '.join(sites)}" if sites else "sem ferramentas"
 
     def activity(self) -> dict | None:
         """OP01: real phase of the current tool-using chat turn (from the live AgentPolicy log), else None."""

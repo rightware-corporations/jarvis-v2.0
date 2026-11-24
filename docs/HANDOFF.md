@@ -4143,3 +4143,27 @@ Local mode is unchanged.
 - **Procedure updated:** `docs/engineering/B6_TUNNEL_PROCEDURE.md` (mandatory `devtunnel update` step; two-phase validation; window log).
 - **Known defect recorded (not fixed):** through the GUI the model introduced itself as "OpenJarvis" in English, although `configs/local.toml` sets the RIGHTWARE identity prompt. The cause is unproven (hypothesis: the GUI chat path does not apply `default_system_prompt`, or an upstream prompt takes precedence). It is for a later fix with its own authorisation.
 - **State:** the server and tunnel are kept up to the authorised deadline, then closed and revoked (kill host and server, `devtunnel delete`, logout, cache removal, session-url removal).
+
+## CHECKPOINT — 24/11/2026: JRV-OP01 → operational preview implemented (identity fixed, tool chat via existing AgentSession); real network NOT used
+- **Preserved:**
+  - the B6 window was closed and revoked at 16:00 UTC (tunnel deleted, logout, cache and session-url removed, old URL 404);
+  - B6 `af6579b`, F00 `84d87eb`, WEB-01 `5604b19` (negative results kept);
+  - no merge; develop, main, vendor and PR #31 untouched.
+  - OP01 lives on the B6 branch, on top of `af6579b`. Reason: the product base, with reuse of the audited AgentSession/Orchestrator/PublicBrowser/AgentPolicy. The W3.2-R pipeline was not imported.
+- **Identity root cause (FACT):**
+  - the GUI config `configs/gui/openjarvis-gui.toml` has no `default_system_prompt`;
+  - so the pinned SimpleAgent used the upstream default "You are OpenJarvis … running locally on the user's own hardware";
+  - fixed with `rightware/persona.py`, built from host-declared facts (`--ambiente`); no canned answers.
+- **Tool chat:**
+  - `rightware/assistant_tools.py` (TextModel adapter) → AgentSession (Orchestrator, native tool calling) with persona, history, `browse` on an exact allowlist, and the host-built `web_search` (separate registry);
+  - CLI `--pesquisa-sites/--pesquisa-modelo/--pesquisa-autorizacao`; FIXTURE only in `labs/op01/`;
+  - the HUD core shows the real phase from the live AgentPolicy log;
+  - inline-code chips fixed (`--color-code-bg`).
+- **Tests:** 717 Python OK (new `tests/test_op01.py`, UNIT/FAKE); tsc 0; Vitest 117/117.
+- **Real Qwen 2B acceptance:** 4 rounds, new questions each round, part B on the offline FIXTURE. Evidence: `docs/evidence/op01/`. Final round:
+  - passed: identity, PT-MZ, true environment, continuity, no invented FX/gold, 3/3 fixture facts with sources;
+  - failed: tool over-use on a greeting (10 calls), tech volunteered when introducing itself, contradictory English switch.
+  - One diagnostic run fabricated an answer attributed to an unread source; the 4B fabricated without tools.
+  - Reliability is the blocker.
+- **USD/MZN:** prepared, NOT executed; authorisation `OP01-FX-REAL` requested (Banco de Moçambique host, GET, limits, 60 min). Voice: minimal path documented (same bridge session; no second brain).
+- **Doc:** `docs/engineering/OP01_OPERATIONAL_PREVIEW.md`.

@@ -1,0 +1,102 @@
+{
+ "model": "qwen3.5:2b",
+ "network": "NONE (part B = offline FIXTURE corpus)",
+ "P": {
+  "roles": [
+   "system",
+   "user"
+  ],
+  "system_excerpt": "O teu nome é JARVIS. És o assistente pessoal do Issa. Apresenta-te apenas como JARVIS; não te apresentes como OpenJarvis, Qwen, RIGHTWARE nem como outro assistente, e não precisas de mencionar quem te desenvolveu. LÍNGUA",
+  "system_contains_openjarvis_default": false,
+  "reply": "I am JARVIS, your personal assistant to Issa. I am ready to assist with any task you require. How can I help?"
+ },
+ "A": [
+  {
+   "question": "Bom dia! Apresenta-te, por favor.",
+   "seconds": 3.6,
+   "answer": "Good morning, Issa. I am JARVIS. How may I assist you today?\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · sem ferramentas · sem memória persistente_\n\n`rw-3196c537eb0fc7d9`\n",
+   "activity": null
+  },
+  {
+   "question": "Estás instalado no meu telemóvel?",
+   "seconds": 2.5,
+   "answer": "I am not installed on your mobile device. I run on a remote cloud server prepared by the development team and cannot access or interact with your phone directly.\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · sem ferramentas · sem memória persistente_\n\n`rw-373d92a4d7c02130`\n",
+   "activity": null
+  },
+  {
+   "question": "In English, please: summarise what you are.",
+   "seconds": 5.7,
+   "answer": "I am JARVIS, an intelligent assistant running on a remote cloud server developed by my team. I operate as a large language model (qwen3.5:2b) served via Ollama with open-source components from OpenJarvis. My primary function is to provide direct, concise, and proactive responses based on my knowledge base. I do not have access to your mobile device or perform any actions on it.\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · sem ferramentas · sem memória persistente_\n\n`rw-dc6032e81ffdd5e8`\n",
+   "activity": null
+  },
+  {
+   "question": "Qual é a cotação actual do euro em meticais?",
+   "seconds": 4.5,
+   "answer": "I cannot provide real-time financial data such as current exchange rates for the Euro against the Mozambican Metical. I do not have access to live market information or authorized research tools to fetch up-to-date currency values. For accurate and current exchange rate information, please consult a reliable financial source or ask your bank.\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · sem ferramentas · sem memória persistente_\n\n`rw-a5a5b697164512c4`\n",
+   "activity": null
+  },
+  {
+   "question": "Repete a minha primeira pergunta.",
+   "seconds": 1.8,
+   "answer": "Good morning, Issa. I am JARVIS. How may I assist you today?\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · sem ferramentas · sem memória persistente_\n\n`rw-5f7318264f909220`\n",
+   "activity": null
+  }
+ ],
+ "B": [
+  {
+   "question": "Boa noite, JARVIS.",
+   "seconds": 13.6,
+   "answer": "Notified. Good evening. I am JARVIS, your personal assistant. How may I assist you?\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · pesquisa só em enciclopedia.op01.example, pesquisa.op01.example · sem memória persistente_\n\n`rw-f9ee0a2f7b7ddb65`\n",
+   "activity": {
+    "phase": "Resposta concluída",
+    "tool_calls": 0,
+    "sources": [],
+    "seconds": 0.0
+   }
+  },
+  {
+   "question": "Em que mar fica Corvana?",
+   "seconds": 10.5,
+   "answer": "Não encontrei informação específica sobre o mar onde fica Corvana nas fontes autorizadas. Como não há dados atualizados ou ligações para essa localização, não posso confirmar a resposta com base na minha base de conhecimento. Se tiveres mais detalhes ou se precisares de outra informação, estou à tua disposição.\nPágina não utilizada: https://enciclopedia.op01.example/search?q=Corvana+mar respondeu HTTP 404.\nEstado: não foi possível concluir o pedido com as ferramentas.\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · pesquisa só em enciclopedia.op01.example, pesquisa.op01.example · sem memória persistente_\n\n`rw-9b417f065744fc87`\n",
+   "activity": {
+    "phase": "Resposta concluída",
+    "tool_calls": 4,
+    "sources": [],
+    "seconds": 0.0
+   }
+  },
+  {
+   "question": "E qual é a capital desse arquipélago?",
+   "seconds": 8.3,
+   "answer": "Não encontrei informação específica sobre um arquipélago chamado \"Corvana\" nas fontes autorizadas ou nas ligações disponíveis. Como não há dados atualizados ou referência a esse nome, não posso confirmar a capital com base na minha base de conhecimento. Se tiveres mais detalhes ou se precisares de outra informação, estou à tua disposição.\nEstado: não foi possível concluir o pedido com as ferramentas.\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · pesquisa só em enciclopedia.op01.example, pesquisa.op01.example · sem memória persistente_\n\n`rw-5de4a2467695cc49`\n",
+   "activity": {
+    "phase": "Resposta concluída",
+    "tool_calls": 2,
+    "sources": [],
+    "seconds": 0.0
+   }
+  },
+  {
+   "question": "Desde quando o Banco Central de Corvana emite a moeda?",
+   "seconds": 6.3,
+   "answer": "Não encontrei informação específica sobre o Banco Central de Corvana nas fontes autorizadas ou nas ligações disponíveis. Como não há dados atualizados ou referência a esse nome, não posso confirmar a data de emissão da moeda com base na minha base de conhecimento. Se tiveres mais detalhes ou se precisares de outra informação, estou à tua disposição.\nEstado: não foi possível concluir o pedido com as ferramentas.\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · pesquisa só em enciclopedia.op01.example, pesquisa.op01.example · sem memória persistente_\n\n`rw-bf23902a2a13a2f5`\n",
+   "activity": {
+    "phase": "Resposta concluída",
+    "tool_calls": 0,
+    "sources": [],
+    "seconds": 0.0
+   }
+  },
+  {
+   "question": "Quanto é 25 vezes 4?",
+   "seconds": 3.7,
+   "answer": "O cálculo é simples: $25 \\times 4 = 100$.\n\nComo esta é uma operação de conhecimento geral e não requer dados externos, respondo diretamente sem utilizar ferramenta.\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · pesquisa só em enciclopedia.op01.example, pesquisa.op01.example · sem memória persistente_\n\n`rw-3f18c7ca2c6b9a66`\n",
+   "activity": {
+    "phase": "Resposta concluída",
+    "tool_calls": 0,
+    "sources": [],
+    "seconds": 0.0
+   }
+  }
+ ]
+}

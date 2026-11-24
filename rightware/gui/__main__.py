@@ -34,6 +34,8 @@ def main(argv=None) -> int:
     s.add_argument("--pesquisa-sites", default="",
                    help="OP01 ANFITRIÃO: hosts EXACTOS (separados por vírgula) que a ferramenta de pesquisa pode ler; "
                         "exige --pesquisa-autorizacao")
+    s.add_argument("--pesquisa-modelo", default="",
+                   help="OP01: URL de pesquisa com {q} (ex.: https://host/search?q={q}), dentro de --pesquisa-sites")
     s.add_argument("--pesquisa-autorizacao", default="", help="OP01: referência da autorização de rede do operador")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
@@ -72,11 +74,15 @@ def main(argv=None) -> int:
         sites = tuple(h.strip().lower() for h in a.pesquisa_sites.split(",") if h.strip())
         if not sites or any(not re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}", h) for h in sites):
             p.error("--pesquisa-sites: só hosts exactos (sem esquema, porta, caminho ou wildcard)")
+        if a.pesquisa_modelo and not (a.pesquisa_modelo.startswith("https://") and "{q}" in a.pesquisa_modelo
+                                      and a.pesquisa_modelo.split("/")[2].lower() in sites):
+            p.error("--pesquisa-modelo: https, com {q}, num host de --pesquisa-sites")
     from rightware.gui.server import build_app, serve
     app, _ = build_app(port=a.port, models=a.model or ["qwen3.5:2b"], deadline=a.deadline, trial=a.tarefa_ensaio,
                        goose=goose, public_origin=a.public_origin,
                        public_minutes=a.public_minutes if a.public_origin else None, environment=a.ambiente,
-                       tool_sites=sites, browser_fetcher=fetcher, tool_label=label)
+                       tool_sites=sites, browser_fetcher=fetcher, tool_label=label,
+                       tool_search_template=a.pesquisa_modelo if sites else "")
     if sites:
         print(f"OP01: pesquisa activada só para {', '.join(sites)}"
               + (f" (autorização {a.pesquisa_autorizacao})" if a.pesquisa_autorizacao else f" [{label}]"), flush=True)

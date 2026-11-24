@@ -19,18 +19,21 @@ import time
 
 from rightware.agent.policy import Budgets
 
-SEARCH_TOOLS = ("web_type", "web_submit", "web_find")
+SEARCH_TOOLS = ("web_search", "web_type", "web_submit", "web_find")
 READ_TOOLS = ("web_open", "web_follow", "web_read")
 MAX_REPLY = 4000
 
 
 class ToolChatAdapter:
     def __init__(self, model: str, *, sites: tuple[str, ...], persona: str, browser_fetcher=None,
+                 start_url: str | None = None, search_template: str | None = None,
                  engine_factory=None, budgets: Budgets | None = None, max_turns: int = 6, timeout_seconds: float = 180.0,
                  audit_path=None, clock=time.monotonic):
         if not sites:
             raise ValueError("ToolChatAdapter exige sites autorizados (allowlist exacta)")
         self.model, self.sites, self.persona = model, tuple(sites), persona
+        self.start_url = start_url                 # host-declared search/entry page (https, inside the allowlist)
+        self.search_template = search_template     # host-declared search URL with {q} → model tool web_search(query)
         self.browser_fetcher, self.budgets, self.max_turns = browser_fetcher, budgets, max_turns
         self.timeout_seconds, self.audit_path, self._clock = timeout_seconds, audit_path, clock
         self._engine_factory = engine_factory
@@ -58,14 +61,17 @@ class ToolChatAdapter:
             session = AgentSession(self._engine(), self.model, allow={"browse"}, confirm=lambda q: None,
                                    sites=self.sites, browser_fetcher=self.browser_fetcher, budgets=self.budgets,
                                    max_turns=self.max_turns, audit_path=self.audit_path, receipts=True,
-                                   persona=self.persona)
+                                   persona=self.persona, start_url=self.start_url,
+                                   search_template=self.search_template)
             self._session = session
             try:
                 result = session.run(text, history=tuple(history))
             finally:
                 self._session = None
+            log = list(getattr(getattr(session, "_policy", None), "log", []) or [])
             self._last = {"completion": result.completion, "sources": [s.get("final_url") for s in result.sources],
-                          "tools": [o.tool for o in result.outcomes], "halted": result.halted, "flags": result.flags}
+                          "tools": [o.tool for o in result.outcomes], "halted": result.halted, "flags": result.flags,
+                          "tool_calls": len(log)}
             self._phase, self._since = "Resposta concluída", self._clock()
             out = result.text.strip()
             return out if len(out) <= MAX_REPLY else out[:MAX_REPLY] + "\n(resposta truncada pelo limite da interface)"
@@ -84,7 +90,8 @@ class ToolChatAdapter:
                 phase = "A pesquisar" if last["tool"] in SEARCH_TOOLS else "A consultar fontes"
             else:
                 phase = "A analisar"
-        return {"phase": phase, "since": self._since, "tool_calls": len(log),
+        calls = len(log) if session is not None else (self._last or {}).get("tool_calls", 0)
+        return {"phase": phase, "since": self._since, "tool_calls": calls,
                 "sources": [e.get("args", {}).get("url") for e in log if e.get("allowed") and e["tool"] in READ_TOOLS
                             and isinstance(e.get("args"), dict)][:6],
                 "last": self._last}

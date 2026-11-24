@@ -18,7 +18,7 @@ from pathlib import Path
 import re
 import time
 from typing import Callable
-from urllib.parse import urlsplit
+from urllib.parse import quote_plus, urlsplit
 
 from openjarvis.agents.orchestrator import OrchestratorAgent
 from openjarvis.core.types import Message, Role, ToolResult
@@ -105,6 +105,15 @@ FILE_TOOLS = {
     "fixture_compare": ToolDef(
         "fixture_compare", "Compara a versão A com a versão B (depois de ambas lidas) e devolve as diferenças "
         "calculadas pelo código.", {}, (), session_flag="files", consequential=False, max_calls=2),
+}
+# OP01: separate registry (like FILE_TOOLS), merged ONLY when the host declared a search URL template inside the
+# browse allowlist. The model gives keywords; the HOST builds the URL; PublicBrowser/AgentPolicy/receipts apply as usual.
+SEARCH_TOOLS = {
+    "web_search": ToolDef(
+        "web_search", "Pesquisa nas fontes autorizadas e mostra a lista de resultados com ligações L# (abre depois o "
+        "resultado relevante com web_follow).",
+        {"query": {"type": "string", "maxLength": 120, "description": "2 a 6 palavras-chave da pesquisa"}},
+        ("query",), session_flag="browse", consequential=False, max_calls=3),
 }
 READ_TOOLS = ("web_read", "web_open", "web_follow", "web_submit")
 BROWSE_PROMPT = (
@@ -388,13 +397,19 @@ class AgentSession:
                  clock: Callable[[], float] | None = None, start_url: str | None = None,
                  trace: bool = False, task_preset: str | None = None, receipts: bool = False,
                  completion_gate: bool = False, file_task: str | None = None, file_workspace=None,
-                 persona: str | None = None):
+                 persona: str | None = None, search_template: str | None = None):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         # OP01 (opt-in): host-built identity (rightware.persona) replacing ONLY the identity sentence of
         # SYSTEM_PROMPT; the tool rules that follow it are always kept.
         if persona is not None and (not isinstance(persona, str) or not persona.strip()):
             raise ValueError("persona inválida")
         self.persona = persona
+        if search_template is not None:
+            host = (urlsplit(search_template.replace("{q}", "x")).hostname or "").lower()
+            if (not search_template.startswith("https://") or "{q}" not in search_template or "browse" not in self.allow
+                    or host not in {h.lower() for h in sites}):
+                raise ValueError("o modelo de pesquisa tem de ser https, conter {q} e estar nos sites autorizados")
+        self.search_template = search_template
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
             raise ValueError("a capacidade 'browse' exige sites autorizados")
@@ -506,7 +521,9 @@ class AgentSession:
     def run(self, instruction: str, history: tuple[tuple[str, str], ...] = ()) -> AgentReply:
         kwargs = {"clock": self.clock} if self.clock else {}
         self.browser = None
-        registry = {**TOOLS, **FILE_TOOLS} if self.file_contract is not None else TOOLS
+        registry = {**TOOLS, **FILE_TOOLS} if self.file_contract is not None else dict(TOOLS)
+        if self.search_template:
+            registry.update(SEARCH_TOOLS)
         policy = AgentPolicy(registry, allow=self.allow, budgets=self.budgets, audit_path=self.audit_path,
                              signature=self._action_signature, **kwargs)
         self._policy = policy
@@ -520,6 +537,10 @@ class AgentSession:
                             "web_submit": self._browse("web_submit", b.submit),
                             "web_follow": self._browse("web_follow", b.follow),
                             "web_find": self._browse("web_find", b.find)})
+            if self.search_template:
+                template = self.search_template
+                runners["web_search"] = self._browse(
+                    "web_search", lambda query: b.open(template.replace("{q}", quote_plus(query.strip()))))
             prompt += BROWSE_PROMPT.format(sites=", ".join(sorted(b.sites)))
             if self.start_url:
                 prompt += f" Página inicial desta tarefa: {self.start_url}"

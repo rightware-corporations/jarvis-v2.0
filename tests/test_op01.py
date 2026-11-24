@@ -133,6 +133,20 @@ class ToolChat(unittest.TestCase):
         self.assertEqual(phases[-1], "Resposta concluída")
         self.assertEqual(a.activity()["last"]["tools"], ["web_open"])
 
+    def test_host_built_search_tool(self):
+        engine = Scripted([call("web_search", {"query": "Corvana mar"}), call("web_follow", {"link": "L1"}),
+                           {"content": "Corvana fica no mar de Selmo."}])
+        a = ToolChatAdapter("fake", sites=fixture_sites(), persona=self.P, browser_fetcher=fixture_fetcher(),
+                            engine_factory=lambda: engine, search_template="https://pesquisa.op01.example/search?q={q}")
+        out = a.reply("Em que mar fica Corvana?", ())
+        self.assertIn("mar de Selmo", out)
+        self.assertIn("https://enciclopedia.op01.example/wiki/Corvana", out)
+        self.assertEqual(a.activity()["last"]["tools"], ["web_search", "web_follow"])
+        with self.assertRaises(ValueError):                                  # template outside the allowlist
+            ToolChatAdapter("fake", sites=fixture_sites(), persona=self.P, browser_fetcher=fixture_fetcher(),
+                            engine_factory=lambda: Scripted([]), search_template="https://evil.example/?q={q}"
+                            ).reply("x", ())
+
     def test_requires_allowlist(self):
         with self.assertRaises(ValueError):
             ToolChatAdapter("fake", sites=(), persona=self.P)

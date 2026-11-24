@@ -14,6 +14,7 @@ if __name__ == "__main__":
     a.add_argument("--deadline", type=float, default=240.0)
     x = a.parse_args()
     app, _ = build_app(port=x.port, models=[x.model], deadline=x.deadline, environment=x.ambiente,
-                       tool_sites=fixture_sites(), browser_fetcher=fixture_fetcher(), tool_label="FIXTURE de teste")
+                       tool_sites=fixture_sites(), browser_fetcher=fixture_fetcher(), tool_label="FIXTURE de teste",
+                       tool_search_template="https://pesquisa.op01.example/search?q={q}")
     print("OP01 FIXTURE GUI (sem rede):", app.session_url, flush=True)
     serve(app, x.port)
