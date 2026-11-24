@@ -20,7 +20,7 @@ from urllib.parse import urlsplit
 
 from rightware.control_plane import State, TaskOutcome
 from rightware.web01 import providers as PV
-from rightware.web01.egress import EgressGuard, EgressPolicy, build_fetcher
+from rightware.web01.egress import EgressGuard, EgressPolicy, build_fetcher, guarantees
 from rightware.web01.research import MissionSpec, ResearchToolkit, verify
 
 CAPABILITY = "pesquisa-publica"
@@ -93,8 +93,13 @@ class ResearchMission:
         self._write_evidence(kit, guard, v, seconds)
         state = State.TAREFA_CANCELADA if stop.is_set() else STATE_OF[v["verdict"]]
         verified = state == State.RESULTADO_VERIFICADO
-        lines = [f"Modo: {MODE_LABEL[self.policy.mode]}", f"Pergunta: {self.spec.question}"] + [
-            f"{oid}: {v['claims'][oid]} (recibo #{seq})" if st == "VERIFIED" else f"{oid}: NÃO verificado"
+        g = guarantees(self.policy)
+        transport_line = ([f"Transporte: {g['transport']} — DNS e ligação delegados ao proxy; IP e peer NÃO "
+                           "verificados localmente; não é a configuração de produção."]
+                          if self.policy.mode == "public" and self.policy.transport == "session_proxy" else [])
+        lines = [f"Modo: {MODE_LABEL[self.policy.mode]}", *transport_line, f"Pergunta: {self.spec.question}"] + [
+            f"{oid}: {v['claims'][oid]} (recibo #{seq}; excerto da fonte: «…{v['passages'][oid]}…»)"
+            if st == "VERIFIED" else f"{oid}: NÃO verificado"
             for oid, st, seq in v["objectives"]]
         return TaskOutcome(state=state, capability=CAPABILITY,
                            operational_state="CANCELLED" if stop.is_set() else v["verdict"] + f"_{self.policy.mode.upper()}",
@@ -116,7 +121,9 @@ class ResearchMission:
                 (run / "pages" / f"{seq}.bin").write_bytes(raw)
             (run / "verification.json").write_text(json.dumps(
                 {**v, "objectives": [list(o) for o in v["objectives"]], "mode": self.policy.mode,
-                 "policy_version": self.policy.version, "seconds": seconds}, ensure_ascii=False, indent=1))
+                 "policy_version": self.policy.version, "authorization_ref": self.policy.authorization_ref,
+                 "allowed_hosts": list(self.policy.allowed_hosts), "transport_guarantees": guarantees(self.policy),
+                 "question": self.spec.question, "seconds": seconds}, ensure_ascii=False, indent=1))
         except OSError:
             pass                                 # evidence is best-effort; the verdict never depends on it
         self.last_run = run

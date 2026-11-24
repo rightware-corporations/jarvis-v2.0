@@ -162,10 +162,10 @@ const S = {
     const { page, ctx, st, timeline } = await runMission(browser, 'U8', 'pesquisa-publica', true);
     const sources = await page.locator('.rw-sources li').count();
     const supports = await page.locator('.rw-sources li[data-supports]').evaluateAll((els) => els.map((e) => e.getAttribute('data-supports')).filter(Boolean));
-    rec('U8', 'Pesquisa pública de leitura (WEB-01 W2, corpus fixture, sem rede) pela HUD',
+    rec('U8', `Pesquisa pública de leitura pela HUD (modo ${process.env.UI02_RESEARCH_MODE || 'FIXTURE'})`,
       'RESULTADO_VERIFICADO; fontes com URL, data, sha256 e bytes; cada objectivo suportado por uma fonte designada',
       { last: st && st.last, sources, supports, timeline: timeline.slice(0, 900) }, await shot(page, 'u8-research-result'),
-      !!st?.last?.verified && st.last.operational_state === 'RESEARCH_VERIFIED_FIXTURE' && sources >= 1
+      !!st?.last?.verified && st.last.operational_state === `RESEARCH_VERIFIED_${process.env.UI02_RESEARCH_MODE || 'FIXTURE'}` && sources >= 1
         && ['CAPITAL', 'MOEDA', 'BANCO_CENTRAL'].every((o) => supports.join(' ').includes(o)));
     await ctx.close();
   },

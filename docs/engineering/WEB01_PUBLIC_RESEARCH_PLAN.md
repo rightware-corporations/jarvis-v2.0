@@ -82,3 +82,36 @@ Depois disso, `authorization_ref` e `network_enabled=true` entram na política e
 **Factos do ambiente Claude Cloud:**
 - o contentor **não tem DNS local**, e toda a saída passa pelo proxy da sessão, que re-termina o TLS;
 - a verificação SSRF do OpenJarvis resolve o DNS localmente e falha de forma fechada, por isso não pode correr em `session_proxy`.
+
+## W3 — validação real (24/11/2026): `W3_REAL_RESEARCH_VERIFIED` (missão predefinida, transporte experimental)
+Autorização `OP-W3-20261124`:
+- só `pt.wikipedia.org`, GET;
+- limites: 10 pedidos, 512 KB por resposta, 3 MB no total, 90 s, 2 redireccionamentos, concorrência 1;
+- User-Agent com o URL de issues do projecto (definido pelo operador);
+- `session_proxy` só para esta validação.
+
+A política experimental ficou só no scratchpad e foi apagada no fim; a política versionada continua com `network_enabled=false`.
+
+| Execução | Resultado (FACTO) | Evidência |
+|---|---|---|
+| 1 (HUD) | **PARCIAL**: CAPITAL (`/wiki/Maputo`) e MOEDA (`/wiki/Metical`) verificados; BANCO_CENTRAL **não**. A pesquisa genérica devolveu "Banco Central do Paraguai" e "Banco Mundial". | `docs/evidence/web01/w3-real/run1-partial/` |
+| 2 (HUD) | Pergunta do BANCO_CENTRAL ajustada para a frase exacta `"Banco de Moçambique"` (especificação do anfitrião). **VERIFICADO 3/3**: `/wiki/Maputo`, `/wiki/Metical`, `/wiki/Banco_de_Mo%C3%A7ambique`; 6 recibos; cadeia e hashes OK. | `run2-verified/` |
+| 2 (re-verificação offline) | O padrão de MOEDA tinha casado com uma entrada do índice da página. O padrão passou a exigir a frase definidora e o verificador passou a guardar o **excerto** exacto. Re-verificação dos mesmos bytes reais, sem novos pedidos: **VERIFICADO 3/3**. | `run2-verified/verification.strict.json` |
+| 3 (HUD, confirmação) | **VERIFICADO 3/3** em 4,9 s; a HUD mostra o modo, o transporte experimental, os excertos e as fontes (URL, UTC, SHA-256, bytes). | `run3-hud-confirm/` (captura de ecrã incluída) |
+
+**Excertos reais** (execução 2/3):
+- «Maputo é a capital e a maior cidade de Moçambique»;
+- «O metical (ISO 4217: MZN, abreviado como MT), é a unidade monetária oficial da República de Moçambique»;
+- «O Banco de Moçambique (abreviadamente BM) é o banco central da República de Moçambique».
+
+**Testes adversariais** (`w3-real/adversarial-real.txt`):
+- **Reais, com a política autorizada:**
+  - recusados antes de qualquer pedido HTTP: URL fora da allowlist (`en.wikipedia.org`), IP literal, `http://` e porta 8443;
+  - esgotamento do orçamento (2 pedidos reais, depois `orçamento de pedidos da missão esgotado`);
+  - cancelamento a meio (`TAREFA_CANCELADA` em 1,8 s, nada verificado).
+- **Simulados** (transporte injectado ou fixture, por segurança ou por não serem provocáveis na rede real): redireccionamento para 169.254.169.254, redireccionamento para fora da allowlist, DNS privado e página com prompt injection (lida como não confiável; nunca suporta um objectivo).
+
+**Limites (declarados):**
+- **Transporte:** `session_proxy` delega o DNS e a ligação ao proxy da sessão. O IP e o peer **não** foram verificados localmente, e não é equivalente ao `direct`, que é o caminho do produto e não foi exercido com rede real.
+- **Execução:** é uma missão **predefinida e determinística**. O JARVIS ainda **não** é um agente que pesquisa autonomamente qualquer assunto, e o modelo não decide nem acede à rede.
+- **Fornecedor:** a Wikipédia depende do ranking da pesquisa (execução 1) e de páginas grandes cortadas a 512 KB (Maputo); é enciclopédica e editável, não institucional.

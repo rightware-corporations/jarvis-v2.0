@@ -1,0 +1,80 @@
+{
+ "verdict": "RESEARCH_PARTIAL",
+ "problems": [],
+ "objectives": [
+  [
+   "CAPITAL",
+   "VERIFIED",
+   2
+  ],
+  [
+   "MOEDA",
+   "VERIFIED",
+   4
+  ],
+  [
+   "BANCO_CENTRAL",
+   "NOT_VERIFIED",
+   null
+  ]
+ ],
+ "sources": [
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Maputo",
+   "fetched_at": "2026-11-24T06:13:14.932340Z",
+   "sha256": "74f02d563c98cd867bb68f8dd52b368a6b5e3a073574d4da331a46f4e8864766",
+   "bytes": 524288,
+   "supports": [
+    "CAPITAL"
+   ]
+  },
+  {
+   "seq": 4,
+   "url": "https://pt.wikipedia.org/wiki/Metical",
+   "fetched_at": "2026-11-24T06:13:16.464673Z",
+   "sha256": "945b5d943fea839e032fa2e9b39503207809b0aa7dfb705c525e9d88ebda683e",
+   "bytes": 137444,
+   "supports": [
+    "MOEDA"
+   ]
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Banco_Central_do_Paraguai",
+   "fetched_at": "2026-11-24T06:13:18.083869Z",
+   "sha256": "c3a3ae4c909ae01f3c9bfb5d192607513315756926cf90d97070bef709697388",
+   "bytes": 318209,
+   "supports": []
+  },
+  {
+   "seq": 7,
+   "url": "https://pt.wikipedia.org/wiki/Banco_Mundial",
+   "fetched_at": "2026-11-24T06:13:18.945848Z",
+   "sha256": "d62374d7854d82472de92d3a2b0e9f5ad71afb3744b264cb5b6f2b30900ef0e2",
+   "bytes": 524288,
+   "supports": []
+  }
+ ],
+ "claims": {
+  "CAPITAL": "A capital de Moçambique é Maputo.",
+  "MOEDA": "A moeda oficial de Moçambique é o metical (MZN).",
+  "BANCO_CENTRAL": "O banco central emissor é o Banco de Moçambique."
+ },
+ "mode": "public",
+ "policy_version": "web01.egress.v1",
+ "authorization_ref": "OP-W3-20261124",
+ "allowed_hosts": [
+  "pt.wikipedia.org"
+ ],
+ "transport_guarantees": {
+  "transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+  "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+  "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+  "peer_check": "NÃO realizado (o peer é o proxy local)",
+  "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+  "production": false
+ },
+ "question": "Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.",
+ "seconds": 6.48
+}

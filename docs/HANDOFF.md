@@ -4104,3 +4104,26 @@ Then a single UI-02 branch from `develop`. P3B not started.
 - the `authorization_ref` value.
 
 The UI-02/B6 demo reference is untouched. No VOICE, W4, tunnel or deploy work.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3 → `W3_REAL_RESEARCH_VERIFIED` (predefined mission; experimental transport)
+- **Authorisation:** `OP-W3-20261124` (pt.wikipedia.org only; GET; 10 requests / 512 KB / 3 MB / 90 s / 2 redirects; concurrency 1; `session_proxy` for this validation only).
+- **Real runs through the HUD:**
+  1. PARTIAL (2/3): the generic search query did not rank the Banco de Moçambique article.
+  2. VERIFIED 3/3, after the spec query was changed to an exact phrase.
+  3. VERIFIED 3/3 confirmation, with source passages shown in the HUD.
+- **Offline strict re-verification** of the run-2 real bytes: VERIFIED. MOEDA had originally matched a table-of-contents line; the pattern was fixed and the verifier now records passages.
+- **Evidence:** `docs/evidence/web01/w3-real/` (receipts, audit, verification, HUD results, screenshot). Hashes are kept but not full pages.
+- **Adversarial tests:**
+  - real: off-allowlist, IP literal, http and port refused before any request; budget exhaustion; cancellation;
+  - simulated: metadata or off-host redirect, private DNS, prompt injection.
+- **Shutdown:**
+  - experimental policy deleted (it only ever lived in the scratchpad);
+  - versioned policy has `network_enabled=false`;
+  - GUI stopped; no tunnel; no secrets in the evidence.
+- **Regressions:** full venv suite OK with 0 skips; plain Python OK; FIXTURE U8 in the browser PASS.
+- **Not production-ready:**
+  - `direct` transport not exercised against the real network;
+  - deterministic predefined mission, no autonomous model research;
+  - Wikipedia only;
+  - PR #32 still Draft; review needed.
+- The UI-02/B6 demo reference is untouched.

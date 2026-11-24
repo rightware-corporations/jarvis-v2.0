@@ -161,7 +161,26 @@ def build_fetcher(policy: EgressPolicy, *, allow_public: bool = False):
     return W.HttpxFetcher(user_agent=policy.user_agent)           # W3 product path: real SSRF/pinning guarantees
 
 
-SESSION_PROXY_IP = "93.184.216.34"     # placeholder global address: the egress proxy, not this host, resolves DNS
+# NOT a resolved address: a placeholder that only satisfies HttpxFetcher's resolver hook. In session_proxy mode no
+# local DNS resolution and no peer verification happen (delegated to the proxy); evidence says so (GUARANTEES).
+SESSION_PROXY_IP = "93.184.216.34"
+GUARANTEES = {
+    "direct": {"transport": "direct", "dns": "resolvido localmente; todos os endereços têm de ser globais",
+               "pinning": "ligação só a IPs validados", "peer_check": "endereço do peer re-verificado",
+               "tls": "verificado (CA do sistema)", "production": True},
+    "session_proxy": {"transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+                      "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+                      "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+                      "peer_check": "NÃO realizado (o peer é o proxy local)",
+                      "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+                      "production": False},
+    "fixture": {"transport": "fixture (em processo, sem rede)", "dns": "n/a", "pinning": "n/a",
+                "peer_check": "n/a", "tls": "n/a", "production": False},
+}
+
+
+def guarantees(policy) -> dict:
+    return dict(GUARANTEES["fixture" if policy.mode == "fixture" else policy.transport])
 
 
 def session_proxy_fetcher(proxy: str | None = None, ca_file: str | None = None, user_agent: str | None = None):
@@ -237,7 +256,8 @@ class EgressGuard:
                                "url": W.redact_url(url)[:300], "reason": str(exc)[:200]})
             raise
         self.total_bytes += len(page.raw)
-        self.audit.append({"t": self.now(), "decision": "ALLOWED", "url": W.redact_url(url)[:300],
+        self.audit.append({"t": self.now(), "decision": "ALLOWED", "transport": self.policy.transport
+                           if self.policy.mode == "public" else "fixture", "url": W.redact_url(url)[:300],
                            "final_url": W.redact_url(page.final_url)[:300], "status": page.status,
                            "bytes": len(page.raw), "sha256": page.sha256})
         return page

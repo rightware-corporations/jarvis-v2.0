@@ -161,7 +161,7 @@ def verify(receipts: list[dict], kept: dict[int, bytes], spec: MissionSpec, allo
             host = (urlsplit(r["final_url"] or "").hostname or "")
             if not allowed_host(host):
                 problems.append(f"recibo #{r['seq']} de servidor fora da allowlist")
-    objectives, support = [], {}
+    objectives, support, passages = [], {}, {}
     for o in spec.objectives:
         hit = None
         if not problems:
@@ -170,8 +170,11 @@ def verify(receipts: list[dict], kept: dict[int, bytes], spec: MissionSpec, allo
                     continue
                 if (urlsplit(r["final_url"]).hostname or "") not in o.sources:
                     continue
-                if o.pattern.search(page_text(kept[r["seq"]])):
-                    hit = r["seq"]
+                text = page_text(kept[r["seq"]])
+                m = o.pattern.search(text)
+                if m:
+                    hit = r["seq"]          # the exact supporting passage (from the kept, hash-checked bytes)
+                    passages[o.id] = " ".join(text[max(0, m.start() - 40):m.end() + 40].split())[:240]
                     break
         objectives.append((o.id, "VERIFIED" if hit else "NOT_VERIFIED", hit))
         if hit:
@@ -183,4 +186,4 @@ def verify(receipts: list[dict], kept: dict[int, bytes], spec: MissionSpec, allo
                 "bytes": r["bytes"], "supports": support.get(r["seq"], [])}
                for r in receipts if r["tool"] == "web_open_public" and r["status"] == "OK"]
     return {"verdict": verdict, "problems": problems, "objectives": objectives, "sources": sources,
-            "claims": {o.id: o.claim for o in spec.objectives}}
+            "claims": {o.id: o.claim for o in spec.objectives}, "passages": passages}
