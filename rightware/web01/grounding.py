@@ -32,9 +32,14 @@ def _norm(s: str) -> str:
     return " ".join(s.split()).lower()
 
 
+def _stems(text: str) -> set[str]:
+    """Light prefix stemming (5 chars): 'independente' ~ 'independência', 'oficial' ~ 'oficiais'."""
+    return {t[:5] for t in content_terms(text)}
+
+
 def relevance(question: str, text: str) -> float:
-    q = set(content_terms(question))
-    return len(q & set(content_terms(text))) / len(q) if q else 0.0
+    q = _stems(question)
+    return len(q & _stems(text)) / len(q) if q else 0.0
 
 
 def passages(question: str, receipts: list[dict], kept: dict[int, bytes]) -> list[dict]:
@@ -44,7 +49,8 @@ def passages(question: str, receipts: list[dict], kept: dict[int, bytes]) -> lis
         if r["tool"] != "web_open_public" or r["status"] != "OK":
             continue
         text = page_text(kept[r["seq"]])
-        chunks = [c.strip() for c in re.split(r"\n+|(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ«\"])", text) if len(c.strip()) >= 40]
+        chunks = [c.strip() for c in re.split(r"\n+|(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ«\"])", text)
+                  if len(c.strip()) >= 15 and not c.strip().startswith(("Título:", "FIXTURE RIGHTWARE"))]
         scored = sorted(((relevance(question, c), i, c[:PASSAGE_CHARS]) for i, c in enumerate(chunks)), reverse=True)
         for score, _, c in [s for s in scored if s[0] > 0][:MAX_PASSAGES_PER_PAGE]:
             out.append({"seq": r["seq"], "url": r["final_url"], "sha256": r["sha256"], "text": c,
@@ -112,8 +118,8 @@ def validate(raw: str, question: str, ps: list[dict], receipts: list[dict], kept
         integrity = bool(r and r["status"] == "OK" and hashlib.sha256(raw_bytes).hexdigest() == r["sha256"]
                          and _norm(holder["text"]) in _norm(page_text(raw_bytes)))
         rel = relevance(question, holder["text"])
-        terms = set(content_terms(entry["text"]))
-        support = len(terms & set(content_terms(entry["quote"]))) / len(terms) if terms else 0.0
+        terms = _stems(entry["text"])
+        support = len(terms & _stems(entry["quote"])) / len(terms) if terms else 0.0
         entry["source"] = {"seq": holder["seq"], "url": holder["url"], "sha256": holder["sha256"],
                            "passage_id": holder["id"]}
         entry["checks"] = {"A_integrity": integrity, "B_relevance": round(rel, 2),
