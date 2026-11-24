@@ -52,6 +52,16 @@ class Tool(unittest.TestCase):
         self.assertIn("÷", cross["derivation"])
 
 
+class Instruments(unittest.TestCase):
+    def test_ecb_route_and_fallback(self):
+        t = ExchangeRateTool(fixture_source(FX), today="2031-03-10", index_url=IDX, ecb=fixture_source(FX))
+        r = t("EUR", "USD")
+        self.assertEqual((r["status"], r["value"], r["reference_date"]), ("OK", 1.0421, "2031-03-07"))
+        self.assertIn("Banco Central Europeu", r["rate_type"])
+        self.assertEqual(t("GBP", "USD")["status"], "UNSUPPORTED")       # ECB not retrieved → BM has no GBP row
+        self.assertEqual(tool()("EUR", "USD")["status"], "DERIVED")      # no ECB source → BM cross, labelled
+
+
 class Integrity(unittest.TestCase):
     def setUp(self):
         self.t = tool()

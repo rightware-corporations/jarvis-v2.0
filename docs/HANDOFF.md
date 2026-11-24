@@ -4205,3 +4205,17 @@ Local mode is unchanged.
   - a host gate that refuses financial numbers not present in a document read in the same turn;
   - evaluate a deterministic "latest bulletin" tool in F01.
 - **Untouched:** main, develop, vendor; no merge; no tunnel.
+
+## CHECKPOINT — 24/11/2026: ISSA PRESENTATION RELEASE (priority override) → presentation launcher ready OFFLINE; network needs authorisation
+- **F01-A suspended at a consistent checkpoint:** `a6ab908` (A/B/C done; D not run). Results: C (structured tool) 10/13 vs B 5/13 vs A 4/13. Docs: `docs/engineering/F01A_TOOL_INTELLIGENCE.md`.
+- **Presentation launcher** `labs/presentation/serve.py` (LAB, EXPERIMENTAL):
+  - B6 GUI and HUD, plus AgentSession with only `get_exchange_rate` and `web_research`;
+  - `get_exchange_rate`: BM USD/MZN and other MZN pairs, XAU/USD from the bulletin's gold line; ECB/Frankfurter optional for EUR/USD and GBP/USD, else a labelled BM cross;
+  - host source lines and a financial integrity check (false positives on bulletin numbers and URLs fixed).
+  - Persona adds: facts vs simulations vs recommendations; no guaranteed profit; no invented personal data about Issa.
+- **Offline check (real 2B, through the GUI; `docs/evidence/presentation/`):**
+  - OK: identity in PT (but still names the model unprompted); USD/MZN 63,27/64,54/63,91 with source; XAU/USD 3 629,39/3 630,60 with source; planning, 90-day strategy and margin answers with facts/simulation separation and no guarantees.
+  - FAIL: "organizar receitas e despesas" (12 tool calls, max turns); "pesquisa factores do ouro" (needs network; max turns).
+  - Defects: once called the BM "Banco Central do Brasil"; "Estado: não foi possível concluir…" noise.
+- **Network authorisation needed (not requested to run yet):** `www.bancomoc.mz`, `bancomoc.mz`, `pt.wikipedia.org`, `en.wikipedia.org`, `api.frankfurter.app`; HTTPS GET via the experimental session proxy (direct DNS blocked in this environment).
+- **Untouched:** main, develop, vendor; no merge; tunnel not opened.

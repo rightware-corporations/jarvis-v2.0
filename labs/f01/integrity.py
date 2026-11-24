@@ -62,7 +62,8 @@ def check(answer: str, records: list[dict], question: str = "") -> dict:
     text = answer
     folded = fold(text)                               # same length as text for Latin text (accents removed)
     spans = [mm.span() for mm in re.finditer(r"\b\d{1,2}\s+de\s+[a-z]+\s+de\s+\d{4}|\b\d{1,2}[/.-]\d{1,2}[/.-]\d{4}\b|"
-                                             r"\b\d{4}-\d{2}-\d{2}\b", folded)]
+                                             r"\b\d{4}-\d{2}-\d{2}(?:t[\d:]+z?)?\b|https?://\S+|"
+                                             r"boletim\s*(?:n[.ºo°]*\s*)?\d+/\d+|\b\d+/\d{2}\b", folded)]
     for m in NUM.finditer(text):
         raw = m.group(1)
         window = fold(text[max(0, m.start() - 60): m.end() + 25])

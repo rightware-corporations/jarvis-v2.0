@@ -35,7 +35,7 @@ from rightware.agent.web import USER_AGENT, Page, WebRefused, html_to_text
 DELEGATED = ("dns", "ip_publico", "peer_tcp", "tls_ate_origem")
 ENFORCED = ("allowlist_exacta_por_salto", "https_443", "sem_ip_literal", "so_get", "limites_pedidos_bytes_tempo",
             "tipos_de_conteudo", "auditoria_e_bytes_guardados")
-TEXT_TYPES = ("text/html", "text/plain", "application/xhtml+xml")
+TEXT_TYPES = ("text/html", "text/plain", "application/xhtml+xml", "application/json")
 PDF_TYPES = ("application/pdf",)
 PDFTOTEXT = "/usr/bin/pdftotext"          # host poppler binary (fixed path, fixed arguments); EXPERIMENTAL dependency
 

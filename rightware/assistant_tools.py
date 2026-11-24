@@ -27,10 +27,12 @@ MAX_REPLY = 4000
 class ToolChatAdapter:
     def __init__(self, model: str, *, sites: tuple[str, ...], persona: str, browser_fetcher=None,
                  start_url: str | None = None, search_template: str | None = None,
+                 allow: tuple[str, ...] = ("browse",), extra_tools_factory=None, post_check=None,
                  engine_factory=None, budgets: Budgets | None = None, max_turns: int = 6, timeout_seconds: float = 180.0,
                  audit_path=None, clock=time.monotonic):
-        if not sites:
+        if "browse" in allow and not sites:
             raise ValueError("ToolChatAdapter exige sites autorizados (allowlist exacta)")
+        self.allow, self.extra_tools_factory, self.post_check = tuple(allow), extra_tools_factory, post_check
         self.model, self.sites, self.persona = model, tuple(sites), persona
         self.start_url = start_url                 # host-declared search/entry page (https, inside the allowlist)
         self.search_template = search_template     # host-declared search URL with {q} → model tool web_search(query)
@@ -61,8 +63,10 @@ class ToolChatAdapter:
             begin = getattr(self.browser_fetcher, "begin_question", None)
             if callable(begin):                       # per-question HTTP budget (experimental proxy transport)
                 begin()
-            session = AgentSession(self._engine(), self.model, allow={"browse"}, confirm=lambda q: None,
+            extra, records = (self.extra_tools_factory() if self.extra_tools_factory else (None, lambda: []))
+            session = AgentSession(self._engine(), self.model, allow=set(self.allow), confirm=lambda q: None,
                                    sites=self.sites, browser_fetcher=self.browser_fetcher, budgets=self.budgets,
+                                   extra_tools=extra,
                                    max_turns=self.max_turns, audit_path=self.audit_path, receipts=True,
                                    persona=self.persona, start_url=self.start_url,
                                    search_template=self.search_template)
@@ -77,6 +81,8 @@ class ToolChatAdapter:
                           "tool_calls": len(log)}
             self._phase, self._since = "Resposta concluída", self._clock()
             out = result.text.strip()
+            if self.post_check is not None:              # host annotations (sources, integrity) from tool records
+                out += self.post_check(out, records(), text)
             return out if len(out) <= MAX_REPLY else out[:MAX_REPLY] + "\n(resposta truncada pelo limite da interface)"
 
     def activity(self) -> dict:

@@ -103,7 +103,14 @@ def parse_bulletin(text: str) -> dict:
                      "unit": unit, "buy": pt_number(r.group("buy")), "sell": pt_number(r.group("sell")),
                      "mid": pt_number(r.group("mid")),
                      "raw": {"buy": r.group("buy"), "sell": r.group("sell"), "mid": r.group("mid")}})
+    gold = re.search(r"OURO[^\n]*?On[çc]a[^\n]*\n\s*Compra\.*\s*([\d.,]+)\s*\n\s*Venda\.*\s*([\d.,]+)", text, re.I)
+    if gold:                                              # "OURO/-USD/Onça: Compra..... 3.629,39 / Venda.... 3.630,60"
+        rows.append({"country": "Ouro (onça troy)", "currency": "USD", "iso": "XAU", "unit": 1, "quote": "USD",
+                     "buy": pt_number(gold.group(1)), "sell": pt_number(gold.group(2)),
+                     "mid": None, "raw": {"buy": gold.group(1), "sell": gold.group(2)}})
     for r in rows:
+        if r.get("iso") == "XAU":
+            continue
         if r["iso"] is None:
             issues.append(f"moeda sem código ISO conhecido: {r['country']} / {r['currency']}")
         elif not (r["buy"] <= r["mid"] <= r["sell"]):
@@ -126,9 +133,9 @@ TOOL_SPEC = {
     "type": "function",
     "function": {
         "name": "get_exchange_rate",
-        "description": ("Taxas de câmbio oficiais do Banco de Moçambique (meticais por moeda estrangeira): compra, "
-                        "venda e média de um boletim diário, com data e fonte. Usa para qualquer pergunta sobre "
-                        "câmbio com o metical."),
+        "description": ("Cotações oficiais com data e fonte: meticais por moeda estrangeira (compra/venda/média, "
+                        "Banco de Moçambique), ouro XAU/USD por onça (boletim do BM) e pares internacionais como "
+                        "EUR/USD ou GBP/USD (BCE, ou derivados do BM). Usa para qualquer pergunta sobre câmbio ou ouro."),
         "parameters": {"type": "object", "properties": {
             "base_currency": {"type": "string", "description": "código ISO da moeda estrangeira, ex.: USD, EUR, ZAR"},
             "quote_currency": {"type": "string", "description": "código ISO da moeda de cotação; normalmente MZN"},
@@ -137,8 +144,10 @@ TOOL_SPEC = {
 
 
 class ExchangeRateTool:
-    def __init__(self, source: Source, *, today: str, index_url: str = INDEX_URL, stale_days: int = 4):
+    def __init__(self, source: Source, *, today: str, index_url: str = INDEX_URL, stale_days: int = 4,
+                 ecb: Source | None = None):
         self.source, self.today, self.index_url, self.stale_days = source, today, index_url, stale_days
+        self.ecb = ecb                                     # optional official ECB source (Frankfurter API)
         self.records: list[dict] = []                # every structured result returned (for the integrity gate)
 
     def _bulletin(self, date: str | None) -> tuple[dict | None, dict]:
@@ -164,6 +173,30 @@ class ExchangeRateTool:
                  listed_date=entry["date"])
         return b, {}
 
+    def _ecb(self, base: str, quote: str, date: str | None, out: dict) -> dict | None:
+        """Official ECB reference rates via the free Frankfurter API (no key), only when an ``ecb`` source is set."""
+        if self.ecb is None or "MZN" in (base, quote) or "XAU" in (base, quote):
+            return None
+        import json as _j
+        when = "latest" if date in (None, "", "latest") else date
+        url = f"https://api.frankfurter.app/{when}?from={base}&to={quote}"
+        got = self.ecb.get(url)
+        if got is None:
+            return None                                   # not retrieved → caller falls back to the BM cross
+        raw, _, retrieved = got
+        try:
+            d = _j.loads(raw.decode("utf-8"))
+            v = float(d["rates"][quote])
+        except (ValueError, KeyError, TypeError):
+            out.update(status="PARSE_ERROR", detail="resposta do BCE ilegível")
+            return self._keep(out)
+        out.update(status="OK", value=v, unit=f"{quote} por 1 {base}", reference_date=d.get("date"),
+                   rate_type="taxa de referência do Banco Central Europeu (diária, cerca das 16h CET), não em tempo real",
+                   provenance={"document_url": url, "sha256": hashlib.sha256(raw).hexdigest(), "bulletin": None,
+                               "signature": None, "retrieved_at": retrieved, "listed_date": d.get("date")},
+                   parse_issues=[])
+        return self._keep(self._age(out))
+
     def __call__(self, base_currency: str, quote_currency: str = "MZN", reference_date: str | None = None) -> dict:
         base, quote = (base_currency or "").strip().upper(), (quote_currency or "MZN").strip().upper()
         out = {"tool": "get_exchange_rate", "source": self.source.label, "requested": {
@@ -171,6 +204,9 @@ class ExchangeRateTool:
         if not re.fullmatch(r"[A-Z]{3}", base) or not re.fullmatch(r"[A-Z]{3}", quote) or base == quote:
             out.update(status="UNSUPPORTED", detail="códigos ISO de 3 letras e diferentes são obrigatórios")
             return self._keep(out)
+        ecb = self._ecb(base, quote, reference_date, out)
+        if ecb is not None:
+            return ecb
         b, err = self._bulletin(reference_date)
         if b is None:
             out.update(err)
@@ -182,8 +218,19 @@ class ExchangeRateTool:
         if b["reference_date"] and b["reference_date"] != b["listed_date"]:
             out["parse_issues"] = out["parse_issues"] + ["data no documento difere da data do índice"]
 
+        if base == "XAU":                                  # gold: printed in USD per troy ounce (buy/sell)
+            g = [r for r in b["rows"] if r["iso"] == "XAU"]
+            if len(g) != 1 or quote != "USD":
+                out.update(status="AMBIGUOUS" if len(g) > 1 else "UNSUPPORTED",
+                           detail="o boletim publica o ouro só em USD por onça troy (XAU/USD)")
+                return self._keep(out)
+            out.update(status="OK", instrument="Ouro (XAU)", unit="USD por onça troy", buy=g[0]["buy"],
+                       sell=g[0]["sell"], mid=None, printed=g[0]["raw"],
+                       note="cotação de referência diária do boletim do BM, não um preço em tempo real")
+            return self._keep(self._age(out))
+
         def row(code):
-            hits = [r for r in b["rows"] if r["iso"] == code]
+            hits = [r for r in b["rows"] if r["iso"] == code and r.get("quote", "MZN") == "MZN"]
             return hits
         if "MZN" not in (base, quote):
             hb, hq = row(base), row(quote)

@@ -69,3 +69,25 @@ Verificar: o URL antigo deixa de responder (404 ou erro de túnel inexistente), 
   - `configs/local.toml` define `default_system_prompt` com a identidade RIGHTWARE.
   - **Hipótese:** o percurso de chat da GUI (bridge → TextFacade → SimpleAgent) não aplica esse prompt, ou um prompt do frontend/servidor upstream tem precedência.
   - A causa exacta está por demonstrar. Já tinha sido observado em UI-02 como defeito conhecido.
+
+## Apresentação ao Issa (24/11/2026) — launcher e procedimento
+- **Launcher:** `labs/presentation/serve.py` (laboratório; ferramentas e transporte EXPERIMENTAIS). Tem a mesma GUI, a autenticação B6 e a HUD; o chat corre pela AgentSession/Orchestrator com `get_exchange_rate` e `web_research`, e as respostas recebem linhas de fonte e uma verificação financeira do anfitrião.
+- **Sem rede (apresentação segura):**
+  ```
+  .runtime/gui/venv/bin/python -m labs.presentation.serve --offline --hoje 2026-11-24 --public-origin https://<id>-8000.<cluster>.devtunnels.ms --public-minutes 58
+  ```
+  Usa os documentos reais recolhidos a 24/11; `web_research` responde "não obtido".
+- **Com rede (só após nova autorização):**
+  ```
+  … --proxy --autorizacao <REF> --janela-inicio <epoch UTC> --public-origin … --public-minutes 58
+  ```
+- **Túnel (passos validados hoje):**
+  1. `devtunnel user login -d`
+  2. `devtunnel create --expiration 1h`
+  3. `devtunnel port create <id> -p 8000`
+  4. **`devtunnel update <id> --origin-header unchanged --host-header unchanged`**
+  5. `devtunnel show <id>` (confirmar os cabeçalhos "unchanged" e obter o URL real)
+  6. arrancar o launcher com `--public-origin <URL exacto>`
+  7. `timeout --kill-after=10 3540 devtunnel host <id>`
+  8. validação em 2 fases (URL base → "Sessão local necessária"; depois a ligação de uso único)
+  9. no fim: fechar e revogar
