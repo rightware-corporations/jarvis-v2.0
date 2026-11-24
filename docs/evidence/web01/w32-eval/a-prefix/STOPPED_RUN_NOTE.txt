@@ -1,0 +1,1 @@
+Final run #1 stopped after S3 R1–R3 (all ABSTAIN): regression from a prompt wording change ('(E1)' ids and prefixed quotes) — fixed in the host by format-tolerant id/quote normalisation; S2 had NOT started.

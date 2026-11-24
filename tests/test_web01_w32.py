@@ -113,6 +113,21 @@ class StrictSupport(unittest.TestCase):
                 self.assertIsNotNone(S(t, q, c), name)
         self.assertIsNone(S("A Montanha do Pico tem 2351 m", "A Montanha do Pico tem 2 351 metros.", ""))
 
+    def test_evidence_id_and_quote_format_tolerance(self):
+        rec, kept = kept_and_receipts([("https://x/wiki/Rio_Zambeze", PAGE)])
+        q = "Qual é o comprimento do Zambeze?"
+        c = EV.candidates(q, list(PL.host_parts(q)), EV.documents(rec, kept))
+        eid = next(x["id"] for x in c if x["text"] == "Comprimento: 2 574 km")
+        for given in (eid, f"({eid})", f"[{eid}]"):
+            rep = EV.validate(json.dumps({"claims": [{"part": 0, "evidence_id": given,
+                                                      "quote": f"[{eid}] (Rio Zambeze › kv) Comprimento: 2 574 km",
+                                                      "text": "O Zambeze tem 2 574 km de comprimento"}]}),
+                              q, list(PL.host_parts(q)), c, rec, kept)
+            self.assertEqual(len(rep["accepted"]), 1, (given, rep["rejected"]))
+        rep = EV.validate(json.dumps({"claims": [{"part": 0, "evidence_id": "E99", "quote": "Comprimento: 2 574 km",
+                                                  "text": "O Zambeze tem 2 574 km"}]}), q, list(PL.host_parts(q)), c, rec, kept)
+        self.assertIn("inventada", rep["rejected"][0]["why"])                  # tolerance never invents an id
+
     @unittest.expectedFailure
     def test_known_limitation_inverse_relation_with_identical_words(self):
         # KNOWN LIMITATION (documented): same words, inverted relation, no negation → lexical checks cannot tell.
