@@ -60,7 +60,7 @@ def fake_model_call(system, user):
         return json.dumps({"intent": "research" if user.rstrip().endswith("?") else "chat"}), 0.0
     if system == PL.PLAN_SYSTEM:
         q = user.split("Pergunta:", 1)[-1].strip().split("\n")[0]
-        return json.dumps({"objective": "[FAKE-CI] responder com fontes", "subquestions": [],
+        return json.dumps({"objective": "[FAKE-CI] responder com fontes", "answer_parts": [q[:160]], "subquestions": [],
                            "queries": [" ".join(PL.content_terms(q))[:100] or "Moçambique"],
                            "relevance_criteria": ["[FAKE-CI] trata o tema"], "missing_info": []}), 0.0
     q = user.split("Pergunta:", 1)[-1].split("\n")[0]

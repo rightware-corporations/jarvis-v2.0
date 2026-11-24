@@ -94,14 +94,16 @@ def model_proposer(call):
 
 
 # ------------------------------------------------------------------------------------------------------ planner
-PLAN_KEYS = {"objective": str, "subquestions": list, "queries": list, "relevance_criteria": list, "missing_info": list}
-LIMITS = {"objective": 300, "subquestions": (3, 200), "queries": (4, 100), "relevance_criteria": (4, 160),
-          "missing_info": (4, 160)}
+PLAN_KEYS = {"objective": str, "answer_parts": list, "subquestions": list, "queries": list,
+             "relevance_criteria": list, "missing_info": list}
+LIMITS = {"objective": 300, "answer_parts": (3, 160), "subquestions": (3, 200), "queries": (4, 100),
+          "relevance_criteria": (4, 160), "missing_info": (4, 160)}
 FORBIDDEN_IN_QUERY = re.compile(r"(https?://|www\.|\bsite:|\binurl:|\bintitle:|\bfiletype:|[<>{}\[\]\\|`])", re.I)
 
 PLAN_SYSTEM = (
     "És o planeador de pesquisa do JARVIS. Recebes uma pergunta e devolves UM objecto JSON com exactamente estas "
-    "chaves: objective (texto curto), subquestions (lista, 0 a 3 textos), queries (lista, 1 a 4 consultas curtas de "
+    "chaves: objective (texto curto), answer_parts (lista, 1 a 3 textos que DESCREVEM o que a pergunta pede, com "
+    "palavras da pergunta, por exemplo \"ano da descoberta\"; NUNCA escrevas a resposta), subquestions (lista, 0 a 3 textos), queries (lista, 1 a 4 consultas curtas de "
     "pesquisa em português, sem URLs nem operadores), relevance_criteria (lista, 1 a 4 critérios), missing_info "
     "(lista, 0 a 4 itens que a pergunta não define). Não respondas à pergunta. Não incluas domínios, sites, "
     "orçamentos nem conclusões.")
@@ -111,6 +113,7 @@ PLAN_SYSTEM = (
 class Plan:
     question: str
     objective: str
+    answer_parts: tuple[str, ...]
     subquestions: tuple[str, ...]
     queries: tuple[str, ...]
     relevance_criteria: tuple[str, ...]
@@ -155,13 +158,33 @@ def validate_plan(raw: str, question: str, source: str, notes: list | None = Non
     if not isinstance(objective, str) or not 3 <= len(objective.strip()) <= LIMITS["objective"]:
         raise PlanError("objective inválido")
     queries = _strings(d["queries"], *LIMITS["queries"], "queries", n_min=1, notes=notes)
+    q_stems = {t[:4] for t in content_terms(question)}
+    parts_raw = d["answer_parts"]
+    if isinstance(parts_raw, list) and any(isinstance(p, str) and not ({t[:4] for t in content_terms(p)} & q_stems)
+                                          for p in parts_raw):
+        if notes is not None:            # parts that are answers (not words of the question) → host decomposition
+            notes.append("answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião")
+        parts_raw = list(host_parts(question))
+    d = dict(d, answer_parts=parts_raw)
     for q in queries:
         if FORBIDDEN_IN_QUERY.search(q) or len(q) < 3:
             raise PlanError(f"consulta proibida: {q[:40]!r}")
     return Plan(question, " ".join(objective.split()),
+                _strings(d["answer_parts"], *LIMITS["answer_parts"], "answer_parts", n_min=1, notes=notes),
                 _strings(d["subquestions"], *LIMITS["subquestions"], "subquestions", notes=notes), queries,
                 _strings(d["relevance_criteria"], *LIMITS["relevance_criteria"], "relevance_criteria", n_min=1, notes=notes),
                 _strings(d["missing_info"], *LIMITS["missing_info"], "missing_info", notes=notes), source)
+
+
+SPLIT = re.compile(r"\s*(?:,|;)?\s+e\s+(?=(?:em\s+)?(?:que|qual|quais|quem|quando|onde|como|quanto|quantos|quantas|"
+                   r"porque|por\s+que)\b)", re.I)
+
+
+def host_parts(question: str) -> tuple[str, ...]:
+    """Deterministic, topic-independent decomposition: clauses joined by "e" + an interrogative word."""
+    q = question.strip().rstrip("?").strip()
+    parts = [p.strip(" ,;") for p in SPLIT.split(q) if p.strip(" ,;")]
+    return tuple(p[:160] for p in parts[:3]) or (question[:160],)
 
 
 STOP = set(_fold("a o os as um uma de do da dos das em no na nos nas por para com sem que qual quais quem quando onde "
@@ -176,8 +199,8 @@ def content_terms(text: str) -> list[str]:
 def fallback_plan(question: str) -> Plan:
     terms = content_terms(question)
     q = " ".join(dict.fromkeys(terms))[:100] or question[:100]
-    return Plan(question, "Responder à pergunta com fontes da allowlist.", (), (q,), ("A fonte trata o tema da pergunta",),
-                (), "anfitrião (fallback)")
+    return Plan(question, "Responder à pergunta com fontes da allowlist.", host_parts(question), (), (q,),
+                ("A fonte trata o tema da pergunta",), (), "anfitrião (fallback)")
 
 
 def make_plan(question: str, call, model_name: str, retries: int = 1) -> tuple[Plan, dict]:

@@ -20,7 +20,7 @@ try:
 except ImportError:
     CP = None
 
-GOOD_PLAN = {"objective": "Identificar a capital", "subquestions": [], "queries": ["capital de Moçambique"],
+GOOD_PLAN = {"objective": "Identificar a capital", "answer_parts": ["capital"], "subquestions": [], "queries": ["capital de Moçambique"],
              "relevance_criteria": ["fala da capital"], "missing_info": []}
 
 
