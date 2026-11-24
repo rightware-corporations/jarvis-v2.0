@@ -4219,3 +4219,21 @@ Local mode is unchanged.
   - Defects: once called the BM "Banco Central do Brasil"; "Estado: não foi possível concluir…" noise.
 - **Network authorisation needed (not requested to run yet):** `www.bancomoc.mz`, `bancomoc.mz`, `pt.wikipedia.org`, `en.wikipedia.org`, `api.frankfurter.app`; HTTPS GET via the experimental session proxy (direct DNS blocked in this environment).
 - **Untouched:** main, develop, vendor; no merge; tunnel not opened.
+
+## CHECKPOINT — 24/11/2026: ISSA PRESENTATION LIVE WINDOW (OP01-ISSA-LIVE-20261124 + ABRIR_TUNEL) — closed and revoked
+- **Code:** `f8c74a2` (launcher `labs/presentation/serve.py --proxy`, B6 private-access mode). No code changes during the window. No merge.
+- **Network:** `www.bancomoc.mz`, `bancomoc.mz`, `pt.wikipedia.org`, `en.wikipedia.org`, `api.frankfurter.app`; HTTPS GET via the EXPERIMENTAL session proxy (DNS, IP, peer and end-to-end TLS delegated to the proxy and not verified). Window 17:18:17 to 18:17 UTC; **26/80 requests** (`docs/evidence/presentation/live-requests-…jsonl`).
+- **Smoke (real network):**
+  - USD/MZN 63,27/64,54/63,91 and XAU/USD 3 629,39/3 630,60 USD/oz from BM bulletin 159/26 (reference 24/11/2026);
+  - Wikipedia research works (relevance varies);
+  - **ECB:** `api.frankfurter.app` redirects (301) to `api.frankfurter.dev`, which is not authorised; the redirect was refused, not bypassed, and EUR/USD and GBP/USD fell back to the labelled BM-derived cross.
+- **Tunnel:**
+  - private `jolly-pond-ghdprq7.use`, port 8000 only, Access control `{}`, persistent Host/Origin `unchanged`;
+  - anonymous access goes to the Microsoft login; port 11434 not exposed (404); Ollama and JARVIS on loopback only; token never printed or committed.
+  - Operator phase 1: "Sessão local necessária" (audit `AUTH_REQUIRED` at 17:22 UTC). Phase 2: single-use link delivered privately.
+  - Audit: 5 chat POSTs `ALLOW`, then 5 model `ANSWER`s. The operator did not send a final confirmation message before the window ended.
+- **Closed at 18:17 UTC** (host hard timeout): tunnel deleted, logout, cache and session-url removed, old URL 404, no processes left.
+- **Next:**
+  - fix the over-use of tools on planning requests ("organizar receitas e despesas");
+  - decide on authorising `api.frankfurter.dev`;
+  - resume F01 (config D, 4B) only with a new authorisation.
