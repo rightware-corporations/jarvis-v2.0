@@ -4127,3 +4127,37 @@ The UI-02/B6 demo reference is untouched. No VOICE, W4, tunnel or deploy work.
   - Wikipedia only;
   - PR #32 still Draft; review needed.
 - The UI-02/B6 demo reference is untouched.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.1 → `W3_1_IMPLEMENTED_AWAITING_REAL_VALIDATION`
+**Start:** `a717fe0` on `integration/jrv-web01-w0w2-20261123` (PR #32, Draft). No new branch.
+
+**Implemented** (reusing the existing stack):
+- intent routing decided by the host;
+- validated Qwen plan bound to the single-use code;
+- free-research executor with budgets, one reformulation and cancellation;
+- grounded synthesis with separate A/B/C checks plus abstention;
+- `RESPOSTA_FUNDAMENTADA` state (never VERIFIED for free questions);
+- chat flow plan → `/autorizar`;
+- readable plan message (bold code, because inline code is illegible in the HUD).
+
+See `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3.1.
+
+**Real local Qwen evaluation (fixture, no network)** — v2 after generic fixes:
+- 2b: 8/9 cases, 9/9 plans, 10/10 routing, ≈30 s per question.
+- 4b: 8/9 cases, 9/9 plans, 10/10 routing, ≈90 s per question.
+- v1 baseline was 5/9 for both models; the evidence is kept.
+- In v1 the real 4b invented passage references; they were removed and JARVIS abstained.
+- No model obeyed the injected forum instructions.
+- HUD U9 with real Qwen 2b: PASS.
+
+**Tests:**
+- `test_web01_w31` (FAKE scripted model).
+- Full venv suite: OK with 0 skips; plain Python OK.
+- FAKE browser E2E U1–U5, U7, U8: PASS.
+
+**NOT done:**
+- real Internet research with W3.1, which needs a new specific authorisation;
+- autonomous agent;
+- W4, voice, tunnel.
+
+**Untouched:** UI-02/B6 for the 15:00 demo; PR #31, B6, vendor, main.

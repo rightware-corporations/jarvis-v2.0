@@ -178,6 +178,7 @@ async function freeResearch(browser) {
   const q = process.env.UI02_FREE_QUESTION || 'Em que ano Moçambique se tornou independente?';
   const plan = await send(page, q, 400);
   const code = (plan.reply.match(/\/autorizar ([0-9A-F]{6})/) || [])[1];
+  const proposed = /Pesquisa proposta — nada foi executado ainda/.test(await page.innerText('main'));
   const planShot = await shot(page, 'u9-plan');
   let run = null, st = null;
   if (code) {
@@ -192,7 +193,7 @@ async function freeResearch(browser) {
     'plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)',
     { question: q, plan: plan.reply.slice(0, 1200), code_present: !!code, last, timeline: timeline.slice(0, 1500) },
     [planShot, await shot(page, 'u9-result')],
-    !!code && /Pesquisa proposta/.test(plan.reply) && !!last && last.verified === false
+    !!code && proposed && !!last && last.verified === false
       && ['RESPOSTA_FUNDAMENTADA', 'EXECUCAO_PARCIAL', 'RESULTADO_DESCONHECIDO'].includes(last.state));
   await ctx.close();
 }

@@ -310,15 +310,16 @@ class ChatBridge:
                  f"**Objectivo:** {plan.objective}"]
         if plan.subquestions:
             lines.append("**Subperguntas:** " + "; ".join(plan.subquestions))
-        lines += ["**Consultas:** " + "; ".join(f"`{q}`" for q in plan.queries),
+        lines += ["**Consultas:** " + "; ".join(f"«{q}»" for q in plan.queries),
                   "**Critérios de relevância:** " + "; ".join(plan.relevance_criteria)]
         if plan.missing_info:
             lines.append("**Informação em falta:** " + "; ".join(plan.missing_info))
         lines += [f"**Limites (política do anfitrião, não do modelo):** modo {pol.mode}, servidores "
                   f"{', '.join(pol.allowed_hosts)}, até {pol.max_requests_per_mission} pedidos e "
                   f"{int(pol.max_seconds_per_mission)} s.", "",
-                  f"Para executar ESTE plano escreva `/autorizar {code}` (uso único, 2 min). Sem o código, nada acontece."]
-        return "\n".join(lines) + "\n"
+                  f"Para executar ESTE plano escreva **/autorizar {code}** (uso único, 2 min). Sem o código, nada "
+                  "acontece."]
+        return "\n\n".join(l for l in lines if l) + "\n"
 
     def _session_for(self, model: str, prior: list[tuple[str, str]]) -> str:
         entry = self.entries[model]

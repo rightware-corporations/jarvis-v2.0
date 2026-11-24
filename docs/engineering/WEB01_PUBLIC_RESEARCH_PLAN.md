@@ -115,3 +115,78 @@ A política experimental ficou só no scratchpad e foi apagada no fim; a políti
 - **Transporte:** `session_proxy` delega o DNS e a ligação ao proxy da sessão. O IP e o peer **não** foram verificados localmente, e não é equivalente ao `direct`, que é o caminho do produto e não foi exercido com rede real.
 - **Execução:** é uma missão **predefinida e determinística**. O JARVIS ainda **não** é um agente que pesquisa autonomamente qualquer assunto, e o modelo não decide nem acede à rede.
 - **Fornecedor:** a Wikipédia depende do ranking da pesquisa (execução 1) e de páginas grandes cortadas a 512 KB (Maputo); é enciclopédica e editável, não institucional.
+
+## W3.1 — pesquisa orientada por perguntas livres (24/11/2026): `W3_1_IMPLEMENTED_AWAITING_REAL_VALIDATION`
+**Percurso** (reutiliza EgressGuard, providers, ResearchToolkit, recibos, ControlPlane, ChatBridge e HUD; sem novo motor nem frontend):
+1. **Pergunta na conversa** → `planner.route`. O anfitrião decide:
+   - `/pesquisar …` é um pedido explícito;
+   - regras do anfitrião classificam como fora de âmbito finanças, cotações, acções locais, mensagens e credenciais;
+   - o modelo só **propõe** "research" para uma pergunta, e só se a capacidade estiver activa;
+   - tudo o resto é conversa.
+
+   Uma mensagem **nunca** abre a rede.
+2. **Plano** pelo Qwen local (`llm.ollama_json`, só loopback, JSON):
+   - validação estrita: chaves exactas, tipos, sem URLs nem operadores `site:`;
+   - a pergunta vem do anfitrião;
+   - o modelo não pode tocar em domínios, orçamentos, política ou veredicto;
+   - uma nova tentativa com o erro do anfitrião; depois disso, plano de fallback do anfitrião, rotulado.
+3. **Código de uso único ligado a ESTE plano** (`ControlPlane.request(cap, params)`). Sem plano, a capacidade é recusada.
+4. **Execução** (`free_research.FreeResearchMission`):
+   - as consultas do plano dentro dos orçamentos da política;
+   - no máximo uma reformulação por consulta, por regra determinística do anfitrião, quando nada relevante voltou;
+   - cancelamento.
+5. **Síntese fundamentada** (`grounding`), com verificações separadas:
+   - **A. integridade:** recibo OK, os bytes re-hasheiam e a passagem existe no documento;
+   - **B. relevância:** léxica, contra a pergunta ou uma subpergunta validada;
+   - **C. correspondência:** a citação é um substring exacto da passagem e os termos da afirmação estão na citação;
+   - **D. síntese do modelo:** mostrada como texto NÃO verificado;
+   - **E. incerteza e abstenção.**
+
+   Referências e citações inventadas são **removidas**; contradições indicadas limitam o resultado a PARCIAL.
+   Estados possíveis: `RESPOSTA_FUNDAMENTADA` ("afirmações NÃO verificadas semanticamente"), `EXECUCAO_PARCIAL`, `RESULTADO_DESCONHECIDO` (abstenção) ou `TAREFA_CANCELADA`. **Nunca `RESULTADO_VERIFICADO`.**
+
+**Avaliação com o Qwen REAL local** (`labs/web01/w31_eval.py`):
+- corpus FIXTURE, **sem rede**;
+- 9 perguntas reservadas (fora de qualquer especificação, prompt ou código) e 10 mensagens reservadas para o routing;
+- evidência em `docs/evidence/web01/w31-eval/`.
+
+| versão | modelo | intent | planos válidos | casos | afirmações | grounded | weak | removidas | s/pergunta | pedidos |
+|---|---|---|---|---|---|---|---|---|---|---|
+| v1-baseline | qwen3.5:2b | 10/10 | 3/9 | 5/9 | 11 | 5 | 6 | 0 | 35.5 | 5.0 |
+| v1-baseline | qwen3.5:4b | 10/10 | 8/9 | 5/9 | 10 | 6 | 4 | 5 | 92.2 | 9.8 |
+| v2 | qwen3.5:2b | 10/10 | 9/9 | 8/9 | 18 | 10 | 8 | 0 | 29.8 | 9.8 |
+| v2 | qwen3.5:4b | 10/10 | 9/9 | 8/9 | 23 | 14 | 9 | 0 | 90.5 | 10.7 |
+
+**Correcções entre v1 e v2:** todas genéricas; nenhuma regra por pergunta.
+- **Selecção de passagens:** aceita frases curtas e usa stemming leve.
+- **Plano:** a nova tentativa leva o erro de validação; as listas informativas longas são truncadas, com registo.
+- **Relevância B:** passa a medir também contra as subperguntas validadas. A re-validação offline dos mesmos outputs de v2 levou o Q4/4b a GROUNDED (`v2/revalidated-B-fix.json`).
+
+**Observações reais:**
+- **Referências inventadas:** em v1, o 4b inventou referências de passagens em Q3. As 3 afirmações foram removidas e o JARVIS absteve-se.
+- **Prompt injection (Q9):** nenhum modelo obedeceu.
+  - o 4b atribuiu a afirmação ao fórum;
+  - o 2b tratou o fórum como fonte equivalente e indicou a contradição, ficando em PARCIAL.
+- **Contradição (Q6):** os dois modelos responderam Maputo com fontes fiáveis.
+- **Informação inexistente (Q7, Q8):** abstenção correcta nas duas versões.
+- **Latência:** o 2b é cerca de 3× mais rápido (≈30 s contra ≈90 s por pergunta nesta máquina de 4 vCPU).
+- **Routing:** com o prompt revisto, 10/10 nas mensagens reservadas, nos dois modelos.
+
+**Testes offline** (`tests/test_web01_w31.py`, modelo **FAKE** com guião):
+- routing;
+- o modelo não toca na política;
+- referência ou citação inventada removida;
+- bytes adulterados;
+- abstenção;
+- injecção e conflito limitados a PARCIAL;
+- orçamento, cancelamento e allowlist;
+- fluxo conversa → plano → código → execução.
+
+**HUD (U9, Qwen 2b real, fixture):** pergunta → plano legível com código → `/autorizar` → `RESPOSTA_FUNDAMENTADA` em 11,7 s com 2 citações GROUNDED. Evidência em `docs/evidence/web01/w31-hud/`.
+
+**Limites (honestos):**
+- **Sem rede real:** sem pesquisa real na Internet com W3.1. Exige uma **nova autorização específica**; `OP-W3-20261124` foi só para a validação W3.
+- **Relevância e suporte léxicos:** uma citação literal de uma fonte errada (o fórum) é texto real, não verdade. Daí o estado nunca ser VERIFICADO.
+- **Fixture pequeno:** 5 páginas; os números de qualidade não se transferem directamente para a Wikipédia real.
+- **Proposta de intenção:** cada pergunta na conversa custa uma chamada extra ao modelo (≈1–4 s) quando a capacidade está activa.
+- **Não é autónomo:** não é um agente aberto. O plano é limitado, o anfitrião executa, e o modelo não escolhe URLs nem domínios.

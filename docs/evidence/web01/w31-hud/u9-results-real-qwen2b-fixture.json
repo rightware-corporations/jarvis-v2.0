@@ -1,0 +1,148 @@
+[
+  {
+    "id": "U9",
+    "action": "Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)",
+    "expected": "plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)",
+    "obtained": {
+      "question": "Que língua oficial se fala em Moçambique?",
+      "plan": "Decisão: O modelo propôs pesquisa externa; o anfitrião exige plano e código. (host (proposta do modelo))\n\nPlano: modelo:qwen3.5:2b\n\nObjectivo: Identificar a língua oficial de Moçambique.\n\nSubperguntas: Qual é o nome da língua oficial?; Quais são as outras línguas oficiais reconhecidas?; Como se chama a língua portuguesa no contexto local?\n\nConsultas: «língua oficial de Moçambique»; «linguagem oficial em Moçambique»; «que idioma é oficial em Moçambique»; «línguas oficiais de Moçambique»\n\nCritérios de relevância: Informação sobre a língua oficial principal; Lista de línguas reconhecidas oficialmente; Detalhes linguísticos ou históricos relevantes; Contexto regional ou nacional da língua\n\nLimites (política do anfitrião, não do modelo): modo fixture, servidores pesquisa.fixture.example, enciclopedia.fixture.example, estatisticas.fixture.example, banco-central.fixture.example, forum.fixture.example, até 12 pedidos e 120 s.\n\nPara executar ESTE plano escreva /autorizar F0FB70 (uso único, 2 min). Sem o código, nada acontece.\n\nrw-c9d7607e2c6177e2",
+      "code_present": true,
+      "last": {
+        "state": "RESPOSTA_FUNDAMENTADA",
+        "label": "Resposta fundamentada em fontes (citações e integridade validadas; afirmações NÃO verificadas semanticamente)",
+        "verified": false,
+        "capability": "pesquisa-livre",
+        "operational_state": "FREE_RESEARCH_GROUNDED_FIXTURE",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 5,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 8,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 9,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 10,
+            "tool": "web_search_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "C1",
+            "status": "GROUNDED",
+            "receipt": 2
+          },
+          {
+            "id": "C2",
+            "status": "GROUNDED",
+            "receipt": 3
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "A língua oficial em Moçambique é o português.",
+        "seconds": 11.41,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Modo: FIXTURE (corpus local de ensaio, sem acesso à Internet)",
+          "Pergunta: Que língua oficial se fala em Moçambique?",
+          "Plano: modelo:qwen3.5:2b; consultas: língua oficial de Moçambique; linguagem oficial em Moçambique; que idioma é oficial em Moçambique; línguas oficiais de Moçambique; mocambique oficial lingua fala (reformulada)",
+          "C1 [GROUNDED] A língua oficial é o português. — fonte #2: «A língua oficial é o português.» (relevância 0.67, suporte lexical 1.0)",
+          "C2 [GROUNDED] Língua oficial: português — fonte #3: «Língua oficial: português» (relevância 0.67, suporte lexical 1.0)"
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://enciclopedia.fixture.example/wiki/Mocambique",
+            "fetched_at": "2026-11-24T07:16:32.347631Z",
+            "sha256": "1919f76aa332125c97f61b524e5ed6ed5ea59b788f93a01bd3e1c4e017fb9341",
+            "bytes": 771,
+            "supports": [
+              "C1"
+            ]
+          },
+          {
+            "seq": 3,
+            "url": "https://estatisticas.fixture.example/paises/mocambique",
+            "fetched_at": "2026-11-24T07:16:32.348132Z",
+            "sha256": "b912d57fc83c886e6a67fcc3673f69d46678bf9da54b9f2f31570255cd7ac8e0",
+            "bytes": 604,
+            "supports": [
+              "C2"
+            ]
+          },
+          {
+            "seq": 5,
+            "url": "https://banco-central.fixture.example/sobre",
+            "fetched_at": "2026-11-24T07:16:32.351517Z",
+            "sha256": "cbb953f121cb33c00285e498b264501c57b90d4f1ab6cce95cec87fd67ec03d7",
+            "bytes": 577,
+            "supports": []
+          },
+          {
+            "seq": 6,
+            "url": "https://enciclopedia.fixture.example/wiki/Maputo",
+            "fetched_at": "2026-11-24T07:16:32.352021Z",
+            "sha256": "63d6bc318afc47bedaf107f8762b02e7b0508cf7fc8272a84305500eb0b057a4",
+            "bytes": 463,
+            "supports": []
+          },
+          {
+            "seq": 8,
+            "url": "https://forum.fixture.example/topico/capital",
+            "fetched_at": "2026-11-24T07:16:32.354633Z",
+            "sha256": "a1351cfecbd30704610aa60fb4ee8fdc666049ea8e0fc1e3e33bb2c3a62e46ee",
+            "bytes": 601,
+            "supports": []
+          }
+        ]
+      },
+      "timeline": "Resposta fundamentada em fontes (citações e integridade validadas; afirmações NÃO verificadas semanticamente) · FREE_RESEARCH_GROUNDED_FIXTURE · 11.4 s\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_open_public OK\n#4 web_search_public OK\n#5 web_open_public OK\n#6 web_open_public OK\n#7 web_search_public OK\n#8 web_open_public OK\n#9 web_search_public OK\n#10 web_search_public OK\nOBJECTIVOS\nC1: GROUNDED (#2)\nC2: GROUNDED (#3)\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nModo: FIXTURE (corpus local de ensaio, sem acesso à Internet)\nPergunta: Que língua oficial se fala em Moçambique?\nPlano: modelo:qwen3.5:2b; consultas: língua oficial de Moçambique; linguagem oficial em Moçambique; que idioma é oficial em Moçambique; línguas oficiais de Moçambique; mocambique oficial lingua fala (reformulada)\nC1 [GROUNDED] A língua oficial é o português. — fonte #2: «A língua oficial é o português.» (relevância 0.67, suporte lexical 1.0)\nC2 [GROUNDED] Língua oficial: português — fonte #3: «Língua oficial: português» (relevância 0.67, suporte lexical 1.0)\nFONTES (RECIBOS DE LEITURA)\n#2 https://enciclopedia.fixture.example/wiki/Mocambique\n2026-11-24T07:16:32.347631Z · sha256 1919f76aa332125c… · 771 B · suporta C1\n#3 https://estatisticas.fixture.example/paises/mocambique\n2026-11-24T07:16:32.348132Z · sha256 b912d57fc83c886e… · 604 B · suporta C2\n#5 https://banco-central.fixture.example/sobre\n2026-11-24T07:16:32.351517Z · sha256 cbb953f121cb33c0… · 577 B\n#"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31/e2e/u9-plan.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31/e2e/u9-result.png"
+    ],
+    "pass": true,
+    "mode": "real"
+  }
+]
