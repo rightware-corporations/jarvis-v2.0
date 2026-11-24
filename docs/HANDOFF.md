@@ -4277,3 +4277,22 @@ See `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3.1.
   - a single-source flag for numbers;
   - a new frozen set H2;
   - then a real validation with a new authorisation.
+
+## CHECKPOINT — 24/11/2026: JRV-F00 → `F00_OPERATIONAL_FOUNDATION_DOCUMENTED` (documentation only)
+- **Scope:** documentation only, on the PR #32 branch (Draft). No product code changed. No new branch, no network, no tunnel, no merge. main, develop, vendor, PR #31 and B6 (`66be4c9`) are untouched. WEB-01 and all its evaluations and negative results are preserved. No W3.2-R2/W3.3 work.
+- **Document:** `docs/engineering/F00_OPERATIONAL_INTELLIGENCE_FOUNDATION.md`. It covers:
+  - the reconciliation of sources;
+  - an inventory with states (integrated, experimental, upstream, planned);
+  - the target architecture A–E with responsibilities;
+  - an engine re-evaluation (Orchestrator, NativeReAct, Operative, goose, native Ollama tool calling, WEB-01);
+  - the Operations Centre as an extension of the HUD, driven only by real events;
+  - risks and open questions;
+  - roadmap F01–F06;
+  - the **F01 bake-off protocol (prepared, NOT executed)**;
+  - a list of decisions that require approval.
+- **Key finding (FACT):**
+  - RIGHTWARE already has the governance pieces: ControlPlane, Gateway, AgentPolicy, receipts, verifiers and EgressGuard.
+  - It has two tool executors: AgentSession (OpenJarvis OrchestratorAgent) and goose.
+  - The GUI chat is still a tool-free SimpleAgent. Model-chosen tools in conversation are the main gap.
+- **Classification:** every item is labelled APPROVED / FACT / RECOMMENDATION / HYPOTHESIS. Approved inputs are only the 23/11 product direction (reuse OpenJarvis through the RIGHTWARE gates) and the 24/11 directive.
+- **Next:** operator decisions listed in §10 of the document; F01 execution only with explicit authorisation.
