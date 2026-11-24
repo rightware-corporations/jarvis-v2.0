@@ -1,0 +1,130 @@
+[
+  {
+    "id": "U8",
+    "action": "Pesquisa pública de leitura pela HUD (modo PUBLIC)",
+    "expected": "RESULTADO_VERIFICADO; fontes com URL, data, sha256 e bytes; cada objectivo suportado por uma fonte designada",
+    "obtained": {
+      "last": {
+        "state": "EXECUCAO_PARCIAL",
+        "label": "Execução parcialmente concluída — resultado não verificado",
+        "verified": false,
+        "capability": "pesquisa-publica",
+        "operational_state": "RESEARCH_PARTIAL_PUBLIC",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 5,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "web_open_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "CAPITAL",
+            "status": "VERIFIED",
+            "receipt": 2
+          },
+          {
+            "id": "MOEDA",
+            "status": "VERIFIED",
+            "receipt": 4
+          },
+          {
+            "id": "BANCO_CENTRAL",
+            "status": "NOT_VERIFIED",
+            "receipt": null
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "",
+        "seconds": 6.48,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Modo: INTERNET PÚBLICA (leitura real, allowlist autorizada)",
+          "Transporte: session_proxy (EXPERIMENTAL, só validação em sandbox) — DNS e ligação delegados ao proxy; IP e peer NÃO verificados localmente; não é a configuração de produção.",
+          "Pergunta: Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.",
+          "CAPITAL: A capital de Moçambique é Maputo. (recibo #2)",
+          "MOEDA: A moeda oficial de Moçambique é o metical (MZN). (recibo #4)",
+          "BANCO_CENTRAL: NÃO verificado"
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://pt.wikipedia.org/wiki/Maputo",
+            "fetched_at": "2026-11-24T06:13:14.932340Z",
+            "sha256": "74f02d563c98cd867bb68f8dd52b368a6b5e3a073574d4da331a46f4e8864766",
+            "bytes": 524288,
+            "supports": [
+              "CAPITAL"
+            ]
+          },
+          {
+            "seq": 4,
+            "url": "https://pt.wikipedia.org/wiki/Metical",
+            "fetched_at": "2026-11-24T06:13:16.464673Z",
+            "sha256": "945b5d943fea839e032fa2e9b39503207809b0aa7dfb705c525e9d88ebda683e",
+            "bytes": 137444,
+            "supports": [
+              "MOEDA"
+            ]
+          },
+          {
+            "seq": 6,
+            "url": "https://pt.wikipedia.org/wiki/Banco_Central_do_Paraguai",
+            "fetched_at": "2026-11-24T06:13:18.083869Z",
+            "sha256": "c3a3ae4c909ae01f3c9bfb5d192607513315756926cf90d97070bef709697388",
+            "bytes": 318209,
+            "supports": []
+          },
+          {
+            "seq": 7,
+            "url": "https://pt.wikipedia.org/wiki/Banco_Mundial",
+            "fetched_at": "2026-11-24T06:13:18.945848Z",
+            "sha256": "d62374d7854d82472de92d3a2b0e9f5ad71afb3744b264cb5b6f2b30900ef0e2",
+            "bytes": 524288,
+            "supports": []
+          }
+        ]
+      },
+      "sources": 4,
+      "supports": [
+        "CAPITAL",
+        "MOEDA"
+      ],
+      "timeline": "Execução parcialmente concluída — resultado não verificado · RESEARCH_PARTIAL_PUBLIC · 6.5 s\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_search_public OK\n#4 web_open_public OK\n#5 web_search_public OK\n#6 web_open_public OK\n#7 web_open_public OK\nOBJECTIVOS\nCAPITAL: VERIFIED (#2)\nMOEDA: VERIFIED (#4)\nBANCO_CENTRAL: NOT_VERIFIED\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nModo: INTERNET PÚBLICA (leitura real, allowlist autorizada)\nTransporte: session_proxy (EXPERIMENTAL, só validação em sandbox) — DNS e ligação delegados ao proxy; IP e peer NÃO verificados localmente; não é a configuração de produção.\nPergunta: Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.\nCAPITAL: A capital de Moçambique é Maputo. (recibo #2)\nMOEDA: A moeda oficial de Moçambique é o metical (MZN). (recibo #4)\nBANCO_CENTRAL: NÃO verificad"
+    },
+    "evidence": "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w3/e2e/u8-research-result.png",
+    "pass": false,
+    "mode": "real"
+  }
+]

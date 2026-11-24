@@ -3,10 +3,12 @@ export type CapabilityStatus = 'INTEGRADA' | 'PARCIAL' | 'NAO_INTEGRADA' | 'BLOQ
 export interface Capability { id: string; label: string; status: CapabilityStatus; reason: string; mission?: boolean; description?: string }
 export interface Receipt { seq: number; tool: string; status: string }
 export interface Objective { id: string; status: string; receipt: number | null }
+/** WEB-01: a receipted read (the verifier re-hashes the kept bytes); `supports` = objectives it proves. */
+export interface Source { seq: number; url: string; fetched_at: string; sha256: string; bytes: number; supports: string[] }
 export interface Outcome {
   state: string; label: string; verified: boolean; capability?: string; operational_state?: string;
   receipts?: Receipt[]; objectives?: Objective[]; changes?: string[]; commentary_unverified?: string;
-  seconds?: number; error_code?: string; halt?: string; refusal?: string;
+  seconds?: number; error_code?: string; halt?: string; refusal?: string; findings?: string[]; sources?: Source[];
 }
 export interface HudState {
   engine: { healthy: boolean; models: string[]; default_model: string };

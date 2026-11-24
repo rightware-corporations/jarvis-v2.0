@@ -1,0 +1,15 @@
+{
+  "version": "web01.egress.v1",
+  "mode": "public",
+  "network_enabled": false,
+  "authorization_ref": null,
+  "allowed_hosts": ["pt.wikipedia.org"],
+  "methods": ["GET"],
+  "max_bytes_per_response": 524288,
+  "timeout_s": 10,
+  "max_redirects": 2,
+  "max_requests_per_mission": 10,
+  "max_total_bytes_per_mission": 3145728,
+  "max_seconds_per_mission": 90,
+  "transport": "direct"
+}

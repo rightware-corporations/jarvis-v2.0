@@ -1,0 +1,63 @@
+{
+ "verdict": "RESEARCH_VERIFIED",
+ "problems": [],
+ "objectives": [
+  [
+   "CAPITAL",
+   "VERIFIED",
+   2
+  ],
+  [
+   "MOEDA",
+   "VERIFIED",
+   4
+  ],
+  [
+   "BANCO_CENTRAL",
+   "VERIFIED",
+   6
+  ]
+ ],
+ "sources": [
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Maputo",
+   "fetched_at": "2026-11-24T06:13:59.940245Z",
+   "sha256": "26972f54c91692b1d75f908f6228ad59451788146612f6fe962ad3309724a2d9",
+   "bytes": 524288,
+   "supports": [
+    "CAPITAL"
+   ]
+  },
+  {
+   "seq": 4,
+   "url": "https://pt.wikipedia.org/wiki/Metical",
+   "fetched_at": "2026-11-24T06:14:01.278144Z",
+   "sha256": "902adaaba9dbbc024d217bc18a97f282433e67c6a29ad7f9fc059de1895eef8b",
+   "bytes": 137444,
+   "supports": [
+    "MOEDA"
+   ]
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Banco_de_Mo%C3%A7ambique",
+   "fetched_at": "2026-11-24T06:14:03.604972Z",
+   "sha256": "eac5521a4c9ad363b8b12946e2c20c1406e2e5c5ece4e8f83cae7392c01848f4",
+   "bytes": 165906,
+   "supports": [
+    "BANCO_CENTRAL"
+   ]
+  }
+ ],
+ "claims": {
+  "CAPITAL": "A capital de Moçambique é Maputo.",
+  "MOEDA": "A moeda oficial de Moçambique é o metical (MZN).",
+  "BANCO_CENTRAL": "O banco central emissor é o Banco de Moçambique."
+ },
+ "passages": {
+  "CAPITAL": "oficial do Conselho Municipal de Maputo Maputo é a capital e a maior cidade de Moçambique. É també",
+  "MOEDA": "de Moçambique Websitewww.bancomoc.mz O metical (ISO 4217: MZN, abreviado como MT), é a unidade monetária oficial da República de Moçambique. Foi instituído no país em 16 de junho",
+  "BANCO_CENTRAL": "gosto de 2025) Websitewww.bancomoc.mz O Banco de Moçambique (abreviadamente BM) é o banco central da República de Moçambique. De acordo c"
+ }
+}

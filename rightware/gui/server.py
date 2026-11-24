@@ -47,18 +47,19 @@ def build_entries(models: list[str], deadline: float, adapter_factory=None) -> d
     return {m: build(m, adapter_factory(m) if adapter_factory else None, deadline) for m in models}
 
 
-def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: bool = False, goose=None,
+def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: bool = False, goose=None, missions=(),
               runtime: Path | None = None, inner=None, adapter_factory=None, session_factory_builder=None,
               auth: LocalAuth | None = None, static_dir: Path | None = None):
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
     entries = build_entries(models, deadline, adapter_factory)
     control = None
-    if trial or goose is not None or session_factory_builder is not None:
+    if trial or goose is not None or missions or session_factory_builder is not None:
         from rightware.control_plane import ControlPlane
         control = ControlPlane(entries[models[0]].text_facade, enable_trial_compare=trial or
                                session_factory_builder is not None, model=models[0],
-                               session_factory_builder=session_factory_builder, goose=goose)
+                               session_factory_builder=session_factory_builder, goose=goose,
+                               missions=tuple(missions))
         entries[models[0]] = control.entry
     bridge = ChatBridge(entries=entries, default_model=models[0], control=control, audit=audit)
     inner = inner if inner is not None else build_inner(models[0], p["home"])

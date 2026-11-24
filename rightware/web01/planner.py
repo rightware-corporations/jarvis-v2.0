@@ -1,0 +1,287 @@
+"""WEB-01 W3.1: intent routing and the research planner.
+
+Intent routing (host decides; the model may only PROPOSE):
+* ``RESEARCH_EXPLICIT`` — the operator wrote ``/pesquisar <pergunta>`` (command, host rule);
+* ``OUT_OF_SCOPE`` — host rules for things JARVIS cannot do (financial operations, quotes, local actions, messages,
+  credentials); answered with the real capability status, nothing executed;
+* ``RESEARCH_SUGGESTED`` — a question the local model PROPOSES needs external facts, and only if the host enabled a
+  research capability; it yields a PLAN and an authorisation request, never a network call;
+* ``CHAT`` — everything else (the existing tool-free conversation).
+
+Planner: the local model returns ONE JSON object; the host validates it strictly (exact keys, types, lengths, no URLs,
+no search operators) and keeps the ORIGINAL question from the host, not from the model. The plan cannot carry
+domains, budgets, policy or verdicts — unknown keys are a validation failure. One retry; then a deterministic host
+fallback plan (labelled as such)."""
+from __future__ import annotations
+
+import dataclasses
+import json
+import re
+import unicodedata
+
+CHAT, RESEARCH_SUGGESTED, RESEARCH_EXPLICIT, OUT_OF_SCOPE = "CHAT", "RESEARCH_SUGGESTED", "RESEARCH_EXPLICIT", "OUT_OF_SCOPE"
+MAX_QUESTION = 300
+OUT_OF_SCOPE_RULES = (
+    (r"\b(compr[ae]r?|vend[ae]r?|investir|transferi[rd]|pagar|ordem de (compra|venda)|aplicar dinheiro)\b",
+     "Operações financeiras não são executadas pelo JARVIS."),
+    (r"\b(cota[çc][ãa]o|cota[çc][õo]es|pre[çc]o d[ae]s? a[çc][ãa]o|bolsa de valores|taxa de c[âa]mbio hoje)\b",
+     "Cotações e dados de mercado não estão integrados (WEB-01 W4 não iniciado)."),
+    (r"\b(apag[ae]r?|elimin[ae]r?|execut[ae]r?|instal[ae]r?|abr[ei]r? o programa|correr o comando)\b.{0,40}"
+     r"\b(ficheiro|arquivo|comando|programa|aplica[çc][ãa]o|pasta)\b",
+     "Acções no computador estão BLOQUEADAS (exigem companion autorizado)."),
+    (r"\b(envi[ae]r?|mand[ae]r?)\b.{0,30}\b(e-?mail|mensagem|sms|whatsapp)\b", "Envio de mensagens não está integrado."),
+    (r"\b(palavra-passe|password|senha|credencia(l|is)|token)\b", "O JARVIS não pede nem usa credenciais."),
+)
+INTERROGATIVE = re.compile(r"^\s*(qual|quais|quem|quando|onde|quanto|quantos|quantas|como|porque|por que|o que|"
+                           r"what|who|when|where|which|how many|how much)\b", re.I)
+
+
+@dataclasses.dataclass(frozen=True)
+class Intent:
+    kind: str
+    question: str
+    reason: str
+    decided_by: str            # "host" | "host (proposta do modelo)"
+
+
+def _fold(s: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFKD", s.lower()) if not unicodedata.combining(c))
+
+
+def route(text: str, *, research_enabled: bool, propose=None) -> Intent:
+    """``propose(text) -> 'chat'|'research'|None`` is the model's proposal (optional, validated here)."""
+    t = " ".join((text or "").split())
+    if t.lower().startswith("/pesquisar"):
+        q = t[len("/pesquisar"):].strip()
+        if not research_enabled:
+            return Intent(OUT_OF_SCOPE, q, "A pesquisa livre não foi activada pelo anfitrião.", "host")
+        if not 3 <= len(q) <= MAX_QUESTION:
+            return Intent(OUT_OF_SCOPE, q, f"Pergunta vazia ou longa demais (máx. {MAX_QUESTION}).", "host")
+        return Intent(RESEARCH_EXPLICIT, q, "Pedido explícito do operador.", "host")
+    for rx, why in OUT_OF_SCOPE_RULES:
+        if re.search(rx, t, re.I):
+            return Intent(OUT_OF_SCOPE, t, why, "host")
+    if research_enabled and propose is not None and (t.endswith("?") or INTERROGATIVE.match(t)) \
+            and len(t) <= MAX_QUESTION:
+        try:
+            proposal = propose(t)
+        except Exception:                       # the model failing never blocks the chat
+            proposal = None
+        if proposal == "research":
+            return Intent(RESEARCH_SUGGESTED, t, "O modelo propôs pesquisa externa; o anfitrião exige plano e código.",
+                          "host (proposta do modelo)")
+    return Intent(CHAT, t, "Conversa normal.", "host")
+
+
+INTENT_SYSTEM = ("Classifica a mensagem do utilizador. Responde só com JSON {\"intent\": \"chat\" ou \"research\"}. "
+                 "Usa \"research\" para QUALQUER pergunta factual sobre o mundo real (pessoas, países, lugares, datas, "
+                 "organizações, moedas, números, acontecimentos), mesmo que penses saber a resposta, porque o JARVIS "
+                 "tem de responder com fontes. Usa \"chat\" para cumprimentos, conversa, opiniões, escrita criativa, "
+                 "tradução, cálculo ou perguntas sobre o próprio JARVIS. Exemplos: \"Qual é a capital de Angola?\" -> "
+                 "research; \"Quem escreveu Os Lusíadas?\" -> research; \"Bom dia!\" -> chat; \"Escreve um "
+                 "haiku\" -> chat; \"Quanto é 12*7?\" -> chat.")
+
+
+def model_proposer(call):
+    def propose(text: str):
+        raw, _ = call(INTENT_SYSTEM, text)
+        try:
+            v = json.loads(raw).get("intent")
+        except (ValueError, AttributeError):
+            return None
+        return v if v in ("chat", "research") else None
+    return propose
+
+
+# ------------------------------------------------------------------------------------------------------ planner
+PLAN_KEYS = {"objective": str, "answer_parts": list, "subquestions": list, "queries": list,
+             "relevance_criteria": list, "missing_info": list}
+LIMITS = {"objective": 300, "answer_parts": (3, 160), "subquestions": (3, 200), "queries": (4, 100),
+          "relevance_criteria": (4, 160), "missing_info": (4, 160)}
+FORBIDDEN_IN_QUERY = re.compile(r"(https?://|www\.|\bsite:|\binurl:|\bintitle:|\bfiletype:|[<>{}\[\]\\|`])", re.I)
+
+PLAN_SYSTEM = (
+    "Divides uma pergunta em subperguntas para pesquisa. Devolve UM objecto JSON com exactamente duas chaves: "
+    "subperguntas (lista de 1 a 3 PERGUNTAS curtas, cada uma terminada em '?', que repetem o sujeito e usam as palavras "
+    "da pergunta original; uma subpergunta por cada coisa diferente que a pergunta pede; se a pergunta pede uma só "
+    "coisa, devolve só uma) e consultas (lista de 1 a 3 consultas curtas de pesquisa, sem URLs nem operadores). "
+    "NÃO respondas: não escrevas nomes, datas ou valores que não estejam na pergunta. "
+    "Exemplo: pergunta \"Qual é a altura do monte X e em que ano foi escalado?\" -> "
+    "{\"subperguntas\": [\"Qual é a altura do monte X?\", \"Em que ano foi escalado o monte X?\"], "
+    "\"consultas\": [\"monte X altura\", \"monte X primeira escalada\"]}")
+PLAN_V2_KEYS = {"subperguntas", "consultas"}
+GENERIC_PART_WORDS = {"nome", "esta", "este", "essa", "esse", "isso", "real", "realm", "verd", "fact", "actu", "atua",
+                      "exac", "exat"}       # 4-char stems: words a sub-question may add without changing what is asked
+
+
+def check_part(part: str, question: str) -> str | None:
+    """Host check of ONE model sub-question (topic-independent). None if acceptable, else why it is dropped."""
+    if not (part.endswith("?") or INTERROGATIVE.match(part)):
+        return "não é uma pergunta"
+    q_fold = _fold(question)
+    if set(re.findall(r"\d+", part)) - set(re.findall(r"\d+", question)):
+        return "contém números que não estão na pergunta (resposta antecipada)"
+    caps = {_fold(w)[:5] for w in re.findall(r"(?<!^)(?<![.!?]\s)\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÀ-ÿ'-]{2,}", part)}
+    if any(c not in q_fold for c in caps):
+        return "contém nomes que não estão na pergunta (resposta antecipada)"
+    extra = {t[:4] for t in content_terms(part)} - {t[:4] for t in content_terms(question)} - GENERIC_PART_WORDS
+    if extra:
+        return "introduz termos fora da pergunta: " + ", ".join(sorted(extra)[:3])
+    return None
+
+
+def _validate_plan_v2(d: dict, question: str, source: str, notes: list | None) -> tuple["Plan", dict]:
+    queries = _strings(d["consultas"], *LIMITS["queries"], "consultas", n_min=1, notes=notes)
+    for q in queries:
+        if FORBIDDEN_IN_QUERY.search(q) or len(q) < 3:
+            raise PlanError(f"consulta proibida: {q[:40]!r}")
+    proposed = _strings(d["subperguntas"], *LIMITS["answer_parts"], "subperguntas", n_min=1, notes=notes)
+    kept, dropped = [], []
+    for p in proposed:
+        why = check_part(p, question)
+        (dropped.append({"part": p, "why": why}) if why else kept.append(p))
+    q_terms = {t[:4] for t in content_terms(question)}
+    covered = {t[:4] for p in kept for t in content_terms(p)} & q_terms
+    ratio = round(len(covered) / len(q_terms), 2) if q_terms else 1.0
+    if not kept or ratio < 0.6:
+        parts, parts_source = host_parts(question), "anfitrião (contingência)"
+        if notes is not None:
+            notes.append(f"subperguntas do modelo insuficientes (aceites {len(kept)}, cobertura {ratio}); "
+                         "usada a decomposição do anfitrião (contingência)")
+    else:
+        parts, parts_source = tuple(kept), "modelo" if not dropped else "modelo (filtrado pelo anfitrião)"
+        if dropped and notes is not None:
+            notes.append(f"{len(dropped)} subpergunta(s) do modelo removida(s) pelo anfitrião")
+    meta = {"parts_source": parts_source, "parts_proposed": len(proposed), "parts_kept": len(kept),
+            "parts_dropped": dropped, "question_term_coverage": ratio}
+    return Plan(question, f"Responder com fontes: {question}"[:LIMITS["objective"]], tuple(parts), (), queries,
+                ("A evidência responde a uma das subperguntas",), (), source), meta
+
+
+@dataclasses.dataclass(frozen=True)
+class Plan:
+    question: str
+    objective: str
+    answer_parts: tuple[str, ...]
+    subquestions: tuple[str, ...]
+    queries: tuple[str, ...]
+    relevance_criteria: tuple[str, ...]
+    missing_info: tuple[str, ...]
+    source: str                 # "modelo:<nome>" | "anfitrião (fallback)"
+
+    def as_dict(self) -> dict:
+        return dataclasses.asdict(self)
+
+
+class PlanError(ValueError):
+    pass
+
+
+def _strings(v, n_max: int, l_max: int, key: str, n_min: int = 0, notes: list | None = None) -> tuple[str, ...]:
+    """Strict on type (list of strings) and content; a list LONGER than allowed is truncated (and noted) — counts
+    are informational, the host budgets bound execution anyway."""
+    if not isinstance(v, list) or len(v) < n_min or not all(isinstance(x, str) for x in v):
+        raise PlanError(f"{key}: tem de ser uma lista de {n_min}..{n_max} textos (não objectos)")
+    out = []
+    for x in v:
+        x = " ".join(x.split())
+        if not x or len(x) > l_max:
+            raise PlanError(f"{key}: item vazio ou longo demais")
+        if x not in out:
+            out.append(x)
+    if len(out) > n_max:                         # dedupe first, then truncate
+        if notes is not None:
+            notes.append(f"{key}: {len(out)} itens truncados para {n_max}")
+        out = out[:n_max]
+    return tuple(out)
+
+
+def validate_plan(raw: str, question: str, source: str, notes: list | None = None,
+                  plan_meta: dict | None = None) -> Plan:
+    try:
+        d = json.loads(raw)
+    except ValueError:
+        raise PlanError("não é JSON") from None
+    if isinstance(d, dict) and set(d) == PLAN_V2_KEYS:          # W3.2-R contract (sub-questions)
+        plan, meta = _validate_plan_v2(d, question, source, notes)
+        if plan_meta is not None:
+            plan_meta.update(meta)
+        return plan
+    if not isinstance(d, dict) or set(d) != set(PLAN_KEYS):  # legacy W3.1/W3.2 contract (kept for compatibility)
+        raise PlanError(f"chaves inválidas: {sorted(d) if isinstance(d, dict) else type(d).__name__}")
+    objective = d["objective"]
+    if not isinstance(objective, str) or not 3 <= len(objective.strip()) <= LIMITS["objective"]:
+        raise PlanError("objective inválido")
+    queries = _strings(d["queries"], *LIMITS["queries"], "queries", n_min=1, notes=notes)
+    q_stems = {t[:4] for t in content_terms(question)}
+    parts_raw = d["answer_parts"]
+    def _from_question(p: str) -> bool:      # a part DESCRIBES the question: mostly its words, short
+        ps = {t[:4] for t in content_terms(p)}
+        return bool(ps) and len(p) <= 120 and len(ps & q_stems) / len(ps) >= 0.6
+
+    if isinstance(parts_raw, list) and any(isinstance(p, str) and not _from_question(p) for p in parts_raw):
+        if notes is not None:            # parts that are answers (not words of the question) → host decomposition
+            notes.append("answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião")
+        parts_raw = list(host_parts(question))
+        if plan_meta is not None:
+            plan_meta["parts_source"] = "anfitrião (contingência)"
+    d = dict(d, answer_parts=parts_raw)
+    for q in queries:
+        if FORBIDDEN_IN_QUERY.search(q) or len(q) < 3:
+            raise PlanError(f"consulta proibida: {q[:40]!r}")
+    return Plan(question, " ".join(objective.split()),
+                _strings(d["answer_parts"], *LIMITS["answer_parts"], "answer_parts", n_min=1, notes=notes),
+                _strings(d["subquestions"], *LIMITS["subquestions"], "subquestions", notes=notes), queries,
+                _strings(d["relevance_criteria"], *LIMITS["relevance_criteria"], "relevance_criteria", n_min=1, notes=notes),
+                _strings(d["missing_info"], *LIMITS["missing_info"], "missing_info", notes=notes), source)
+
+
+SPLIT = re.compile(r"\s*(?:,|;)?\s+e\s+(?=(?:em\s+)?(?:que|qual|quais|quem|quando|onde|como|quanto|quantos|quantas|"
+                   r"porque|por\s+que)\b)", re.I)
+
+
+def host_parts(question: str) -> tuple[str, ...]:
+    """Deterministic, topic-independent decomposition: clauses joined by "e" + an interrogative word."""
+    q = question.strip().rstrip("?").strip()
+    parts = [p.strip(" ,;") for p in SPLIT.split(q) if p.strip(" ,;")]
+    return tuple(p[:160] for p in parts[:3]) or (question[:160],)
+
+
+STOP = set(_fold("a o os as um uma de do da dos das em no na nos nas por para com sem que qual quais quem quando onde "
+                 "como e é foi são ser ao à aos às se sua seu suas seus isto isso the of in on for and is are was "
+                 "what who when where which how qual é diz-me diga me explica quanto quantos quantas").split())
+
+
+def content_terms(text: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9]{3,}", _fold(text)) if w not in STOP]
+
+
+def fallback_plan(question: str) -> Plan:
+    terms = content_terms(question)
+    q = " ".join(dict.fromkeys(terms))[:100] or question[:100]
+    return Plan(question, "Responder à pergunta com fontes da allowlist.", host_parts(question), (), (q,),
+                ("A fonte trata o tema da pergunta",), (), "anfitrião (fallback)")
+
+
+def make_plan(question: str, call, model_name: str, retries: int = 1) -> tuple[Plan, dict]:
+    """(plan, meta). meta: attempts, errors, seconds, valid_model_plan."""
+    meta = {"attempts": 0, "errors": [], "seconds": 0.0, "valid_model_plan": False, "model": model_name,
+            "normalised": [], "raw_excerpts": []}
+    feedback = ""
+    for _ in range(1 + retries):
+        meta["attempts"] += 1
+        raw = ""
+        try:
+            raw, secs = call(PLAN_SYSTEM, f"Pergunta: {question}{feedback}")
+            meta["seconds"] += secs
+            plan = validate_plan(raw, question, f"modelo:{model_name}", notes=meta["normalised"], plan_meta=meta)
+            meta.setdefault("parts_source", "modelo")
+            meta["valid_model_plan"] = True
+            return plan, meta
+        except Exception as exc:                 # invalid JSON/schema or model failure → retry with feedback
+            meta["errors"].append(f"{type(exc).__name__}: {str(exc)[:120]}")
+            meta["raw_excerpts"].append(raw[:300])
+            feedback = (f"\n\nA tua resposta anterior foi rejeitada pelo anfitrião: {str(exc)[:160]}. Devolve de novo "
+                        "UM objecto JSON com exactamente as chaves pedidas; todas as listas contêm apenas textos.")
+    meta["parts_source"] = "anfitrião (contingência: plano do modelo inválido)"
+    return fallback_plan(question), meta

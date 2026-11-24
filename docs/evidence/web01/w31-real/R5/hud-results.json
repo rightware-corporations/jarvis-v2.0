@@ -1,0 +1,140 @@
+[
+  {
+    "id": "U9",
+    "action": "Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)",
+    "expected": "plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)",
+    "obtained": {
+      "question": "Em que ano Albert Einstein recebeu o Prémio Nobel da Química?",
+      "plan": "da Química?\n\nDecisão: O modelo propôs pesquisa externa; o anfitrião exige plano e código. (host (proposta do modelo))\n\nPlano: modelo:qwen3.5:2b\n\nObjectivo: Identificar o ano em que Albert Einstein recebeu o Prémio Nobel da Química.\n\nSubperguntas: Qual é a data exata do recebimento do prêmio?; Quem foi o nome oficial do prêmio?; Em qual categoria ou área específica foi concedido?\n\nConsultas: «Albert Einstein Prêmio Nobel da Química ano»; «Einstein nobel química data de recebimento»; «Prêmio Nobel da Química Albert Einstein histórico»; «Quando Einstein ganhou o prêmio Nobel químico»\n\nCritérios de relevância: Confirmação oficial do prêmio Nobel; Data específica de entrega ou recebimento; Categorização do prêmio (Ciência e Tecnologia); Contexto histórico da conferência\n\nLimites (política do anfitrião, não do modelo): modo public, servidores pt.wikipedia.org, até 10 pedidos e 90 s.\n\nPara executar ESTE plano escreva /autorizar 496AC2 (uso único, 2 min). Sem o código, nada acontece.\n\nrw-565e5134773c0fd1",
+      "code_present": true,
+      "last": {
+        "state": "RESULTADO_DESCONHECIDO",
+        "label": "Resultado desconhecido — sem provas suficientes",
+        "verified": false,
+        "capability": "pesquisa-livre",
+        "operational_state": "FREE_RESEARCH_ABSTAIN_PUBLIC",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 5,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 8,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 9,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 10,
+            "tool": "web_open_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [],
+        "changes": [],
+        "commentary_unverified": "",
+        "seconds": 20.7,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Modo: INTERNET PÚBLICA (leitura real, allowlist autorizada)",
+          "Pergunta: Em que ano Albert Einstein recebeu o Prémio Nobel da Química?",
+          "Plano: modelo:qwen3.5:2b; consultas: Albert Einstein Prêmio Nobel da Química ano; Einstein nobel química data de recebimento; einstein recebeu quimica albert (reformulada); Prêmio Nobel da Química Albert Einstein histórico",
+          "O JARVIS abstém-se: evidência insuficiente nas fontes consultadas."
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://pt.wikipedia.org/wiki/Albert_Einstein",
+            "fetched_at": "2026-11-24T07:40:31.284597Z",
+            "sha256": "e91cf2fa98732e5717c4beedb4ad7ad3a69715a5fda46231f7d119ecb1493e45",
+            "bytes": 524288,
+            "supports": []
+          },
+          {
+            "seq": 3,
+            "url": "https://pt.wikipedia.org/wiki/Louis_de_Broglie",
+            "fetched_at": "2026-11-24T07:40:34.504417Z",
+            "sha256": "f43ae8a175de8d737d2ee1c4620aefc07bac22b80c1cfe607787d0692bd738e6",
+            "bytes": 524288,
+            "supports": []
+          },
+          {
+            "seq": 6,
+            "url": "https://pt.wikipedia.org/wiki/Debate_Einstein-Bergson",
+            "fetched_at": "2026-11-24T07:40:37.862257Z",
+            "sha256": "a18013c7ba128d4c86f1dff22f7ad5aecec14db07409b85f3d45201aeee53dc5",
+            "bytes": 215822,
+            "supports": []
+          },
+          {
+            "seq": 7,
+            "url": "https://pt.wikipedia.org/wiki/Marie_Maynard_Daly",
+            "fetched_at": "2026-11-24T07:40:39.480352Z",
+            "sha256": "26ab8a3cd3211dd497f6a17a60e5c315d818b8b22737b173c7ad198cd5c6765b",
+            "bytes": 117754,
+            "supports": []
+          },
+          {
+            "seq": 9,
+            "url": "https://pt.wikipedia.org/wiki/Pr%C3%AAmio_Nobel_de_F%C3%ADsica",
+            "fetched_at": "2026-11-24T07:40:40.725711Z",
+            "sha256": "8af4cc425e7c20799a69b5a13702dc91553f20666178cf91e071214c05f7a1f0",
+            "bytes": 406237,
+            "supports": []
+          },
+          {
+            "seq": 10,
+            "url": "https://pt.wikipedia.org/wiki/1955",
+            "fetched_at": "2026-11-24T07:40:41.077928Z",
+            "sha256": "b7c86f98e72c8378563f57b4cbcb8ea244b5e3c992f26204a31b10715a800e18",
+            "bytes": 241602,
+            "supports": []
+          }
+        ]
+      },
+      "timeline": "Resultado desconhecido — sem provas suficientes · FREE_RESEARCH_ABSTAIN_PUBLIC · 20.7 s\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_open_public OK\n#4 web_search_public OK\n#5 web_search_public OK\n#6 web_open_public OK\n#7 web_open_public OK\n#8 web_search_public OK\n#9 web_open_public OK\n#10 web_open_public OK\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nModo: INTERNET PÚBLICA (leitura real, allowlist autorizada)\nPergunta: Em que ano Albert Einstein recebeu o Prémio Nobel da Química?\nPlano: modelo:qwen3.5:2b; consultas: Albert Einstein Prêmio Nobel da Química ano; Einstein nobel química data de recebimento; einstein recebeu quimica albert (reformulada); Prêmio Nobel da Química Albert Einstein histórico\nO JARVIS abstém-se: evidência insuficiente nas fontes consultadas.\nFONTES (RECIBOS DE LEITURA)\n#2 https://pt.wikipedia.org/wiki/Albert_Einstein\n2026-11-24T07:40:31.284597Z · sha256 e91cf2fa98732e57… · 524288 B\n#3 https://pt.wikipedia.org/wiki/Louis_de_Broglie\n2026-11-24T07:40:34.504417Z · sha256 f43ae8a175de8d73… · 524288 B\n#6 https://pt.wikipedia.org/wiki/Debate_Einstein-Bergson\n2026-11-24T07:40:37.862257Z · sha256 a18013c7ba128d4c… · 215822 B\n#7 https://pt.wikipedia.org/wiki/Marie_Maynard_Daly\n2026-11-24T07:40:39.480352Z · sha256 26ab8a3cd3211dd4… · 117754 B\n#9 https://pt.wikipedia.org/wiki/Pr%C3%AAmio_Nobel_de_F%C3%ADsica\n2026-11-24T07:40:40.725711Z · sha256 8af4cc425e7c2079… · 406237 B\n#10 https://pt.wikipedia.org/wiki/1955\n20"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R5/u9-plan.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R5/u9-result.png"
+    ],
+    "pass": true,
+    "mode": "real"
+  }
+]

@@ -1,0 +1,161 @@
+[
+  {
+    "id": "U9",
+    "action": "Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)",
+    "expected": "plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)",
+    "obtained": {
+      "question": "Quem descobriu a penicilina e em que ano?",
+      "plan": "Decisão: O modelo propôs pesquisa externa; o anfitrião exige plano e código. (host (proposta do modelo))\n\nPlano: modelo:qwen3.5:2b\n\nObjectivo: Identificar os descobridores da penicilina e o ano de descoberta.\n\nSubperguntas: Quem foi o cientista principal?; Em qual ano a descoberta ocorreu?; Qual era o contexto histórico do desenvolvimento?\n\nConsultas: «Quem descobriu a penicilina»; «Ano da descoberta da penicilina»; «História da penicilina»; «Descobridor da penicilina»\n\nCritérios de relevância: Fatos históricos confirmados; Nome do cientista envolvido; Ano de descoberta; Impacto na medicina\n\nLimites (política do anfitrião, não do modelo): modo public, servidores pt.wikipedia.org, até 10 pedidos e 90 s.\n\nPara executar ESTE plano escreva /autorizar 0FF0AC (uso único, 2 min). Sem o código, nada acontece.\n\nrw-130f9ee575390216",
+      "code_present": true,
+      "last": {
+        "state": "EXECUCAO_PARCIAL",
+        "label": "Execução parcialmente concluída — resultado não verificado",
+        "verified": false,
+        "capability": "pesquisa-livre",
+        "operational_state": "FREE_RESEARCH_PARTIAL_PUBLIC",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 5,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 8,
+            "tool": "web_open_public",
+            "status": "ERROR"
+          },
+          {
+            "seq": 9,
+            "tool": "web_open_public",
+            "status": "ERROR"
+          },
+          {
+            "seq": 10,
+            "tool": "web_search_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "C1",
+            "status": "WEAK",
+            "receipt": 3
+          },
+          {
+            "id": "C2",
+            "status": "GROUNDED",
+            "receipt": 5
+          },
+          {
+            "id": "C3",
+            "status": "GROUNDED",
+            "receipt": 3
+          },
+          {
+            "id": "C4",
+            "status": "GROUNDED",
+            "receipt": 3
+          },
+          {
+            "id": "C5",
+            "status": "GROUNDED",
+            "receipt": 5
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "A penicilina foi descoberta por Alexander Fleming em meados do século XX, mas o ano exato não é especificado nas passagens fornecidas.\n\nIncerteza: O ano exato em que Alexander Fleming descobriu a penicilina não é mencionado nas passagens fornecidas.",
+        "seconds": 78.7,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Modo: INTERNET PÚBLICA (leitura real, allowlist autorizada)",
+          "Pergunta: Quem descobriu a penicilina e em que ano?",
+          "Plano: modelo:qwen3.5:2b; consultas: Quem descobriu a penicilina; Ano da descoberta da penicilina; História da penicilina; penicilina descobriu ano (reformulada)",
+          "C1 [WEAK] Alexander Fleming descobriu a penicilina — fonte #3: «Quando o ano 2000 se aproximava, pelo menos três grandes revistas suecas classificaram a penicilina como a descoberta mais importante do milênio.» (relevância 1.0, suporte lexical 0.5)",
+          "C2 [GROUNDED] Fleming recebeu o Nobel de Fisiologia ou Medicina em 1945 — fonte #5: «Em 1945, Fleming, Chain e Florey receberam o Nobel de Fisiologia ou Medicina \"pela descoberta da penicilina e de seu efeito curativo em várias doenças infecciosas\".» (relevância 0.67, suporte lexical 1.0)",
+          "C3 [GROUNDED] A indústria farmacêutica foi criada pela descoberta de Fleming — fonte #3: «Em meados do século, a descoberta de Fleming havia gerado uma enorme indústria farmacêutica, produzindo penicilinas sintéticas que conquistariam alguns dos mais antigos flagelos da humanidade, incluindo sífilis, gangrena e tuberculose.» (relevância 0.67, suporte lexical 0.67)",
+          "C4 [GROUNDED] O laboratório onde Fleming descobriu a penicilina está no St Mary's Hospital — fonte #3: «O laboratório no St Mary's Hospital onde Fleming descobriu a penicilina abriga o Museu Fleming, uma atração popular em Londres.» (relevância 0.67, suporte lexical 0.86)",
+          "C5 [GROUNDED] A benzilpenicilina procaína chegou ao mercado norte-americano em 1948 — fonte #5: «Em 1948 chegou ao mercado norte-americano a benzilpenicilina procaína, de ação prolongada.» (relevância 0.67, suporte lexical 1.0)"
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://pt.wikipedia.org/wiki/Penicilina",
+            "fetched_at": "2026-11-24T07:37:19.494775Z",
+            "sha256": "a06d6bb951f16b9160e176a8c4fc21c5dd337874628b49990fbbcd4f5ee74502",
+            "bytes": 361924,
+            "supports": []
+          },
+          {
+            "seq": 3,
+            "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+            "fetched_at": "2026-11-24T07:37:20.834481Z",
+            "sha256": "35f6bbc71ce18465647b19c89956cb8d0c50acb67e7cc7fd038f6dbb72b1a384",
+            "bytes": 524288,
+            "supports": [
+              "C1",
+              "C3",
+              "C4"
+            ]
+          },
+          {
+            "seq": 5,
+            "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina",
+            "fetched_at": "2026-11-24T07:37:29.389614Z",
+            "sha256": "67775f0927e3d30f6f2d5b1c30240803abb75d6cd2890a02050ecd4d3084a97c",
+            "bytes": 337698,
+            "supports": [
+              "C2",
+              "C5"
+            ]
+          },
+          {
+            "seq": 6,
+            "url": "https://pt.wikipedia.org/wiki/Penicilina_G",
+            "fetched_at": "2026-11-24T07:37:30.041692Z",
+            "sha256": "f12ff1d7d83695066db6227a4988d15507bff030d04e293a11b8b9d985055cf1",
+            "bytes": 338052,
+            "supports": []
+          }
+        ]
+      },
+      "timeline": "Execução parcialmente concluída — resultado não verificado · FREE_RESEARCH_PARTIAL_PUBLIC · 78.7 s\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_open_public OK\n#4 web_search_public OK\n#5 web_open_public OK\n#6 web_open_public OK\n#7 web_search_public OK\n#8 web_open_public ERROR\n#9 web_open_public ERROR\n#10 web_search_public OK\nOBJECTIVOS\nC1: WEAK (#3)\nC2: GROUNDED (#5)\nC3: GROUNDED (#3)\nC4: GROUNDED (#3)\nC5: GROUNDED (#5)\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nModo: INTERNET PÚBLICA (leitura real, allowlist autorizada)\nPergunta: Quem descobriu a penicilina e em que ano?\nPlano: modelo:qwen3.5:2b; consultas: Quem descobriu a penicilina; Ano da descoberta da penicilina; História da penicilina; penicilina descobriu ano (reformulada)\nC1 [WEAK] Alexander Fleming descobriu a penicilina — fonte #3: «Quando o ano 2000 se aproximava, pelo menos três grandes revistas suecas classificaram a penicilina como a descoberta mais importante do milênio.» (relevância 1.0, suporte lexical 0.5)\nC2 [GROUNDED] Fleming recebeu o Nobel de Fisiologia ou Medicina em 1945 — fonte #5: «Em 1945, Fleming, Chain e Florey receberam o Nobel de Fisiologia ou Medicina \"pela descoberta da penicilina e de seu efeito curativo em várias doenças infecciosas\".» (relevância 0.67, suporte lexical 1.0)\nC3 [GROUNDED] A indústria farmacêutica foi criada pela descoberta de Fleming — fonte #3: «Em meados do século, a descoberta de Fleming havia gerado uma enorme indústria"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R2/u9-plan.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R2/u9-result.png"
+    ],
+    "pass": true,
+    "mode": "real"
+  }
+]

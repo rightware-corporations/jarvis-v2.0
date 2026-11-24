@@ -156,7 +156,49 @@ const S = {
       await shot(page, 'u6-cpu'), out.chat <= 10 && out.hud <= 10);
     await ctx.close();
   },
-  async mission(browser) {
+  async mission(browser) { await runMission(browser, 'U7', MISSION); },
+  async freeresearch(browser) { await freeResearch(browser); },
+  async research(browser) {
+    // WEB-01 W2: the real research executor over the local FIXTURE corpus (no network), via the same HUD flow.
+    const { page, ctx, st, timeline } = await runMission(browser, 'U8', 'pesquisa-publica', true);
+    const sources = await page.locator('.rw-sources li').count();
+    const supports = await page.locator('.rw-sources li[data-supports]').evaluateAll((els) => els.map((e) => e.getAttribute('data-supports')).filter(Boolean));
+    rec('U8', `Pesquisa pública de leitura pela HUD (modo ${process.env.UI02_RESEARCH_MODE || 'FIXTURE'})`,
+      'RESULTADO_VERIFICADO; fontes com URL, data, sha256 e bytes; cada objectivo suportado por uma fonte designada',
+      { last: st && st.last, sources, supports, timeline: timeline.slice(0, 900) }, await shot(page, 'u8-research-result'),
+      !!st?.last?.verified && st.last.operational_state === `RESEARCH_VERIFIED_${process.env.UI02_RESEARCH_MODE || 'FIXTURE'}` && sources >= 1
+        && ['CAPITAL', 'MOEDA', 'BANCO_CENTRAL'].every((o) => supports.join(' ').includes(o)));
+    await ctx.close();
+  },
+};
+
+async function freeResearch(browser) {
+  // W3.1: free question in the chat → plan + single-use code (no network yet) → operator types /autorizar CODE → result.
+  const { ctx, page } = await login(browser);
+  const q = process.env.UI02_FREE_QUESTION || 'Em que ano Moçambique se tornou independente?';
+  const plan = await send(page, q, 400);
+  const code = (plan.reply.match(/\/autorizar ([0-9A-F]{6})/) || [])[1];
+  const proposed = /Pesquisa proposta — nada foi executado ainda/.test(await page.innerText('main'));
+  const planShot = await shot(page, 'u9-plan');
+  let run = null, st = null;
+  if (code) {
+    run = await send(page, `/autorizar ${code}`, 120);
+    st = await waitMissionEnd(page, Number(process.env.UI02_MISSION_MAX_S || 900));
+  }
+  await page.goto(BASE + '/agents', { waitUntil: 'load' });
+  await page.waitForTimeout(3000);
+  const timeline = await page.locator('.rw-timeline').first().innerText();
+  const last = st && st.last;
+  rec('U9', 'Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)',
+    'plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)',
+    { question: q, plan: plan.reply.slice(0, 1200), code_present: !!code, last, timeline: timeline.slice(0, 1500) },
+    [planShot, await shot(page, 'u9-result')],
+    !!code && proposed && !!last && last.verified === false
+      && ['RESPOSTA_FUNDAMENTADA', 'EXECUCAO_PARCIAL', 'RESULTADO_DESCONHECIDO'].includes(last.state));
+  await ctx.close();
+}
+
+async function runMission(browser, id, MISSION, keep = false) {
     const { ctx, page } = await login(browser);
     await page.goto(BASE + '/agents', { waitUntil: 'load' });
     await page.waitForTimeout(2000);
@@ -180,14 +222,14 @@ const S = {
     const st = await waitMissionEnd(page, Number(process.env.UI02_MISSION_MAX_S || 1200));
     await page.waitForTimeout(2500);
     const timeline = await page.locator('.rw-timeline').first().innerText();
-    rec('U7', `Missão supervisionada pela HUD (${MISSION}) só com o código escrito`,
+    if (keep) return { page, ctx, st, timeline };
+    rec(id, `Missão supervisionada pela HUD (${MISSION}) só com o código escrito`,
       'sem código → 400; botão desactivado sem código; código errado recusado; código certo executa; resultado do verificador',
       { noCode, disabledBefore, wrong: wrong.match(/inválido[^\n]*/i)?.[0] || null, last: st && st.last, timeline: timeline.slice(0, 600) },
       [runningShot, await shot(page, `u7-mission-result-${MISSION}`)],
       noCode.status === 400 && disabledBefore && !!st?.last && (process.env.UI02_EXPECT_VERIFIED === '0' || st.last.verified));
     await ctx.close();
-  },
-};
+}
 
 const browser = await chromium.launch();
 try {

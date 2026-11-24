@@ -1,0 +1,11 @@
+{
+  "version": "web01.sources.v1",
+  "rule": "Source CLASS by exact host (policy, not topic). Only 'reference', 'institutional' and 'news' can SUSTAIN a factual claim. 'user_generated' and any unlisted host ('unclassified') yield ATTRIBUTED allegations only, never facts. This file grants no network access (see egress.json).",
+  "sustaining": ["reference", "institutional", "news"],
+  "classes": {
+    "reference": ["enciclopedia.fixture.example", "wiki.fixture.example", "pt.wikipedia.org"],
+    "institutional": ["estatisticas.fixture.example", "banco-central.fixture.example"],
+    "news": ["noticias.fixture.example"],
+    "user_generated": ["forum.fixture.example"]
+  }
+}

@@ -1,0 +1,11 @@
+== REAL (policy OP-W3-20261124, transport session_proxy) — refused BEFORE any network contact
+  https://en.wikipedia.org/wiki/Maputo          -> REFUSED: servidor fora da allowlist de egress
+  https://93.184.216.34/                        -> REFUSED: servidor fora da allowlist de egress
+  http://pt.wikipedia.org/wiki/Maputo           -> REFUSED: bloqueado pela protecção SSRF
+  https://pt.wikipedia.org:8443/wiki/Maputo     -> REFUSED: só são permitidas as portas 80 e 443
+  network requests sent: 2
+== REAL budget exhaustion (max_requests_per_mission=2)
+  state: EXECUCAO_PARCIAL RESEARCH_PARTIAL_PUBLIC | receipts: [(1, 'web_search_public', 'OK'), (2, 'web_open_public', 'OK'), (3, 'web_search_public', 'REFUSED'), (4, 'web_search_public', 'REFUSED')] | real requests: 2
+  first refusal: orçamento de pedidos da missão esgotado
+== REAL cancellation during the mission
+  state: TAREFA_CANCELADA CANCELLED 1.8s | real requests: 2 | verified: False

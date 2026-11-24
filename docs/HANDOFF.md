@@ -4047,3 +4047,252 @@ Then a single UI-02 branch from `develop`. P3B not started.
 - WORK-05 failed once on the PR: `tests/test_ui02_hud.py` did not import without the venv. Fixed in `b1ca2b4`.
 - On `b1ca2b4` all checks passed: WORK-05 45188220888, foundation 45188221272, UI-02 PR 45188220928, UI-02 push 45188208713.
 - Merge NOT authorised.
+
+## CHECKPOINT — 23/11/2026: JRV-WEB01-W0W2 (implemented WITHOUT network)
+**Authorisation:** operator: "Avança com WEB-01 W0–W2 sem rede". W3 (real egress) is NOT authorised.
+
+**Branch:** `integration/jrv-web01-w0w2-20261123`, stacked on UI-02 (`5640f46`), because PR #31 is under review and must not grow.
+- Draft PR targets the UI-02 branch. It is retargeted to `develop` after #31 merges.
+- The branch is deleted after merge or close.
+
+**Implemented:** see `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § Estado.
+- **W0:** egress policy (fixture mode, network disabled; public mode refused without authorisation) and `EgressGuard`.
+- **W1:** local fixture corpus and search, read tools with hash-chained receipts, and a verifier that only accepts designated sources and detects tampering.
+- **W2:** `pesquisa-publica` capability (PARCIAL) in the same ControlPlane, with code authorisation and cancellation; sources shown in the HUD; CLI flag `--missao-pesquisa`.
+- **UI-02 gap closed:** the upstream engine-down banner is now translated (2 overlay strings).
+
+**Tests (FACT, no sockets):**
+- `tests/test_web01.py`: 15/15.
+- Full suite: venv 714 OK with 0 skips; plain Python OK.
+- tsc rc 0; Vitest 117/117.
+- FAKE E2E U1–U8: PASS.
+- Host CLI U8: PASS (`RESEARCH_VERIFIED`, 3/3).
+- Evidence: `docs/evidence/web01/`.
+
+**Not done:**
+- No real Internet access.
+- No goose/MCP exposure of the WEB-01 tools.
+- No Market Intelligence (W4).
+
+**Environment note:** Ollama on the host was found stopped (host restart). WEB-01 W0–W2 does not need the model.
+
+**ADDENDUM (23/11/2026):**
+- Draft PR #32 (stacked on the UI-02 branch) is open at `9a3e391`.
+- UI-02 HUD frontend CI passed: PR run 45196332174 and push run 45196270568. These cover tsc, Vitest and E2E U1–U8.
+- WORK-05 and foundation only run on PRs whose base is `develop`/`main`, so they have NOT run on #32. The Python suite was run locally only (venv 714 OK, 0 skips). Both will run once #32 is retargeted to `develop` after #31.
+- Merge NOT authorised.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3 → `W3_IMPLEMENTED_AWAITING_NETWORK_APPROVAL`
+**State at start:**
+- develop `19ab8f7`; PR #31 (UI-02) `5640f46`; PR #32 (WEB-01) `379dcd1`; B6 `4a20ffe`; main `0cac8e8`.
+- No tunnel or JARVIS process running. The stale devtunnel token cache was removed (the tunnel had already been deleted).
+- Clean tree. The work continues on the PR #32 branch; no new branch was created.
+
+**W3 code:** see `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3. Public egress stays disabled: the shipped policy has `network_enabled=false`.
+
+**Tests (FACT, offline, injected transport):**
+- `test_web01_w3`: 9/9; `test_web01`: 15/15.
+- Full suite: venv OK with 0 skips; plain Python OK.
+- These are NOT real-Internet evidence.
+
+**Awaiting operator decisions:**
+- allowlist;
+- search service (Wikipedia pt);
+- limits;
+- User-Agent contact;
+- `transport` (`session_proxy` to validate here, because Claude Cloud has no local DNS);
+- the `authorization_ref` value.
+
+The UI-02/B6 demo reference is untouched. No VOICE, W4, tunnel or deploy work.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3 → `W3_REAL_RESEARCH_VERIFIED` (predefined mission; experimental transport)
+- **Authorisation:** `OP-W3-20261124` (pt.wikipedia.org only; GET; 10 requests / 512 KB / 3 MB / 90 s / 2 redirects; concurrency 1; `session_proxy` for this validation only).
+- **Real runs through the HUD:**
+  1. PARTIAL (2/3): the generic search query did not rank the Banco de Moçambique article.
+  2. VERIFIED 3/3, after the spec query was changed to an exact phrase.
+  3. VERIFIED 3/3 confirmation, with source passages shown in the HUD.
+- **Offline strict re-verification** of the run-2 real bytes: VERIFIED. MOEDA had originally matched a table-of-contents line; the pattern was fixed and the verifier now records passages.
+- **Evidence:** `docs/evidence/web01/w3-real/` (receipts, audit, verification, HUD results, screenshot). Hashes are kept but not full pages.
+- **Adversarial tests:**
+  - real: off-allowlist, IP literal, http and port refused before any request; budget exhaustion; cancellation;
+  - simulated: metadata or off-host redirect, private DNS, prompt injection.
+- **Shutdown:**
+  - experimental policy deleted (it only ever lived in the scratchpad);
+  - versioned policy has `network_enabled=false`;
+  - GUI stopped; no tunnel; no secrets in the evidence.
+- **Regressions:** full venv suite OK with 0 skips; plain Python OK; FIXTURE U8 in the browser PASS.
+- **Not production-ready:**
+  - `direct` transport not exercised against the real network;
+  - deterministic predefined mission, no autonomous model research;
+  - Wikipedia only;
+  - PR #32 still Draft; review needed.
+- The UI-02/B6 demo reference is untouched.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.1 → `W3_1_IMPLEMENTED_AWAITING_REAL_VALIDATION`
+**Start:** `a717fe0` on `integration/jrv-web01-w0w2-20261123` (PR #32, Draft). No new branch.
+
+**Implemented** (reusing the existing stack):
+- intent routing decided by the host;
+- validated Qwen plan bound to the single-use code;
+- free-research executor with budgets, one reformulation and cancellation;
+- grounded synthesis with separate A/B/C checks plus abstention;
+- `RESPOSTA_FUNDAMENTADA` state (never VERIFIED for free questions);
+- chat flow plan → `/autorizar`;
+- readable plan message (bold code, because inline code is illegible in the HUD).
+
+See `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3.1.
+
+**Real local Qwen evaluation (fixture, no network)** — v2 after generic fixes:
+- 2b: 8/9 cases, 9/9 plans, 10/10 routing, ≈30 s per question.
+- 4b: 8/9 cases, 9/9 plans, 10/10 routing, ≈90 s per question.
+- v1 baseline was 5/9 for both models; the evidence is kept.
+- In v1 the real 4b invented passage references; they were removed and JARVIS abstained.
+- No model obeyed the injected forum instructions.
+- HUD U9 with real Qwen 2b: PASS.
+
+**Tests:**
+- `test_web01_w31` (FAKE scripted model).
+- Full venv suite: OK with 0 skips; plain Python OK.
+- FAKE browser E2E U1–U5, U7, U8: PASS.
+
+**NOT done:**
+- real Internet research with W3.1, which needs a new specific authorisation;
+- autonomous agent;
+- W4, voice, tunnel.
+
+**Untouched:** UI-02/B6 for the 15:00 demo; PR #31, B6, vendor, main.
+
+## DIRECTIVE (permanent, 24/11/2026) — "The intelligence decides. Policy controls. Tools execute. Evidence confirms."
+**Goal:** JARVIS becomes a general-purpose assistant with supervised autonomy.
+
+**Not allowed:**
+- scripted answers;
+- fixed queries per topic;
+- hand-built missions per question;
+- expected answers in agent prompts;
+- benchmark-specific rules.
+
+**Roles:**
+- The model interprets, plans, chooses authorised tools, adapts and synthesises.
+- Deterministic code enforces contracts, policy, permissions, execution, budgets and verification.
+
+**Fixtures and predefined missions** are test and regression instruments only.
+
+**Reuse first:** Qwen, Goose, OpenJarvis and the RIGHTWARE components come before any new engine.
+
+**Scope:** research, finance, voice, memory, learning and task execution. Full text in `docs/ARCHITECTURE.md`.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.1-REAL → `W3_1_REAL_VALIDATION_PARTIAL`
+**CI:** the UI-02 run on `5e3b869` had failed because the U9 scenario had no free-research capability in the CI server. Fixed in `e506534`: the CI server now registers the real W3.1 executor with a scripted [FAKE-CI] model. Push run 45349063871: success.
+
+**Real validation** (`OP-W31-REAL-20261124`, pt.wikipedia.org, `session_proxy` experimental):
+- 5 frozen unseen questions (sha `a2384d35…`), driven through the HUD with real Qwen 2b;
+- 5 missions, 50/50 requests, 0 refused, 0 out-of-policy;
+- result: 3/5 adequate (R1, R3, R5), so the ≥4/5 threshold is NOT met;
+- all safety criteria met;
+- 5/5 valid model plans, no fallback.
+
+**Root causes (generic):**
+1. Passage selection misses infobox facts that were in opened pages (R2–R5).
+2. The free-text model answer can contain an ungrounded false statement (R2, "meados do século XX"), shown as NOT verified.
+3. No sufficiency stop: every mission spends the full budget.
+
+**Evidence:** `docs/evidence/web01/w31-real/`.
+
+**Shutdown:** experimental policy deleted; versioned policy `network_enabled=false`; GUI stopped; no tunnel.
+
+**Regressions:** venv OK with 0 skips; plain Python OK.
+
+**Not done:** production readiness; general autonomy; W4, voice, memory, tunnel. PR #32 still Draft; no merge. UI-02/B6 untouched for the 15:00 demo.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.2 → `W3_2_PARTIAL`
+**Start:** `be121a2`, CI green. Branch: PR #32 (Draft). No new branch.
+
+**Implemented:**
+- structured extraction (infobox, tables, lists) with integrity;
+- hybrid per-part retrieval with bridge entity and answer type;
+- strict claim support (numbers, units, negation, entities, coverage, relevance);
+- host-composed answer (model free text never shown);
+- adaptive loop with early stop and model-stop rejection;
+- injection filtering;
+- `answer_parts` contract with host decomposition.
+
+**Tests:** `test_web01_w32` (12 tests plus 1 documented expected failure: an inverted relation with identical words). W3.1 tests and the CI fake model migrated to the new protocol. Full venv suite OK; plain Python OK; FAKE E2E U1–U9 PASS.
+
+**CI:** `e75ef21` success (PR and push).
+
+**Evaluation (real Qwen 2b, NO network):**
+- S1 regression: 5/9 (W3.1 v2: 8/9) — a REGRESSION.
+- S2 independent: 5/8.
+- S3 offline revalidation of the real R1–R5 bytes: 4/5 (the W3.1 real run had 3/5), and 5/5 facts recovered by retrieval.
+- Requests per mission halved (4.9 vs 9.8); latency ×1.7 (49.7 s).
+
+**Safety failures:** G7 showed the forum's false claim as an unattributed grounded note; Q3/Q4 accepted claims under the wrong part. Evidence: `docs/evidence/web01/w32-eval/` (`METRICS.json`, `a-prefix/DISCLOSURE.md`).
+
+**Network:** none. Versioned policy has `network_enabled=false`. OP-W31 is consumed.
+
+**Next mission:**
+- coverage confirmed by validated claims (merge assess and synthesis);
+- strict part assignment;
+- mandatory source attribution;
+- a NEW frozen independent set;
+- then a real validation with a new authorisation.
+
+**Untouched:** UI-02/B6 for the 15:00 demo; develop, main, vendor, PR #31, B6. No merge.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.2-R → `W3_2_R_PARTIAL`
+- **Start:** `e6c3a96` (W3_2_PARTIAL). Branch: PR #32 (Draft). No new branch. B6 is preserved at `66be4c9` (presentation version). develop, main, vendor and PR #31 are untouched. No merge.
+- **Commits:**
+  - `ac7aa29`: freeze the independent set H1–H10 **before** implementation.
+  - `9d6d316`: W3.2-R implementation. CI green on push and on the PR.
+  - This checkpoint: evidence and documentation.
+- **Changes:**
+  - Coverage comes only from accepted claims, with a single structured call per iteration (max 4).
+  - Claim↔part correspondence: attribute, answer type, temporal context and relation, cross-part, and one value per part.
+  - Source classes (`configs/web01/sources.json`), mandatory attribution, contradictions detected by the host. `part=-1` notes are removed. Rejected claim text is never shown.
+  - Canonical units (fixes the `_unit()[:4]` collision).
+  - Sub-question planner contract with host filtering and autonomy metrics.
+  - Per-phase metrics and Ollama token counts.
+  - Details: `docs/engineering/WEB01_W32R.md`.
+- **Tests:**
+  - `tests/test_web01_w32r.py` (16, UNIT/FAKE).
+  - W3.1/W3.2 tests migrated, with 2 intended behaviour changes documented in the test.
+  - The inverted-relation expected failure is kept.
+  - Full suite OK.
+- **Real eval (Qwen 2b, NO network):**
+  - S1: 6/9 (W3.2 5/9, W3.1 8/9).
+  - H (independent, single run): 5/10.
+  - S3: 3/5 (W3.2 4/5).
+  - Latency 48.4 s (W3.2 49.7 s; W3.1 29.8 s). Requests 6.1 (W3.1 9.8).
+  - Plan parts from the model: S1 9/9, H 9/10 (W3.2: 0/17).
+  - 0 invented references accepted; 0 unit collisions; 0 forum allegations shown as fact.
+  - **3 misassociations accepted** (H8, Q7, R5), including 2 caused by sub-questions that drop constraints.
+  - Targets NOT met.
+  - Evidence: `docs/evidence/web01/w32r-eval/` (METRICS.json, DISCLOSURE.md).
+- **Network:** none. `network_enabled=false`. OP-W31 is not reused. No tunnels.
+- **Next:**
+  - constraint-preserving parts;
+  - a relation/predicate check;
+  - a tolerant `answer` check;
+  - a single-source flag for numbers;
+  - a new frozen set H2;
+  - then a real validation with a new authorisation.
+
+## CHECKPOINT — 24/11/2026: JRV-F00 → `F00_OPERATIONAL_FOUNDATION_DOCUMENTED` (documentation only)
+- **Scope:** documentation only, on the PR #32 branch (Draft). No product code changed. No new branch, no network, no tunnel, no merge. main, develop, vendor, PR #31 and B6 (`66be4c9`) are untouched. WEB-01 and all its evaluations and negative results are preserved. No W3.2-R2/W3.3 work.
+- **Document:** `docs/engineering/F00_OPERATIONAL_INTELLIGENCE_FOUNDATION.md`. It covers:
+  - the reconciliation of sources;
+  - an inventory with states (integrated, experimental, upstream, planned);
+  - the target architecture A–E with responsibilities;
+  - an engine re-evaluation (Orchestrator, NativeReAct, Operative, goose, native Ollama tool calling, WEB-01);
+  - the Operations Centre as an extension of the HUD, driven only by real events;
+  - risks and open questions;
+  - roadmap F01–F06;
+  - the **F01 bake-off protocol (prepared, NOT executed)**;
+  - a list of decisions that require approval.
+- **Key finding (FACT):**
+  - RIGHTWARE already has the governance pieces: ControlPlane, Gateway, AgentPolicy, receipts, verifiers and EgressGuard.
+  - It has two tool executors: AgentSession (OpenJarvis OrchestratorAgent) and goose.
+  - The GUI chat is still a tool-free SimpleAgent. Model-chosen tools in conversation are the main gap.
+- **Classification:** every item is labelled APPROVED / FACT / RECOMMENDATION / HYPOTHESIS. Approved inputs are only the 23/11 product direction (reuse OpenJarvis through the RIGHTWARE gates) and the 24/11 directive.
+- **Next:** operator decisions listed in §10 of the document; F01 execution only with explicit authorisation.

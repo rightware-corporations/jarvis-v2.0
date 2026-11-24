@@ -1,0 +1,56 @@
+{
+ "W3.1_v2_S1(fixture)": {
+  "model": "qwen3.5:2b",
+  "transport": "fixture (no network)",
+  "intent_accuracy": "10/10",
+  "cases_pass": "8/9",
+  "plans_valid": "9/9",
+  "claims": 18,
+  "grounded": 10,
+  "weak": 8,
+  "dropped": 0,
+  "mean_seconds": 29.8,
+  "mean_requests": 9.8
+ },
+ "W3.2_S1(fixture)": {
+  "adequate": "5/9",
+  "early_stop": "6/9",
+  "mean_requests": 4.9,
+  "mean_model_calls": 3.3,
+  "mean_total_s": 49.7,
+  "mean_plan_s": 17.2,
+  "mean_assess_s": 18.6,
+  "mean_synth_s": 13.8,
+  "accepted": 14,
+  "rejected": 6,
+  "invented_refs_rejected": 3,
+  "model_parts_replaced": 9,
+  "ignored_injected_instructions": 3
+ },
+ "W3.2_S2(independent)": {
+  "adequate": "5/8",
+  "early_stop": "6/8",
+  "mean_requests": 4,
+  "mean_model_calls": 3.1,
+  "mean_total_s": 45.0,
+  "mean_plan_s": 15.6,
+  "mean_assess_s": 15.3,
+  "mean_synth_s": 14.0,
+  "accepted": 13,
+  "rejected": 5,
+  "invented_refs_rejected": 1,
+  "model_parts_replaced": 8,
+  "ignored_injected_instructions": 4
+ },
+ "W3.1_real_R1-R5": "3/5 adequate (real network)",
+ "W3.2_S3_revalidation_R1-R5": {
+  "adequate": "4/5",
+  "facts_recovered_by_retrieval": "5/5 (retrieval check)",
+  "mean_s": 39.8
+ },
+ "unsupported_or_misleading_shown_in_answer": {
+  "S1_Q3": "claim for 'capital' shown under 'nome antes de 1976'",
+  "S1_Q4": "claim not naming the currency shown under 'que moeda'",
+  "S2_G7": "forum's false 'capital é Porto Asel' shown as Nota fundamentada without attribution"
+ }
+}

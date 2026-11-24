@@ -171,6 +171,22 @@
    ]
   },
   {
+   "file": "src/components/Layout.tsx",
+   "sha256": "c418b4735ee14de9a553d9a445c4cb46b0619fd533544f7a0b6be716af6ef03f",
+   "items": [
+    {
+     "find": "<span>Cannot reach OpenJarvis backend</span>",
+     "replace": "<span>{__rwT('banner.engineDown')}</span>",
+     "count": 1
+    },
+    {
+     "find": "            Change URL\n",
+     "replace": "            {__rwT('banner.settings')}\n",
+     "count": 1
+    }
+   ]
+  },
+  {
    "file": "src/components/Sidebar/ConversationList.tsx",
    "sha256": "ef0a5b621c53bec711ad13991b6342234ef2908be6aa43adeeedea709126a2c7",
    "items": [

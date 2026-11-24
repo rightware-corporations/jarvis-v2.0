@@ -1,0 +1,35 @@
+{
+  "version": "web01.mission.v1",
+  "id": "ficha-mocambique-publica",
+  "question": "Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.",
+  "max_results_opened_per_search": 2,
+  "objectives": [
+    {
+      "id": "CAPITAL",
+      "claim": "A capital de Moçambique é Maputo.",
+      "query": "Moçambique capital Maputo",
+      "pattern": "(?i)capital[^.\\n]{0,80}\\bMaputo\\b|\\bMaputo\\b[^.\\n]{0,60}\\bcapital\\b",
+      "sources": [
+        "pt.wikipedia.org"
+      ]
+    },
+    {
+      "id": "MOEDA",
+      "claim": "A moeda oficial de Moçambique é o metical (MZN).",
+      "query": "metical moeda de Moçambique",
+      "pattern": "(?i)\\bmetical\\b[^\\n]{0,80}unidade monetária oficial[^\\n]{0,60}Moçambique|\\bmetical\\b[^\\n]{0,60}\\bMZN\\b[^\\n]{0,80}\\bmoeda oficial\\b[^\\n]{0,40}Moçambique|moeda oficial[^\\n]{0,60}Moçambique[^\\n]{0,80}\\bmetical\\b",
+      "sources": [
+        "pt.wikipedia.org"
+      ]
+    },
+    {
+      "id": "BANCO_CENTRAL",
+      "claim": "O banco central emissor é o Banco de Moçambique.",
+      "query": "\"Banco de Moçambique\"",
+      "pattern": "(?i)Banco de Moçambique[^\\n]{0,120}\\bbanco central\\b|\\bbanco central\\b[^\\n]{0,120}Banco de Moçambique",
+      "sources": [
+        "pt.wikipedia.org"
+      ]
+    }
+  ]
+}

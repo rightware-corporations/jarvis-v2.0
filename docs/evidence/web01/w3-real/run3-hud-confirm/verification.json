@@ -1,0 +1,79 @@
+{
+ "verdict": "RESEARCH_VERIFIED",
+ "problems": [],
+ "objectives": [
+  [
+   "CAPITAL",
+   "VERIFIED",
+   2
+  ],
+  [
+   "MOEDA",
+   "VERIFIED",
+   4
+  ],
+  [
+   "BANCO_CENTRAL",
+   "VERIFIED",
+   6
+  ]
+ ],
+ "sources": [
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Maputo",
+   "fetched_at": "2026-11-24T06:15:17.549131Z",
+   "sha256": "26972f54c91692b1d75f908f6228ad59451788146612f6fe962ad3309724a2d9",
+   "bytes": 524288,
+   "supports": [
+    "CAPITAL"
+   ]
+  },
+  {
+   "seq": 4,
+   "url": "https://pt.wikipedia.org/wiki/Metical",
+   "fetched_at": "2026-11-24T06:15:19.235369Z",
+   "sha256": "07111ab262189b5478f7539afd82895d64a0ac5b7e09043f0bc61369b1532e74",
+   "bytes": 137444,
+   "supports": [
+    "MOEDA"
+   ]
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Banco_de_Mo%C3%A7ambique",
+   "fetched_at": "2026-11-24T06:15:20.683126Z",
+   "sha256": "c6fbb7fafa990737a987d4bd3f4c6202e7e984d0f14f5d0e2834d8de01c6029a",
+   "bytes": 165906,
+   "supports": [
+    "BANCO_CENTRAL"
+   ]
+  }
+ ],
+ "claims": {
+  "CAPITAL": "A capital de Moçambique é Maputo.",
+  "MOEDA": "A moeda oficial de Moçambique é o metical (MZN).",
+  "BANCO_CENTRAL": "O banco central emissor é o Banco de Moçambique."
+ },
+ "passages": {
+  "CAPITAL": "oficial do Conselho Municipal de Maputo Maputo é a capital e a maior cidade de Moçambique. É també",
+  "MOEDA": "de Moçambique Websitewww.bancomoc.mz O metical (ISO 4217: MZN, abreviado como MT), é a unidade monetária oficial da República de Moçambique. Foi instituído no país em 16 de junho",
+  "BANCO_CENTRAL": "gosto de 2025) Websitewww.bancomoc.mz O Banco de Moçambique (abreviadamente BM) é o banco central da República de Moçambique. De acordo c"
+ },
+ "mode": "public",
+ "policy_version": "web01.egress.v1",
+ "authorization_ref": "OP-W3-20261124",
+ "allowed_hosts": [
+  "pt.wikipedia.org"
+ ],
+ "transport_guarantees": {
+  "transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+  "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+  "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+  "peer_check": "NÃO realizado (o peer é o proxy local)",
+  "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+  "production": false
+ },
+ "question": "Ficha informativa de Moçambique: capital, moeda oficial e banco central emissor.",
+ "seconds": 4.94
+}

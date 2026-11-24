@@ -1,0 +1,341 @@
+{
+ "question": "Quem descobriu a penicilina e em que ano?",
+ "plan": {
+  "question": "Quem descobriu a penicilina e em que ano?",
+  "objective": "Identificar os descobridores da penicilina e o ano de descoberta.",
+  "subquestions": [
+   "Quem foi o cientista principal?",
+   "Em qual ano a descoberta ocorreu?",
+   "Qual era o contexto histórico do desenvolvimento?"
+  ],
+  "queries": [
+   "Quem descobriu a penicilina",
+   "Ano da descoberta da penicilina",
+   "História da penicilina",
+   "Descobridor da penicilina"
+  ],
+  "relevance_criteria": [
+   "Fatos históricos confirmados",
+   "Nome do cientista envolvido",
+   "Ano de descoberta",
+   "Impacto na medicina"
+  ],
+  "missing_info": [],
+  "source": "modelo:qwen3.5:2b"
+ },
+ "plan_meta": {
+  "attempts": 1,
+  "errors": [],
+  "seconds": 12.74,
+  "valid_model_plan": true,
+  "model": "qwen3.5:2b",
+  "normalised": [
+   "subquestions: 4 itens truncados para 3"
+  ],
+  "raw_excerpts": []
+ },
+ "steps": [
+  {
+   "query": "Quem descobriu a penicilina",
+   "reformulated": false,
+   "search_receipt": 1,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 2,
+     "url": "https://pt.wikipedia.org/wiki/Penicilina",
+     "status": "OK",
+     "relevance": 1.0
+    },
+    {
+     "receipt": 3,
+     "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+     "status": "OK",
+     "relevance": 1.0
+    }
+   ]
+  },
+  {
+   "query": "Ano da descoberta da penicilina",
+   "reformulated": false,
+   "search_receipt": 4,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 5,
+     "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina",
+     "status": "OK",
+     "relevance": 0.67
+    },
+    {
+     "receipt": 6,
+     "url": "https://pt.wikipedia.org/wiki/Penicilina_G",
+     "status": "OK",
+     "relevance": 0.67
+    }
+   ]
+  },
+  {
+   "query": "História da penicilina",
+   "reformulated": false,
+   "search_receipt": 7,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 8,
+     "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina_benzatina",
+     "status": "ERROR",
+     "relevance": 0.0
+    },
+    {
+     "receipt": 9,
+     "url": "https://pt.wikipedia.org/wiki/Penicilina_benzatina",
+     "status": "ERROR",
+     "relevance": 0.0
+    }
+   ]
+  },
+  {
+   "query": "penicilina descobriu ano",
+   "reformulated": true,
+   "search_receipt": 10,
+   "status": "OK",
+   "opened": []
+  }
+ ],
+ "passages": [
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Penicilina",
+   "sha256": "a06d6bb951f16b9160e176a8c4fc21c5dd337874628b49990fbbcd4f5ee74502",
+   "text": "Após um grande número de experiências verificou que a descoberta da penicilina só se tornou possível graças a uma série inacreditável de coincidências, quais sejam: O fungo que contaminou a placa, como se demonstrou posteriormente, é um dos três melhores produtores de penicilina dentre todas as espécies do gênero Penicilium; O fungo contaminante teria vindo pela escada do andar inferior, onde se realizavam pesquisas ",
+   "relevance": 1.0,
+   "id": "P1"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+   "sha256": "35f6bbc71ce18465647b19c89956cb8d0c50acb67e7cc7fd038f6dbb72b1a384",
+   "text": "Quando o ano 2000 se aproximava, pelo menos três grandes revistas suecas classificaram a penicilina como a descoberta mais importante do milênio.",
+   "relevance": 1.0,
+   "id": "P2"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Penicilina",
+   "sha256": "a06d6bb951f16b9160e176a8c4fc21c5dd337874628b49990fbbcd4f5ee74502",
+   "text": "↑ Nossa capa: Alexander Fleming e a descoberta da penicilina.",
+   "relevance": 0.67,
+   "id": "P3"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Penicilina",
+   "sha256": "a06d6bb951f16b9160e176a8c4fc21c5dd337874628b49990fbbcd4f5ee74502",
+   "text": "Não passa de um boato a história de que a família de Alexander Fleming teria salvo a vida de Winston Churchill duas vezes: a primeira vez, quando o menino Winston teria sido salvo de afogamento (por Alexander ou seu pai), o que teria feito com que o pai de Winston, como agradecimento, tivesse pago os estudos do jovem Alexander, e, na segunda vez, quando a penicilina (descoberta por Fleming) foi usada para curar Churc",
+   "relevance": 0.67,
+   "id": "P4"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+   "sha256": "35f6bbc71ce18465647b19c89956cb8d0c50acb67e7cc7fd038f6dbb72b1a384",
+   "text": "Em meados do século, a descoberta de Fleming havia gerado uma enorme indústria farmacêutica, produzindo penicilinas sintéticas que conquistariam alguns dos mais antigos flagelos da humanidade, incluindo sífilis, gangrena e tuberculose.[90]",
+   "relevance": 0.67,
+   "id": "P5"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+   "sha256": "35f6bbc71ce18465647b19c89956cb8d0c50acb67e7cc7fd038f6dbb72b1a384",
+   "text": "O laboratório no St Mary's Hospital onde Fleming descobriu a penicilina abriga o Museu Fleming, uma atração popular em Londres.",
+   "relevance": 0.67,
+   "id": "P6"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina",
+   "sha256": "67775f0927e3d30f6f2d5b1c30240803abb75d6cd2890a02050ecd4d3084a97c",
+   "text": "Em 1948 chegou ao mercado norte-americano a benzilpenicilina procaína, de ação prolongada.[7] Em 1959, pesquisadores do laboratório britânico Beecham isolaram o ácido 6-aminopenicilânico, o núcleo comum das penicilinas,[20] e no ano seguinte mostraram que ele podia ser obtido da própria benzilpenicilina por hidrólise enzimática.[21] Esse núcleo passou a ser a matéria-prima das penicilinas semissintéticas, como a meti",
+   "relevance": 0.67,
+   "id": "P7"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina",
+   "sha256": "67775f0927e3d30f6f2d5b1c30240803abb75d6cd2890a02050ecd4d3084a97c",
+   "text": "Em 1945, Fleming, Chain e Florey receberam o Nobel de Fisiologia ou Medicina \"pela descoberta da penicilina e de seu efeito curativo em várias doenças infecciosas\".[17]",
+   "relevance": 0.67,
+   "id": "P8"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Penicilina_G",
+   "sha256": "f12ff1d7d83695066db6227a4988d15507bff030d04e293a11b8b9d985055cf1",
+   "text": "Em 1948 chegou ao mercado norte-americano a benzilpenicilina procaína, de ação prolongada.[7] Em 1959, pesquisadores do laboratório britânico Beecham isolaram o ácido 6-aminopenicilânico, o núcleo comum das penicilinas,[20] e no ano seguinte mostraram que ele podia ser obtido da própria benzilpenicilina por hidrólise enzimática.[21] Esse núcleo passou a ser a matéria-prima das penicilinas semissintéticas, como a meti",
+   "relevance": 0.67,
+   "id": "P9"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Penicilina_G",
+   "sha256": "f12ff1d7d83695066db6227a4988d15507bff030d04e293a11b8b9d985055cf1",
+   "text": "Em 1945, Fleming, Chain e Florey receberam o Nobel de Fisiologia ou Medicina \"pela descoberta da penicilina e de seu efeito curativo em várias doenças infecciosas\".[17]",
+   "relevance": 0.67,
+   "id": "P10"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina",
+   "sha256": "67775f0927e3d30f6f2d5b1c30240803abb75d6cd2890a02050ecd4d3084a97c",
+   "text": "Penicilinas (Penams)",
+   "relevance": 0.33,
+   "id": "P11"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Penicilina_G",
+   "sha256": "f12ff1d7d83695066db6227a4988d15507bff030d04e293a11b8b9d985055cf1",
+   "text": "Penicilinas (Penams)",
+   "relevance": 0.33,
+   "id": "P12"
+  }
+ ],
+ "synthesis_raw": "{\n  \"status\": \"partial\",\n  \"answer\": \"A penicilina foi descoberta por Alexander Fleming em meados do século XX, mas o ano exato não é especificado nas passagens fornecidas.\",\n  \"claims\": [\n    {\n      \"text\": \"Alexander Fleming descobriu a penicilina\",\n      \"passage_ids\": [\n        \"P2\",\n        \"P3\",\n        \"P5\",\n        \"P6\",\n        \"P8\",\n        \"P10\"\n      ],\n      \"quote\": \"Quando o ano 2000 se aproximava, pelo menos três grandes revistas suecas classificaram a penicilina como a descoberta mais importante do milênio.\"\n    },\n    {\n      \"text\": \"Fleming recebeu o Nobel de Fisiologia ou Medicina em 1945\",\n      \"passage_ids\": [\n        \"P8\",\n        \"P10\"\n      ],\n      \"quote\": \"Em 1945, Fleming, Chain e Florey receberam o Nobel de Fisiologia ou Medicina \\\"pela descoberta da penicilina e de seu efeito curativo em várias doenças infecciosas\\\".\"\n    },\n    {\n      \"text\": \"A indústria farmacêutica foi criada pela descoberta de Fleming\",\n      \"passage_ids\": [\n        \"P5\"\n      ],\n      \"quote\": \"Em meados do século, a descoberta de Fleming havia gerado uma enorme indústria farmacêutica, produzindo penicilinas sintéticas que conquistariam alguns dos mais antigos flagelos da humanidade, incluindo sífilis, gangrena e tuberculose.\"\n    },\n    {\n      \"text\": \"O laboratório onde Fleming descobriu a penicilina está no St Mary's Hospital\",\n      \"passage_ids\": [\n        \"P6\"\n      ],\n      \"quote\": \"O laboratório no St Mary's Hospital onde Fleming descobriu a penicilina abriga o Museu Fleming, uma atração popular em Londres.\"\n    },\n    {\n      \"text\": \"A benzilpenicilina procaína chegou ao mercado norte-americano em 1948\",\n      \"passage_ids\": [\n        \"P7\",\n        \"P9\"\n      ],\n      \"quote\": \"Em 1948 chegou ao mercado norte-americano a benzilpenicilina procaína, de ação prolongada.\"\n    }\n  ],\n  \"conflicts\": [],\n  \"uncertainty\": \"O ano exato em que Alexander Fleming descobriu a penicilina não é mencionado nas passagens fornecidas.\"\n}",
+ "synthesis_seconds": 43.92,
+ "synthesis_error": null,
+ "validation": {
+  "schema_valid": true,
+  "model_status": "partial",
+  "answer": "A penicilina foi descoberta por Alexander Fleming em meados do século XX, mas o ano exato não é especificado nas passagens fornecidas.",
+  "conflicts": [],
+  "uncertainty": "O ano exato em que Alexander Fleming descobriu a penicilina não é mencionado nas passagens fornecidas.",
+  "claims": [
+   {
+    "text": "Alexander Fleming descobriu a penicilina",
+    "passage_ids": [
+     "P2",
+     "P3",
+     "P5"
+    ],
+    "quote": "Quando o ano 2000 se aproximava, pelo menos três grandes revistas suecas classificaram a penicilina como a descoberta mais importante do milênio.",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 1.0,
+     "B_against": "Quem descobriu a penicilina e em que ano?",
+     "C_lexical_support": 0.5
+    },
+    "source": {
+     "seq": 3,
+     "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+     "sha256": "35f6bbc71ce18465647b19c89956cb8d0c50acb67e7cc7fd038f6dbb72b1a384",
+     "passage_id": "P2"
+    },
+    "status": "WEAK"
+   },
+   {
+    "text": "Fleming recebeu o Nobel de Fisiologia ou Medicina em 1945",
+    "passage_ids": [
+     "P8",
+     "P10"
+    ],
+    "quote": "Em 1945, Fleming, Chain e Florey receberam o Nobel de Fisiologia ou Medicina \"pela descoberta da penicilina e de seu efeito curativo em várias doenças infecciosas\".",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 0.67,
+     "B_against": "Quem descobriu a penicilina e em que ano?",
+     "C_lexical_support": 1.0
+    },
+    "source": {
+     "seq": 5,
+     "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina",
+     "sha256": "67775f0927e3d30f6f2d5b1c30240803abb75d6cd2890a02050ecd4d3084a97c",
+     "passage_id": "P8"
+    },
+    "status": "GROUNDED"
+   },
+   {
+    "text": "A indústria farmacêutica foi criada pela descoberta de Fleming",
+    "passage_ids": [
+     "P5"
+    ],
+    "quote": "Em meados do século, a descoberta de Fleming havia gerado uma enorme indústria farmacêutica, produzindo penicilinas sintéticas que conquistariam alguns dos mais antigos flagelos da humanidade, incluindo sífilis, gangrena e tuberculose.",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 0.67,
+     "B_against": "Quem descobriu a penicilina e em que ano?",
+     "C_lexical_support": 0.67
+    },
+    "source": {
+     "seq": 3,
+     "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+     "sha256": "35f6bbc71ce18465647b19c89956cb8d0c50acb67e7cc7fd038f6dbb72b1a384",
+     "passage_id": "P5"
+    },
+    "status": "GROUNDED"
+   },
+   {
+    "text": "O laboratório onde Fleming descobriu a penicilina está no St Mary's Hospital",
+    "passage_ids": [
+     "P6"
+    ],
+    "quote": "O laboratório no St Mary's Hospital onde Fleming descobriu a penicilina abriga o Museu Fleming, uma atração popular em Londres.",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 0.67,
+     "B_against": "Quem descobriu a penicilina e em que ano?",
+     "C_lexical_support": 0.86
+    },
+    "source": {
+     "seq": 3,
+     "url": "https://pt.wikipedia.org/wiki/Alexander_Fleming",
+     "sha256": "35f6bbc71ce18465647b19c89956cb8d0c50acb67e7cc7fd038f6dbb72b1a384",
+     "passage_id": "P6"
+    },
+    "status": "GROUNDED"
+   },
+   {
+    "text": "A benzilpenicilina procaína chegou ao mercado norte-americano em 1948",
+    "passage_ids": [
+     "P7",
+     "P9"
+    ],
+    "quote": "Em 1948 chegou ao mercado norte-americano a benzilpenicilina procaína, de ação prolongada.",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 0.67,
+     "B_against": "Quem descobriu a penicilina e em que ano?",
+     "C_lexical_support": 1.0
+    },
+    "source": {
+     "seq": 5,
+     "url": "https://pt.wikipedia.org/wiki/Benzilpenicilina",
+     "sha256": "67775f0927e3d30f6f2d5b1c30240803abb75d6cd2890a02050ecd4d3084a97c",
+     "passage_id": "P7"
+    },
+    "status": "GROUNDED"
+   }
+  ],
+  "dropped": [],
+  "final": "PARTIAL"
+ },
+ "mode": "public",
+ "transport_guarantees": {
+  "transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+  "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+  "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+  "peer_check": "NÃO realizado (o peer é o proxy local)",
+  "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+  "production": false
+ },
+ "model": "qwen3.5:2b",
+ "seconds": 78.7,
+ "requests": 10,
+ "refused": [],
+ "timing": {
+  "plan_s": 12.74,
+  "network_and_search_s": 34.78,
+  "synthesis_s": 43.92,
+  "mission_total_s": 78.7
+ }
+}

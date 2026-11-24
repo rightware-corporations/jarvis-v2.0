@@ -1,0 +1,20 @@
+{
+  "version": "web01.egress.v1",
+  "mode": "fixture",
+  "network_enabled": false,
+  "authorization_ref": null,
+  "allowed_hosts": [
+    "pesquisa.fixture.example",
+    "enciclopedia.fixture.example",
+    "estatisticas.fixture.example",
+    "banco-central.fixture.example",
+    "forum.fixture.example"
+  ],
+  "methods": ["GET"],
+  "max_bytes_per_response": 262144,
+  "timeout_s": 10,
+  "max_redirects": 3,
+  "max_requests_per_mission": 12,
+  "max_total_bytes_per_mission": 1048576,
+  "max_seconds_per_mission": 120
+}

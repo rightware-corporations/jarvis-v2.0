@@ -7,7 +7,7 @@ Classificação das afirmações: **FACTO** (medido ou testado neste host ou em 
 - **Frontend:** o mesmo frontend React do pin `f21d902`, obtido por `git archive` para `.runtime/gui`. O overlay RIGHTWARE (`rightware/gui/frontend/`) é copiado para `frontend/rightware/` no build isolado, e o vendor nunca é escrito.
   - `vite.rightware.ts` faz merge da `vite.config.ts` do pin e acrescenta o plugin `rightwareOverlay`. O plugin:
     - troca, por `resolveId`, os **10 módulos** listados em `overlay.manifest.json`, cada um com `upstream_sha256`;
-    - aplica **21 substituições de texto declaradas** (PT-MZ, via `__rwT`) e o título HTML;
+    - aplica **23 substituições de texto declaradas** (PT-MZ, via `__rwT`; 2 acrescentadas no ramo WEB-01: aviso de motor indisponível) e o título HTML;
     - remove o PWA/service worker.
 
     Se o hash upstream de um módulo substituído, ou um padrão de texto, deixar de coincidir (por exemplo, numa mudança de pin), **o build falha**. Teste: `tests/test_ui02_hud.py::OverlayManifest`.
