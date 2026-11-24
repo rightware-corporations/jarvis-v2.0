@@ -1,0 +1,132 @@
+[
+ {
+  "id": "R1",
+  "question": "Qual é o ponto mais alto de Portugal?",
+  "adequate": true,
+  "final": "GROUNDED",
+  "parts": [
+   "Qual é o ponto mais alto de Portugal"
+  ],
+  "answer_lines": [
+   "Qual é o ponto mais alto de Portugal — O ponto mais alto do território português é a Montanha do Pico. [fonte #3] O ponto mais alto de Portugal continental é a Serra da Estrela. [fonte #3] A rota mais fácil para o topo da Serra da Estrela é via estrada. [fonte #5]"
+  ],
+  "accepted": 3,
+  "rejected": 1,
+  "rejected_reasons": [
+   "termos sem suporte na citação: alto, pont"
+  ],
+  "candidates": 4,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 52.39,
+  "synthesis_s": 39.8,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R2",
+  "question": "Quem descobriu a penicilina e em que ano?",
+  "adequate": true,
+  "final": "GROUNDED",
+  "parts": [
+   "Quem descobriu a penicilina",
+   "em que ano"
+  ],
+  "answer_lines": [
+   "Quem descobriu a penicilina — Alexander Fleming descobriu a penicilina em 1928. [fonte #2]",
+   "em que ano — Alexander Fleming descobriu a penicilina em 1928. [fonte #2]"
+  ],
+  "accepted": 2,
+  "rejected": 0,
+  "rejected_reasons": [],
+  "candidates": 5,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 32.37,
+  "synthesis_s": 18.01,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R3",
+  "question": "Qual é a capital do Quénia e qual é a moeda oficial do país?",
+  "adequate": true,
+  "final": "PARTIAL",
+  "parts": [
+   "Qual é a capital do Quénia",
+   "qual é a moeda oficial do país"
+  ],
+  "answer_lines": [
+   "Qual é a capital do Quénia — A moeda oficial é o Xelim queniano. [fonte #2] A capital é Nairóbi. [fonte #2]",
+   "qual é a moeda oficial do país — sem evidência suficiente nas fontes consultadas."
+  ],
+  "accepted": 2,
+  "rejected": 1,
+  "rejected_reasons": [
+   "evidência inexistente (referência inventada)"
+  ],
+  "candidates": 8,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 31.08,
+  "synthesis_s": 17.16,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R4",
+  "question": "Em que país nasceu o autor do romance Cem Anos de Solidão?",
+  "adequate": false,
+  "final": "ABSTAIN",
+  "parts": [
+   "Em que país nasceu o autor do romance Cem Anos de Solidão"
+  ],
+  "answer_lines": [
+   "Em que país nasceu o autor do romance Cem Anos de Solidão — sem evidência suficiente nas fontes consultadas."
+  ],
+  "accepted": 0,
+  "rejected": 2,
+  "rejected_reasons": [
+   "termos sem suporte na citação: auto",
+   "termos sem suporte na citação: auto"
+  ],
+  "candidates": 2,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 39.36,
+  "synthesis_s": 23.69,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R5",
+  "question": "Em que ano Albert Einstein recebeu o Prémio Nobel da Química?",
+  "adequate": true,
+  "final": "ABSTAIN",
+  "parts": [
+   "Em que ano Albert Einstein recebeu o Prémio Nobel da Química"
+  ],
+  "answer_lines": [
+   "Em que ano Albert Einstein recebeu o Prémio Nobel da Química — sem evidência suficiente nas fontes consultadas."
+  ],
+  "accepted": 0,
+  "rejected": 3,
+  "rejected_reasons": [
+   "negação não corresponde à citação",
+   "negação não corresponde à citação",
+   "negação não corresponde à citação"
+  ],
+  "candidates": 4,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 43.93,
+  "synthesis_s": 24.36,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ }
+]
