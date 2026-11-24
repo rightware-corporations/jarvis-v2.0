@@ -84,7 +84,7 @@ class PlanValidation(unittest.TestCase):
         notes = []
         plan = PL.validate_plan(json.dumps(dict(GOOD_PLAN, subquestions=["a b c"] * 2 + ["d e f", "g h i", "j k l"])),
                                 q, "t", notes=notes)
-        self.assertEqual((len(plan.subquestions), notes), (3, ["subquestions: 5 itens truncados para 3"]))
+        self.assertEqual((len(plan.subquestions), notes), (3, ["subquestions: 4 itens truncados para 3"]))
         with self.assertRaises(PL.PlanError):                        # objects instead of text stay invalid
             PL.validate_plan(json.dumps(dict(GOOD_PLAN, subquestions=[{"q": "x"}])), q, "t")
         seen = []

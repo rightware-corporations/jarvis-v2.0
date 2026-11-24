@@ -130,10 +130,6 @@ def _strings(v, n_max: int, l_max: int, key: str, n_min: int = 0, notes: list | 
     are informational, the host budgets bound execution anyway."""
     if not isinstance(v, list) or len(v) < n_min or not all(isinstance(x, str) for x in v):
         raise PlanError(f"{key}: tem de ser uma lista de {n_min}..{n_max} textos (não objectos)")
-    if len(v) > n_max:
-        if notes is not None:
-            notes.append(f"{key}: {len(v)} itens truncados para {n_max}")
-        v = v[:n_max]
     out = []
     for x in v:
         x = " ".join(x.split())
@@ -141,6 +137,10 @@ def _strings(v, n_max: int, l_max: int, key: str, n_min: int = 0, notes: list | 
             raise PlanError(f"{key}: item vazio ou longo demais")
         if x not in out:
             out.append(x)
+    if len(out) > n_max:                         # dedupe first, then truncate
+        if notes is not None:
+            notes.append(f"{key}: {len(out)} itens truncados para {n_max}")
+        out = out[:n_max]
     return tuple(out)
 
 
