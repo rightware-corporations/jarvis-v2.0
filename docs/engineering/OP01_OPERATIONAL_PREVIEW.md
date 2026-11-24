@@ -139,3 +139,51 @@ Quatro rondas, todas com perguntas novas (`labs/op01/acceptance.py`; evidência 
   - (a) autorizar explicitamente o transporte `session_proxy` (experimental; usado em W3, com TLS terminado no proxy da sessão e sem verificação de peer pelo produto) para estes dois hosts, numa nova janela; ou
   - (b) correr o caso num ambiente com DNS e saída directa (por exemplo o PC do operador ou um host dedicado);
   - (c) em qualquer dos casos, os pontos de entrada e limites mantêm-se. O formato real dos dados (HTML ou PDF) continua por verificar.
+
+## 8. OP01-FX-REAL-PROXY (24/11/2026, janela 16:35:49–16:45 UTC) → `OP01_FX_PROXY_PARTIAL`
+**Transporte (EXPERIMENTAL, só laboratório): `labs/op01/proxy_transport.py`**
+- O adaptador W3 (`web01.egress.session_proxy_fetcher`) **não foi reutilizado tal como está**. Satisfazia o controlo de DNS com um IP de substituição (`resolver=lambda h: [SESSION_PROXY_IP]`) e aceitava qualquer peer, o que é uma verificação artificial proibida pelo operador.
+- O novo `SessionProxyFetcher` **impõe**:
+  - allowlist exacta em cada salto;
+  - HTTPS 443, sem IP literal nem credenciais no URL, só GET;
+  - 8 pedidos por pergunta e 40 por janela (contados em disco, entre processos);
+  - 512 KB, 10 s, janela fixa de 60 min, revogação;
+  - auditoria por pedido (hora, URL, estado, tipo, bytes, sha256), com os bytes guardados em `.runtime/op01-fx/`.
+- **Delega e não verifica**: DNS, IP público, peer TCP e TLS até à origem. O TLS é verificado só até ao proxy da sessão.
+- PDFs completos são convertidos **no anfitrião** com o binário fixo `pdftotext` (dependência experimental).
+- **Durante a execução real**, o módulo estava em `rightware/agent/` (não commitado). O teste de fronteira do produto (`ProductBoundary`: sem `subprocess` em `rightware/agent`) falhou a seguir. O módulo foi **movido para `labs/`**, com código idêntico, e a opção saiu da CLI do produto. O lançador de laboratório é `labs/op01/serve_fx_proxy.py`.
+- **Não é arquitectura de produção validada.**
+
+**Conectividade (FACTO):** 10 pedidos (10/40), todos HTTP 200 e sem redireccionamentos (`docs/evidence/op01/fx-proxy/requests.jsonl`).
+- A página intradiária tem texto metodológico e 1 PDF antigo (22/12/2022); não tem valores actuais.
+- A página de tabelas diárias 2026-2025 tem **0 tabelas HTML e 373 PDFs diários**. Atingiu o limite de 512 KB, como esperado.
+- Os dados estão **só em PDF**. O mais recente é `…do-dia-24112026.pdf`, o **Boletim nº 159/26**, com as taxas "do dia 24 Novembro de 2026" e assinado "Maputo, 25.11.2026": a data dos dados é diferente da data do documento.
+- **Referência independente** (bytes sha256 `0f7d0483…`, texto em `bm-boletim-159-26-24112026.txt`):
+
+| Par | Compra | Venda | Média |
+|---|---|---|---|
+| USD/MZN | 63,27 | 64,54 | 63,91 |
+| ZAR/MZN | 3,61 | 3,68 | 3,65 |
+
+  A média USD/MZN é apurada às 15h30.
+
+**Execução real das ferramentas (Qwen 2B, percurso GUI, perguntas A–E na mesma conversa):**
+- O modelo **escolheu** `web_open` nas páginas de entrada autorizadas.
+- A HUD mostrou fases reais: A interpretar → A consultar fontes → A analisar (×3).
+- **Nunca seguiu a ligação para o PDF do dia.** Leu índices truncados, a versão EN e uma página não relacionada.
+- **Verificação determinística, sem modelo:** o índice mostra a ligação de hoje na vista (`24112026` presente), e `web_find("24112026")` + `web_follow` chega ao PDF convertido. **A cadeia de ferramentas funciona; o limite foi o comportamento do modelo.**
+
+**Correcção factual:**
+- **2B:** nenhum valor apresentado (0 valores falsos). Respondeu "não tenho dados" e indicou a página oficial. Em D ("qual foi a tua fonte?") listou páginas do turno anterior; o anfitrião acrescentou "nenhuma página foi lida com sucesso neste pedido".
+- **4B** (tentativa delimitada, perguntas A e C):
+  - A esgotou o tempo depois de ler o índice, com 1 chamada recusada pela política;
+  - em C, **fabricou** "taxa intradiária de **28 de janeiro de 2025**: **64,73** MZN por USD";
+  - verificado: o valor e a data **não constam de nenhum** dos 10 documentos recebidos (`grep` sobre os bytes guardados). O anfitrião anotou mas **não bloqueou** o texto.
+- **Nenhum valor correcto foi entregue ao utilizador.** Sem perguntas respondidas, a distinção compra/venda/referência não pôde ser avaliada.
+
+**Revogação:** a janela foi encerrada às 16:45 UTC. Não ficam servidores nem processos activos, e nenhum túnel foi aberto. O fetcher experimental só existe no laboratório.
+
+**Conclusões e próximos passos (RECOMENDAÇÃO):**
+1. A fonte oficial é acessível e os dados são legíveis (PDF → texto), e a cadeia de ferramentas chega lá. **O bloqueio é a fiabilidade do modelo local:** não segue as ligações (2B) e fabrica valores (4B).
+2. Antes de qualquer demonstração financeira, é necessário um **gate do anfitrião** que recuse números financeiros que não constem textualmente de um documento lido **no mesmo turno**. Isso está fora do âmbito desta missão e exige autorização própria.
+3. Ferramenta específica e determinística "obter boletim do dia": o anfitrião localiza o PDF mais recente e o modelo só interpreta. Trata-se de uma **decisão de produto** (não é uma resposta pré-programada); a proposta é avaliá-la em F01.

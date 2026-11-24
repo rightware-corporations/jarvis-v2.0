@@ -36,6 +36,8 @@ def main(argv=None) -> int:
                         "exige --pesquisa-autorizacao")
     s.add_argument("--pesquisa-modelo", default="",
                    help="OP01: URL de pesquisa com {q} (ex.: https://host/search?q={q}), dentro de --pesquisa-sites")
+    s.add_argument("--pesquisa-entradas", default="",
+                   help="OP01: páginas https de entrada (separadas por vírgula), dentro de --pesquisa-sites")
     s.add_argument("--pesquisa-autorizacao", default="", help="OP01: referência da autorização de rede do operador")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
@@ -67,13 +69,16 @@ def main(argv=None) -> int:
             p.error("--missao-goose exige --goose-bin, --goose-ollama-dir e --goose-models-dir (anfitrião)")
         from rightware.goose_adapter import GooseMission, GooseRuntime
         goose = GooseMission(GooseRuntime(a.goose_bin, a.goose_ollama_dir, a.goose_models_dir, a.goose_model))
-    sites, fetcher, label = (), None, ""
+    sites, fetcher, label, entries = (), None, "", ()
     if a.pesquisa_sites:
         if not a.pesquisa_autorizacao.strip():
             p.error("--pesquisa-sites exige --pesquisa-autorizacao (autorização de rede específica do operador)")
         sites = tuple(h.strip().lower() for h in a.pesquisa_sites.split(",") if h.strip())
         if not sites or any(not re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}", h) for h in sites):
             p.error("--pesquisa-sites: só hosts exactos (sem esquema, porta, caminho ou wildcard)")
+        entries = tuple(u.strip() for u in a.pesquisa_entradas.split(",") if u.strip())
+        if any(not u.startswith("https://") or u.split("/")[2].lower() not in sites for u in entries):
+            p.error("--pesquisa-entradas: https e dentro de --pesquisa-sites")
         if a.pesquisa_modelo and not (a.pesquisa_modelo.startswith("https://") and "{q}" in a.pesquisa_modelo
                                       and a.pesquisa_modelo.split("/")[2].lower() in sites):
             p.error("--pesquisa-modelo: https, com {q}, num host de --pesquisa-sites")
@@ -82,7 +87,8 @@ def main(argv=None) -> int:
                        goose=goose, public_origin=a.public_origin,
                        public_minutes=a.public_minutes if a.public_origin else None, environment=a.ambiente,
                        tool_sites=sites, browser_fetcher=fetcher, tool_label=label,
-                       tool_search_template=a.pesquisa_modelo if sites else "")
+                       tool_search_template=a.pesquisa_modelo if sites else "",
+                       tool_entry_urls=entries if sites else ())
     if sites:
         print(f"OP01: pesquisa activada só para {', '.join(sites)}"
               + (f" (autorização {a.pesquisa_autorizacao})" if a.pesquisa_autorizacao else f" [{label}]"), flush=True)

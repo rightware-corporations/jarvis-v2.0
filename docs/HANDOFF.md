@@ -4181,3 +4181,27 @@ Local mode is unchanged.
 - **Authorisation closed unused;** nothing to clean.
 - **Unblock options (operator):** explicitly authorise session_proxy for these hosts in a new window, or run in an environment with direct DNS/egress.
 - **State unchanged:** B6 `af6579b`, OP01 `a363829`, F00 `84d87eb`, WEB-01 `5604b19`; no merge; develop, main and vendor untouched.
+
+## CHECKPOINT — 24/11/2026: JRV-OP01-FX-REAL-PROXY → `OP01_FX_PROXY_PARTIAL`
+- **Authorisation `OP01-FX-REAL-PROXY`:** www.bancomoc.mz and bancomoc.mz, HTTPS GET, 8/question, 40/window, 512 KB, 10 s, 60 min. Window 16:35:49 to 16:45 UTC; closed and revoked; 10/40 requests used; no processes left.
+- **Transport:** a new EXPERIMENTAL `labs/op01/proxy_transport.py`.
+  - The W3 fetcher was not reused: it used a placeholder IP and accepted any peer.
+  - Enforced: allowlist per hop, https/443, GET, budgets, audit and stored bytes.
+  - DELEGATED to the proxy and not verified: DNS, public IP, peer, end-to-end TLS.
+  - PDFs are converted on the host with pdftotext.
+  - It was in `rightware/agent` during the run (uncommitted); the product-boundary test (no subprocess in the product) failed, so it was moved to `labs/` with identical code and removed from the product CLI.
+  - **Not production.**
+- **Connectivity:** 10×HTTP 200. The data exists only in daily PDFs: Boletim 159/26, rates of 24/11/2026, signed 25.11.2026. Independent reference: USD/MZN buy 63,27, sell 64,54, average 63,91.
+- **Tool execution:**
+  - The 2B chose web_open on the authorised entry pages, and the HUD showed the real phases. It never followed the link to the PDF.
+  - A deterministic check (index, then find, then follow) reaches the PDF: the tool chain works.
+- **Factual correctness:**
+  - 2B: 0 values presented; it acknowledged the limitation.
+  - 4B (bounded): FABRICATED "28/01/2025, 64,73", which is absent from all 10 received documents. The host annotated but did not block it.
+  - No correct value was delivered.
+- **Tests:** 720 Python OK, tsc 0, Vitest 117/117.
+- **Evidence:** `docs/evidence/op01/fx-proxy/`.
+- **Next (needs authorisation):**
+  - a host gate that refuses financial numbers not present in a document read in the same turn;
+  - evaluate a deterministic "latest bulletin" tool in F01.
+- **Untouched:** main, develop, vendor; no merge; no tunnel.

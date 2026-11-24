@@ -58,6 +58,9 @@ class ToolChatAdapter:
         from rightware.agent.session import AgentSession
         with self._lock:
             self._phase, self._since = "A interpretar", self._clock()
+            begin = getattr(self.browser_fetcher, "begin_question", None)
+            if callable(begin):                       # per-question HTTP budget (experimental proxy transport)
+                begin()
             session = AgentSession(self._engine(), self.model, allow={"browse"}, confirm=lambda q: None,
                                    sites=self.sites, browser_fetcher=self.browser_fetcher, budgets=self.budgets,
                                    max_turns=self.max_turns, audit_path=self.audit_path, receipts=True,

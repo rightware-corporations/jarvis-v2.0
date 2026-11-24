@@ -29,7 +29,8 @@ class RuntimeFacts:
     environment: str = "unknown"                # "cloud" | "local" | "unknown" (declared by the host)
     tools: tuple[str, ...] = ()                 # human descriptions of tools ENABLED for this session
     sites: tuple[str, ...] = ()                 # exact hosts the research tools may read
-    search_template: str = ""                  # host-declared search URL with "{q}" (e.g. https://host/search?q={q})
+    search_template: str = ""
+    entry_urls: tuple[str, ...] = ()            # host-declared entry pages (starting points, not answers)                  # host-declared search URL with "{q}" (e.g. https://host/search?q={q})
     unavailable: tuple[str, ...] = ("voz", "memória entre sessões", "acções no computador do utilizador",
                                     "operações financeiras")
 
@@ -64,4 +65,8 @@ def system_prompt(facts: RuntimeFacts) -> str:
         + (" Para pesquisar, chama web_search com 2 a 6 palavras-chave; depois abre com web_follow o resultado mais "
            "relevante; responde com base no que leste e cita a página. Não inventes endereços." if facts.search_template
            else "")
+        + (" Páginas de entrada autorizadas (pontos de partida; abre-as com web_open e segue as ligações L# com "
+           "web_follow para chegar aos documentos): " + ", ".join(facts.entry_urls) + ". Usa apenas valores que "
+           "leres nos resultados das ferramentas; indica a data dos dados tal como o documento a mostra e a página "
+           "lida." if facts.entry_urls else "")
         + " Lembra-te: responde na língua da última mensagem do Issa.")
