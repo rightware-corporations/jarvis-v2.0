@@ -63,15 +63,18 @@ def fake_model_call(system, user):
         return json.dumps({"objective": "[FAKE-CI] responder com fontes", "answer_parts": [q[:160]], "subquestions": [],
                            "queries": [" ".join(PL.content_terms(q))[:100] or "Moçambique"],
                            "relevance_criteria": ["[FAKE-CI] trata o tema"], "missing_info": []}), 0.0
+    from rightware.web01 import evidence as EV
+    ev = dict(re.findall(r"^\[(E\d+)\] \([^)]*\) ([^\n]+)", user, re.M))
     q = user.split("Pergunta:", 1)[-1].split("\n")[0]
-    ps = dict(re.findall(r"\[(P\d+)\] \(fonte: [^)]*\) ([^\n]+)", user))
-    best = max(ps.items(), key=lambda kv: G.relevance(q, kv[1]), default=None)
+    if system == EV.ASSESS_SYSTEM:
+        return json.dumps({"covered": [{"part": 0, "evidence": list(ev)[:3]}], "missing": [], "sufficient": True,
+                           "next_query": None, "reason": "[FAKE-CI]"}), 0.0
+    best = max(ev.items(), key=lambda kv: G.relevance(q, kv[1]), default=None)
     if not best or G.relevance(q, best[1]) == 0:
-        return json.dumps({"status": "insufficient", "answer": "", "claims": [], "conflicts": [],
-                           "uncertainty": "[FAKE-CI]"}), 0.0
-    sent = best[1][:200]
-    return json.dumps({"status": "answered", "answer": f"[FAKE-CI] {sent}", "claims": [
-        {"text": sent, "passage_ids": [best[0]], "quote": sent}], "conflicts": [], "uncertainty": ""}), 0.0
+        return json.dumps({"claims": [], "conflicts": []}), 0.0
+    sent = re.split(r"(?<=\.)\s+", best[1])[0][:200]
+    return json.dumps({"claims": [{"part": 0, "evidence_id": best[0], "quote": sent, "text": sent}],
+                       "conflicts": []}), 0.0
 
 
 if __name__ == "__main__":

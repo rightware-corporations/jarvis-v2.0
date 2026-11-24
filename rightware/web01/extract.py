@@ -86,7 +86,7 @@ class _Blocks(HTMLParser):
         elif tag in HEADINGS and self.buf is not None and self.kind == "heading":
             text = " ".join("".join(self.buf).split())
             if text:
-                self.section = self.section[: max(0, self.heading_level - 2)] + [text]
+                self.section = self.section[: max(0, self.heading_level - 1)] + [text]   # h1 › h2 › h3
                 self._emit("heading", text)
             self.buf = None
         elif tag in BLOCK_TEXT and self.buf is not None and self.kind != "heading" and self.cell is None:

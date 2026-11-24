@@ -24,8 +24,10 @@ GOOD_PLAN = {"objective": "Identificar a capital", "answer_parts": ["capital"], 
              "relevance_criteria": ["fala da capital"], "missing_info": []}
 
 
-def scripted(plan=GOOD_PLAN, synth=None, intent="research", log=None):
-    """FAKE model: answers by system prompt. ``synth(passages_text)`` builds the synthesis JSON."""
+def scripted(plan=GOOD_PLAN, synth=None, intent="research", log=None, assess=None):
+    """FAKE model (W3.2 protocol): answers by system prompt. ``synth(user)`` builds the synthesis JSON."""
+    from rightware.web01 import evidence as EV
+
     def call(system, user):
         if log is not None:
             log.append(system[:20])
@@ -33,23 +35,34 @@ def scripted(plan=GOOD_PLAN, synth=None, intent="research", log=None):
             return json.dumps({"intent": intent}), 0.01
         if system == PL.PLAN_SYSTEM:
             return (plan if isinstance(plan, str) else json.dumps(plan)), 0.01
+        if system == EV.ASSESS_SYSTEM:
+            if assess is not None:
+                return assess(user), 0.01
+            ids = re.findall(r"^\[(E\d+)\]", user, re.M)
+            n = len(re.findall(r"^\d+: ", user, re.M))
+            return json.dumps({"covered": [{"part": i, "evidence": ids[:3]} for i in range(n)], "missing": [],
+                               "sufficient": True, "next_query": None, "reason": "fake"}), 0.01
         return synth(user), 0.01
     return call
 
 
+def evidence_of(user):
+    return dict(re.findall(r"^\[(E\d+)\] \([^)]*\) ([^\n]+)", user, re.M))
+
+
 def passages_of(user):
-    return dict(re.findall(r"\[(P\d+)\] \(fonte: [^)]*\) ([^\n]+)", user))
+    return evidence_of(user)
 
 
-def quote_first(word, status="answered", conflicts=()):
+def quote_first(word, conflicts=()):
     def synth(user):
-        ps = passages_of(user)
-        hit = next(((i, t) for i, t in ps.items() if word.lower() in t.lower()), None)
+        ev = evidence_of(user)
+        hit = next(((i, t) for i, t in ev.items() if word.lower() in t.lower()), None)
         if hit is None:
-            return json.dumps({"status": "insufficient", "answer": "", "claims": [], "conflicts": [], "uncertainty": "x"})
+            return json.dumps({"claims": [], "conflicts": []})
         sent = next(s for s in re.split(r"(?<=\.)\s+", hit[1]) if word.lower() in s.lower())
-        return json.dumps({"status": status, "answer": sent, "claims": [{"text": sent, "passage_ids": [hit[0]],
-                           "quote": sent}], "conflicts": list(conflicts), "uncertainty": ""})
+        return json.dumps({"claims": [{"part": 0, "evidence_id": hit[0], "quote": sent, "text": sent}],
+                           "conflicts": list(conflicts)})
     return synth
 
 
@@ -111,28 +124,32 @@ class Grounding(unittest.TestCase):
         self.assertEqual(o.state, CP.State.RESPOSTA_FUNDAMENTADA)
         self.assertFalse(o.verified)
         self.assertIn("NÃO verificadas semanticamente", CP.LABELS[o.state])
-        self.assertTrue(any(l.startswith("C1 [GROUNDED]") for l in o.findings))
+        self.assertTrue(any(l.startswith("RESPOSTA (construída pelo anfitrião") for l in o.findings))
+        self.assertTrue(any("Maputo" in l and "[fonte #" in l for l in o.findings))
+        self.assertEqual(o.model_commentary_unverified, "")                 # model free text never shown
 
     def test_invented_references_and_quotes_are_removed(self):
-        for synth, why in ((lambda u: json.dumps({"status": "answered", "answer": "Maputo", "claims": [
-                               {"text": "A capital é Maputo", "passage_ids": ["P99"], "quote": "Maputo"}]}),
-                            "passagem inventada"),
-                           (lambda u: json.dumps({"status": "answered", "answer": "Maputo", "claims": [
-                               {"text": "A capital é Maputo", "passage_ids": ["P1"], "quote": "frase que não existe"}]}),
+        for synth, why in ((lambda u: json.dumps({"claims": [
+                               {"part": 0, "evidence_id": "E99", "quote": "Maputo", "text": "A capital é Maputo"}]}),
+                            "referência inventada"),
+                           (lambda u: json.dumps({"claims": [
+                               {"part": 0, "evidence_id": "E1", "quote": "frase que não existe", "text": "A capital é Maputo"}]}),
                             "citação não existe")):
             o = self.run_q(self.mission(synth))
             self.assertEqual(o.state, CP.State.RESULTADO_DESCONHECIDO)             # abstains: nothing grounded
             self.assertTrue(any(why in l for l in o.findings))
 
     def test_tampered_source_bytes_fail_integrity(self):
-        ps = [{"id": "P1", "seq": 1, "url": "u", "sha256": "0" * 64, "text": "Maputo é a capital de Moçambique.",
-               "relevance": 1.0}]
+        from rightware.web01 import evidence as EV
+        raw = b"<p>Maputo e a capital de Mocambique.</p>"
+        cands = [{"id": "E1", "seq": 1, "url": "u", "sha256": "0" * 64, "entity": "X", "section": "", "kind": "paragraph",
+                  "text": "Maputo é a capital de Moçambique.", "scores": [1.0, 1.0]}]
         rec = [{"seq": 1, "status": "OK", "sha256": "0" * 64, "tool": "web_open_public"}]
-        rep = G.validate(json.dumps({"status": "answered", "answer": "", "claims": [{"text": "Maputo é a capital",
-                         "passage_ids": ["P1"], "quote": "Maputo é a capital de Moçambique."}]}),
-                         "capital de Moçambique", ps, rec, {1: b"<p>Maputo e a capital de Mocambique.</p>"})
+        rep = EV.validate(json.dumps({"claims": [{"part": 0, "evidence_id": "E1", "quote": "Maputo é a capital de Moçambique.",
+                                                   "text": "Maputo é a capital de Moçambique"}]}),
+                          "capital de Moçambique", ["capital de Moçambique"], cands, rec, {1: raw})
         self.assertEqual(rep["final"], "ABSTAIN")
-        self.assertIn("integridade", rep["dropped"][0]["why"])
+        self.assertIn("integridade", rep["rejected"][0]["why"])
 
     def test_insufficient_information_abstains(self):
         o = self.run_q(self.mission(quote_first("inflação")), q="Qual foi a inflação de Moçambique em 2031?",
