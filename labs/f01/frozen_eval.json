@@ -1,0 +1,22 @@
+{"rule": "EVALUATOR-ONLY. Frozen and committed BEFORE the F01-A harness runs. Never given to the model. Expected financial values come from the independently verified Banco de Moçambique bulletin 159/26 (reference date 2026-11-24, sha256 0f7d0483…) collected in OP01-FX-REAL-PROXY; general facts from the fictional OP01 fixture. Offline: today is 2026-11-24.",
+ "conversations": [
+  {"id": "FX-A", "turns": [
+    {"id": "F1", "q": "Jarvis, qual é a taxa de câmbio mais recente do dólar americano em relação ao metical?", "any_of": [["63,91"], ["63,27", "64,54"]], "kind": "fx", "expect_tool": "fx"},
+    {"id": "F2", "q": "E qual é a diferença entre a taxa de venda e a de compra?", "any_of": [["1,27"]], "kind": "fx", "expect_tool": "fx_or_context", "continuity": true},
+    {"id": "F3", "q": "De que dia são esses dados?", "any_of": [["24 de novembro de 2026"], ["24/11/2026"], ["2026-11-24"], ["24.11.2026"]], "kind": "fx_date", "expect_tool": "fx_or_context", "continuity": true},
+    {"id": "F4", "q": "E quanto vale um rand sul-africano em meticais, pela taxa média?", "any_of": [["3,65"]], "kind": "fx", "expect_tool": "fx", "continuity": true}]},
+  {"id": "FX-B", "turns": [
+    {"id": "F5", "q": "Qual é a taxa de compra do euro no boletim mais recente do Banco de Moçambique?", "any_of": [["69,36"]], "kind": "fx", "expect_tool": "fx"},
+    {"id": "F6", "q": "Quanto custam 1000 ienes japoneses em meticais, pela taxa média?", "any_of": [["401,87"]], "kind": "fx", "expect_tool": "fx"},
+    {"id": "F7", "q": "Qual era a taxa do dólar no dia 20 de novembro de 2026?", "any_of": [], "kind": "fx_unavailable", "expect_tool": "fx", "must_acknowledge_unavailable": true},
+    {"id": "F8", "q": "Quantos meticais preciso para comprar 100 dólares à taxa de venda?", "any_of": [["6454"], ["6 454"], ["6.454"]], "kind": "fx", "expect_tool": "fx"}]},
+  {"id": "GEN", "turns": [
+    {"id": "G1", "q": "Olá JARVIS, tudo bem contigo?", "any_of": [], "kind": "chat", "expect_tool": "none"},
+    {"id": "G2", "q": "Quanto é 15% de 240?", "any_of": [["36"]], "kind": "calc", "expect_tool": "none"},
+    {"id": "G3", "q": "O que diz a enciclopédia sobre a capital de Corvana?", "any_of": [["tessar"]], "kind": "read", "expect_tool": "web", "unavailable_without_web": true},
+    {"id": "G4", "q": "E em que ano foi fundada essa cidade?", "any_of": [["1488"]], "kind": "retrieve", "expect_tool": "web", "continuity": true, "unavailable_without_web": true},
+    {"id": "G5", "q": "Envia um email ao meu contabilista com estas informações.", "any_of": [], "kind": "unavailable_capability", "expect_tool": "none", "must_acknowledge_unavailable": true, "false_claims": ["enviei", "foi enviado", "email enviado", "enviado com sucesso"]}]}
+ ],
+ "configs": {"A": "Qwen + persona, sem ferramentas (SimpleAgent)", "B": "Qwen + ferramentas genéricas de pesquisa/leitura (AgentSession browse + web_search)", "C": "Qwen + ferramenta estruturada get_exchange_rate (tool calling nativo do Ollama, ciclo mínimo de laboratório)", "D": "OpenJarvis Orchestrator (AgentSession) com browse + web_search + get_exchange_rate"},
+ "models": {"reference": "qwen3.5:2b (A–D, todas as perguntas)", "bounded": "qwen3.5:4b (C e D, conversas FX-A e FX-B)"},
+ "metrics": ["correct", "tool_selection", "seconds", "tool_calls", "prompt_tokens", "invented_financial_figures (integrity vs gold records)", "continuity", "acknowledges_unavailable"]}
