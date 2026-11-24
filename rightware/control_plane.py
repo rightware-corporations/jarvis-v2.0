@@ -57,6 +57,7 @@ class State(str, Enum):
     TAREFA_CANCELADA = "TAREFA_CANCELADA"
     EXECUCAO_FALHADA = "EXECUCAO_FALHADA"
     RESULTADO_VERIFICADO = "RESULTADO_VERIFICADO"
+    RESPOSTA_FUNDAMENTADA = "RESPOSTA_FUNDAMENTADA"      # WEB-01 W3.1: cited + integrity-checked, NOT semantically verified
     RESULTADO_DESCONHECIDO = "RESULTADO_DESCONHECIDO"
 
 
@@ -69,6 +70,8 @@ LABELS = {
     State.TAREFA_CANCELADA: "Tarefa cancelada",
     State.EXECUCAO_FALHADA: "Execução falhada",
     State.RESULTADO_VERIFICADO: "Resultado verificado por evidência (recibos + verificador RIGHTWARE)",
+    State.RESPOSTA_FUNDAMENTADA: "Resposta fundamentada em fontes (citações e integridade validadas; afirmações NÃO "
+                                 "verificadas semanticamente)",
     State.RESULTADO_DESCONHECIDO: "Resultado desconhecido — sem provas suficientes",
 }
 
@@ -230,14 +233,17 @@ class ControlPlane:
         return text_state(result), result
 
     # -- AUTHORIZATION ------------------------------------------------------------------------------
-    def request(self, capability: str) -> tuple[State, str]:
-        """Host command: ask for an approved capability. Returns the one-time code to show the operator."""
-        if capability not in self.capabilities:
+    def request(self, capability: str, params: dict | None = None) -> tuple[State, str]:
+        """Host command: ask for an approved capability. Returns the one-time code to show the operator.
+        ``params`` (W3.1, e.g. a validated research plan) are bound to THIS code: authorising runs exactly them."""
+        needs = getattr(self._missions.get(capability), "accepts_params", False)
+        if capability not in self.capabilities or (params is not None) != bool(needs):
             self.audit.append({"event": "request_refused", "capability": str(capability)[:40]})
             return State.TAREFA_NAO_AUTORIZADA, ""
         with self._lock:
             code = secrets.token_hex(3).upper()
-            self._pending = {"capability": capability, "code": code, "expires": self._clock() + CODE_TTL_SECONDS}
+            self._pending = {"capability": capability, "code": code, "expires": self._clock() + CODE_TTL_SECONDS,
+                             "params": params}
         self.audit.append({"event": "authorization_requested", "capability": capability})
         return State.AUTORIZACAO_NECESSARIA, code
 
@@ -249,6 +255,7 @@ class ControlPlane:
             self.audit.append({"event": "authorization_refused"})
             return None
         self.audit.append({"event": "authorized", "capability": p["capability"]})
+        self._authorized_params = p.get("params")
         return p["capability"]
 
     # -- EXECUTOR → EVIDENCE → RESULT ---------------------------------------------------------------
@@ -264,7 +271,11 @@ class ControlPlane:
         started = self._clock()
         self._cancelled.clear()
         try:
-            outcome = self._executors[capability](self._cancelled, on_start)
+            params, self._authorized_params = getattr(self, "_authorized_params", None), None
+            if getattr(self._missions.get(capability), "accepts_params", False):
+                outcome = self._executors[capability](self._cancelled, on_start, params=params)
+            else:
+                outcome = self._executors[capability](self._cancelled, on_start)
         except PermissionError:
             self.audit.append({"event": "executor_refused_envelope"})
             return Refusal(State.TAREFA_NAO_AUTORIZADA, "ENVELOPE_REFUSED")

@@ -157,6 +157,7 @@ const S = {
     await ctx.close();
   },
   async mission(browser) { await runMission(browser, 'U7', MISSION); },
+  async freeresearch(browser) { await freeResearch(browser); },
   async research(browser) {
     // WEB-01 W2: the real research executor over the local FIXTURE corpus (no network), via the same HUD flow.
     const { page, ctx, st, timeline } = await runMission(browser, 'U8', 'pesquisa-publica', true);
@@ -170,6 +171,31 @@ const S = {
     await ctx.close();
   },
 };
+
+async function freeResearch(browser) {
+  // W3.1: free question in the chat → plan + single-use code (no network yet) → operator types /autorizar CODE → result.
+  const { ctx, page } = await login(browser);
+  const q = process.env.UI02_FREE_QUESTION || 'Em que ano Moçambique se tornou independente?';
+  const plan = await send(page, q, 400);
+  const code = (plan.reply.match(/\/autorizar ([0-9A-F]{6})/) || [])[1];
+  const planShot = await shot(page, 'u9-plan');
+  let run = null, st = null;
+  if (code) {
+    run = await send(page, `/autorizar ${code}`, 120);
+    st = await waitMissionEnd(page, Number(process.env.UI02_MISSION_MAX_S || 900));
+  }
+  await page.goto(BASE + '/agents', { waitUntil: 'load' });
+  await page.waitForTimeout(3000);
+  const timeline = await page.locator('.rw-timeline').first().innerText();
+  const last = st && st.last;
+  rec('U9', 'Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)',
+    'plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)',
+    { question: q, plan: plan.reply.slice(0, 1200), code_present: !!code, last, timeline: timeline.slice(0, 1500) },
+    [planShot, await shot(page, 'u9-result')],
+    !!code && /Pesquisa proposta/.test(plan.reply) && !!last && last.verified === false
+      && ['RESPOSTA_FUNDAMENTADA', 'EXECUCAO_PARCIAL', 'RESULTADO_DESCONHECIDO'].includes(last.state));
+  await ctx.close();
+}
 
 async function runMission(browser, id, MISSION, keep = false) {
     const { ctx, page } = await login(browser);

@@ -57,6 +57,9 @@ CAPABILITY_STATUS = {"comparar-versoes-ensaio": ("INTEGRADA", "Tarefa supervisio
                      "pesquisa-fixture-goose": ("PARCIAL", "Missão goose em catálogo sintético isolado; "
                                                 "experimental, sujeita ao desempenho do anfitrião.",
                                                 "Missão de investigação goose (catálogo sintético)"),
+                     "pesquisa-livre": ("PARCIAL", "WEB-01 W3.1: pergunta livre → plano do modelo validado → código "
+                                        "do operador → fontes com citações validadas; afirmações NÃO verificadas "
+                                        "semanticamente.", "Pesquisa livre com respostas fundamentadas"),
                      "pesquisa-publica": ("PARCIAL", "WEB-01 W2: pesquisa de leitura sobre corpus FIXTURE local, com "
                                           "recibos e verificador; sem acesso à Internet (W3 exige autorização).",
                                           "Pesquisa pública de leitura (fontes fixture)")}
@@ -268,6 +271,17 @@ class ChatBridge:
         text = turns[-1][1].strip()
         tag = f"\n`{rid}`\n" if rid else ""
         try:
+            research = self._free_research()
+            if research is not None and not text.startswith("/autorizar") and not text.startswith("/estado") \
+                    and not text.startswith("/cancelar") and (text.lower().startswith("/pesquisar") or not text.startswith("/")):
+                from rightware.web01 import planner as PL
+                intent = PL.route(text, research_enabled=True,
+                                  propose=None if text.startswith("/") else PL.model_proposer(research.call))
+                if intent.kind == PL.OUT_OF_SCOPE:
+                    return "REFUSED", (f"**[Fora das capacidades autorizadas — nada foi executado]**\n\n{intent.reason}\n"
+                                       + tag), {"intent": intent.kind}
+                if intent.kind in (PL.RESEARCH_EXPLICIT, PL.RESEARCH_SUGGESTED):
+                    return "RESEARCH_PROPOSED", self._propose_research(research, intent) + tag, {"intent": intent.kind}
             if text.startswith("/"):
                 return "COMMAND", self.command(text) + tag, {"command": text.split()[0][:16]}
             if model not in self.entries:
@@ -277,6 +291,34 @@ class ChatBridge:
         except Exception as exc:                                   # never a fabricated answer
             return "ERROR", (f"**[Erro interno do JARVIS]**\n\nNada foi executado. (código: {type(exc).__name__})\n"
                              + tag), {}
+
+    def _free_research(self):
+        missions = getattr(self.control, "_missions", {}) if self.control is not None else {}
+        return missions.get("pesquisa-livre")
+
+    def _propose_research(self, research, intent) -> str:
+        """W3.1: plan with the local model (validated), then a single-use code bound to THIS plan. No network yet."""
+        plan, meta = research.plan(intent.question)
+        state, code = self.control.request("pesquisa-livre", {"plan": plan, "plan_meta": meta})
+        if not code:
+            return "**[Pesquisa não autorizada]**\n\nO anfitrião recusou o pedido. Nada foi executado.\n"
+        pol = research.policy
+        lines = ["**[Pesquisa proposta — nada foi executado ainda]**", "",
+                 f"**Pergunta:** {plan.question}", f"**Decisão:** {intent.reason} ({intent.decided_by})",
+                 f"**Plano:** {plan.source}" + ("" if meta.get("valid_model_plan") else
+                                                f" — o plano do modelo foi rejeitado ({'; '.join(meta['errors'])[:160]})"),
+                 f"**Objectivo:** {plan.objective}"]
+        if plan.subquestions:
+            lines.append("**Subperguntas:** " + "; ".join(plan.subquestions))
+        lines += ["**Consultas:** " + "; ".join(f"`{q}`" for q in plan.queries),
+                  "**Critérios de relevância:** " + "; ".join(plan.relevance_criteria)]
+        if plan.missing_info:
+            lines.append("**Informação em falta:** " + "; ".join(plan.missing_info))
+        lines += [f"**Limites (política do anfitrião, não do modelo):** modo {pol.mode}, servidores "
+                  f"{', '.join(pol.allowed_hosts)}, até {pol.max_requests_per_mission} pedidos e "
+                  f"{int(pol.max_seconds_per_mission)} s.", "",
+                  f"Para executar ESTE plano escreva `/autorizar {code}` (uso único, 2 min). Sem o código, nada acontece."]
+        return "\n".join(lines) + "\n"
 
     def _session_for(self, model: str, prior: list[tuple[str, str]]) -> str:
         entry = self.entries[model]
