@@ -66,9 +66,6 @@ def fake_model_call(system, user):
     from rightware.web01 import evidence as EV
     ev = dict(re.findall(r"^\[(E\d+)\] \([^)]*\) ([^\n]+)", user, re.M))
     q = user.split("Pergunta:", 1)[-1].split("\n")[0]
-    if system == EV.ASSESS_SYSTEM:
-        return json.dumps({"covered": [{"part": 0, "evidence": list(ev)[:3]}], "missing": [], "sufficient": True,
-                           "next_query": None, "reason": "[FAKE-CI]"}), 0.0
     best = max(ev.items(), key=lambda kv: G.relevance(q, kv[1]), default=None)
     if not best or G.relevance(q, best[1]) == 0:
         return json.dumps({"claims": [], "conflicts": []}), 0.0

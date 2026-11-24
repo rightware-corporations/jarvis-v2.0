@@ -24,7 +24,7 @@ from rightware.control_plane import State, TaskOutcome
 from rightware.web01 import evidence as EV
 from rightware.web01 import providers as PV
 from rightware.web01.egress import EgressGuard, EgressPolicy, build_fetcher, guarantees
-from rightware.web01.llm import ModelError, local_model
+from rightware.web01.llm import ModelError, last_stats, local_model, reset_stats
 from rightware.web01.mission import MODE_LABEL, _Either
 from rightware.web01.planner import FORBIDDEN_IN_QUERY, Plan, content_terms, make_plan
 from rightware.web01.research import ResearchToolkit
@@ -32,7 +32,7 @@ from rightware.web01.research import ResearchToolkit
 CAPABILITY = "pesquisa-livre"
 ROOT = Path(__file__).resolve().parents[2]
 MAX_ITERATIONS = 4
-MAX_MODEL_CALLS = 5            # assessments + 1 synthesis (planning happens before authorisation)
+MAX_MODEL_CALLS = 4            # one structured step per iteration (planning happens before authorisation)
 FINAL = {"GROUNDED": State.RESPOSTA_FUNDAMENTADA, "PARTIAL": State.EXECUCAO_PARCIAL,
          "ABSTAIN": State.RESULTADO_DESCONHECIDO}
 
@@ -69,6 +69,7 @@ class FreeResearchMission:
         self.runtime = runtime or ROOT / ".runtime" / "web01-missions"
         self.clock = clock
         self._cancel = threading.Event()
+        self.sources = EV.load_sources()
         self.description = (f"Pesquisa LIVRE de leitura — modo {MODE_LABEL[self.policy.mode]}. O JARVIS propõe um plano "
                             "(modelo local, validado pelo anfitrião); só executa depois do código do operador; investiga "
                             "de forma adaptativa e pára quando a evidência cobre a pergunta; a resposta é construída só a "
@@ -85,8 +86,10 @@ class FreeResearchMission:
         if ledger["calls"] >= MAX_MODEL_CALLS:
             raise ModelError("limite de chamadas ao modelo atingido")
         ledger["calls"] += 1
+        reset_stats()
         raw, secs = self.call(system, user)
         ledger["seconds"] += secs
+        ledger["stats"].append({"seconds": secs, **last_stats()})
         return raw, secs
 
     def run(self, cancelled: threading.Event, on_start=None, *, params: dict | None = None) -> TaskOutcome:
@@ -102,8 +105,11 @@ class FreeResearchMission:
         if on_start:
             on_start()
         queue, tried, opened, iterations = list(plan.queries), [], set(), []
-        ledger = {"calls": 0, "seconds": 0.0}
-        cands, covered, stop_reason = [], set(), "limite de iterações atingido"
+        ledger = {"calls": 0, "seconds": 0.0, "stats": []}
+        cost = {"retrieval_s": 0.0, "selection_s": 0.0, "model_step_s": 0.0, "validation_s": 0.0}
+        cands, stop_reason = [], "limite de iterações atingido"
+        report = EV.compose({"accepted": [], "attributed": [], "rejected": []}, plan.question, parts)
+        rejected_all, model_errors = [], []
         for it in range(1, MAX_ITERATIONS + 1):
             if stop.is_set():
                 stop_reason = "cancelado pelo operador"
@@ -121,7 +127,7 @@ class FreeResearchMission:
             rs, results = kit.web_search_public(query)
             step = {"iteration": it, "query": query, "search_receipt": rs["seq"], "search_status": rs["status"],
                     "opened": []}
-            missing_before = [i for i in range(len(parts)) if i not in covered]
+            missing_before = [i for i in range(len(parts)) if i not in report["covered_parts"]]
             for k, url in enumerate([u for u in results if u not in opened][:2]):
                 if stop.is_set() or self.policy.max_requests_per_mission - guard.requests < 1:
                     break
@@ -138,58 +144,71 @@ class FreeResearchMission:
                 ro, _ = kit.web_open_public(url)
                 step["opened"].append({"receipt": ro["seq"], "url": url, "status": ro["status"]})
             step["network_s"] = round(self.clock() - t0, 2)
-            cands = EV.candidates(plan.question, parts, EV.documents(kit.receipts, kit.kept))
+            t1 = time.perf_counter()
+            docs = EV.documents(kit.receipts, kit.kept)
+            cost["retrieval_s"] += time.perf_counter() - t1
+            t1 = time.perf_counter()
+            cands = EV.candidates(plan.question, parts, docs)
+            cost["selection_s"] += time.perf_counter() - t1
             step["candidates"] = len(cands)
-            proposal, raw = None, ""
+            raw = ""
             if cands and not stop.is_set():
                 try:
-                    raw, secs = self._model(EV.ASSESS_SYSTEM, EV.assess_prompt(plan.question, parts, tried, cands),
-                                            ledger)
-                    step["assess_s"] = secs
-                    proposal = json.loads(raw)
-                except (ModelError, ValueError) as exc:
-                    step["assess_error"] = f"{type(exc).__name__}: {str(exc)[:120]}"
-            covered, detail = EV.host_coverage(parts, cands, proposal)
-            step["coverage"] = {"host_covered": sorted(covered), "detail": detail,
-                                "model_sufficient": bool(proposal and proposal.get("sufficient")),
-                                "model_reason": str((proposal or {}).get("reason", ""))[:200]}
+                    raw, secs = self._model(EV.STEP_SYSTEM, EV.step_prompt(plan.question, parts, cands,
+                                                                           set(report["covered_parts"])), ledger)
+                    step["model_step_s"] = secs
+                    cost["model_step_s"] += secs
+                except ModelError as exc:
+                    step["model_error"] = f"ModelError: {str(exc)[:120]}"
+                    model_errors.append(step["model_error"])
+                t1 = time.perf_counter()
+                if raw:
+                    step["model_raw"] = raw[:3000]          # evidence only; never shown as a conclusion
+                    report = EV.validate(raw, plan.question, parts, cands, kit.receipts, kit.kept,
+                                         sources=self.sources, prior=report["accepted"],
+                                         prior_attributed=report["attributed"])
+                    rejected_all += report["rejected"]
+                    step["claims"] = {"accepted_total": len(report["accepted"]),
+                                      "attributed_total": len(report["attributed"]),
+                                      "rejected_this_step": [r["why"] for r in report["rejected"]]}
+                    if not report["schema_valid"]:
+                        step["model_error"] = report.get("error")
+                cost["validation_s"] += time.perf_counter() - t1
+            covered = set(report["covered_parts"])
+            step["coverage"] = {"host_covered": sorted(covered), "by": "afirmações aceites",
+                                "model_missing": report.get("model_missing", [])}
             iterations.append(step)
             if len(covered) == len(parts):
-                stop_reason = "cobertura completa confirmada pelo anfitrião (paragem antecipada)"
+                stop_reason = "cobertura completa por afirmações aceites (paragem antecipada)"
                 step["decision"] = "parar"
                 break
             missing = [parts[i] for i in range(len(parts)) if i not in covered]
-            if proposal and proposal.get("sufficient"):
-                step["decision"] = "continuar: paragem proposta pelo modelo REJEITADA (sem evidência para: " \
-                                   + "; ".join(missing) + ")"
+            if raw and report.get("schema_valid") and not report.get("model_missing"):
+                step["decision"] = "continuar: o modelo não indicou partes em falta, mas o anfitrião não tem " \
+                                   "afirmações aceites para: " + "; ".join(missing)
             else:
-                step["decision"] = "continuar: falta evidência para " + "; ".join(missing)
-            nq = _valid_query((proposal or {}).get("next_query"))
+                step["decision"] = "continuar: sem afirmação aceite para " + "; ".join(missing)
+            nq = _valid_query(report.get("next_query"))
             if nq and nq not in tried and nq not in queue:
                 queue.insert(0, nq)
                 step["next_query"] = f"{nq} (proposta do modelo)"
-            if ledger["calls"] >= MAX_MODEL_CALLS - 1:
-                stop_reason = "limite de chamadas ao modelo (reservada a síntese)"
+            if ledger["calls"] >= MAX_MODEL_CALLS:
+                stop_reason = "limite de chamadas ao modelo"
                 break
-        synth = {"raw": "", "seconds": 0.0, "error": None}
+        synth = {"raw": "", "seconds": 0.0, "error": model_errors[-1] if model_errors and not report["accepted"]
+                 else None}
+        report["rejected"] = rejected_all
+        report = EV.compose(report, plan.question, parts)
         if stop.is_set():
-            report = {"final": "CANCELLED", "accepted": [], "rejected": [], "conflicts": [], "answer_lines": [],
-                      "unanswered_parts": parts, "coverage": {}}
+            report = {"final": "CANCELLED", "accepted": [], "attributed": [], "rejected": rejected_all,
+                      "conflicts": [], "answer_lines": [], "unanswered_parts": parts, "coverage": {}}
             stop_reason = "cancelado pelo operador"
-        elif not cands:
-            report = EV._compose({"accepted": [], "rejected": [], "conflicts": [], "coverage": {}, "final": "ABSTAIN",
-                                  "schema_valid": None}, plan.question, parts)
-        else:
-            try:
-                synth["raw"], synth["seconds"] = self._model(
-                    EV.SYNTH_SYSTEM, EV.synthesis_prompt(plan.question, parts, cands), ledger)
-            except ModelError as exc:
-                synth["error"] = str(exc)
-            report = EV.validate(synth["raw"], plan.question, parts, cands, kit.receipts, kit.kept)
+        meta_cost = {k: round(v, 3) for k, v in cost.items()}
         seconds = round(self.clock() - started, 2)
         state = State.TAREFA_CANCELADA if report["final"] == "CANCELLED" else FINAL[report["final"]]
         ignored = [t for d in EV.documents(kit.receipts, kit.kept) for t in d["ignored_instructions"]]
         meta = {"iterations": iterations, "stop_reason": stop_reason, "model_calls": ledger["calls"],
+                "cost": meta_cost, "model_call_stats": ledger["stats"],
                 "ignored_external_instructions": ignored,
                 "model_seconds": round(ledger["seconds"], 2), "requests": guard.requests,
                 "requests_avoided": self.policy.max_requests_per_mission - guard.requests}
@@ -208,12 +227,14 @@ class FreeResearchMission:
         if report["final"] != "CANCELLED":
             lines.append("RESPOSTA (construída pelo anfitrião só com afirmações fundamentadas):")
             lines += [f"• {line}" for line in report["answer_lines"]]
-        for i, rj in enumerate(report.get("rejected", []), 1):
-            lines.append(f"REJEITADA: {str(rj.get('text') or rj.get('claim'))[:120]} — {rj['why']}")
+        if report.get("rejected"):
+            reasons = sorted({rj["why"] for rj in report["rejected"]})
+            lines.append(f"Afirmações do modelo rejeitadas pelo anfitrião: {len(report['rejected'])} "
+                         f"(motivos: {'; '.join(reasons)[:300]}) — o texto rejeitado não é mostrado.")
         if ignored:
             lines.append(f"Instruções externas ignoradas (conteúdo não confiável nas fontes): {len(ignored)}")
-        if report.get("conflicts"):
-            lines.append("Conflitos indicados: " + "; ".join(report["conflicts"]))
+        lines.append("Correspondência e suporte verificados por heurísticas lexicais do anfitrião; correcção "
+                     "semântica NÃO verificada.")
         if report["final"] == "ABSTAIN":
             lines.append("O JARVIS abstém-se: evidência insuficiente nas fontes consultadas.")
         objectives = tuple((f"P{i + 1}", "COBERTA" if report["coverage"].get(i) else "SEM_EVIDENCIA",
@@ -236,7 +257,7 @@ class FreeResearchMission:
             for seq, raw in kit.kept.items():
                 (run / "pages" / f"{seq}.bin").write_bytes(raw)
             (run / "result.json").write_text(json.dumps({
-                "version": "W3.2", "question": plan.question, "plan": plan.as_dict(), "plan_meta": params.get("plan_meta"),
+                "version": "W3.2-R", "question": plan.question, "plan": plan.as_dict(), "plan_meta": params.get("plan_meta"),
                 **meta, "candidates": [{k: c[k] for k in ("id", "seq", "entity", "section", "kind", "text", "scores")}
                                        for c in cands],
                 "synthesis_raw": synth["raw"], "synthesis_error": synth["error"], "validation": report,
@@ -244,8 +265,8 @@ class FreeResearchMission:
                 "refused": [a for a in guard.audit if a.get("decision") == "REFUSED"],
                 "timing": {"plan_s": (params.get("plan_meta") or {}).get("seconds"),
                            "network_s": round(sum(s.get("network_s", 0) for s in meta["iterations"]), 2),
-                           "assess_s": round(sum(s.get("assess_s", 0) for s in meta["iterations"]), 2),
-                           "synthesis_s": synth["seconds"], "mission_total_s": seconds}},
+                           "model_step_s": round(sum(s.get("model_step_s", 0) for s in meta["iterations"]), 2),
+                           **meta["cost"], "mission_total_s": seconds}},
                 ensure_ascii=False, indent=1, default=list))
         except OSError:
             return None

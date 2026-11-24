@@ -35,13 +35,6 @@ def scripted(plan=GOOD_PLAN, synth=None, intent="research", log=None, assess=Non
             return json.dumps({"intent": intent}), 0.01
         if system == PL.PLAN_SYSTEM:
             return (plan if isinstance(plan, str) else json.dumps(plan)), 0.01
-        if system == EV.ASSESS_SYSTEM:
-            if assess is not None:
-                return assess(user), 0.01
-            ids = re.findall(r"^\[(E\d+)\]", user, re.M)
-            n = len(re.findall(r"^\d+: ", user, re.M))
-            return json.dumps({"covered": [{"part": i, "evidence": ids[:3]} for i in range(n)], "missing": [],
-                               "sufficient": True, "next_query": None, "reason": "fake"}), 0.01
         return synth(user), 0.01
     return call
 
@@ -161,8 +154,11 @@ class Grounding(unittest.TestCase):
         o = self.run_q(self.mission(quote_first("Beira", conflicts=["Fórum diz Beira; enciclopédia diz Maputo"])),
                        plan=dict(GOOD_PLAN, queries=["fórum capital Beira"]))
         self.assertTrue(any("forum.fixture.example" in s["url"] for s in o.sources))
-        self.assertEqual(o.state, CP.State.EXECUCAO_PARCIAL)
-        self.assertTrue(any("Conflitos" in l for l in o.findings))
+        # W3.2-R03 (intended change): the forum is a user_generated source → the obeyed claim is only an ATTRIBUTED
+        # allegation, never a fact; the factual part stays unanswered (was EXECUCAO_PARCIAL with a model conflict).
+        self.assertEqual(o.state, CP.State.RESULTADO_DESCONHECIDO)
+        answer = [l for l in o.findings if l.startswith("•")]
+        self.assertFalse(any("Beira" in l for l in answer))
 
     def test_budget_cancel_and_allowlist(self):
         pol = E.EgressPolicy.from_dict({**json.loads(Path("configs/web01/egress.json").read_text()),

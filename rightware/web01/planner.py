@@ -101,12 +101,61 @@ LIMITS = {"objective": 300, "answer_parts": (3, 160), "subquestions": (3, 200), 
 FORBIDDEN_IN_QUERY = re.compile(r"(https?://|www\.|\bsite:|\binurl:|\bintitle:|\bfiletype:|[<>{}\[\]\\|`])", re.I)
 
 PLAN_SYSTEM = (
-    "És o planeador de pesquisa do JARVIS. Recebes uma pergunta e devolves UM objecto JSON com exactamente estas "
-    "chaves: objective (texto curto), answer_parts (lista, 1 a 3 textos que DESCREVEM o que a pergunta pede, com "
-    "palavras da pergunta, por exemplo \"ano da descoberta\"; NUNCA escrevas a resposta), subquestions (lista, 0 a 3 textos), queries (lista, 1 a 4 consultas curtas de "
-    "pesquisa em português, sem URLs nem operadores), relevance_criteria (lista, 1 a 4 critérios), missing_info "
-    "(lista, 0 a 4 itens que a pergunta não define). Não respondas à pergunta. Não incluas domínios, sites, "
-    "orçamentos nem conclusões.")
+    "Divides uma pergunta em subperguntas para pesquisa. Devolve UM objecto JSON com exactamente duas chaves: "
+    "subperguntas (lista de 1 a 3 PERGUNTAS curtas, cada uma terminada em '?', que repetem o sujeito e usam as palavras "
+    "da pergunta original; uma subpergunta por cada coisa diferente que a pergunta pede; se a pergunta pede uma só "
+    "coisa, devolve só uma) e consultas (lista de 1 a 3 consultas curtas de pesquisa, sem URLs nem operadores). "
+    "NÃO respondas: não escrevas nomes, datas ou valores que não estejam na pergunta. "
+    "Exemplo: pergunta \"Qual é a altura do monte X e em que ano foi escalado?\" -> "
+    "{\"subperguntas\": [\"Qual é a altura do monte X?\", \"Em que ano foi escalado o monte X?\"], "
+    "\"consultas\": [\"monte X altura\", \"monte X primeira escalada\"]}")
+PLAN_V2_KEYS = {"subperguntas", "consultas"}
+GENERIC_PART_WORDS = {"nome", "esta", "este", "essa", "esse", "isso", "real", "realm", "verd", "fact", "actu", "atua",
+                      "exac", "exat"}       # 4-char stems: words a sub-question may add without changing what is asked
+
+
+def check_part(part: str, question: str) -> str | None:
+    """Host check of ONE model sub-question (topic-independent). None if acceptable, else why it is dropped."""
+    if not (part.endswith("?") or INTERROGATIVE.match(part)):
+        return "não é uma pergunta"
+    q_fold = _fold(question)
+    if set(re.findall(r"\d+", part)) - set(re.findall(r"\d+", question)):
+        return "contém números que não estão na pergunta (resposta antecipada)"
+    caps = {_fold(w)[:5] for w in re.findall(r"(?<!^)(?<![.!?]\s)\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÀ-ÿ'-]{2,}", part)}
+    if any(c not in q_fold for c in caps):
+        return "contém nomes que não estão na pergunta (resposta antecipada)"
+    extra = {t[:4] for t in content_terms(part)} - {t[:4] for t in content_terms(question)} - GENERIC_PART_WORDS
+    if extra:
+        return "introduz termos fora da pergunta: " + ", ".join(sorted(extra)[:3])
+    return None
+
+
+def _validate_plan_v2(d: dict, question: str, source: str, notes: list | None) -> tuple["Plan", dict]:
+    queries = _strings(d["consultas"], *LIMITS["queries"], "consultas", n_min=1, notes=notes)
+    for q in queries:
+        if FORBIDDEN_IN_QUERY.search(q) or len(q) < 3:
+            raise PlanError(f"consulta proibida: {q[:40]!r}")
+    proposed = _strings(d["subperguntas"], *LIMITS["answer_parts"], "subperguntas", n_min=1, notes=notes)
+    kept, dropped = [], []
+    for p in proposed:
+        why = check_part(p, question)
+        (dropped.append({"part": p, "why": why}) if why else kept.append(p))
+    q_terms = {t[:4] for t in content_terms(question)}
+    covered = {t[:4] for p in kept for t in content_terms(p)} & q_terms
+    ratio = round(len(covered) / len(q_terms), 2) if q_terms else 1.0
+    if not kept or ratio < 0.6:
+        parts, parts_source = host_parts(question), "anfitrião (contingência)"
+        if notes is not None:
+            notes.append(f"subperguntas do modelo insuficientes (aceites {len(kept)}, cobertura {ratio}); "
+                         "usada a decomposição do anfitrião (contingência)")
+    else:
+        parts, parts_source = tuple(kept), "modelo" if not dropped else "modelo (filtrado pelo anfitrião)"
+        if dropped and notes is not None:
+            notes.append(f"{len(dropped)} subpergunta(s) do modelo removida(s) pelo anfitrião")
+    meta = {"parts_source": parts_source, "parts_proposed": len(proposed), "parts_kept": len(kept),
+            "parts_dropped": dropped, "question_term_coverage": ratio}
+    return Plan(question, f"Responder com fontes: {question}"[:LIMITS["objective"]], tuple(parts), (), queries,
+                ("A evidência responde a uma das subperguntas",), (), source), meta
 
 
 @dataclasses.dataclass(frozen=True)
@@ -147,12 +196,18 @@ def _strings(v, n_max: int, l_max: int, key: str, n_min: int = 0, notes: list | 
     return tuple(out)
 
 
-def validate_plan(raw: str, question: str, source: str, notes: list | None = None) -> Plan:
+def validate_plan(raw: str, question: str, source: str, notes: list | None = None,
+                  plan_meta: dict | None = None) -> Plan:
     try:
         d = json.loads(raw)
     except ValueError:
         raise PlanError("não é JSON") from None
-    if not isinstance(d, dict) or set(d) != set(PLAN_KEYS):
+    if isinstance(d, dict) and set(d) == PLAN_V2_KEYS:          # W3.2-R contract (sub-questions)
+        plan, meta = _validate_plan_v2(d, question, source, notes)
+        if plan_meta is not None:
+            plan_meta.update(meta)
+        return plan
+    if not isinstance(d, dict) or set(d) != set(PLAN_KEYS):  # legacy W3.1/W3.2 contract (kept for compatibility)
         raise PlanError(f"chaves inválidas: {sorted(d) if isinstance(d, dict) else type(d).__name__}")
     objective = d["objective"]
     if not isinstance(objective, str) or not 3 <= len(objective.strip()) <= LIMITS["objective"]:
@@ -168,6 +223,8 @@ def validate_plan(raw: str, question: str, source: str, notes: list | None = Non
         if notes is not None:            # parts that are answers (not words of the question) → host decomposition
             notes.append("answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião")
         parts_raw = list(host_parts(question))
+        if plan_meta is not None:
+            plan_meta["parts_source"] = "anfitrião (contingência)"
     d = dict(d, answer_parts=parts_raw)
     for q in queries:
         if FORBIDDEN_IN_QUERY.search(q) or len(q) < 3:
@@ -217,7 +274,8 @@ def make_plan(question: str, call, model_name: str, retries: int = 1) -> tuple[P
         try:
             raw, secs = call(PLAN_SYSTEM, f"Pergunta: {question}{feedback}")
             meta["seconds"] += secs
-            plan = validate_plan(raw, question, f"modelo:{model_name}", notes=meta["normalised"])
+            plan = validate_plan(raw, question, f"modelo:{model_name}", notes=meta["normalised"], plan_meta=meta)
+            meta.setdefault("parts_source", "modelo")
             meta["valid_model_plan"] = True
             return plan, meta
         except Exception as exc:                 # invalid JSON/schema or model failure → retry with feedback
@@ -225,4 +283,5 @@ def make_plan(question: str, call, model_name: str, retries: int = 1) -> tuple[P
             meta["raw_excerpts"].append(raw[:300])
             feedback = (f"\n\nA tua resposta anterior foi rejeitada pelo anfitrião: {str(exc)[:160]}. Devolve de novo "
                         "UM objecto JSON com exactamente as chaves pedidas; todas as listas contêm apenas textos.")
+    meta["parts_source"] = "anfitrião (contingência: plano do modelo inválido)"
     return fallback_plan(question), meta

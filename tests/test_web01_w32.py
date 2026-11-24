@@ -30,6 +30,9 @@ PAGE = """<html><head><title>Rio Zambeze – Enciclopédia</title></head><body>
 <script>var x = "não é texto";</script></body></html>"""
 
 
+REF = {"by_host": {"x": "reference"}, "sustaining": {"reference", "institutional", "news"}}   # test host = reference
+
+
 def kept_and_receipts(pages):
     import hashlib
     rec, kept = [], {}
@@ -83,7 +86,7 @@ class Retrieval(unittest.TestCase):
              "quote": "O Livro é um romance escrito por Ana Silva.", "text": "O Livro foi escrito por Ana Silva."},
             {"part": 0, "evidence_id": ids["Nascimento: 1950, Inhambane"], "quote": "Nascimento: 1950, Inhambane",
              "text": "Ana Silva nasceu em Inhambane."}]})
-        rep = EV.validate(synth, q, list(PL.host_parts(q)), c, rec, kept)
+        rep = EV.validate(synth, q, list(PL.host_parts(q)), c, rec, kept, sources=REF)
         self.assertEqual(len(rep["accepted"]), 2, rep["rejected"])               # entity context from the page title
         self.assertEqual(rep["final"], "GROUNDED")
 
@@ -122,10 +125,10 @@ class StrictSupport(unittest.TestCase):
             rep = EV.validate(json.dumps({"claims": [{"part": 0, "evidence_id": given,
                                                       "quote": f"[{eid}] (Rio Zambeze › kv) Comprimento: 2 574 km",
                                                       "text": "O Zambeze tem 2 574 km de comprimento"}]}),
-                              q, list(PL.host_parts(q)), c, rec, kept)
+                              q, list(PL.host_parts(q)), c, rec, kept, sources=REF)
             self.assertEqual(len(rep["accepted"]), 1, (given, rep["rejected"]))
         rep = EV.validate(json.dumps({"claims": [{"part": 0, "evidence_id": "E99", "quote": "Comprimento: 2 574 km",
-                                                  "text": "O Zambeze tem 2 574 km"}]}), q, list(PL.host_parts(q)), c, rec, kept)
+                                                  "text": "O Zambeze tem 2 574 km"}]}), q, list(PL.host_parts(q)), c, rec, kept, sources=REF)
         self.assertIn("inventada", rep["rejected"][0]["why"])                  # tolerance never invents an id
 
     @unittest.expectedFailure
@@ -144,10 +147,6 @@ def fake(assess=None, synth=None, log=None):
             log.append(system[:12])
         if system == PL.PLAN_SYSTEM:
             return json.dumps(GOOD), 0.0
-        if system == EV.ASSESS_SYSTEM:
-            return (assess(user) if assess else json.dumps({"covered": [{"part": 0, "evidence": ["E1", "E2"]}],
-                                                              "missing": [], "sufficient": True, "next_query": None,
-                                                              "reason": "f"})), 0.0
         ev = dict(re.findall(r"^\[(E\d+)\] \([^)]*\) ([^\n]+)", user, re.M))
         if synth:
             return synth(ev), 0.0
@@ -176,12 +175,16 @@ class AdaptiveLoop(unittest.TestCase):
         self.assertEqual(o.model_commentary_unverified, "")
 
     def test_model_stop_rejected_without_host_coverage(self):
-        bad = lambda u: json.dumps({"covered": [{"part": 0, "evidence": ["E99"]}], "missing": [],  # noqa: E731
-                                    "sufficient": True, "next_query": "Maputo capital", "reason": "já sei"})
-        o, r = self.run_m(fake(assess=bad), plan=dict(GOOD, queries=["capital de Moçambique"]))
+        # W3.2-R01: the model says nothing is missing and cites a non-existent evidence → no accepted claim → the
+        # host does NOT stop early; the model's next query is used in the following iteration.
+        bad = lambda ev: json.dumps({"claims": [{"part": 0, "evidence_id": "E99", "quote": "x",  # noqa: E731
+                                                 "text": "A capital é Maputo"}], "missing": [],
+                                     "next_query": "Maputo capital"})
+        o, r = self.run_m(fake(synth=bad), plan=dict(GOOD, queries=["capital de Moçambique"]))
         self.assertGreaterEqual(len(r["iterations"]), 2)
-        self.assertIn("REJEITADA", r["iterations"][0]["decision"])
+        self.assertIn("o modelo não indicou partes em falta", r["iterations"][0]["decision"])
         self.assertEqual(r["iterations"][1]["query"], "Maputo capital")         # model's next query used
+        self.assertNotIn("paragem antecipada", r["stop_reason"])
 
     def test_rejected_claims_never_reach_the_answer(self):
         synth = lambda ev: json.dumps({"claims": [                                   # noqa: E731
