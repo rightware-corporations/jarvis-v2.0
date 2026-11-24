@@ -4094,3 +4094,31 @@ Local mode is unchanged.
   - session-url file removed.
 - **External check after shutdown:** the URL returns 404 and no tunnel or JARVIS process remains.
 - **Untouched:** repository, PRs, models and CI. Only this branch was changed.
+
+## CHECKPOINT — 24/11/2026: B6 PRESENTATION READINESS (B6 branch `4a20ffe` + docs; tunnel NOT opened)
+- **Selected code:** `integration/jrv-b6-private-access-20261123` @ `4a20ffe` = UI-02 `5640f46` + B6 `5f89574` + docs. No W3/W3.1/W3.2 code. PR #32 (`e6c3a96`, Draft) and its documented failures are untouched. develop `19ab8f7` and main `0cac8e8` are unchanged. Vendor pin `f21d902` is unchanged.
+- **Environment (FACT, this host):**
+  - Ollama is bound to 127.0.0.1:11434 only, with qwen3.5:2b and qwen3.5:4b (plus `-rw-t3` and all-minilm).
+  - The HUD runtime was rebuilt from the B6 checkout (`rightware.gui setup`; static tree `e3319bca…`).
+  - Devtunnel CLI 1.0.2115 is present (sha256 `723d6aeb…`). It is NOT logged in; the token cache holds only `Version`.
+  - The server must run with `.runtime/gui/venv/bin/python` (the vendor venv has no fastapi).
+- **Tests:**
+  - Python suite: 708 OK (B6 9, UI-02/UI-01 48).
+  - `frontend-check`: tsc rc 0; Vitest 21 files / 116 OK.
+  - Real E2E with Qwen 3.5 2b on loopback: U1–U7 PASS (auth, PT/EN, chat, effective Stop, real-state HUD, CPU, P1 mission with written code → COMPARISON_VERIFIED).
+  - Real 4-turn conversation in the HUD, PT then EN, with continuity resolved ("esse processo", "those three"): 3.9–12.4 s per turn.
+  - B6 public mode, loopback only, fictitious origin:
+    - anonymous 401 (static included); wrong Host 403; bad token 403;
+    - login 303 with a Secure and HttpOnly cookie; replay of the link 403;
+    - POST without Origin or with a wrong Origin: 403;
+    - real Qwen chat 200 ("Maputo");
+    - the token never appears in the log;
+    - after the deadline, 403 `PUBLIC_ACCESS_EXPIRED`;
+    - goose is refused in public mode.
+  - Evidence: `docs/evidence/b6/ready-20261124/`.
+- **Known defects (cosmetic, not fixed, no new features):**
+  - inline code (model name, `rw-` id) renders as illegible white chips;
+  - the side core can show "A PENSAR" for one polling cycle after an answer;
+  - the 2b model writes some pt-BR forms ("oxigênio").
+- **Tunnel procedure:** `docs/engineering/B6_TUNNEL_PROCEDURE.md`. Opening it awaits the operator's instruction.
+- **State:** `B6_PRESENTATION_READY_AWAITING_ACCESS_AUTHORIZATION`.

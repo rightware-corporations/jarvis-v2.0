@@ -1,0 +1,30 @@
+[
+  {
+    "turn": 1,
+    "question": "Olá JARVIS. Em duas frases: o que é a fotossíntese?",
+    "ok": true,
+    "seconds": 11,
+    "answer_excerpt": "A fotossíntese é o processo pelo qual plantas, algas e algumas bactérias convertem luz solar, água e dióxido de carbono em glicose e oxigênio, servindo como base para a vida na Terra.\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-93c787e89e74bfd4\n\nollama - qwen3.5:2b - 9.9s\nPesquisa aprofundada (não integrada)\nEnter para enviar · Shift+Enter para nova linha\nRIGHTWARE JARVIS\nRESULTADO VERIFICADO\n\nRespostas do modelo: NÃO verificadas\n\nMISSÕES SUPERVISIONADAS\nComparação supervisionada de documentos (ensaio)\nIntegrada\ncomparar-versoes-ensaio\nPedir missão\nResultado verificado por evidência (recibos + verificador RIGHTWARE) · COMP"
+  },
+  {
+    "turn": 2,
+    "question": "E porque é que esse processo é importante para os seres humanos? Responde em português, em duas frases.",
+    "ok": true,
+    "seconds": 5.4,
+    "answer_excerpt": "A fotossíntese produz oxigênio essencial para respiração humana e fornece alimentos através da produção de glicose. Além disso, ela serve como base para a cadeia alimentar global que sustenta a maioria das espécies vivas no planeta.\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-7927144f8700c048\n\nollama - qwen3.5:2b - 4.2s\nPesquisa aprofundada (não integrada)\nEnter para enviar · Shift+Enter para nova linha\nRIGHTWARE JARVIS\nA PENSAR\n\nRespostas do modelo: NÃO verificadas\n\nMISSÕES SUPERVISIONADAS\nComparação supervisionada de documentos (ensaio)\nIntegrada\ncomparar-versoes-ensaio\nPedir missão\nResultado verificado por evidência (re"
+  },
+  {
+    "turn": 3,
+    "question": "Now in English: name three planets of the Solar System, one line.",
+    "ok": true,
+    "seconds": 2.8,
+    "answer_excerpt": "Mercury, Venus, and Earth are the first three planets of our Solar System.\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-dbe9cf48be8faadc\n\nollama - qwen3.5:2b - 1.8s\nPesquisa aprofundada (não integrada)\nEnter para enviar · Shift+Enter para nova linha\nRIGHTWARE JARVIS\nRESULTADO VERIFICADO\n\nRespostas do modelo: NÃO verificadas\n\nMISSÕES SUPERVISIONADAS\nComparação supervisionada de documentos (ensaio)\nIntegrada\ncomparar-versoes-ensaio\nPedir missão\nResultado verificado por evidência (recibos + verificador RIGHTWARE) · COMPARISON_VERIFIED · 32.6 s\nDecidido pelos recibos e pelo verificador RIGHTWARE\nRECIBOS (FERRAMENTAS EXECUTADAS)"
+  },
+  {
+    "turn": 4,
+    "question": "Which of those three is the largest?",
+    "ok": true,
+    "seconds": 2.8,
+    "answer_excerpt": "Earth is the largest planet among Mercury, Venus, and Earth.\n\nRIGHTWARE · resposta do modelo local qwen3.5:2b — NÃO verificada · sem ferramentas · sem memória persistente\n\nrw-6dc4585a15c5ba2d\n\nollama - qwen3.5:2b - 1.6s\nPesquisa aprofundada (não integrada)\nEnter para enviar · Shift+Enter para nova linha\nRIGHTWARE JARVIS\nA PENSAR\n\nRespostas do modelo: NÃO verificadas\n\nMISSÕES SUPERVISIONADAS\nComparação supervisionada de documentos (ensaio)\nIntegrada\ncomparar-versoes-ensaio\nPedir missão\nResultado verificado por evidência (recibos + verificador RIGHTWARE) · COMPARISON_VERIFIED · 32.6 s\nDecidido pelos recibos e pelo verificador RIGHTWARE\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 fixture_read OK\n#2 fix"
+  }
+]

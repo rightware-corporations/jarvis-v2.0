@@ -1,0 +1,16 @@
+{
+ "url_is_https_public_origin": true,
+ "anon_static_/": 401,
+ "anon_state": 401,
+ "wrong_host": 403,
+ "bad_token": 403,
+ "login": 303,
+ "cookie_secure": true,
+ "cookie_httponly": true,
+ "replay_same_link": 403,
+ "auth_state": 200,
+ "post_no_origin": 403,
+ "post_wrong_origin": 403,
+ "post_real_qwen": 200,
+ "answer": "A capital de Moçambique é Maputo.\n\n---\n_RIGHTWARE · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · sem ferramentas · sem memória persistente_\n\n`rw-89729883b7d4b1d6`\n"
+}
