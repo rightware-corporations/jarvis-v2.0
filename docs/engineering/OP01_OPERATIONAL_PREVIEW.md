@@ -120,3 +120,22 @@ Quatro rondas, todas com perguntas novas (`labs/op01/acceptance.py`; evidência 
 2. **Fiabilidade do modelo:** fabricação ocasional e sobre-uso de ferramentas com 2B e 4B. **[RECOMENDAÇÃO]** Executar o F01 (protocolo em F00) antes de apresentar a pesquisa como fiável. Considerar uma verificação do anfitrião que marque respostas factuais sem página lida.
 3. **Guarda de acções do TextFacade:** frases como "Abre a página X…" são interceptadas como "acção" (regra lexical de segurança). Mantida por segurança; a alternativa ("O que diz a página X?") funciona. A eventual revisão exige decisão própria.
 4. **Unificação de ramos:** uma PR de integração própria, com revisão (§0).
+
+## 7. Execução OP01-FX-REAL (24/11/2026, ~16:32 UTC) → `OP01_FX_REAL_BLOCKED`
+- **Autorização:**
+  - `OP01-FX-REAL`: `www.bancomoc.mz` e `bancomoc.mz`, HTTPS e GET; ≤ 8 pedidos por pergunta e ≤ 40 por janela; 512 KB; 10 s; 60 min.
+  - Transporte directo exigido; o `session_proxy` **não** foi activado (instrução do operador).
+  - Pontos de entrada autorizados: as 3 páginas do Banco de Moçambique indicadas pelo operador.
+- **Conectividade (FACTO):**
+  - a resolução DNS do sistema falha para `www.bancomoc.mz` e `bancomoc.mz` (`Name or service not known`);
+  - TCP directo a IPs públicos (1.1.1.1:443, 8.8.8.8:443) liga;
+  - a saída do contentor está configurada através do proxy HTTPS da sessão (`HTTPS_PROXY` em loopback).
+  - O transporte directo do produto (`HttpxFetcher` + `pinned_transport`: DNS próprio, IP público, TLS e peer verificados) **não consegue resolver o host** neste ambiente.
+- Um diagnóstico adicional de DNS por outro caminho foi **recusado pelo classificador de segurança da sessão** e não foi contornado.
+- **Execução de ferramentas:** **0 pedidos HTTP** ao Banco de Moçambique (0/40). Os testes A–E não correram, porque sem fonte qualquer resultado seria fictício. A pergunta A (identidade) não depende da rede e já foi validada em OP01 R4.
+- **Correcção das respostas:** não avaliável, por não haver dados recolhidos.
+- **Revogação:** a autorização está encerrada **sem uso**, e não há nada a limpar: nenhum túnel, servidor ou processo de rede foi aberto.
+- **Para desbloquear (decisão do operador):**
+  - (a) autorizar explicitamente o transporte `session_proxy` (experimental; usado em W3, com TLS terminado no proxy da sessão e sem verificação de peer pelo produto) para estes dois hosts, numa nova janela; ou
+  - (b) correr o caso num ambiente com DNS e saída directa (por exemplo o PC do operador ou um host dedicado);
+  - (c) em qualquer dos casos, os pontos de entrada e limites mantêm-se. O formato real dos dados (HTML ou PDF) continua por verificar.

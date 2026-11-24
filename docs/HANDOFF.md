@@ -4167,3 +4167,17 @@ Local mode is unchanged.
   - Reliability is the blocker.
 - **USD/MZN:** prepared, NOT executed; authorisation `OP01-FX-REAL` requested (Banco de Moçambique host, GET, limits, 60 min). Voice: minimal path documented (same bridge session; no second brain).
 - **Doc:** `docs/engineering/OP01_OPERATIONAL_PREVIEW.md`.
+
+## CHECKPOINT — 24/11/2026: JRV-OP01-FX-REAL → `OP01_FX_REAL_BLOCKED` (transport, before any request)
+- **Authorisation `OP01-FX-REAL`:** www.bancomoc.mz and bancomoc.mz, HTTPS GET, ≤8 per question, ≤40 per window, 512 KB, 10 s, 60 min. Direct transport only; session_proxy NOT activated.
+- **Connectivity (FACT):**
+  - system DNS fails for both hosts (`Name or service not known`);
+  - direct TCP to public IPs connects;
+  - egress is designed to go through the session HTTPS proxy.
+  - The product's direct transport (own DNS, public IP, TLS and peer checks) therefore cannot resolve the source.
+  - An additional DNS diagnostic over another path was denied by the session safety classifier and was NOT worked around.
+- **Tool execution:** 0 HTTP requests to the bank (0/40). Tests A–E were not run; no results were simulated. Answer correctness is not assessable.
+- **CI:** `a363829` push success (run 45437591146); `61dc8c1` success.
+- **Authorisation closed unused;** nothing to clean.
+- **Unblock options (operator):** explicitly authorise session_proxy for these hosts in a new window, or run in an environment with direct DNS/egress.
+- **State unchanged:** B6 `af6579b`, OP01 `a363829`, F00 `84d87eb`, WEB-01 `5604b19`; no merge; develop, main and vendor untouched.
