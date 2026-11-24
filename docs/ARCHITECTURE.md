@@ -18,3 +18,25 @@ Fronteiras futuras: modelo/contexto; voz/interface; política/acções; evidênc
 ## Critérios do próximo ensaio
 
 Mesmo corpus para o modelo inicial e uma alternativa mais capaz: identidade, Orion com factos conhecidos/desconhecidos, mudança de assunto e recuperação, cálculo via ferramenta e ausência de afirmações falsas de execução. Medir latência, RAM/VRAM e falhas; uma demonstração isolada não dá uma probabilidade de fiabilidade. Não executar ferramentas Windows no Kaggle nem confundir simulação com sucesso real.
+
+## Directiva arquitectural permanente (24/11/2026)
+**A inteligência decide. A política controla. As ferramentas executam. A evidência confirma.**
+
+O RIGHTWARE JARVIS evolui para um assistente inteligente de propósito geral, com **autonomia supervisionada**.
+
+**O que o produto não deve ter:**
+- respostas programadas;
+- consultas fixas por assunto;
+- missões construídas à mão para cada pergunta;
+- respostas esperadas incorporadas nos prompts do agente;
+- regras feitas apenas para passar benchmarks conhecidos.
+
+**Divisão de responsabilidades:**
+- **O modelo (Qwen local)** interpreta pedidos desconhecidos, propõe planos, escolhe entre as ferramentas autorizadas, adapta a estratégia e sintetiza resultados.
+- **Os componentes determinísticos (RIGHTWARE)** garantem contratos, políticas, permissões, execução, orçamentos e verificação: ControlPlane, EgressGuard, recibos e verificadores.
+
+Fixtures e missões predefinidas são **instrumentos de teste e regressão**, nunca o mecanismo principal de inteligência.
+
+**Antes de introduzir novos motores**, reutilizar a arquitectura existente: Qwen, Goose, OpenJarvis e os componentes RIGHTWARE.
+
+**Âmbito:** é transversal a pesquisa, inteligência financeira, voz, memória, aprendizagem e execução autónoma de tarefas.

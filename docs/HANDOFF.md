@@ -4161,3 +4161,23 @@ See `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3.1.
 - W4, voice, tunnel.
 
 **Untouched:** UI-02/B6 for the 15:00 demo; PR #31, B6, vendor, main.
+
+## DIRECTIVE (permanent, 24/11/2026) — "The intelligence decides. Policy controls. Tools execute. Evidence confirms."
+**Goal:** JARVIS becomes a general-purpose assistant with supervised autonomy.
+
+**Not allowed:**
+- scripted answers;
+- fixed queries per topic;
+- hand-built missions per question;
+- expected answers in agent prompts;
+- benchmark-specific rules.
+
+**Roles:**
+- The model interprets, plans, chooses authorised tools, adapts and synthesises.
+- Deterministic code enforces contracts, policy, permissions, execution, budgets and verification.
+
+**Fixtures and predefined missions** are test and regression instruments only.
+
+**Reuse first:** Qwen, Goose, OpenJarvis and the RIGHTWARE components come before any new engine.
+
+**Scope:** research, finance, voice, memory, learning and task execution. Full text in `docs/ARCHITECTURE.md`.

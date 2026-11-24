@@ -171,7 +171,12 @@ class FreeResearchMission:
                 "steps": steps, "passages": ps, "synthesis_raw": synth["raw"], "synthesis_seconds": synth["seconds"],
                 "synthesis_error": synth["error"], "validation": report, "mode": self.policy.mode,
                 "transport_guarantees": guarantees(self.policy), "model": self.model, "seconds": seconds,
-                "requests": guard.requests}, ensure_ascii=False, indent=1))
+                "requests": guard.requests,
+                "refused": [a for a in guard.audit if a.get("decision") == "REFUSED"],
+                "timing": {"plan_s": (params.get("plan_meta") or {}).get("seconds"),
+                           "network_and_search_s": round(seconds - synth["seconds"], 2),
+                           "synthesis_s": synth["seconds"], "mission_total_s": seconds}},
+                ensure_ascii=False, indent=1))
         except OSError:
             return None
         self.last_run = run
