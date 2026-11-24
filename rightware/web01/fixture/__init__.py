@@ -35,11 +35,12 @@ def _tokens(text: str) -> set[str]:
     return {t for t in re.findall(r"[a-z0-9]{3,}", _fold(text))}
 
 
-def corpus() -> dict[str, str]:
+def corpus(root: Path | None = None) -> dict[str, str]:
     """{url: html} for every fixture page (deterministic order)."""
     out = {}
-    for f in sorted(PAGES.rglob("*.html")):
-        rel = f.relative_to(PAGES)
+    root = root or PAGES
+    for f in sorted(root.rglob("*.html")):
+        rel = f.relative_to(root)
         host, path = rel.parts[0], "/" + "/".join(rel.parts[1:])[:-len(".html")]
         out[f"https://{host}{path}"] = f.read_text(encoding="utf-8")
     return out
@@ -52,10 +53,10 @@ def _visible(markup: str) -> tuple[str, str]:
     return title, text
 
 
-def search(query: str) -> list[dict]:
+def search(query: str, root: Path | None = None) -> list[dict]:
     q = _tokens(query)
     scored = []
-    for url, markup in corpus().items():
+    for url, markup in corpus(root).items():
         title, text = _visible(markup)
         score = len(q & _tokens(text)) + 2 * len(q & _tokens(title))
         if score:
@@ -64,9 +65,9 @@ def search(query: str) -> list[dict]:
     return [{"url": u, "title": t, "snippet": s} for _, u, t, s in sorted(scored)[:MAX_RESULTS]]
 
 
-def search_page(query: str) -> str:
+def search_page(query: str, root: Path | None = None) -> str:
     items = "".join(f'<li><a href="{html.escape(r["url"])}">{html.escape(r["title"])}</a><p>{html.escape(r["snippet"])}'
-                    f"</p></li>" for r in search(query))
+                    f"</p></li>" for r in search(query, root))
     return (f'<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>Pesquisa (fixture): '
             f'{html.escape(query)}</title></head><body><p class="fixture">FIXTURE RIGHTWARE — motor de pesquisa local '
             f"sobre o corpus de ensaio WEB-01; sem acesso à Internet.</p><ol>{items}</ol></body></html>")
@@ -79,10 +80,11 @@ def search_url(query: str) -> str:
 class FixtureCorpusTransport(httpx.BaseTransport):
     """Serves only the fixture corpus. Any other host, method or path is a 404/refusal; nothing leaves the process."""
 
-    def __init__(self, delay: float = 0.0, cancel: threading.Event | None = None):
+    def __init__(self, delay: float = 0.0, cancel: threading.Event | None = None, root: Path | None = None):
+        self.root = root
         self.delay, self.cancel = delay, cancel
         self.served: list[str] = []
-        self._pages = corpus()
+        self._pages = corpus(root)
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
         host, path = request.url.host, request.url.path
@@ -99,16 +101,16 @@ class FixtureCorpusTransport(httpx.BaseTransport):
             return httpx.Response(302, headers={"location": "https://fora.fixture.example/recolha"}, request=request)
         if host == SEARCH_HOST and path == "/search":
             q = parse_qs(urlsplit(str(request.url)).query).get("q", [""])[0][:200]
-            return httpx.Response(200, headers=html_type, content=search_page(q).encode(), request=request)
+            return httpx.Response(200, headers=html_type, content=search_page(q, self.root).encode(), request=request)
         markup = self._pages.get(f"https://{host}{path}")
         if markup is None:
             return httpx.Response(404, headers=html_type, content=b"<p>Nao encontrado (fixture)</p>", request=request)
         return httpx.Response(200, headers=html_type, content=markup.encode("utf-8"), request=request)
 
 
-def fixture_fetcher(delay: float = 0.0, cancel: threading.Event | None = None):
+def fixture_fetcher(delay: float = 0.0, cancel: threading.Event | None = None, root: Path | None = None):
     """An ``HttpxFetcher`` whose ONLY route is the fixture transport (resolver/SSRF/peer hooks are satisfied by
     construction because no socket exists). Host allowlisting is still enforced by the egress guard per hop."""
     from rightware.agent.web import HttpxFetcher
-    return HttpxFetcher(resolver=lambda host: [FIXTURE_IP], transport=FixtureCorpusTransport(delay, cancel),
+    return HttpxFetcher(resolver=lambda host: [FIXTURE_IP], transport=FixtureCorpusTransport(delay, cancel, root),
                         peer_check=lambda response: True, ssrf=lambda url: None)
