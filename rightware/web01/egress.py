@@ -48,7 +48,7 @@ _KEYS = {"version": str, "mode": str, "network_enabled": bool, "authorization_re
          "allowed_hosts": list, "methods": list, "max_bytes_per_response": int, "timeout_s": (int, float),
          "max_redirects": int, "max_requests_per_mission": int, "max_total_bytes_per_mission": int,
          "max_seconds_per_mission": (int, float)}
-_OPTIONAL = {"transport": str}
+_OPTIONAL = {"transport": str, "user_agent": str}
 TRANSPORTS = ("direct", "session_proxy")
 
 
@@ -79,6 +79,7 @@ class EgressPolicy:
     max_total_bytes_per_mission: int
     max_seconds_per_mission: float
     transport: str = "direct"
+    user_agent: str | None = None
 
     @classmethod
     def from_dict(cls, d: dict) -> "EgressPolicy":
@@ -90,6 +91,9 @@ class EgressPolicy:
         transport = d.get("transport", "direct")
         if transport not in TRANSPORTS:
             raise PolicyError("transporte desconhecido")
+        ua = d.get("user_agent")
+        if ua is not None and not (ua.isprintable() and 8 <= len(ua) <= 200 and ua.startswith("RIGHTWARE-Jarvis/")):
+            raise PolicyError("user_agent: texto imprimível 'RIGHTWARE-Jarvis/<versão> (<contacto>)', até 200")
         for k, typ in _KEYS.items():
             v = d[k]
             if isinstance(v, bool) and typ is not bool:     # bool is an int subclass: never accept it as a number
@@ -130,7 +134,7 @@ class EgressPolicy:
         return cls(d["version"], d["mode"], d["network_enabled"], d["authorization_ref"], tuple(hosts),
                    tuple(d["methods"]), d["max_bytes_per_response"], float(d["timeout_s"]), d["max_redirects"],
                    d["max_requests_per_mission"], d["max_total_bytes_per_mission"],
-                   float(d["max_seconds_per_mission"]), transport)
+                   float(d["max_seconds_per_mission"]), transport, ua)
 
     @classmethod
     def load(cls, path: Path = DEFAULT_POLICY) -> "EgressPolicy":
@@ -153,14 +157,14 @@ def build_fetcher(policy: EgressPolicy, *, allow_public: bool = False):
         raise NetworkNotAuthorised("WEB-01: acesso externo à rede exige a autorização específica do operador (W3); "
                                    "nada foi contactado.")
     if policy.transport == "session_proxy":
-        return session_proxy_fetcher()
-    return W.HttpxFetcher()                                       # W3 product path: real SSRF/pinning guarantees
+        return session_proxy_fetcher(user_agent=policy.user_agent)
+    return W.HttpxFetcher(user_agent=policy.user_agent)           # W3 product path: real SSRF/pinning guarantees
 
 
 SESSION_PROXY_IP = "93.184.216.34"     # placeholder global address: the egress proxy, not this host, resolves DNS
 
 
-def session_proxy_fetcher(proxy: str | None = None, ca_file: str | None = None):
+def session_proxy_fetcher(proxy: str | None = None, ca_file: str | None = None, user_agent: str | None = None):
     """W3 validation transport (see module doc). Refuses to build without an explicit HTTPS proxy and CA bundle."""
     import ssl
 
@@ -184,7 +188,7 @@ def session_proxy_fetcher(proxy: str | None = None, ca_file: str | None = None):
         return None
 
     return W.HttpxFetcher(resolver=lambda host: [SESSION_PROXY_IP], transport=transport,
-                          peer_check=lambda response: True, ssrf=https_only)
+                          peer_check=lambda response: True, ssrf=https_only, user_agent=user_agent)
 
 
 def utc_now() -> str:

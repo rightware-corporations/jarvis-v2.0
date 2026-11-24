@@ -276,8 +276,11 @@ class HttpxFetcher:
 
     def __init__(self, resolver: Callable[[str], list[str]] = _resolve, transport=None,
                  peer_check: Callable[[object], bool] | None = None,
-                 ssrf: Callable[[str], str | None] = upstream_ssrf):
+                 ssrf: Callable[[str], str | None] = upstream_ssrf, user_agent: str | None = None):
         self.resolver, self.transport, self.ssrf = resolver, transport, ssrf
+        if user_agent is not None and (not user_agent.isprintable() or len(user_agent) > 200):
+            raise WebRefused("User-Agent inválido")
+        self.user_agent = user_agent or USER_AGENT          # WEB-01 W3: policy-defined, never model-defined
         self.peer_check = peer_check or self._peer_is_global
         self.backend = None
 
@@ -309,7 +312,7 @@ class HttpxFetcher:
         requested = scoped(url)
         current = requested
         kwargs = {"timeout": timeout, "follow_redirects": False, "trust_env": False,
-                  "headers": {"User-Agent": USER_AGENT, "Accept": "text/html,text/plain"}}
+                  "headers": {"User-Agent": self.user_agent, "Accept": "text/html,text/plain"}}
         if self.transport is not None:
             kwargs["transport"] = self.transport          # tests: deterministic MockTransport
         else:

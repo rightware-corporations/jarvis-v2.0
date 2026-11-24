@@ -100,6 +100,22 @@ class W3PolicyAndTransport(unittest.TestCase):
         with self.assertRaises(E.PolicyError):
             E.EgressPolicy.from_dict(fixture)
 
+    def test_user_agent_is_policy_defined_and_validated(self):
+        p = authorised(user_agent="RIGHTWARE-Jarvis/0.1 (+https://example.org/contact)")
+        self.assertEqual(E.build_fetcher(p, allow_public=True).user_agent, p.user_agent)
+        for bad in ("curl/8", "RIGHTWARE-Jarvis/0.1\r\nX-Evil: 1", "RIGHTWARE-Jarvis/" + "x" * 300):
+            with self.subTest(bad=bad), self.assertRaises(E.PolicyError):
+                authorised(user_agent=bad)
+        sent = []
+
+        def h(request):
+            sent.append(request.headers["user-agent"])
+            return httpx.Response(200, headers={"content-type": "text/html"}, content=b"<p>ok</p>")
+        f = W.HttpxFetcher(resolver=lambda x: ["93.184.216.34"], transport=httpx.MockTransport(h),
+                           peer_check=lambda r: True, ssrf=lambda u: None, user_agent=p.user_agent)
+        f.fetch("https://pt.wikipedia.org/wiki/X")
+        self.assertEqual(sent, [p.user_agent])
+
     def test_session_proxy_transport_needs_session_proxy_and_ca(self):
         with mock.patch.dict(os.environ, {"HTTPS_PROXY": "", "https_proxy": "", "SSL_CERT_FILE": ""}):
             with self.assertRaises(E.NetworkNotAuthorised):

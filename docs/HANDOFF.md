@@ -4081,3 +4081,26 @@ Then a single UI-02 branch from `develop`. P3B not started.
 - UI-02 HUD frontend CI passed: PR run 45196332174 and push run 45196270568. These cover tsc, Vitest and E2E U1–U8.
 - WORK-05 and foundation only run on PRs whose base is `develop`/`main`, so they have NOT run on #32. The Python suite was run locally only (venv 714 OK, 0 skips). Both will run once #32 is retargeted to `develop` after #31.
 - Merge NOT authorised.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3 → `W3_IMPLEMENTED_AWAITING_NETWORK_APPROVAL`
+**State at start:**
+- develop `19ab8f7`; PR #31 (UI-02) `5640f46`; PR #32 (WEB-01) `379dcd1`; B6 `4a20ffe`; main `0cac8e8`.
+- No tunnel or JARVIS process running. The stale devtunnel token cache was removed (the tunnel had already been deleted).
+- Clean tree. The work continues on the PR #32 branch; no new branch was created.
+
+**W3 code:** see `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3. Public egress stays disabled: the shipped policy has `network_enabled=false`.
+
+**Tests (FACT, offline, injected transport):**
+- `test_web01_w3`: 9/9; `test_web01`: 15/15.
+- Full suite: venv OK with 0 skips; plain Python OK.
+- These are NOT real-Internet evidence.
+
+**Awaiting operator decisions:**
+- allowlist;
+- search service (Wikipedia pt);
+- limits;
+- User-Agent contact;
+- `transport` (`session_proxy` to validate here, because Claude Cloud has no local DNS);
+- the `authorization_ref` value.
+
+The UI-02/B6 demo reference is untouched. No VOICE, W4, tunnel or deploy work.

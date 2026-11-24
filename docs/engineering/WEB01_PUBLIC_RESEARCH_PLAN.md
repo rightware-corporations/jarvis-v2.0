@@ -50,3 +50,35 @@ Classificação: **FACTO** (testado neste host ou em CI); nenhum teste abriu um 
 4. a execução apenas no anfitrião local.
 
 Depois disso, `authorization_ref` e `network_enabled=true` entram na política e o código W3 passa `allow_public=True` num ponto único e auditado.
+
+## W3 — estado (24/11/2026): `W3_IMPLEMENTED_AWAITING_NETWORK_APPROVAL`
+**Código (FACTO, testado offline com transporte injectado):**
+- `rightware/web01/providers.py`: `WikipediaSearch` (uma única língua, por exemplo `pt.wikipedia.org`).
+  - Usa a página HTML `Especial:Pesquisar` com `fulltext=1&ns0=1`.
+  - Os URLs saem **apenas** dos títulos de resultado (`mw-search-result-heading`) e só para `/wiki/<Artigo>` no mesmo servidor.
+  - São ignorados: navegação, páginas especiais e links externos.
+- `configs/web01/egress.public.json` sai com `network_enabled=false` e `authorization_ref=null`, e o arranque é recusado. Allowlist proposta: `pt.wikipedia.org`.
+- `configs/web01/missions/ficha-mocambique-publica.json`: os mesmos três objectivos, com a fonte designada `pt.wikipedia.org`.
+- `ResearchMission` é o único ponto `allow_public`. O fetcher só é construído com `network_enabled=true` e `authorization_ref` na política.
+  - O resultado traz `operational_state` `RESEARCH_VERIFIED_PUBLIC` ou `_FIXTURE`, e a primeira linha diz `Modo: INTERNET PÚBLICA` ou `Modo: FIXTURE`.
+  - Na HUD, o rótulo e o estado de `internet-publica` vêm da política em vigor.
+- Transporte `direct` (o caminho do produto no computador do operador): DNS local, IP global, DNS pinning e verificação do peer.
+- Transporte `session_proxy`, só para validação numa sandbox cuja única saída é um proxy aprovado:
+  - o proxy resolve o DNS, por isso a garantia é mais fraca e está declarada;
+  - mantém-se: allowlist exacta em cada salto, só https:443, sem IPs literais, redireccionamentos re-validados e orçamentos.
+- User-Agent definido pela política e validado (`RIGHTWARE-Jarvis/<v> (<contacto>)`). A política da Wikimedia exige contacto.
+
+**Testes:** `tests/test_web01_w3.py` (9) cobre:
+- missão pública verificada e rotulada PUBLIC, e fixture nunca rotulada PUBLIC;
+- SSRF (redireccionamento para 169.254.169.254, IP literal, DNS privado);
+- redireccionamento para fora da allowlist;
+- prompt injection: a página é aberta como não confiável e nunca suporta um objectivo;
+- extracção só dos títulos de resultado;
+- guardas do `session_proxy` e do User-Agent;
+- estado da HUD.
+
+**Ainda não validado com rede real.** Ver o pedido de autorização no HANDOFF.
+
+**Factos do ambiente Claude Cloud:**
+- o contentor **não tem DNS local**, e toda a saída passa pelo proxy da sessão, que re-termina o TLS;
+- a verificação SSRF do OpenJarvis resolve o DNS localmente e falha de forma fechada, por isso não pode correr em `session_proxy`.
