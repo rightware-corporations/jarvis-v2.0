@@ -91,7 +91,9 @@ class W0Policy(unittest.TestCase):
                 E.EgressGuard(p)
         with self.assertRaises(E.NetworkNotAuthorised):
             E.build_fetcher(public_policy(), allow_public=True)     # flag alone is not enough
-        with self.assertRaises((E.NetworkNotAuthorised, NotImplementedError)):
+        with self.assertRaises(E.NetworkNotAuthorised):                 # W3: not authorised → refused at start
+            ResearchMission(public_policy(allowed_hosts=["pt.wikipedia.org"]))
+        with self.assertRaises(ValueError):                             # authorised, but no search service host
             ResearchMission(public_policy(network_enabled=True, authorization_ref="OP-AUT-1"))
 
     @no_sockets

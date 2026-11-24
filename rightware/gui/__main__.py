@@ -27,6 +27,8 @@ def main(argv=None) -> int:
     s.add_argument("--goose-model", default="qwen3.5:4b")
     s.add_argument("--missao-pesquisa", action="store_true",
                    help="ANFITRIÃO: activa a pesquisa pública de leitura WEB-01 (modo fixture, sem rede)")
+    s.add_argument("--pesquisa-politica", type=Path,
+                   help="ANFITRIÃO: política de egress WEB-01 (ex.: configs/web01/egress.public.json, W3 autorizado)")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
     if a.cmd == "setup":
@@ -58,7 +60,9 @@ def main(argv=None) -> int:
     missions = []
     if a.missao_pesquisa:
         from rightware.web01.mission import ResearchMission
-        missions.append(ResearchMission())       # refuses at start-up unless the policy is fixture (or W3-authorised)
+        from rightware.web01.egress import EgressPolicy
+        policy = EgressPolicy.load(a.pesquisa_politica) if a.pesquisa_politica else None
+        missions.append(ResearchMission(policy))  # refuses at start-up unless fixture or W3-authorised policy
     from rightware.gui.server import build_app, serve
     app, _ = build_app(port=a.port, models=a.model or ["qwen3.5:2b"], deadline=a.deadline, trial=a.tarefa_ensaio,
                        goose=goose, missions=missions)

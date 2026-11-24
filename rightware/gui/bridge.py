@@ -444,11 +444,21 @@ class ChatBridge:
     def capabilities(self) -> list[dict]:
         caps = [{"id": "conversa", "label": "Conversa com o modelo local", "status": "INTEGRADA",
                  "reason": "Sem ferramentas; respostas do modelo NÃO verificadas."}]
+        public_hosts = None
         for c in (self.control.capabilities if self.control is not None else ()):
             status, reason, label = CAPABILITY_STATUS.get(c, ("INTEGRADA", "", c))
+            policy = getattr(getattr(self.control, "_missions", {}).get(c), "policy", None)
+            if c == "pesquisa-publica" and policy is not None and policy.mode == "public":
+                public_hosts = ", ".join(policy.allowed_hosts)        # W3: the mode comes from the live policy
+                reason = (f"WEB-01 W3: leitura REAL na Internet pública, só {public_hosts} (autorização "
+                          f"{policy.authorization_ref}); recibos e verificador; sem cotações nem ordens.")
+                label = "Pesquisa pública de leitura (Internet real)"
             caps.append({"id": c, "label": label, "description": self.control.describe(c), "status": status,
                          "reason": reason, "mission": True})
-        caps += [{"id": i, "label": label, "status": st, "reason": why} for i, label, st, why in PENDING_CAPABILITIES]
+        for i, label, st, why in PENDING_CAPABILITIES:
+            if i == "internet-publica" and public_hosts:
+                st, why = "PARCIAL", f"Só leitura, allowlist autorizada: {public_hosts}. Nada fora do Gateway."
+            caps.append({"id": i, "label": label, "status": st, "reason": why})
         return caps
 
     @staticmethod

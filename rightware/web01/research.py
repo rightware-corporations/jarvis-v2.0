@@ -67,8 +67,11 @@ def links(page: W.Page) -> list[str]:
 
 
 class ResearchToolkit:
-    def __init__(self, guard: EgressGuard, search_url):
-        self.guard, self.search_url = guard, search_url
+    def __init__(self, guard: EgressGuard, search_url, extract=None):
+        """``search_url``: query → URL (or a provider with ``search_url``/``results``); ``extract``: page → URLs."""
+        if hasattr(search_url, "search_url"):
+            search_url, extract = search_url.search_url, search_url.results
+        self.guard, self.search_url, self.extract = guard, search_url, extract or links
         self.receipts: list[dict] = []
         self.kept: dict[int, bytes] = {}          # host-side evidence: exact bytes per receipt
 
@@ -99,7 +102,7 @@ class ResearchToolkit:
     def web_search_public(self, query: str) -> tuple[dict, list[str]]:
         query = " ".join(str(query).split())[:200]
         r, page = self._get("web_search_public", self.search_url(query))
-        return r, (links(page) if page is not None and r["status"] == "OK" else [])
+        return r, (self.extract(page) if page is not None and r["status"] == "OK" else [])
 
     def web_open_public(self, url: str) -> tuple[dict, W.Page | None]:
         return self._get("web_open_public", url)

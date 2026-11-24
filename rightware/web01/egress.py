@@ -17,12 +17,21 @@ Modes:
 * ``fixture`` — the only mode buildable in W0–W2. Every allowed host must be under ``.fixture.example`` and the
   transport is the in-process fixture corpus (``rightware.web01.fixture``): no socket is ever opened.
 * ``public`` — real egress (W3). ``build_fetcher`` REFUSES it unless the policy carries ``network_enabled: true``
-  and an operator ``authorization_ref`` AND the host passes ``allow_public=True`` (a code path that W0–W2 never
-  call). Until the specific authorisation exists the product cannot open external connections through WEB-01.
+  and an operator ``authorization_ref`` AND the host passes ``allow_public=True`` (only ``ResearchMission`` does,
+  in one place). Until the specific authorisation exists the product cannot open external connections.
+
+Transports for ``public`` (optional ``transport`` key, default ``direct``):
+* ``direct`` — the product path (operator's computer): ``HttpxFetcher`` with local DNS, "every address global"
+  check, DNS pinning and peer re-check.
+* ``session_proxy`` — ONLY for validating inside a sandbox whose sole egress is an operator-approved HTTPS proxy
+  (e.g. a Claude Code cloud session: no local DNS). The proxy resolves DNS, so the local IP checks cannot run; what
+  remains enforced here: exact-host allowlist on every hop, https on 443 only, no IP-literal hosts, redirect
+  re-validation, GET only, byte/time/request budgets, receipts. Declared as a weaker guarantee; never the default.
 """
 from __future__ import annotations
 
 import dataclasses
+import os
 import json
 import time
 from datetime import datetime, timezone
@@ -39,6 +48,8 @@ _KEYS = {"version": str, "mode": str, "network_enabled": bool, "authorization_re
          "allowed_hosts": list, "methods": list, "max_bytes_per_response": int, "timeout_s": (int, float),
          "max_redirects": int, "max_requests_per_mission": int, "max_total_bytes_per_mission": int,
          "max_seconds_per_mission": (int, float)}
+_OPTIONAL = {"transport": str}
+TRANSPORTS = ("direct", "session_proxy")
 
 
 class PolicyError(ValueError):
@@ -67,14 +78,18 @@ class EgressPolicy:
     max_requests_per_mission: int
     max_total_bytes_per_mission: int
     max_seconds_per_mission: float
+    transport: str = "direct"
 
     @classmethod
     def from_dict(cls, d: dict) -> "EgressPolicy":
         if not isinstance(d, dict):
             raise PolicyError("a política tem de ser um objecto JSON")
-        if set(d) != set(_KEYS):
+        if not set(_KEYS) <= set(d) <= set(_KEYS) | set(_OPTIONAL):
             raise PolicyError(f"chaves inválidas: em falta {sorted(set(_KEYS) - set(d))}, "
-                              f"desconhecidas {sorted(set(d) - set(_KEYS))}")
+                              f"desconhecidas {sorted(set(d) - set(_KEYS) - set(_OPTIONAL))}")
+        transport = d.get("transport", "direct")
+        if transport not in TRANSPORTS:
+            raise PolicyError("transporte desconhecido")
         for k, typ in _KEYS.items():
             v = d[k]
             if isinstance(v, bool) and typ is not bool:     # bool is an int subclass: never accept it as a number
@@ -108,10 +123,14 @@ class EgressPolicy:
                 raise PolicyError("modo public: servidores fixture não são permitidos")
             if d["network_enabled"] and not (d["authorization_ref"] or "").strip():
                 raise PolicyError("modo public com rede exige authorization_ref do operador")
+            if any(h.replace(".", "").isdigit() or h.startswith("[") for h in hosts):
+                raise PolicyError("modo public: só nomes de servidor, nunca endereços IP")
+        if d["mode"] == "fixture" and transport != "direct":
+            raise PolicyError("modo fixture não usa transporte de rede")
         return cls(d["version"], d["mode"], d["network_enabled"], d["authorization_ref"], tuple(hosts),
                    tuple(d["methods"]), d["max_bytes_per_response"], float(d["timeout_s"]), d["max_redirects"],
                    d["max_requests_per_mission"], d["max_total_bytes_per_mission"],
-                   float(d["max_seconds_per_mission"]))
+                   float(d["max_seconds_per_mission"]), transport)
 
     @classmethod
     def load(cls, path: Path = DEFAULT_POLICY) -> "EgressPolicy":
@@ -133,7 +152,39 @@ def build_fetcher(policy: EgressPolicy, *, allow_public: bool = False):
     if not (allow_public and policy.network_enabled and (policy.authorization_ref or "").strip()):
         raise NetworkNotAuthorised("WEB-01: acesso externo à rede exige a autorização específica do operador (W3); "
                                    "nada foi contactado.")
-    return W.HttpxFetcher()                                       # W3 only: real SSRF/pinning guarantees
+    if policy.transport == "session_proxy":
+        return session_proxy_fetcher()
+    return W.HttpxFetcher()                                       # W3 product path: real SSRF/pinning guarantees
+
+
+SESSION_PROXY_IP = "93.184.216.34"     # placeholder global address: the egress proxy, not this host, resolves DNS
+
+
+def session_proxy_fetcher(proxy: str | None = None, ca_file: str | None = None):
+    """W3 validation transport (see module doc). Refuses to build without an explicit HTTPS proxy and CA bundle."""
+    import ssl
+
+    import httpx
+    proxy = proxy or os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+    ca_file = ca_file or os.environ.get("SSL_CERT_FILE")
+    if not proxy or not ca_file or not Path(ca_file).is_file():
+        raise NetworkNotAuthorised("transporte session_proxy exige HTTPS_PROXY e SSL_CERT_FILE da sessão")
+    transport = httpx.HTTPTransport(proxy=proxy, verify=ssl.create_default_context(cafile=ca_file),
+                                    trust_env=False, retries=0, http2=False)
+
+    def https_only(url: str) -> str | None:
+        """String-level guard only: the upstream OpenJarvis SSRF check resolves DNS locally and (correctly) fails
+        closed where there is no local DNS, so it cannot run here; the exact-host allowlist does the real work."""
+        parts = urlsplit(url)
+        if parts.scheme != "https" or parts.port not in (None, 443):
+            return "transporte session_proxy: só https na porta 443"
+        host = (parts.hostname or "")
+        if not host or host.replace(".", "").isdigit() or ":" in host or host.startswith("0x"):
+            return "transporte session_proxy: endereços IP não são permitidos"
+        return None
+
+    return W.HttpxFetcher(resolver=lambda host: [SESSION_PROXY_IP], transport=transport,
+                          peer_check=lambda response: True, ssrf=https_only)
 
 
 def utc_now() -> str:

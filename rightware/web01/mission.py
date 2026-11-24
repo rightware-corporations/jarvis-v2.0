@@ -19,12 +19,15 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from rightware.control_plane import State, TaskOutcome
-from rightware.web01 import fixture as FX
+from rightware.web01 import providers as PV
 from rightware.web01.egress import EgressGuard, EgressPolicy, build_fetcher
 from rightware.web01.research import MissionSpec, ResearchToolkit, verify
 
 CAPABILITY = "pesquisa-publica"
 ROOT = Path(__file__).resolve().parents[2]
+PUBLIC_MISSION = ROOT / "configs" / "web01" / "missions" / "ficha-mocambique-publica.json"
+MODE_LABEL = {"fixture": "FIXTURE (corpus local de ensaio, sem acesso à Internet)",
+              "public": "INTERNET PÚBLICA (leitura real, allowlist autorizada)"}
 STATE_OF = {"RESEARCH_VERIFIED": State.RESULTADO_VERIFICADO, "RESEARCH_PARTIAL": State.EXECUCAO_PARCIAL,
             "RESEARCH_NOT_VERIFIED": State.RESULTADO_DESCONHECIDO,
             "RESEARCH_INVALID_EVIDENCE": State.EXECUCAO_FALHADA}
@@ -36,18 +39,23 @@ class ResearchMission:
     def __init__(self, policy: EgressPolicy | None = None, spec: MissionSpec | None = None, *, fetcher_factory=None,
                  runtime: Path | None = None, clock=time.monotonic):
         self.policy = policy or EgressPolicy.load()
-        self.spec = spec or MissionSpec.load()
-        if self.policy.mode == "fixture":
-            self._search_url = FX.search_url
-        else:                                    # W3: the public search endpoint is part of the authorisation
-            raise NotImplementedError("WEB-01 W3 (rede pública) não está implementado nem autorizado")
-        build_fetcher(self.policy)               # fail at host start-up, not mid-mission, if the mode is refused
-        self._fetcher_factory = fetcher_factory or (lambda cancel: build_fetcher(self.policy))
+        public = self.policy.mode == "public"
+        self.spec = spec if spec is not None else (MissionSpec.load(PUBLIC_MISSION) if public else MissionSpec.load())
+        self.provider = PV.for_policy(self.policy)
+        # The ONE place that may ask for public egress; build_fetcher still refuses unless the policy file carries
+        # network_enabled=true and the operator's authorization_ref (W3 approval). Checked at host start-up.
+        if fetcher_factory is None:
+            build_fetcher(self.policy, allow_public=public)
+            fetcher_factory = lambda cancel: build_fetcher(self.policy, allow_public=public)  # noqa: E731
+        for o in self.spec.objectives:
+            if not all(self.policy.host_allowed(h) for h in o.sources):
+                raise ValueError("fonte designada fora da allowlist de egress")
+        self._fetcher_factory = fetcher_factory
         self.runtime = runtime or ROOT / ".runtime" / "web01-missions"
         self.clock = clock
         self._cancel = threading.Event()
-        self.description = (f"Pesquisa pública de LEITURA (modo {self.policy.mode.upper()}: corpus local de ensaio, "
-                            f"sem acesso à Internet). Pergunta: {self.spec.question} Cada leitura passa pela política "
+        self.description = (f"Pesquisa pública de LEITURA — modo {MODE_LABEL[self.policy.mode]}. "
+                            f"Pergunta: {self.spec.question} Cada leitura passa pela política "
                             "de egress e gera um recibo (URL, data, SHA-256, bytes); o resultado é decidido pelo "
                             "verificador RIGHTWARE só com fontes designadas.")
 
@@ -60,7 +68,7 @@ class ResearchMission:
         self._cancel.clear()
         stop = _Either(cancelled, self._cancel)
         guard = EgressGuard(self.policy, self._fetcher_factory(stop), cancelled=stop, clock=self.clock)
-        kit = ResearchToolkit(guard, self._search_url)
+        kit = ResearchToolkit(guard, self.provider)
         if on_start:
             on_start()
         done: set[str] = set()
@@ -85,7 +93,7 @@ class ResearchMission:
         self._write_evidence(kit, guard, v, seconds)
         state = State.TAREFA_CANCELADA if stop.is_set() else STATE_OF[v["verdict"]]
         verified = state == State.RESULTADO_VERIFICADO
-        lines = [f"Pergunta: {self.spec.question}"] + [
+        lines = [f"Modo: {MODE_LABEL[self.policy.mode]}", f"Pergunta: {self.spec.question}"] + [
             f"{oid}: {v['claims'][oid]} (recibo #{seq})" if st == "VERIFIED" else f"{oid}: NÃO verificado"
             for oid, st, seq in v["objectives"]]
         return TaskOutcome(state=state, capability=CAPABILITY,
