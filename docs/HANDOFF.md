@@ -4122,3 +4122,24 @@ Local mode is unchanged.
   - the 2b model writes some pt-BR forms ("oxigênio").
 - **Tunnel procedure:** `docs/engineering/B6_TUNNEL_PROCEDURE.md`. Opening it awaits the operator's instruction.
 - **State:** `B6_PRESENTATION_READY_AWAITING_ACCESS_AUTHORIZATION`.
+
+## CHECKPOINT — 24/11/2026: JRV-B6-LIVE-2 → external chat through the private tunnel CONFIRMED by the operator
+- **Branch:** B6 `integration/jrv-b6-private-access-20261123`. The code is the validated `66be4c9`, unchanged. This commit is documentation only. F00 is preserved at `84d87eb` (PR #32 branch). No merge.
+- **Tunnel:** private `silent-ant-n61dpz7.use`, port 8000 only, Access control `{}`, expiry 1 h. Hosting from 15:21:20 to a hard limit of 16:19:50 UTC. JARVIS B6 origin `https://24thldvf-8000.use.devtunnels.ms`, deadline 16:16:59 UTC.
+- **Checks:**
+  - Anonymous requests are redirected (302) to the Microsoft login, and 0 anonymous requests reached JARVIS.
+  - Port 11434 is not exposed.
+  - Operator phase 1 (no token): Microsoft login passed, audit shows `AUTH_REQUIRED`.
+  - Phase 2: the single-use link was delivered privately and the HUD opened.
+- **Failure and root cause (FACT):**
+  - Dev Tunnels rewrites `Origin` to `https://localhost` by default, so every chat POST got `DENY CROSS_ORIGIN` (×4).
+  - Passing `--origin-header/--host-header` on `devtunnel host` alone had no effect.
+  - The definitive fix is a persistent tunnel setting: `devtunnel update <id> --origin-header unchanged --host-header unchanged` (microsoft/dev-tunnels#284), then restart the host.
+  - No protection was relaxed: B6 still requires the exact Origin and Host.
+- **Evidence:**
+  - Loopback observer (Host and Origin only): `POST /v1/chat/completions Host=24thldvf-8000.use.devtunnels.ms Origin=https://24thldvf-8000.use.devtunnels.ms` at 15:39:50 UTC.
+  - Audit `ALLOW` at 15:39:50, then `ANSWER qwen3.5:2b 17.2 s` at 15:40:07.
+  - **The operator confirmed the real Qwen answer through the external HUD.**
+- **Procedure updated:** `docs/engineering/B6_TUNNEL_PROCEDURE.md` (mandatory `devtunnel update` step; two-phase validation; window log).
+- **Known defect recorded (not fixed):** through the GUI the model introduced itself as "OpenJarvis" in English, although `configs/local.toml` sets the RIGHTWARE identity prompt. The cause is unproven (hypothesis: the GUI chat path does not apply `default_system_prompt`, or an upstream prompt takes precedence). It is for a later fix with its own authorisation.
+- **State:** the server and tunnel are kept up to the authorised deadline, then closed and revoked (kill host and server, `devtunnel delete`, logout, cache removal, session-url removal).
