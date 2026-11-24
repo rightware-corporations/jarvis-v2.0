@@ -117,7 +117,7 @@ class FreeResearchMission:
                 synth["raw"], synth["seconds"] = self.call(G.SYNTH_SYSTEM, G.synthesis_prompt(plan.question, ps))
             except ModelError as exc:
                 synth["error"] = str(exc)
-            report = G.validate(synth["raw"], plan.question, ps, kit.receipts, kit.kept)
+            report = G.validate(synth["raw"], plan.question, ps, kit.receipts, kit.kept, plan.subquestions)
         if stop.is_set():
             report["final"] = "CANCELLED"
         seconds = round(self.clock() - started, 2)

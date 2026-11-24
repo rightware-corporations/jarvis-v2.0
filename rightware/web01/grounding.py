@@ -77,8 +77,11 @@ def synthesis_prompt(question: str, ps: list[dict]) -> str:
             f"<<<FIM {boundary}>>>\nResponde só com o JSON pedido.")
 
 
-def validate(raw: str, question: str, ps: list[dict], receipts: list[dict], kept: dict[int, bytes]) -> dict:
-    """Host validation of the model's synthesis. Returns claims with per-check results and the final status."""
+def validate(raw: str, question: str, ps: list[dict], receipts: list[dict], kept: dict[int, bytes],
+             subquestions: tuple = ()) -> dict:
+    """Host validation of the model's synthesis. Returns claims with per-check results and the final status.
+    B (relevance) is the best match against the question or one of the plan's VALIDATED subquestions (multi-part
+    questions: a passage may answer one part); which one matched is recorded."""
     by_id = {p["id"]: p for p in ps}
     rec = {r["seq"]: r for r in receipts}
     report = {"schema_valid": False, "model_status": None, "answer": "", "conflicts": [], "uncertainty": "",
@@ -117,12 +120,13 @@ def validate(raw: str, question: str, ps: list[dict], receipts: list[dict], kept
         raw_bytes = kept.get(holder["seq"], b"")
         integrity = bool(r and r["status"] == "OK" and hashlib.sha256(raw_bytes).hexdigest() == r["sha256"]
                          and _norm(holder["text"]) in _norm(page_text(raw_bytes)))
-        rel = relevance(question, holder["text"])
+        targets = [question, *subquestions]
+        rel, target = max(((relevance(t, holder["text"]), t) for t in targets), key=lambda x: x[0])
         terms = _stems(entry["text"])
         support = len(terms & _stems(entry["quote"])) / len(terms) if terms else 0.0
         entry["source"] = {"seq": holder["seq"], "url": holder["url"], "sha256": holder["sha256"],
                            "passage_id": holder["id"]}
-        entry["checks"] = {"A_integrity": integrity, "B_relevance": round(rel, 2),
+        entry["checks"] = {"A_integrity": integrity, "B_relevance": round(rel, 2), "B_against": target[:120],
                            "C_lexical_support": round(support, 2)}
         if not integrity:
             report["dropped"].append({"claim": entry["text"], "why": "integridade da fonte falhou"})
