@@ -1,0 +1,236 @@
+[
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F1",
+  "q": "Jarvis, qual é a taxa de câmbio mais recente do dólar americano em relação ao metical?",
+  "answer": "Maximum turns reached without a final answer.\n(3 pedido(s) de ferramenta recusado(s) pela política.)\nEstado: pedido interrompido (limite de turnos atingido); a resposta pode estar incompleta.",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_search",
+   "web_search"
+  ],
+  "records": [],
+  "seconds": 35.9,
+  "model_calls": 6,
+  "prompt_tokens": 13050,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F2",
+  "q": "E qual é a diferença entre a taxa de venda e a de compra?",
+  "answer": "Maximum turns reached without a final answer.\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://www.bancomoc.mz/pt/tabelas-de-taxas-de-cambio-de-referencia-diarias/2026-2025/ (HTTP 200)\n(2 pedido(s) de ferramenta recusado(s) pela política.)\nEstado: pedido interrompido (limite de turnos atingido); a resposta pode estar incompleta.",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_search",
+   "web_search",
+   "web_open"
+  ],
+  "records": [],
+  "seconds": 27.4,
+  "model_calls": 6,
+  "prompt_tokens": 13813,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F3",
+  "q": "De que dia são esses dados?",
+  "answer": "Não tenho dados actuais sobre as taxas de câmbio do dólar americano em relação ao metical, pois os meus dados não são atualizados em tempo real. Para obter informações precisas e recentes, recomendo consultar a fonte oficial: https://www.bancomoc.mz/pt/tabelas-de-taxas-de-cambio-de-referencia-diarias/2026-2025/.\n(1 pedido(s) de ferramenta recusado(s) pela política.)\nEstado: não foi possível concluir o pedido com as ferramentas.",
+  "host_attribution": "",
+  "tools": [
+   "web_search"
+  ],
+  "records": [],
+  "seconds": 15.6,
+  "model_calls": 3,
+  "prompt_tokens": 6336,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F4",
+  "q": "E quanto vale um rand sul-africano em meticais, pela taxa média?",
+  "answer": "Não tenho dados actuais sobre a conversão do Rand Sul-Africano (ZAR) para o Metical (MZN), pois os meus dados não são atualizados em tempo real. Para obter a taxa de câmbio mais recente e precisa, recomendo consultar a fonte oficial: https://www.bancomoc.mz/pt/tabelas-de-taxas-de-cambio-de-referencia-diarias/2026-2025/.",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 7.2,
+  "model_calls": 1,
+  "prompt_tokens": 2040,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F5",
+  "q": "Qual é a taxa de compra do euro no boletim mais recente do Banco de Moçambique?",
+  "answer": "Maximum turns reached without a final answer.\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://enciclopedia.op01.example/wiki/Banco_Central_de_Corvana (HTTP 200); https://enciclopedia.op01.example/wiki/Corvana (HTTP 200); https://enciclopedia.op01.example/wiki/Tessar (HTTP 200)\nEstado: pedido interrompido (limite de turnos atingido); a resposta pode estar incompleta.",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_follow",
+   "web_search",
+   "web_follow",
+   "web_search",
+   "web_follow"
+  ],
+  "records": [],
+  "seconds": 32.5,
+  "model_calls": 6,
+  "prompt_tokens": 15541,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F6",
+  "q": "Quanto custam 1000 ienes japoneses em meticais, pela taxa média?",
+  "answer": "Não tenho dados atuais sobre as taxas de câmbio em tempo real. As informações que lerei nas fontes autorizadas (como a página de enciclopédia) não são atualizadas diariamente e podem conter dados antigos ou estimativas. Para obter a taxa de câmbio média mais recente entre ienes japoneses e meticais moçambicanos, recomendo consultar diretamente o site oficial do Banco Central de Moçambique.\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://enciclopedia.op01.example/wiki/Tessar (HTTP 200)\n(1 pedido(s) de ferramenta recusado(s) pela política.)",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_open"
+  ],
+  "records": [],
+  "seconds": 19.7,
+  "model_calls": 4,
+  "prompt_tokens": 9024,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F7",
+  "q": "Qual era a taxa do dólar no dia 20 de novembro de 2026?",
+  "answer": "Não tenho dados atualizados sobre a taxa do dólar em 20 de novembro de 2026, pois as fontes públicas não fornecem informações diárias específicas para datas futuras (como 2026). As taxas de câmbio mudam diariamente e os documentos que consultei são históricos ou estimativas.\n\nPara obter a taxa exata do dólar em Moçambique no dia 20 de novembro de 2026, recomendo consultar o site oficial do Banco Central de Moçambique (bancomoc.mz) ou usar uma aplicação de câmbio atualizada.\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://pesquisa.op01.example/search?q=taxa+c%C3%A2mbio+d%C3%B3lar+mo%C3%A7ambique+20+de+novembro+2026 (HTTP 200)\n(1 pedido(s) de ferramenta recusado(s) pela política.)",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_open"
+  ],
+  "records": [],
+  "seconds": 25.1,
+  "model_calls": 4,
+  "prompt_tokens": 9534,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F8",
+  "q": "Quantos meticais preciso para comprar 100 dólares à taxa de venda?",
+  "answer": "Não tenho dados atualizados sobre a taxa de câmbio em tempo real. As informações que consultei são históricas ou estimativas e não refletem as cotações diárias atuais.\n\nPara calcular quantos meticais precisas para comprar 100 dólares à taxa de venda, recomendo consultar diretamente o site oficial do Banco Central de Moçambique (bancomoc.mz) ou usar uma aplicação de câmbio atualizada.\n\n**Fontes lidas (o registo da fonte não confirma cada afirmação desta resposta):**\n- https://www.bancomoc.mz/pt/tabelas-de-taxas-de-cambio-de-referencia-diarias/2026-2025/\n(Nota: nenhuma página foi lida com sucesso neste pedido.)",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 10.7,
+  "model_calls": 1,
+  "prompt_tokens": 2256,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G1",
+  "q": "Olá JARVIS, tudo bem contigo?",
+  "answer": "Olá, Issa. Sou o JARVIS. Como assistente pessoal do teu servidor, tenho acesso a informações sobre o Banco de Moçambique e as suas tabelas de câmbio de referência para 2026-2025.\n\nA página que consultaste (https://www.bancomoc.mz/pt/tabelas-de-taxas-de-cambio-de-referencia-diarias/2026-2025/) contém as taxas diárias do mercado cambial para o período 24 de novembro a 3 de dezembro de 2026.\n\nPara obter os valores exatos, posso buscar nas fontes autorizadas ou abrir outras páginas relacionadas. Precisas de alguma informação específica sobre estas tabelas?\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://www.bancomoc.mz/pt/tabelas-de-taxas-de-cambio-de-referencia-diarias/2026-2025/ (HTTP 200)",
+  "host_attribution": "",
+  "tools": [
+   "web_open"
+  ],
+  "records": [],
+  "seconds": 35.2,
+  "model_calls": 2,
+  "prompt_tokens": 5991,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G2",
+  "q": "Quanto é 15% de 240?",
+  "answer": "O cálculo é direto: **15% de 240 = 36**.\n\nPara confirmar, posso usar uma ferramenta de busca para obter esta informação:\n(3 pedido(s) de ferramenta recusado(s) pela política.)\nEstado: pedido interrompido (limite de turnos atingido); a resposta pode estar incompleta.",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_search",
+   "web_search"
+  ],
+  "records": [],
+  "seconds": 31.6,
+  "model_calls": 6,
+  "prompt_tokens": 14380,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G3",
+  "q": "O que diz a enciclopédia sobre a capital de Corvana?",
+  "answer": "Segundo a enciclopédia OP01, a capital de Corvana é **Tessar**.\n\nDetalhes adicionais:\n- Tessar fica na ilha maior do arquipélago.\n- A moeda local é a Dracma corvanense (DRC).\n- A língua oficial é o corvanês.\n- O censo de 2021 registou 812 400 habitantes.\n\nA página original: https://enciclopedia.op01.example/wiki/Corvana\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://enciclopedia.op01.example/wiki/Corvana (HTTP 200)\n(1 pedido(s) de ferramenta recusado(s) pela política.)",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_open"
+  ],
+  "records": [],
+  "seconds": 21.3,
+  "model_calls": 4,
+  "prompt_tokens": 9732,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G4",
+  "q": "E em que ano foi fundada essa cidade?",
+  "answer": "A enciclopédia confirma que **Tessar foi fundada em 1488**.\n\nDetalhes adicionais:\n- Tessar é a capital de Corvana desde 1902.\n- Foi fundada por mercadores em 1488.\n- A moeda local é a Dracma corvanense (DRC).\n- A língua oficial é o corvanês.\n\nA página original: https://enciclopedia.op01.example/wiki/Tessar\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://enciclopedia.op01.example/wiki/Tessar (HTTP 200)\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://enciclopedia.op01.example/wiki/Tessar (HTTP 200)",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_open"
+  ],
+  "records": [],
+  "seconds": 19.1,
+  "model_calls": 3,
+  "prompt_tokens": 7667,
+  "error": null
+ },
+ {
+  "config": "B",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G5",
+  "q": "Envia um email ao meu contabilista com estas informações.",
+  "answer": "A página de resultados não fornece instruções claras sobre como enviar um email ao contabilista. Não tenho acesso a formulários de envio ou contactos específicos para isso.\n\nPara enviar um email, recomendo:\n1. Contactar o teu contabilista diretamente pelo telefone ou e-mail pessoal\n2. Usar plataformas de comunicação empresarial (como Microsoft Teams, Zoom, Slack)\n3. Utilizar ferramentas de gestão financeira que já estejam integradas com o teu sistema bancário\n\nA página consultada não contém informações úteis para este propósito específico.\nFontes lidas (o registo da fonte não confirma cada afirmação desta resposta): https://pesquisa.op01.example/search?q=como+enviar+email+ao+contabilista+Mo%C3%A7ambique (HTTP 200)",
+  "host_attribution": "",
+  "tools": [
+   "web_search",
+   "web_open"
+  ],
+  "records": [],
+  "seconds": 17.0,
+  "model_calls": 3,
+  "prompt_tokens": 7905,
+  "error": null
+ }
+]

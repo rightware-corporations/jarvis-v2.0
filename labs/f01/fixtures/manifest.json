@@ -1,0 +1,27 @@
+{
+ "https://banco.f01.example/indice/": {
+  "file": "indice.html",
+  "type": "text/html",
+  "retrieved_at": "2031-03-10T12:00:00Z"
+ },
+ "https://banco.f01.example/b/dia-10032031.pdf": {
+  "file": "b10.txt",
+  "type": "text/plain",
+  "retrieved_at": "2031-03-10T12:00:01Z"
+ },
+ "https://banco.f01.example/b/dia-09032031.pdf": {
+  "file": "b09.txt",
+  "type": "text/plain",
+  "retrieved_at": "2031-03-10T12:00:02Z"
+ },
+ "https://banco.f01.example/b/dia-06032031.pdf": {
+  "file": "b06.txt",
+  "type": "text/plain",
+  "retrieved_at": "2031-03-10T12:00:03Z"
+ },
+ "https://banco.f01.example/b/dia-01022031.pdf": {
+  "file": "b01.txt",
+  "type": "text/plain",
+  "retrieved_at": "2031-03-10T12:00:04Z"
+ }
+}

@@ -397,7 +397,8 @@ class AgentSession:
                  clock: Callable[[], float] | None = None, start_url: str | None = None,
                  trace: bool = False, task_preset: str | None = None, receipts: bool = False,
                  completion_gate: bool = False, file_task: str | None = None, file_workspace=None,
-                 persona: str | None = None, search_template: str | None = None):
+                 persona: str | None = None, search_template: str | None = None,
+                 extra_tools: dict | None = None):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         # OP01 (opt-in): host-built identity (rightware.persona) replacing ONLY the identity sentence of
         # SYSTEM_PROMPT; the tool rules that follow it are always kept.
@@ -410,6 +411,14 @@ class AgentSession:
                     or host not in {h.lower() for h in sites}):
                 raise ValueError("o modelo de pesquisa tem de ser https, conter {q} e estar nos sites autorizados")
         self.search_template = search_template
+        # F01-A (opt-in, EXPERIMENTAL): host-declared read-only tools {name: (ToolDef, runner(args) -> ToolOutcome)}.
+        # Each must be non-consequential, use a session flag the host allowed, and not shadow a built-in tool;
+        # AgentPolicy still validates and budgets every call. Never set by the model.
+        self.extra_tools = dict(extra_tools or {})
+        for name, (tdef, runner) in self.extra_tools.items():
+            if (name != tdef.name or name in TOOLS or name in FILE_TOOLS or name in SEARCH_TOOLS or tdef.consequential
+                    or tdef.session_flag not in self.allow or not callable(runner)):
+                raise ValueError(f"ferramenta extra inválida: {name}")
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
             raise ValueError("a capacidade 'browse' exige sites autorizados")
@@ -524,6 +533,8 @@ class AgentSession:
         registry = {**TOOLS, **FILE_TOOLS} if self.file_contract is not None else dict(TOOLS)
         if self.search_template:
             registry.update(SEARCH_TOOLS)
+        for name, (tdef, _) in self.extra_tools.items():
+            registry[name] = tdef
         policy = AgentPolicy(registry, allow=self.allow, budgets=self.budgets, audit_path=self.audit_path,
                              signature=self._action_signature, **kwargs)
         self._policy = policy
@@ -553,6 +564,8 @@ class AgentSession:
             runners["fixture_compare"] = lambda args: ToolOutcome("fixture_compare", *file_run.compare())
             prompt += F.FILES_PROMPT + F.objectives_prompt(self.file_contract)
 
+        for name, (_, runner) in self.extra_tools.items():
+            runners[name] = runner
         self.generation_metrics = ()
         self.error_code = "NONE"
         self.trace = trace = TaskTrace() if self.trace_enabled else None

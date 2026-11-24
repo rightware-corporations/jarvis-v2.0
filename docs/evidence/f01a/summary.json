@@ -1,0 +1,35 @@
+{
+ "A/qwen3.5:2b": {
+  "correct_total": "4/13",
+  "correct_fx": "1/8",
+  "correct_general": "5/5",
+  "tool_selection_ok": "3/3",
+  "invented_financial_or_factual": 0,
+  "errors": 0,
+  "mean_seconds": 7.2,
+  "mean_tool_calls": 0,
+  "mean_prompt_tokens": 665
+ },
+ "B/qwen3.5:2b": {
+  "correct_total": "5/13",
+  "correct_fx": "1/8",
+  "correct_general": "4/5",
+  "tool_selection_ok": "6/11",
+  "invented_financial_or_factual": 2,
+  "errors": 0,
+  "mean_seconds": 22.9,
+  "mean_tool_calls": 2.15,
+  "mean_prompt_tokens": 9021
+ },
+ "C/qwen3.5:2b": {
+  "correct_total": "10/13",
+  "correct_fx": "7/8",
+  "correct_general": "5/5",
+  "tool_selection_ok": "8/9",
+  "invented_financial_or_factual": 3,
+  "errors": 0,
+  "mean_seconds": 9.2,
+  "mean_tool_calls": 0.38,
+  "mean_prompt_tokens": 1549
+ }
+}

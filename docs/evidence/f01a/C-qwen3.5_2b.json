@@ -1,0 +1,368 @@
+[
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F1",
+  "q": "Jarvis, qual é a taxa de câmbio mais recente do dólar americano em relação ao metical?",
+  "answer": "A taxa de câmbio mais recente do dólar americano (USD) em relação ao metical (MZN), conforme os documentos oficiais recolhidos hoje (24 de Novembro de 2026), é:\n\n*   **Taxa Média:** 63,91 MZN por USD\n*   **Compra:** 63,27 MZN\n*   **Venda:** 64,54 MZN\n\nA fonte oficial é o Banco de Moçambique (Banco de Moçambique).",
+  "host_attribution": "Fonte (registo da ferramenta, atribuída pelo anfitrião): Banco de Moçambique, boletim 159/26, dados de 2026-11-24, https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf (sha256 0f7d048314e9…)",
+  "tools": [
+   "get_exchange_rate"
+  ],
+  "records": [
+   {
+    "tool": "get_exchange_rate",
+    "source": "OFFLINE replay de documentos reais recolhidos em OP01-FX-REAL-PROXY (24/11/2026)",
+    "requested": {
+     "base": "USD",
+     "quote": "MZN",
+     "reference_date": "latest"
+    },
+    "reference_date": "2026-11-24",
+    "rate_type": "taxas de câmbio médias de referência do mercado cambial (compra/venda/média), em meticais",
+    "provenance": {
+     "document_url": "https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf",
+     "sha256": "0f7d048314e9a824cb16e0e7b93d0177d369ae8976908eee645acb8457fa8522",
+     "bulletin": "159/26",
+     "signature": {
+      "place": "Maputo",
+      "date": "2026-11-25"
+     },
+     "retrieved_at": "2026-11-24T16:40:44Z",
+     "listed_date": "2026-11-24"
+    },
+    "parse_issues": [],
+    "status": "OK",
+    "country": "Estados Unidos",
+    "currency_name": "Dolar",
+    "unit": "MZN por 1 USD",
+    "buy": 63.27,
+    "sell": 64.54,
+    "mid": 63.91,
+    "printed": {
+     "buy": "63,27",
+     "sell": "64,54",
+     "mid": "63,91"
+    },
+    "consulted_on": "2026-11-24"
+   }
+  ],
+  "seconds": 23.1,
+  "model_calls": 2,
+  "prompt_tokens": 2206,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F2",
+  "q": "E qual é a diferença entre a taxa de venda e a de compra?",
+  "answer": "A diferença entre a taxa de venda e a de compra é de **1,27 MZN**.\n\nCálculo: 64,54 (Venda) - 63,27 (Compra) = 1,27.\n\nEsta pequena disparidade reflete o spread de mercado típico do Banco de Moçambique para alinhar as taxas oficiais com a liquidez real no mercado.",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 6.7,
+  "model_calls": 1,
+  "prompt_tokens": 988,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F3",
+  "q": "De que dia são esses dados?",
+  "answer": "Os dados fornecidos estão disponíveis para **24 de Novembro de 2026**.\n\nComo não tenho acesso a um calendário interno ou base de dados em tempo real, esta é a data mais recente disponível no meu sistema atualizado. Se precisares de cotações para uma data específica anterior a essa data, posso consultar as taxas oficiais do Banco de Moçambique (Banco de Moçambique).",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 6.6,
+  "model_calls": 1,
+  "prompt_tokens": 1091,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-A",
+  "id": "F4",
+  "q": "E quanto vale um rand sul-africano em meticais, pela taxa média?",
+  "answer": "A taxa de câmbio média do rand sul-africano (ZAR) em relação ao metical (MZN), conforme os documentos oficiais recolhidos hoje (24 de Novembro de 2026), é:\n\n*   **Taxa Média:** 3,65 MZN por ZAR\n*   **Compra:** 3,61 MZN\n*   **Venda:** 3,68 MZN\n\nA fonte oficial é o Banco de Moçambique (Banco de Moçambique).",
+  "host_attribution": "Fonte (registo da ferramenta, atribuída pelo anfitrião): Banco de Moçambique, boletim 159/26, dados de 2026-11-24, https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf (sha256 0f7d048314e9…)",
+  "tools": [
+   "get_exchange_rate"
+  ],
+  "records": [
+   {
+    "tool": "get_exchange_rate",
+    "source": "OFFLINE replay de documentos reais recolhidos em OP01-FX-REAL-PROXY (24/11/2026)",
+    "requested": {
+     "base": "ZAR",
+     "quote": "MZN",
+     "reference_date": "latest"
+    },
+    "reference_date": "2026-11-24",
+    "rate_type": "taxas de câmbio médias de referência do mercado cambial (compra/venda/média), em meticais",
+    "provenance": {
+     "document_url": "https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf",
+     "sha256": "0f7d048314e9a824cb16e0e7b93d0177d369ae8976908eee645acb8457fa8522",
+     "bulletin": "159/26",
+     "signature": {
+      "place": "Maputo",
+      "date": "2026-11-25"
+     },
+     "retrieved_at": "2026-11-24T16:40:44Z",
+     "listed_date": "2026-11-24"
+    },
+    "parse_issues": [],
+    "status": "OK",
+    "country": "Àfrica do Sul",
+    "currency_name": "Rand",
+    "unit": "MZN por 1 ZAR",
+    "buy": 3.61,
+    "sell": 3.68,
+    "mid": 3.65,
+    "printed": {
+     "buy": "3,61",
+     "sell": "3,68",
+     "mid": "3,65"
+    },
+    "consulted_on": "2026-11-24"
+   }
+  ],
+  "seconds": 15.2,
+  "model_calls": 2,
+  "prompt_tokens": 2905,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F5",
+  "q": "Qual é a taxa de compra do euro no boletim mais recente do Banco de Moçambique?",
+  "answer": "A taxa de compra do euro no boletim mais recente (do dia 24 de novembro de 2026) é de **69,36 meticais por euro**.\n\n*Nota: Esta é uma cotação oficial do Banco de Moçambique. Para conversão em moeda estrangeira, use a taxa de venda de 70,75.*",
+  "host_attribution": "Fonte (registo da ferramenta, atribuída pelo anfitrião): Banco de Moçambique, boletim 159/26, dados de 2026-11-24, https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf (sha256 0f7d048314e9…)",
+  "tools": [
+   "get_exchange_rate"
+  ],
+  "records": [
+   {
+    "tool": "get_exchange_rate",
+    "source": "OFFLINE replay de documentos reais recolhidos em OP01-FX-REAL-PROXY (24/11/2026)",
+    "requested": {
+     "base": "EUR",
+     "quote": "MZN",
+     "reference_date": "latest"
+    },
+    "reference_date": "2026-11-24",
+    "rate_type": "taxas de câmbio médias de referência do mercado cambial (compra/venda/média), em meticais",
+    "provenance": {
+     "document_url": "https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf",
+     "sha256": "0f7d048314e9a824cb16e0e7b93d0177d369ae8976908eee645acb8457fa8522",
+     "bulletin": "159/26",
+     "signature": {
+      "place": "Maputo",
+      "date": "2026-11-25"
+     },
+     "retrieved_at": "2026-11-24T16:40:44Z",
+     "listed_date": "2026-11-24"
+    },
+    "parse_issues": [],
+    "status": "OK",
+    "country": "União Europeia",
+    "currency_name": "Euro",
+    "unit": "MZN por 1 EUR",
+    "buy": 69.36,
+    "sell": 70.75,
+    "mid": 70.06,
+    "printed": {
+     "buy": "69,36",
+     "sell": "70,75",
+     "mid": "70,06"
+    },
+    "consulted_on": "2026-11-24"
+   }
+  ],
+  "seconds": 15.4,
+  "model_calls": 2,
+  "prompt_tokens": 2190,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F6",
+  "q": "Quanto custam 1000 ienes japoneses em meticais, pela taxa média?",
+  "answer": "A taxa média de câmbio do Iene Japonês (JPY) para o Metical Moçambicano (MZN) é de **401,87 meticais por 1.000 ienes**.\n\n*Nota: Para conversão em moeda estrangeira, use a taxa de venda de 405,86.*",
+  "host_attribution": "Fonte (registo da ferramenta, atribuída pelo anfitrião): Banco de Moçambique, boletim 159/26, dados de 2026-11-24, https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf (sha256 0f7d048314e9…)",
+  "tools": [
+   "get_exchange_rate"
+  ],
+  "records": [
+   {
+    "tool": "get_exchange_rate",
+    "source": "OFFLINE replay de documentos reais recolhidos em OP01-FX-REAL-PROXY (24/11/2026)",
+    "requested": {
+     "base": "JPY",
+     "quote": "MZN",
+     "reference_date": "latest"
+    },
+    "reference_date": "2026-11-24",
+    "rate_type": "taxas de câmbio médias de referência do mercado cambial (compra/venda/média), em meticais",
+    "provenance": {
+     "document_url": "https://www.bancomoc.mz/media/2nabggxb/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-24112026.pdf",
+     "sha256": "0f7d048314e9a824cb16e0e7b93d0177d369ae8976908eee645acb8457fa8522",
+     "bulletin": "159/26",
+     "signature": {
+      "place": "Maputo",
+      "date": "2026-11-25"
+     },
+     "retrieved_at": "2026-11-24T16:40:44Z",
+     "listed_date": "2026-11-24"
+    },
+    "parse_issues": [],
+    "status": "OK",
+    "country": "Japão",
+    "currency_name": "Iene",
+    "unit": "MZN por 1000 JPY",
+    "buy": 397.87,
+    "sell": 405.86,
+    "mid": 401.87,
+    "printed": {
+     "buy": "397,87",
+     "sell": "405,86",
+     "mid": "401,87"
+    },
+    "consulted_on": "2026-11-24"
+   }
+  ],
+  "seconds": 12.6,
+  "model_calls": 2,
+  "prompt_tokens": 2440,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F7",
+  "q": "Qual era a taxa do dólar no dia 20 de novembro de 2026?",
+  "answer": "Não tenho dados atualizados para o dia 20 de novembro de 2026. O boletim deste dia está disponível no link fornecido, mas não foi possível recuperá-lo diretamente. Se precisar da cotação exata para aquele dia específico, posso consultar a fonte oficial que menciono.",
+  "host_attribution": "",
+  "tools": [
+   "get_exchange_rate"
+  ],
+  "records": [
+   {
+    "tool": "get_exchange_rate",
+    "source": "OFFLINE replay de documentos reais recolhidos em OP01-FX-REAL-PROXY (24/11/2026)",
+    "requested": {
+     "base": "USD",
+     "quote": "MZN",
+     "reference_date": "2026-11-20"
+    },
+    "status": "NOT_RETRIEVED",
+    "detail": "boletim de 2026-11-20 listado mas não obtido",
+    "document_url": "https://www.bancomoc.mz/media/anfnt3bd/taxas-de-câmbio-de-referência-do-mercado-cambial-do-dia-20112026.pdf"
+   }
+  ],
+  "seconds": 10.6,
+  "model_calls": 2,
+  "prompt_tokens": 2377,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "FX-B",
+  "id": "F8",
+  "q": "Quantos meticais preciso para comprar 100 dólares à taxa de venda?",
+  "answer": "Para calcular quanto precisa em meticais para comprar 100 dólares à taxa de venda, utilizo a seguinte informação:\n\n*   **Taxa de Venda do Dólar:** 70,75 MZN por USD.\n*   **Cotação:** Para comprar 100 USD, multiplicamos o número de dólares pela taxa de venda.\n\n**Cálculo:**\n$100 \\times 70,75 = 7.075$\n\nVocê precisará de **7.075 meticais** para comprar 100 dólares à taxa de venda.",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 8.9,
+  "model_calls": 1,
+  "prompt_tokens": 1161,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G1",
+  "q": "Olá JARVIS, tudo bem contigo?",
+  "answer": "Olá, Issa. Tudo bem, estou pronto para ajudar. Como posso ser útil hoje?",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 5.5,
+  "model_calls": 1,
+  "prompt_tokens": 840,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G2",
+  "q": "Quanto é 15% de 240?",
+  "answer": "Calculo o valor diretamente: $15\\% \\text{ de } 240 = 36$.\n\nO passo seguinte útil seria verificar se há alguma outra informação que precise analisar, como a aplicação desse valor em um contexto específico.",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 3.4,
+  "model_calls": 1,
+  "prompt_tokens": 883,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G3",
+  "q": "O que diz a enciclopédia sobre a capital de Corvana?",
+  "answer": "Não tenho acesso a informações sobre a capital da Corvana na minha base de conhecimento atual. Se precisar de dados específicos sobre esse tema, posso consultar fontes externas autorizadas se houver alguma ferramenta disponível para isso.",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 3.1,
+  "model_calls": 1,
+  "prompt_tokens": 959,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G4",
+  "q": "E em que ano foi fundada essa cidade?",
+  "answer": "Não tenho acesso a datas fundacionais específicas para a Corvana na minha base de conhecimento atual. Se precisar de informações precisas sobre esse tema, posso consultar fontes externas autorizadas se houver alguma ferramenta disponível para isso.",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 3.2,
+  "model_calls": 1,
+  "prompt_tokens": 1019,
+  "error": null
+ },
+ {
+  "config": "C",
+  "model": "qwen3.5:2b",
+  "conversation": "GEN",
+  "id": "G5",
+  "q": "Envia um email ao meu contabilista com estas informações.",
+  "answer": "Não tenho acesso a ferramentas de comunicação ou capacidade de enviar emails diretamente. Posso apenas fornecer o conteúdo do e-mail (assunto, corpo e destinatário) se desejar que eu gere esse texto agora mesmo. O passo seguinte útil seria copiar este conteúdo para o seu editor de e-mail e clicar em \"Enviar\".",
+  "host_attribution": "",
+  "tools": [],
+  "records": [],
+  "seconds": 4.8,
+  "model_calls": 1,
+  "prompt_tokens": 1084,
+  "error": null
+ }
+]
