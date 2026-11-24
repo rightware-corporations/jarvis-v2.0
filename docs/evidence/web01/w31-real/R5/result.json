@@ -1,0 +1,236 @@
+{
+ "question": "Em que ano Albert Einstein recebeu o Prémio Nobel da Química?",
+ "plan": {
+  "question": "Em que ano Albert Einstein recebeu o Prémio Nobel da Química?",
+  "objective": "Identificar o ano em que Albert Einstein recebeu o Prémio Nobel da Química.",
+  "subquestions": [
+   "Qual é a data exata do recebimento do prêmio?",
+   "Quem foi o nome oficial do prêmio?",
+   "Em qual categoria ou área específica foi concedido?"
+  ],
+  "queries": [
+   "Albert Einstein Prêmio Nobel da Química ano",
+   "Einstein nobel química data de recebimento",
+   "Prêmio Nobel da Química Albert Einstein histórico",
+   "Quando Einstein ganhou o prêmio Nobel químico"
+  ],
+  "relevance_criteria": [
+   "Confirmação oficial do prêmio Nobel",
+   "Data específica de entrega ou recebimento",
+   "Categorização do prêmio (Ciência e Tecnologia)",
+   "Contexto histórico da conferência"
+  ],
+  "missing_info": [],
+  "source": "modelo:qwen3.5:2b"
+ },
+ "plan_meta": {
+  "attempts": 1,
+  "errors": [],
+  "seconds": 13.41,
+  "valid_model_plan": true,
+  "model": "qwen3.5:2b",
+  "normalised": [
+   "subquestions: 4 itens truncados para 3"
+  ],
+  "raw_excerpts": []
+ },
+ "steps": [
+  {
+   "query": "Albert Einstein Prêmio Nobel da Química ano",
+   "reformulated": false,
+   "search_receipt": 1,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 2,
+     "url": "https://pt.wikipedia.org/wiki/Albert_Einstein",
+     "status": "OK",
+     "relevance": 0.86
+    },
+    {
+     "receipt": 3,
+     "url": "https://pt.wikipedia.org/wiki/Louis_de_Broglie",
+     "status": "OK",
+     "relevance": 0.71
+    }
+   ]
+  },
+  {
+   "query": "Einstein nobel química data de recebimento",
+   "reformulated": false,
+   "search_receipt": 4,
+   "status": "OK",
+   "opened": []
+  },
+  {
+   "query": "einstein recebeu quimica albert",
+   "reformulated": true,
+   "search_receipt": 5,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 6,
+     "url": "https://pt.wikipedia.org/wiki/Debate_Einstein-Bergson",
+     "status": "OK",
+     "relevance": 0.86
+    },
+    {
+     "receipt": 7,
+     "url": "https://pt.wikipedia.org/wiki/Marie_Maynard_Daly",
+     "status": "OK",
+     "relevance": 0.86
+    }
+   ]
+  },
+  {
+   "query": "Prêmio Nobel da Química Albert Einstein histórico",
+   "reformulated": false,
+   "search_receipt": 8,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 9,
+     "url": "https://pt.wikipedia.org/wiki/Pr%C3%AAmio_Nobel_de_F%C3%ADsica",
+     "status": "OK",
+     "relevance": 1.0
+    },
+    {
+     "receipt": 10,
+     "url": "https://pt.wikipedia.org/wiki/1955",
+     "status": "OK",
+     "relevance": 1.0
+    }
+   ]
+  }
+ ],
+ "passages": [
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Albert_Einstein",
+   "sha256": "e91cf2fa98732e5717c4beedb4ad7ad3a69715a5fda46231f7d119ecb1493e45",
+   "text": "Retrato oficial de Einstein em 1921 depois de receber o Prêmio Nobel de Física",
+   "relevance": 0.57,
+   "id": "P1"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Albert_Einstein",
+   "sha256": "e91cf2fa98732e5717c4beedb4ad7ad3a69715a5fda46231f7d119ecb1493e45",
+   "text": "Einstein & Cie, empresa que fabricava equipamentos elétricos acionados por corrente contínua.[8][9] Um ano mais tarde seus pais deram à luz a uma menina, Maria \"Maja\" Einstein, sua irmã mais nova.[10][11] Com cinco anos o jovem Albert estudou em uma escola primária católica durante três anos.[12] Aos oito foi transferido para o Ginásio Luitpold, hoje conhecido como Ginásio Albert Einstein, onde recebeu educação escol",
+   "relevance": 0.57,
+   "id": "P2"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Debate_Einstein-Bergson",
+   "sha256": "a18013c7ba128d4c86f1dff22f7ad5aecec14db07409b85f3d45201aeee53dc5",
+   "text": "O apresentador do prêmio, o professor Svante Arrhenius, mencionou Bergson pelo nome, dizendo que \"embora a maior parte da discussão se centre na [sua] teoria da relatividade\", Bergson havia mostrado que a relatividade \"pertence essencialmente à epistemologia\", e não à física, a partir do que alguns concluíram que os argumentos de Bergson foram a razão pela qual Einstein não pôde receber o Prêmio Nobel nessa área.[20]",
+   "relevance": 0.57,
+   "id": "P3"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Debate_Einstein-Bergson",
+   "sha256": "a18013c7ba128d4c86f1dff22f7ad5aecec14db07409b85f3d45201aeee53dc5",
+   "text": "Quando Einstein recebeu o Prêmio Nobel de Física de 1921, não foi pela relatividade, mas por \"sua descoberta da lei do efeito fotoelétrico\".",
+   "relevance": 0.57,
+   "id": "P4"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Albert_Einstein",
+   "sha256": "e91cf2fa98732e5717c4beedb4ad7ad3a69715a5fda46231f7d119ecb1493e45",
+   "text": "Além disso, durante sua estadia em Nova Iorque, Einstein se juntou a uma multidão de 15 mil pessoas no Madison Square Garden durante uma festa de Hanucá.[86] Em seguida viajou para a Califórnia, onde se encontrou com o presidente da Caltech e Prêmio Nobel, Robert Andrews Millikan.",
+   "relevance": 0.43,
+   "id": "P5"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Louis_de_Broglie",
+   "sha256": "f43ae8a175de8d737d2ee1c4620aefc07bac22b80c1cfe607787d0692bd738e6",
+   "text": "Um Século de Laureados com o Prêmio Nobel: Química, Física e Medicina ilustrada ed. [S.l.]: CRC Press. p. 141.",
+   "relevance": 0.43,
+   "id": "P6"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Debate_Einstein-Bergson",
+   "sha256": "a18013c7ba128d4c86f1dff22f7ad5aecec14db07409b85f3d45201aeee53dc5",
+   "text": "Prêmio da Paz Albert Einstein",
+   "relevance": 0.43,
+   "id": "P7"
+  },
+  {
+   "seq": 7,
+   "url": "https://pt.wikipedia.org/wiki/Marie_Maynard_Daly",
+   "sha256": "26ab8a3cd3211dd497f6a17a60e5c315d818b8b22737b173c7ad198cd5c6765b",
+   "text": "Marie se aposentou em 1986 do Albert Einstein College of Medicine e em 1988 criou uma bolsa de estudos para alunos negros de química e física do Queens College em memória de seu pai.[3] Em 1999, foi reconhecida pela National Technical Association como uma das 50 mulheres mais influentes nas áreas de Ciência, Engenharia e Tecnologia.[6]",
+   "relevance": 0.43,
+   "id": "P8"
+  },
+  {
+   "seq": 7,
+   "url": "https://pt.wikipedia.org/wiki/Marie_Maynard_Daly",
+   "sha256": "26ab8a3cd3211dd497f6a17a60e5c315d818b8b22737b173c7ad198cd5c6765b",
+   "text": "Marie recebeu uma bolsa de pós-graduação na New York University e trabalhou por um ano como assistente de laboratório no Queens College enquanto estudava até obter o mestrado em química, em 1943.",
+   "relevance": 0.43,
+   "id": "P9"
+  },
+  {
+   "seq": 9,
+   "url": "https://pt.wikipedia.org/wiki/Pr%C3%AAmio_Nobel_de_F%C3%ADsica",
+   "sha256": "8af4cc425e7c20799a69b5a13702dc91553f20666178cf91e071214c05f7a1f0",
+   "text": "Shalev, o Nobel ocupa o primeiro lugar entre os prêmios que um cientista pode receber em física.[48] A escolha dos laureados, porém, também gerou debates sobre quem deveria receber crédito por uma descoberta.",
+   "relevance": 0.43,
+   "id": "P10"
+  },
+  {
+   "seq": 9,
+   "url": "https://pt.wikipedia.org/wiki/Pr%C3%AAmio_Nobel_de_F%C3%ADsica",
+   "sha256": "8af4cc425e7c20799a69b5a13702dc91553f20666178cf91e071214c05f7a1f0",
+   "text": "Na lista, os números acompanham a imagem acima e os nomes em negrito são os dos participantes que receberam o Nobel de Física ou de Química.",
+   "relevance": 0.43,
+   "id": "P11"
+  },
+  {
+   "seq": 9,
+   "url": "https://pt.wikipedia.org/wiki/Pr%C3%AAmio_Nobel_de_F%C3%ADsica",
+   "sha256": "8af4cc425e7c20799a69b5a13702dc91553f20666178cf91e071214c05f7a1f0",
+   "text": "Entre os participantes estavam pessoas que já haviam recebido o Nobel e outras que seriam premiadas depois do encontro.[46][38]",
+   "relevance": 0.43,
+   "id": "P12"
+  }
+ ],
+ "synthesis_raw": "{\n  \"status\": \"insufficient\",\n  \"answer\": \"\",\n  \"claims\": [],\n  \"conflicts\": [],\n  \"uncertainty\": \"Não há informações nas passagens fornecidas sobre quando Albert Einstein recebeu o Prémio Nobel da Química.\"\n}",
+ "synthesis_seconds": 9.25,
+ "synthesis_error": null,
+ "validation": {
+  "schema_valid": true,
+  "model_status": "insufficient",
+  "answer": "",
+  "conflicts": [],
+  "uncertainty": "Não há informações nas passagens fornecidas sobre quando Albert Einstein recebeu o Prémio Nobel da Química.",
+  "claims": [],
+  "dropped": [],
+  "final": "ABSTAIN"
+ },
+ "mode": "public",
+ "transport_guarantees": {
+  "transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+  "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+  "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+  "peer_check": "NÃO realizado (o peer é o proxy local)",
+  "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+  "production": false
+ },
+ "model": "qwen3.5:2b",
+ "seconds": 20.7,
+ "requests": 10,
+ "refused": [],
+ "timing": {
+  "plan_s": 13.41,
+  "network_and_search_s": 11.45,
+  "synthesis_s": 9.25,
+  "mission_total_s": 20.7
+ }
+}

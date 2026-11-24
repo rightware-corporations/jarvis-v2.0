@@ -1,0 +1,149 @@
+[
+  {
+    "id": "U9",
+    "action": "Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)",
+    "expected": "plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)",
+    "obtained": {
+      "question": "Qual é a capital do Quénia e qual é a moeda oficial do país?",
+      "plan": "l do país?\n\nDecisão: O modelo propôs pesquisa externa; o anfitrião exige plano e código. (host (proposta do modelo))\n\nPlano: modelo:qwen3.5:2b\n\nObjectivo: Identificar a capital e a moeda oficial do Quénia.\n\nSubperguntas: Qual é a capital do Quénia?; Qual é a moeda oficial do Quénia?\n\nConsultas: «capital do Quénia»; «moeda oficial Quénia»; «país Quénia capital e moeda»; «Quénia capital e dinheiro»\n\nCritérios de relevância: fontes oficiais de geografia; banco central do Quénia; Wikipedia em português; Wikipédia em inglês\n\nLimites (política do anfitrião, não do modelo): modo public, servidores pt.wikipedia.org, até 10 pedidos e 90 s.\n\nPara executar ESTE plano escreva /autorizar 0DBE7B (uso único, 2 min). Sem o código, nada acontece.\n\nrw-6b3106e588964f92",
+      "code_present": true,
+      "last": {
+        "state": "EXECUCAO_PARCIAL",
+        "label": "Execução parcialmente concluída — resultado não verificado",
+        "verified": false,
+        "capability": "pesquisa-livre",
+        "operational_state": "FREE_RESEARCH_PARTIAL_PUBLIC",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 5,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 8,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 9,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 10,
+            "tool": "web_search_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "C1",
+            "status": "GROUNDED",
+            "receipt": 3
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "A capital do Quénia é Nairóbi e a moeda oficial é o Quénian Shilling.\n\nIncerteza: Não há informação sobre a moeda oficial fornecida.",
+        "seconds": 23.81,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Modo: INTERNET PÚBLICA (leitura real, allowlist autorizada)",
+          "Pergunta: Qual é a capital do Quénia e qual é a moeda oficial do país?",
+          "Plano: modelo:qwen3.5:2b; consultas: capital do Quénia; moeda oficial Quénia; país Quénia capital e moeda; Quénia capital e dinheiro",
+          "C1 [GROUNDED] Nairóbi é a capital do Quénia. — fonte #3: «Quibera[1] (quinubi: Kibera, lit. floresta ou selva[2]) é uma favela da cidade de Nairóbi, capital do Quênia» (relevância 1.0, suporte lexical 1.0)",
+          "REMOVIDA: A moeda oficial do Quénia não foi especificada nas passagens. — referência inexistente (passagem inventada)"
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://pt.wikipedia.org/wiki/Qu%C3%A9nia",
+            "fetched_at": "2026-11-24T07:39:00.832580Z",
+            "sha256": "f59f225dd749a3f9a9623e0a5cc45a34000476a474b2ef5744106b75eb59cf95",
+            "bytes": 480530,
+            "supports": []
+          },
+          {
+            "seq": 3,
+            "url": "https://pt.wikipedia.org/wiki/Quibera",
+            "fetched_at": "2026-11-24T07:39:01.235259Z",
+            "sha256": "458318e9a428199daa337f351acaa7fdae867252ea0d473e892c8fd60bf65639",
+            "bytes": 101931,
+            "supports": [
+              "C1"
+            ]
+          },
+          {
+            "seq": 5,
+            "url": "https://pt.wikipedia.org/wiki/D%C3%B3lar_dos_Estados_Unidos",
+            "fetched_at": "2026-11-24T07:39:02.477138Z",
+            "sha256": "f9afa7b8ee7953a3510fab5235d7b3faca8f79d3d4fef5b10a6f3578a2fdef53",
+            "bytes": 524288,
+            "supports": []
+          },
+          {
+            "seq": 6,
+            "url": "https://pt.wikipedia.org/wiki/Dime_(moeda)",
+            "fetched_at": "2026-11-24T07:39:03.191490Z",
+            "sha256": "5161e0d6fff13a9828608f78b6e2ef4e1b6a324bbaa81614360c41a614ff665f",
+            "bytes": 524288,
+            "supports": []
+          },
+          {
+            "seq": 8,
+            "url": "https://pt.wikipedia.org/wiki/Nair%C3%B3bi",
+            "fetched_at": "2026-11-24T07:39:04.730824Z",
+            "sha256": "9d5f6e5242b56c47249d19667f47ba1b2008818ae1f92a0b04556a58e894359c",
+            "bytes": 351247,
+            "supports": []
+          },
+          {
+            "seq": 9,
+            "url": "https://pt.wikipedia.org/wiki/Lista_de_moedas",
+            "fetched_at": "2026-11-24T07:39:05.338608Z",
+            "sha256": "809025a2a1870f255284e656f6c6d604413df6000a43dd6b2c0b7143693bae92",
+            "bytes": 524288,
+            "supports": []
+          }
+        ]
+      },
+      "timeline": "Execução parcialmente concluída — resultado não verificado · FREE_RESEARCH_PARTIAL_PUBLIC · 23.8 s\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_open_public OK\n#4 web_search_public OK\n#5 web_open_public OK\n#6 web_open_public OK\n#7 web_search_public OK\n#8 web_open_public OK\n#9 web_open_public OK\n#10 web_search_public OK\nOBJECTIVOS\nC1: GROUNDED (#3)\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nModo: INTERNET PÚBLICA (leitura real, allowlist autorizada)\nPergunta: Qual é a capital do Quénia e qual é a moeda oficial do país?\nPlano: modelo:qwen3.5:2b; consultas: capital do Quénia; moeda oficial Quénia; país Quénia capital e moeda; Quénia capital e dinheiro\nC1 [GROUNDED] Nairóbi é a capital do Quénia. — fonte #3: «Quibera[1] (quinubi: Kibera, lit. floresta ou selva[2]) é uma favela da cidade de Nairóbi, capital do Quênia» (relevância 1.0, suporte lexical 1.0)\nREMOVIDA: A moeda oficial do Quénia não foi especificada nas passagens. — referência inexistente (passagem inventada)\nFONTES (RECIBOS DE LEITURA)\n#2 https://pt.wikipedia.org/wiki/Qu%C3%A9nia\n2026-11-24T07:39:00.832580Z · sha256 f59f225dd749a3f9… · 480530 B\n#3 https://pt.wikipedia.org/wiki/Quibera\n2026-11-24T07:39:01.235259Z · sha256 458318e9a428199d… · 101931 B · suporta C1\n#5 https://pt.wikipedia.org/wiki/D%C3%B3lar_dos_Estados_Unidos\n2026-11-24T07:39:02.477138Z · sha256 f9afa7b8ee7953a3… · 524288 B\n#6 https://pt.wikipedia.org/wiki/Dime_(moeda)\n2026-11-24T07:39:03.191490Z · sha"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R3/u9-plan.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R3/u9-result.png"
+    ],
+    "pass": true,
+    "mode": "real"
+  }
+]

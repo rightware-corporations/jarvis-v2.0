@@ -1,0 +1,259 @@
+{
+ "question": "Qual é a capital do Quénia e qual é a moeda oficial do país?",
+ "plan": {
+  "question": "Qual é a capital do Quénia e qual é a moeda oficial do país?",
+  "objective": "Identificar a capital e a moeda oficial do Quénia.",
+  "subquestions": [
+   "Qual é a capital do Quénia?",
+   "Qual é a moeda oficial do Quénia?"
+  ],
+  "queries": [
+   "capital do Quénia",
+   "moeda oficial Quénia",
+   "país Quénia capital e moeda",
+   "Quénia capital e dinheiro"
+  ],
+  "relevance_criteria": [
+   "fontes oficiais de geografia",
+   "banco central do Quénia",
+   "Wikipedia em português",
+   "Wikipédia em inglês"
+  ],
+  "missing_info": [],
+  "source": "modelo:qwen3.5:2b"
+ },
+ "plan_meta": {
+  "attempts": 1,
+  "errors": [],
+  "seconds": 10.94,
+  "valid_model_plan": true,
+  "model": "qwen3.5:2b",
+  "normalised": [],
+  "raw_excerpts": []
+ },
+ "steps": [
+  {
+   "query": "capital do Quénia",
+   "reformulated": false,
+   "search_receipt": 1,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 2,
+     "url": "https://pt.wikipedia.org/wiki/Qu%C3%A9nia",
+     "status": "OK",
+     "relevance": 1.0
+    },
+    {
+     "receipt": 3,
+     "url": "https://pt.wikipedia.org/wiki/Quibera",
+     "status": "OK",
+     "relevance": 0.6
+    }
+   ]
+  },
+  {
+   "query": "moeda oficial Quénia",
+   "reformulated": false,
+   "search_receipt": 4,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 5,
+     "url": "https://pt.wikipedia.org/wiki/D%C3%B3lar_dos_Estados_Unidos",
+     "status": "OK",
+     "relevance": 0.6
+    },
+    {
+     "receipt": 6,
+     "url": "https://pt.wikipedia.org/wiki/Dime_(moeda)",
+     "status": "OK",
+     "relevance": 0.6
+    }
+   ]
+  },
+  {
+   "query": "país Quénia capital e moeda",
+   "reformulated": false,
+   "search_receipt": 7,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 8,
+     "url": "https://pt.wikipedia.org/wiki/Nair%C3%B3bi",
+     "status": "OK",
+     "relevance": 0.6
+    },
+    {
+     "receipt": 9,
+     "url": "https://pt.wikipedia.org/wiki/Lista_de_moedas",
+     "status": "OK",
+     "relevance": 0.6
+    }
+   ]
+  },
+  {
+   "query": "Quénia capital e dinheiro",
+   "reformulated": false,
+   "search_receipt": 10,
+   "status": "OK",
+   "opened": []
+  }
+ ],
+ "passages": [
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Qu%C3%A9nia",
+   "sha256": "f59f225dd749a3f9a9623e0a5cc45a34000476a474b2ef5744106b75eb59cf95",
+   "text": "Quénia (português europeu) ou Quênia (português brasileiro) (em suaíli e inglês Kenya), oficialmente República do Quénia, é um país da África Oriental, limitado a norte pelo Sudão do Sul e pela Etiópia, a leste pela Somália e pelo oceano Índico, a sul pela Tanzânia e a oeste pelo Uganda.",
+   "relevance": 0.6,
+   "id": "P1"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Qu%C3%A9nia",
+   "sha256": "f59f225dd749a3f9a9623e0a5cc45a34000476a474b2ef5744106b75eb59cf95",
+   "text": "O então presidente queniano, Mwai Kibaki, declarou o dia 6 de novembro de 2008 como feriado nacional no país, em comemoração à vitória de Barack Obama, filho de um queniano, nas eleições presidenciais dos Estados Unidos.[55][56]",
+   "relevance": 0.4,
+   "id": "P2"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Qu%C3%A9nia",
+   "sha256": "f59f225dd749a3f9a9623e0a5cc45a34000476a474b2ef5744106b75eb59cf95",
+   "text": "O setor de serviços do Quênia, que contribui 61% do PIB, é dominada pelo turismo, que tem mostrado um crescimento constante na maioria dos anos desde a independência do país.",
+   "relevance": 0.4,
+   "id": "P3"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Quibera",
+   "sha256": "458318e9a428199daa337f351acaa7fdae867252ea0d473e892c8fd60bf65639",
+   "text": "Quibera[1] (quinubi: Kibera, lit. floresta ou selva[2]) é uma favela da cidade de Nairóbi, capital do Quênia, situada a 6,6 km do centro[3].",
+   "relevance": 0.4,
+   "id": "P4"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/D%C3%B3lar_dos_Estados_Unidos",
+   "sha256": "f9afa7b8ee7953a3510fab5235d7b3faca8f79d3d4fef5b10a6f3578a2fdef53",
+   "text": "↑ Dolarizar pode significar adotar oficialmente uma moeda estrangeira ou ampliar muito seu uso na economia.",
+   "relevance": 0.4,
+   "id": "P5"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/D%C3%B3lar_dos_Estados_Unidos",
+   "sha256": "f9afa7b8ee7953a3510fab5235d7b3faca8f79d3d4fef5b10a6f3578a2fdef53",
+   "text": "O país pode usar essa referência sem substituir sua moeda pelo dólar.",
+   "relevance": 0.4,
+   "id": "P6"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/D%C3%B3lar_dos_Estados_Unidos",
+   "sha256": "f9afa7b8ee7953a3510fab5235d7b3faca8f79d3d4fef5b10a6f3578a2fdef53",
+   "text": "↑ Uma loja pode aceitar pagamentos em dólares por escolha própria, sem que a moeda seja oficial.",
+   "relevance": 0.4,
+   "id": "P7"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Dime_(moeda)",
+   "sha256": "5161e0d6fff13a9828608f78b6e2ef4e1b6a324bbaa81614360c41a614ff665f",
+   "text": "↑ Dolarizar pode significar adotar oficialmente uma moeda estrangeira ou ampliar muito seu uso na economia.",
+   "relevance": 0.4,
+   "id": "P8"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Dime_(moeda)",
+   "sha256": "5161e0d6fff13a9828608f78b6e2ef4e1b6a324bbaa81614360c41a614ff665f",
+   "text": "O país pode usar essa referência sem substituir sua moeda pelo dólar.",
+   "relevance": 0.4,
+   "id": "P9"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Dime_(moeda)",
+   "sha256": "5161e0d6fff13a9828608f78b6e2ef4e1b6a324bbaa81614360c41a614ff665f",
+   "text": "↑ Uma loja pode aceitar pagamentos em dólares por escolha própria, sem que a moeda seja oficial.",
+   "relevance": 0.4,
+   "id": "P10"
+  },
+  {
+   "seq": 8,
+   "url": "https://pt.wikipedia.org/wiki/Nair%C3%B3bi",
+   "sha256": "9d5f6e5242b56c47249d19667f47ba1b2008818ae1f92a0b04556a58e894359c",
+   "text": "Capitais de condado do Quénia",
+   "relevance": 0.4,
+   "id": "P11"
+  },
+  {
+   "seq": 8,
+   "url": "https://pt.wikipedia.org/wiki/Nair%C3%B3bi",
+   "sha256": "9d5f6e5242b56c47249d19667f47ba1b2008818ae1f92a0b04556a58e894359c",
+   "text": "O desenvolvimento desse meios de transporte é visto como alternativa para reduzir os custos de transporte, devido ao rápido movimento de bens e pessoas na região, também aumentando o comércio, o bem-estar socioeconômico do norte do Quénia e reforçando o potencial do país na atração de investimentos de todo o mundo.",
+   "relevance": 0.4,
+   "id": "P12"
+  }
+ ],
+ "synthesis_raw": "{\n  \"status\": \"partial\",\n  \"answer\": \"A capital do Quénia é Nairóbi e a moeda oficial é o Quénian Shilling.\",\n  \"claims\": [\n    {\n      \"text\": \"Nairóbi é a capital do Quénia.\",\n      \"passage_ids\": [\"P4\"],\n      \"quote\": \"Quibera[1] (quinubi: Kibera, lit. floresta ou selva[2]) é uma favela da cidade de Nairóbi, capital do Quênia\"\n    },\n    {\n      \"text\": \"A moeda oficial do Quénia não foi especificada nas passagens.\",\n      \"passage_ids\": [],\n      \"quote\": \"\"\n    }\n  ],\n  \"conflicts\": [],\n  \"uncertainty\": \"Não há informação sobre a moeda oficial fornecida.\"\n}",
+ "synthesis_seconds": 16.79,
+ "synthesis_error": null,
+ "validation": {
+  "schema_valid": true,
+  "model_status": "partial",
+  "answer": "A capital do Quénia é Nairóbi e a moeda oficial é o Quénian Shilling.",
+  "conflicts": [],
+  "uncertainty": "Não há informação sobre a moeda oficial fornecida.",
+  "claims": [
+   {
+    "text": "Nairóbi é a capital do Quénia.",
+    "passage_ids": [
+     "P4"
+    ],
+    "quote": "Quibera[1] (quinubi: Kibera, lit. floresta ou selva[2]) é uma favela da cidade de Nairóbi, capital do Quênia",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 1.0,
+     "B_against": "Qual é a capital do Quénia?",
+     "C_lexical_support": 1.0
+    },
+    "source": {
+     "seq": 3,
+     "url": "https://pt.wikipedia.org/wiki/Quibera",
+     "sha256": "458318e9a428199daa337f351acaa7fdae867252ea0d473e892c8fd60bf65639",
+     "passage_id": "P4"
+    },
+    "status": "GROUNDED"
+   }
+  ],
+  "dropped": [
+   {
+    "claim": "A moeda oficial do Quénia não foi especificada nas passagens.",
+    "why": "referência inexistente (passagem inventada)"
+   }
+  ],
+  "final": "PARTIAL"
+ },
+ "mode": "public",
+ "transport_guarantees": {
+  "transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+  "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+  "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+  "peer_check": "NÃO realizado (o peer é o proxy local)",
+  "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+  "production": false
+ },
+ "model": "qwen3.5:2b",
+ "seconds": 23.81,
+ "requests": 10,
+ "refused": [],
+ "timing": {
+  "plan_s": 10.94,
+  "network_and_search_s": 7.02,
+  "synthesis_s": 16.79,
+  "mission_total_s": 23.81
+ }
+}

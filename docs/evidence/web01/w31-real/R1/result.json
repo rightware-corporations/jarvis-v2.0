@@ -1,0 +1,297 @@
+{
+ "question": "Qual é o ponto mais alto de Portugal?",
+ "plan": {
+  "question": "Qual é o ponto mais alto de Portugal?",
+  "objective": "Identificar o ponto geográfico mais elevado de Portugal.",
+  "subquestions": [
+   "Qual a coordenada geográfica do pico mais alto?",
+   "Onde localiza-se este ponto no território português?",
+   "Quais são as alturas dos principais picos próximos?"
+  ],
+  "queries": [
+   "qual é a altura do pico mais alto de Portugal",
+   "onde fica o ponto mais elevado de Portugal",
+   "alturas dos maiores montes de Portugal",
+   "nome oficial do ponto mais alto de Portugal"
+  ],
+  "relevance_criteria": [
+   "preciso da coordenada geográfica exata",
+   "preciso da localização no mapa",
+   "preciso comparar com outros picos próximos",
+   "preciso confirmar o nome oficial"
+  ],
+  "missing_info": [],
+  "source": "modelo:qwen3.5:2b"
+ },
+ "plan_meta": {
+  "attempts": 1,
+  "errors": [],
+  "seconds": 13.53,
+  "valid_model_plan": true,
+  "model": "qwen3.5:2b",
+  "normalised": [
+   "subquestions: 4 itens truncados para 3"
+  ],
+  "raw_excerpts": []
+ },
+ "steps": [
+  {
+   "query": "qual é a altura do pico mais alto de Portugal",
+   "reformulated": false,
+   "search_receipt": 1,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 2,
+     "url": "https://pt.wikipedia.org/wiki/Montanha_do_Pico",
+     "status": "OK",
+     "relevance": 1.0
+    },
+    {
+     "receipt": 3,
+     "url": "https://pt.wikipedia.org/wiki/Geografia_de_Portugal",
+     "status": "OK",
+     "relevance": 1.0
+    }
+   ]
+  },
+  {
+   "query": "onde fica o ponto mais elevado de Portugal",
+   "reformulated": false,
+   "search_receipt": 4,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 5,
+     "url": "https://pt.wikipedia.org/wiki/Serra_da_Estrela",
+     "status": "OK",
+     "relevance": 1.0
+    },
+    {
+     "receipt": 6,
+     "url": "https://pt.wikipedia.org/wiki/Pico_da_Nevosa",
+     "status": "OK",
+     "relevance": 1.0
+    }
+   ]
+  },
+  {
+   "query": "alturas dos maiores montes de Portugal",
+   "reformulated": false,
+   "search_receipt": 7,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 8,
+     "url": "https://pt.wikipedia.org/wiki/Tr%C3%A1s-os-Montes_e_Alto_Douro",
+     "status": "OK",
+     "relevance": 0.75
+    },
+    {
+     "receipt": 9,
+     "url": "https://pt.wikipedia.org/wiki/Montes_(Tomar)",
+     "status": "OK",
+     "relevance": 0.5
+    }
+   ]
+  },
+  {
+   "query": "nome oficial do ponto mais alto de Portugal",
+   "reformulated": false,
+   "search_receipt": 10,
+   "status": "OK",
+   "opened": []
+  }
+ ],
+ "passages": [
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Geografia_de_Portugal",
+   "sha256": "4c9234bf762d9a63a3007db7dd797557d1cae299c9ab1d2b24026c36a51f301d",
+   "text": "É nas ilhas que se encontra o ponto mais Alto de Portugal, na Ilha do Pico com altitute máxima de 2 351 m de altitude na Montanha do Pico, Por sua vez a Ilha da Madeira tem diversos picos acima dos 1 700 metros na cordilheira central, sendo o de maior elevação o Pico Ruivo com 1 862 metros de altitude.",
+   "relevance": 1.0,
+   "id": "P1"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Geografia_de_Portugal",
+   "sha256": "4c9234bf762d9a63a3007db7dd797557d1cae299c9ab1d2b24026c36a51f301d",
+   "text": "O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.",
+   "relevance": 1.0,
+   "id": "P2"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Serra_da_Estrela",
+   "sha256": "dbf172624731782ac470710d41decebf231dcb0bf1d84cfc0a238f73827f2502",
+   "text": "Porém, como é possível verificar na Carta Administrativa Oficial de Portugal, o ponto limite dos municípios é no centro da rotunda que fica lá no alto, ou seja, exatamente no sítio onde foi construída a torre de pedra, o ponto mais alto de Portugal Continental.[4]",
+   "relevance": 1.0,
+   "id": "P3"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Serra_da_Estrela",
+   "sha256": "dbf172624731782ac470710d41decebf231dcb0bf1d84cfc0a238f73827f2502",
+   "text": "Por esta razão, o ponto mais alto de Portugal Continental é partilhado pelos três municípios aos quais estas freguesias pertencem: Manteigas, Seia e Covilhã.",
+   "relevance": 1.0,
+   "id": "P4"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Pico_da_Nevosa",
+   "sha256": "61e03339d056015e5394074e1f5fd725db1cbe58f74f239a29dab3332bb8bf74",
+   "text": "Pico da Nevosa é o ponto mais alto da Serra do Gerês e o segundo mais elevado de Portugal Continental, com a altitude de 1546 metros e o décimo primeiro mais alto de Portugal na Lista de montanhas de Portugal.[2] Fica na fronteira com a Galiza), segundo folha do Instituto Geográfico do Exército.",
+   "relevance": 1.0,
+   "id": "P5"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Montanha_do_Pico",
+   "sha256": "682db7bca67b8562b37d15ebce5515e025d44bfd3586248805f9415060b3bdb6",
+   "text": "Desde o ponto mais alto que no Inverno fica coberto de neve e onde a vegetação é muito escassa, resumindo-se a líquenes e outras entidades do mesmo nível trófico.",
+   "relevance": 0.75,
+   "id": "P6"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Montanha_do_Pico",
+   "sha256": "682db7bca67b8562b37d15ebce5515e025d44bfd3586248805f9415060b3bdb6",
+   "text": "A Montanha do Pico foi primeiramente classificada como reserva em março de 1972 para e por diploma datado de 12 de Maio de 1982[3] lhe ser atribuído o estatuto de Reserva Natural da Montanha do Pico pelo Decreto Regional 15/82/A.[4] que abarca uma área de aproximadamente 1500 hectares integrando a parte superior do vulcão e desenvolvendo-se a partir dos 1200 metros até ao ponto mais alto da ilha.",
+   "relevance": 0.75,
+   "id": "P7"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Montanha_do_Pico",
+   "sha256": "682db7bca67b8562b37d15ebce5515e025d44bfd3586248805f9415060b3bdb6",
+   "text": "É também o ponto mais alto da dorsal meso-atlântica, embora existam pontos mais altos em ilhas atlânticas, mas fora da dorsal.",
+   "relevance": 0.75,
+   "id": "P8"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/Geografia_de_Portugal",
+   "sha256": "4c9234bf762d9a63a3007db7dd797557d1cae299c9ab1d2b24026c36a51f301d",
+   "text": "ponto mais alto (continente): Torre da Serra da Estrela com 1 993 m",
+   "relevance": 0.75,
+   "id": "P9"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Serra_da_Estrela",
+   "sha256": "dbf172624731782ac470710d41decebf231dcb0bf1d84cfc0a238f73827f2502",
+   "text": "Por vezes existe alguma confusão quanto ao concelho em que este local se situa alegando que o ponto limite dos três concelhos não se localiza no ponto mais alto da serra, mas uns metros ao lado.",
+   "relevance": 0.75,
+   "id": "P10"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Pico_da_Nevosa",
+   "sha256": "61e03339d056015e5394074e1f5fd725db1cbe58f74f239a29dab3332bb8bf74",
+   "text": "Ponto mais alto",
+   "relevance": 0.75,
+   "id": "P11"
+  },
+  {
+   "seq": 8,
+   "url": "https://pt.wikipedia.org/wiki/Tr%C3%A1s-os-Montes_e_Alto_Douro",
+   "sha256": "6de3df3ae0fda800130bf1681625a1150d12ac7896028c6e4cd9c13e4ff4f81a",
+   "text": "Segundo o Recenseamento Agrícola de 2009, a Região Agrícola de Trás-os-Montes, que engloba todos os concelhos da Região de Trás-os-Montes e Alto Douro, exceto Mondim de Basto e Ribeira de Pena, e engloba mais 4 concelhos que estão fora de Trás-os-Montes e Alto Douro (Moimenta da Beira, Penedono, Sernancelhe e Tarouca), as áreas utilizadas para a produção dos principais produtos agrícolas são as seguintes:",
+   "relevance": 0.5,
+   "id": "P12"
+  }
+ ],
+ "synthesis_raw": "{\n  \"status\": \"partial\",\n  \"answer\": \"O ponto mais alto do território português é a Montanha do Pico, com 2.351 metros de altitude.\",\n  \"claims\": [\n    {\n      \"text\": \"A Montanha do Pico tem altitute máxima de 2 351 m de altitude na Ilha do Pico.\",\n      \"passage_ids\": [\n        \"P1\"\n      ],\n      \"quote\": \"É nas ilhas que se encontra o ponto mais Alto de Portugal, na Ilha do Pico com altitute máxima de 2 351 m de altitude na Montanha do Pico,\"\n    },\n    {\n      \"text\": \"O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.\",\n      \"passage_ids\": [\n        \"P2\"\n      ],\n      \"quote\": \"O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.\"\n    },\n    {\n      \"text\": \"Por vezes existe alguma confusão quanto ao concelho em que este local se situa alegando que o ponto limite dos três concelhos não se localiza no ponto mais alto da serra, mas uns metros ao lado.\",\n      \"passage_ids\": [\n        \"P10\"\n      ],\n      \"quote\": \"Por vezes existe alguma confusão quanto ao concelho em que este local se situa alegando que o ponto limite dos três concelhos não se localiza no ponto mais alto da serra, mas uns metros ao lado.\"\n    }\n  ],\n  \"conflicts\": [\n    {\n      \"text\": \"A Torre da Serra da Estrela é citada como ponto mais alto do continente com 1.993 m.\",\n      \"passage_ids\": [\n        \"P9\"\n      ],\n      \"quote\": \"ponto mais alto (continente): Torre da Serra da Estrela com 1 993 m\"\n    },\n    {\n      \"text\": \"O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.\",\n      \"passage_ids\": [\n        \"P2\"\n      ],\n      \"quote\": \"O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.\"\n    }\n  ],\n  \"uncertainty\": \"Existem pontos mais altos em ilhas atlânticas fora da dorsal meso-atlântica e a Torre da Serra da Estrela é considerada ponto mais alto do continente, mas há confusão quanto ao concelho onde o ponto limite dos municípios está localizado.\"\n}",
+ "synthesis_seconds": 46.99,
+ "synthesis_error": null,
+ "validation": {
+  "schema_valid": true,
+  "model_status": "partial",
+  "answer": "O ponto mais alto do território português é a Montanha do Pico, com 2.351 metros de altitude.",
+  "conflicts": [],
+  "uncertainty": "Existem pontos mais altos em ilhas atlânticas fora da dorsal meso-atlântica e a Torre da Serra da Estrela é considerada ponto mais alto do continente, mas há confusão quanto ao concelho onde o ponto limite dos municípios está localizado.",
+  "claims": [
+   {
+    "text": "A Montanha do Pico tem altitute máxima de 2 351 m de altitude na Ilha do Pico.",
+    "passage_ids": [
+     "P1"
+    ],
+    "quote": "É nas ilhas que se encontra o ponto mais Alto de Portugal, na Ilha do Pico com altitute máxima de 2 351 m de altitude na Montanha do Pico,",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 1.0,
+     "B_against": "Qual é o ponto mais alto de Portugal?",
+     "C_lexical_support": 0.86
+    },
+    "source": {
+     "seq": 3,
+     "url": "https://pt.wikipedia.org/wiki/Geografia_de_Portugal",
+     "sha256": "4c9234bf762d9a63a3007db7dd797557d1cae299c9ab1d2b24026c36a51f301d",
+     "passage_id": "P1"
+    },
+    "status": "GROUNDED"
+   },
+   {
+    "text": "O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.",
+    "passage_ids": [
+     "P2"
+    ],
+    "quote": "O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 1.0,
+     "B_against": "Qual é o ponto mais alto de Portugal?",
+     "C_lexical_support": 1.0
+    },
+    "source": {
+     "seq": 3,
+     "url": "https://pt.wikipedia.org/wiki/Geografia_de_Portugal",
+     "sha256": "4c9234bf762d9a63a3007db7dd797557d1cae299c9ab1d2b24026c36a51f301d",
+     "passage_id": "P2"
+    },
+    "status": "GROUNDED"
+   },
+   {
+    "text": "Por vezes existe alguma confusão quanto ao concelho em que este local se situa alegando que o ponto limite dos três concelhos não se localiza no ponto mais alto da serra, mas uns metros ao lado.",
+    "passage_ids": [
+     "P10"
+    ],
+    "quote": "Por vezes existe alguma confusão quanto ao concelho em que este local se situa alegando que o ponto limite dos três concelhos não se localiza no ponto mais alto da serra, mas uns metros ao lado.",
+    "checks": {
+     "A_integrity": true,
+     "B_relevance": 0.75,
+     "B_against": "Qual é o ponto mais alto de Portugal?",
+     "C_lexical_support": 1.0
+    },
+    "source": {
+     "seq": 5,
+     "url": "https://pt.wikipedia.org/wiki/Serra_da_Estrela",
+     "sha256": "dbf172624731782ac470710d41decebf231dcb0bf1d84cfc0a238f73827f2502",
+     "passage_id": "P10"
+    },
+    "status": "GROUNDED"
+   }
+  ],
+  "dropped": [],
+  "final": "PARTIAL"
+ },
+ "mode": "public",
+ "transport_guarantees": {
+  "transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+  "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+  "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+  "peer_check": "NÃO realizado (o peer é o proxy local)",
+  "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+  "production": false
+ },
+ "model": "qwen3.5:2b",
+ "seconds": 58.07,
+ "requests": 10,
+ "refused": [],
+ "timing": {
+  "plan_s": 13.53,
+  "network_and_search_s": 11.08,
+  "synthesis_s": 46.99,
+  "mission_total_s": 58.07
+ }
+}

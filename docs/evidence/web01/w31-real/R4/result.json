@@ -1,0 +1,236 @@
+{
+ "question": "Em que país nasceu o autor do romance Cem Anos de Solidão?",
+ "plan": {
+  "question": "Em que país nasceu o autor do romance Cem Anos de Solidão?",
+  "objective": "Identificar o país de nascimento do autor de 'Cem Anos de Solidão'.",
+  "subquestions": [
+   "Quem é o autor de 'Cem Anos de Solidão'?",
+   "Em que ano e lugar foi escrito este romance?",
+   "Qual a nacionalidade do escritor mencionado?"
+  ],
+  "queries": [
+   "quem escreveu cem anos de solidao",
+   "autor de cem anos de solidao nacionalidade",
+   "nascimento do autor de cem anos de solidao",
+   "origem do escritor de cem anos de solidao"
+  ],
+  "relevance_criteria": [
+   "localização geográfica precisa",
+   "nome completo do autor",
+   "data de nascimento ou morte",
+   "nacionalidade confirmada"
+  ],
+  "missing_info": [],
+  "source": "modelo:qwen3.5:2b"
+ },
+ "plan_meta": {
+  "attempts": 1,
+  "errors": [],
+  "seconds": 13.57,
+  "valid_model_plan": true,
+  "model": "qwen3.5:2b",
+  "normalised": [
+   "subquestions: 4 itens truncados para 3"
+  ],
+  "raw_excerpts": []
+ },
+ "steps": [
+  {
+   "query": "quem escreveu cem anos de solidao",
+   "reformulated": false,
+   "search_receipt": 1,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 2,
+     "url": "https://pt.wikipedia.org/wiki/Gabriel_Garc%C3%ADa_M%C3%A1rquez",
+     "status": "OK",
+     "relevance": 1.0
+    },
+    {
+     "receipt": 3,
+     "url": "https://pt.wikipedia.org/wiki/A_incr%C3%ADvel_e_triste_hist%C3%B3ria_de_C%C3%A2ndida_Er%C3%A9ndira_e_sua_av%C3%B3_desalmada",
+     "status": "OK",
+     "relevance": 1.0
+    }
+   ]
+  },
+  {
+   "query": "autor de cem anos de solidao nacionalidade",
+   "reformulated": false,
+   "search_receipt": 4,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 5,
+     "url": "https://pt.wikipedia.org/wiki/Bosco_Brasil",
+     "status": "OK",
+     "relevance": 0.57
+    },
+    {
+     "receipt": 6,
+     "url": "https://pt.wikipedia.org/wiki/Guerra_de_Canudos",
+     "status": "OK",
+     "relevance": 0.14
+    }
+   ]
+  },
+  {
+   "query": "nascimento do autor de cem anos de solidao",
+   "reformulated": false,
+   "search_receipt": 7,
+   "status": "OK",
+   "opened": [
+    {
+     "receipt": 8,
+     "url": "https://pt.wikipedia.org/wiki/Do_amor_e_outros_dem%C3%B4nios",
+     "status": "OK",
+     "relevance": 1.0
+    },
+    {
+     "receipt": 9,
+     "url": "https://pt.wikipedia.org/wiki/S%C3%B4nia_Coutinho",
+     "status": "OK",
+     "relevance": 0.86
+    }
+   ]
+  },
+  {
+   "query": "origem do escritor de cem anos de solidao",
+   "reformulated": false,
+   "search_receipt": 10,
+   "status": "OK",
+   "opened": []
+  }
+ ],
+ "passages": [
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Gabriel_Garc%C3%ADa_M%C3%A1rquez",
+   "sha256": "c3a272320191a255be61b8e066b73d072125c69d9c20f786914176b672bf549c",
+   "text": "Somente em 1967, quando publica Cem Anos de Solidão — obra prima que narra a história da família Buendía na cidade fictícia de Macondo, desde sua fundação até a sétima geração -, considerado um marco da literatura latino-americana e exemplo maior do estilo a partir de então denominado \"Realismo Fantástico\", é que o autor começa a ter seu talento reconhecido mundialmente.[11] Aclamado instantaneamente como um dos maio",
+   "relevance": 0.71,
+   "id": "P1"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/A_incr%C3%ADvel_e_triste_hist%C3%B3ria_de_C%C3%A2ndida_Er%C3%A9ndira_e_sua_av%C3%B3_desalmada",
+   "sha256": "107c6e2f5504550f6d3598678914f743ba9e3db779921f79ecedba158621f750",
+   "text": "Somente em 1967, quando publica Cem Anos de Solidão — obra prima que narra a história da família Buendía na cidade fictícia de Macondo, desde sua fundação até a sétima geração -, considerado um marco da literatura latino-americana e exemplo maior do estilo a partir de então denominado \"Realismo Fantástico\", é que o autor começa a ter seu talento reconhecido mundialmente.[11] Aclamado instantaneamente como um dos maio",
+   "relevance": 0.71,
+   "id": "P2"
+  },
+  {
+   "seq": 8,
+   "url": "https://pt.wikipedia.org/wiki/Do_amor_e_outros_dem%C3%B4nios",
+   "sha256": "d58c3accede16bb874d321ac153b5b54be8b94cfcc68bd7040106ed8cc2cee6c",
+   "text": "Somente em 1967, quando publica Cem Anos de Solidão — obra prima que narra a história da família Buendía na cidade fictícia de Macondo, desde sua fundação até a sétima geração -, considerado um marco da literatura latino-americana e exemplo maior do estilo a partir de então denominado \"Realismo Fantástico\", é que o autor começa a ter seu talento reconhecido mundialmente.[11] Aclamado instantaneamente como um dos maio",
+   "relevance": 0.71,
+   "id": "P3"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Gabriel_Garc%C3%ADa_M%C3%A1rquez",
+   "sha256": "c3a272320191a255be61b8e066b73d072125c69d9c20f786914176b672bf549c",
+   "text": "A morte do escritor repercutiu mundialmente, o presidente dos Estados Unidos da América Barack Obama declarou ser fã do autor, orgulhando-se de possuir um exemplar autografado por este de Cem Anos de Solidão e dizendo \"o mundo perdeu um dos maiores e mais visionários escritores, um dos meus preferidos desde que eu era jovem\", enquanto escritores como Luís Fernando Veríssimo declararam que García Márquez mudou a ótica",
+   "relevance": 0.57,
+   "id": "P4"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/A_incr%C3%ADvel_e_triste_hist%C3%B3ria_de_C%C3%A2ndida_Er%C3%A9ndira_e_sua_av%C3%B3_desalmada",
+   "sha256": "107c6e2f5504550f6d3598678914f743ba9e3db779921f79ecedba158621f750",
+   "text": "A morte do escritor repercutiu mundialmente, o presidente dos Estados Unidos da América Barack Obama declarou ser fã do autor, orgulhando-se de possuir um exemplar autografado por este de Cem Anos de Solidão e dizendo \"o mundo perdeu um dos maiores e mais visionários escritores, um dos meus preferidos desde que eu era jovem\", enquanto escritores como Luís Fernando Veríssimo declararam que García Márquez mudou a ótica",
+   "relevance": 0.57,
+   "id": "P5"
+  },
+  {
+   "seq": 8,
+   "url": "https://pt.wikipedia.org/wiki/Do_amor_e_outros_dem%C3%B4nios",
+   "sha256": "d58c3accede16bb874d321ac153b5b54be8b94cfcc68bd7040106ed8cc2cee6c",
+   "text": "A morte do escritor repercutiu mundialmente, o presidente dos Estados Unidos da América Barack Obama declarou ser fã do autor, orgulhando-se de possuir um exemplar autografado por este de Cem Anos de Solidão e dizendo \"o mundo perdeu um dos maiores e mais visionários escritores, um dos meus preferidos desde que eu era jovem\", enquanto escritores como Luís Fernando Veríssimo declararam que García Márquez mudou a ótica",
+   "relevance": 0.57,
+   "id": "P6"
+  },
+  {
+   "seq": 2,
+   "url": "https://pt.wikipedia.org/wiki/Gabriel_Garc%C3%ADa_M%C3%A1rquez",
+   "sha256": "c3a272320191a255be61b8e066b73d072125c69d9c20f786914176b672bf549c",
+   "text": "Cem anos de solidão (PDF). 1 48ª ed.",
+   "relevance": 0.43,
+   "id": "P7"
+  },
+  {
+   "seq": 3,
+   "url": "https://pt.wikipedia.org/wiki/A_incr%C3%ADvel_e_triste_hist%C3%B3ria_de_C%C3%A2ndida_Er%C3%A9ndira_e_sua_av%C3%B3_desalmada",
+   "sha256": "107c6e2f5504550f6d3598678914f743ba9e3db779921f79ecedba158621f750",
+   "text": "Cem anos de solidão (PDF). 1 48ª ed.",
+   "relevance": 0.43,
+   "id": "P8"
+  },
+  {
+   "seq": 8,
+   "url": "https://pt.wikipedia.org/wiki/Do_amor_e_outros_dem%C3%B4nios",
+   "sha256": "d58c3accede16bb874d321ac153b5b54be8b94cfcc68bd7040106ed8cc2cee6c",
+   "text": "Cem anos de solidão (PDF). 1 48ª ed.",
+   "relevance": 0.43,
+   "id": "P9"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Bosco_Brasil",
+   "sha256": "60c964e91a73bcec2075f9f110026e56fa044d8fccb2855ae331d380ffb29c22",
+   "text": "Bosco Brasil é um dos autores teatrais mais premiados do país, com diversos prêmios e indicações, além de inúmeras montagens de seus textos no exterior.",
+   "relevance": 0.29,
+   "id": "P10"
+  },
+  {
+   "seq": 5,
+   "url": "https://pt.wikipedia.org/wiki/Bosco_Brasil",
+   "sha256": "60c964e91a73bcec2075f9f110026e56fa044d8fccb2855ae331d380ffb29c22",
+   "text": "Bosco inicia sua carreira nos anos 80 como autor de radionovelas, escrevendo para A Grande Novela Gessy Lever - Projeto Radiocriatividade.",
+   "relevance": 0.29,
+   "id": "P11"
+  },
+  {
+   "seq": 6,
+   "url": "https://pt.wikipedia.org/wiki/Guerra_de_Canudos",
+   "sha256": "5bb34d769b2cbfec807095a1b762b0bb5b04a11b7e6ca87648163b2ffe7f8a2d",
+   "text": "Com o advento da república e da federalização do país, e a subsequente autonomia fiscal, acarretando a necessidade de novas receitas próprias, empreendeu-se combater a evasão fiscal e taxar as transações comerciais nas feiras rurais e instituir direitos de lugar — um dia, Antônio Conselheiro defendeu com veemência contra as autoridades uma feirante incapaz de pagar sua patente.",
+   "relevance": 0.29,
+   "id": "P12"
+  }
+ ],
+ "synthesis_raw": "{\n  \"status\": \"insufficient\",\n  \"answer\": \"\",\n  \"claims\": [],\n  \"conflicts\": [],\n  \"uncertainty\": \"Não há informações sobre o país de nascimento do autor Gabriel García Márquez nas passagens fornecidas.\"\n}",
+ "synthesis_seconds": 11.5,
+ "synthesis_error": null,
+ "validation": {
+  "schema_valid": true,
+  "model_status": "insufficient",
+  "answer": "",
+  "conflicts": [],
+  "uncertainty": "Não há informações sobre o país de nascimento do autor Gabriel García Márquez nas passagens fornecidas.",
+  "claims": [],
+  "dropped": [],
+  "final": "ABSTAIN"
+ },
+ "mode": "public",
+ "transport_guarantees": {
+  "transport": "session_proxy (EXPERIMENTAL, só validação em sandbox)",
+  "dns": "DELEGADO ao proxy da sessão — NÃO verificado localmente",
+  "pinning": "NÃO aplicável (a ligação é feita pelo proxy)",
+  "peer_check": "NÃO realizado (o peer é o proxy local)",
+  "tls": "verificado contra a CA do proxy da sessão (o proxy re-termina o TLS)",
+  "production": false
+ },
+ "model": "qwen3.5:2b",
+ "seconds": 18.9,
+ "requests": 10,
+ "refused": [],
+ "timing": {
+  "plan_s": 13.57,
+  "network_and_search_s": 7.4,
+  "synthesis_s": 11.5,
+  "mission_total_s": 18.9
+ }
+}

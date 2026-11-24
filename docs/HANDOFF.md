@@ -4181,3 +4181,26 @@ See `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3.1.
 **Reuse first:** Qwen, Goose, OpenJarvis and the RIGHTWARE components come before any new engine.
 
 **Scope:** research, finance, voice, memory, learning and task execution. Full text in `docs/ARCHITECTURE.md`.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.1-REAL → `W3_1_REAL_VALIDATION_PARTIAL`
+**CI:** the UI-02 run on `5e3b869` had failed because the U9 scenario had no free-research capability in the CI server. Fixed in `e506534`: the CI server now registers the real W3.1 executor with a scripted [FAKE-CI] model. Push run 45349063871: success.
+
+**Real validation** (`OP-W31-REAL-20261124`, pt.wikipedia.org, `session_proxy` experimental):
+- 5 frozen unseen questions (sha `a2384d35…`), driven through the HUD with real Qwen 2b;
+- 5 missions, 50/50 requests, 0 refused, 0 out-of-policy;
+- result: 3/5 adequate (R1, R3, R5), so the ≥4/5 threshold is NOT met;
+- all safety criteria met;
+- 5/5 valid model plans, no fallback.
+
+**Root causes (generic):**
+1. Passage selection misses infobox facts that were in opened pages (R2–R5).
+2. The free-text model answer can contain an ungrounded false statement (R2, "meados do século XX"), shown as NOT verified.
+3. No sufficiency stop: every mission spends the full budget.
+
+**Evidence:** `docs/evidence/web01/w31-real/`.
+
+**Shutdown:** experimental policy deleted; versioned policy `network_enabled=false`; GUI stopped; no tunnel.
+
+**Regressions:** venv OK with 0 skips; plain Python OK.
+
+**Not done:** production readiness; general autonomy; W4, voice, memory, tunnel. PR #32 still Draft; no merge. UI-02/B6 untouched for the 15:00 demo.

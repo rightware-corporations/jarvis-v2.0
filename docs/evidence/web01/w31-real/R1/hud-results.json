@@ -1,0 +1,163 @@
+[
+  {
+    "id": "U9",
+    "action": "Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)",
+    "expected": "plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)",
+    "obtained": {
+      "question": "Qual é o ponto mais alto de Portugal?",
+      "plan": "Decisão: O modelo propôs pesquisa externa; o anfitrião exige plano e código. (host (proposta do modelo))\n\nPlano: modelo:qwen3.5:2b\n\nObjectivo: Identificar o ponto geográfico mais elevado de Portugal.\n\nSubperguntas: Qual a coordenada geográfica do pico mais alto?; Onde localiza-se este ponto no território português?; Quais são as alturas dos principais picos próximos?\n\nConsultas: «qual é a altura do pico mais alto de Portugal»; «onde fica o ponto mais elevado de Portugal»; «alturas dos maiores montes de Portugal»; «nome oficial do ponto mais alto de Portugal»\n\nCritérios de relevância: preciso da coordenada geográfica exata; preciso da localização no mapa; preciso comparar com outros picos próximos; preciso confirmar o nome oficial\n\nLimites (política do anfitrião, não do modelo): modo public, servidores pt.wikipedia.org, até 10 pedidos e 90 s.\n\nPara executar ESTE plano escreva /autorizar 8757E0 (uso único, 2 min). Sem o código, nada acontece.\n\nrw-c248c7b31cd172bf",
+      "code_present": true,
+      "last": {
+        "state": "EXECUCAO_PARCIAL",
+        "label": "Execução parcialmente concluída — resultado não verificado",
+        "verified": false,
+        "capability": "pesquisa-livre",
+        "operational_state": "FREE_RESEARCH_PARTIAL_PUBLIC",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 5,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 8,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 9,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 10,
+            "tool": "web_search_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [
+          {
+            "id": "C1",
+            "status": "GROUNDED",
+            "receipt": 3
+          },
+          {
+            "id": "C2",
+            "status": "GROUNDED",
+            "receipt": 3
+          },
+          {
+            "id": "C3",
+            "status": "GROUNDED",
+            "receipt": 5
+          }
+        ],
+        "changes": [],
+        "commentary_unverified": "O ponto mais alto do território português é a Montanha do Pico, com 2.351 metros de altitude.\n\nIncerteza: Existem pontos mais altos em ilhas atlânticas fora da dorsal meso-atlântica e a Torre da Serra da Estrela é considerada ponto mais alto do continente, mas há confusão quanto ao concelho onde o ponto limite dos municípios está localizado.",
+        "seconds": 58.07,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Modo: INTERNET PÚBLICA (leitura real, allowlist autorizada)",
+          "Pergunta: Qual é o ponto mais alto de Portugal?",
+          "Plano: modelo:qwen3.5:2b; consultas: qual é a altura do pico mais alto de Portugal; onde fica o ponto mais elevado de Portugal; alturas dos maiores montes de Portugal; nome oficial do ponto mais alto de Portugal",
+          "C1 [GROUNDED] A Montanha do Pico tem altitute máxima de 2 351 m de altitude na Ilha do Pico. — fonte #3: «É nas ilhas que se encontra o ponto mais Alto de Portugal, na Ilha do Pico com altitute máxima de 2 351 m de altitude na Montanha do Pico,» (relevância 1.0, suporte lexical 0.86)",
+          "C2 [GROUNDED] O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude. — fonte #3: «O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.» (relevância 1.0, suporte lexical 1.0)",
+          "C3 [GROUNDED] Por vezes existe alguma confusão quanto ao concelho em que este local se situa alegando que o ponto limite dos três concelhos não se localiza no ponto mais alto da serra, mas uns metros ao lado. — fonte #5: «Por vezes existe alguma confusão quanto ao concelho em que este local se situa alegando que o ponto limite dos três concelhos não se localiza no ponto mais alto da serra, mas uns metros ao lado.» (relevância 0.75, suporte lexical 1.0)"
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://pt.wikipedia.org/wiki/Montanha_do_Pico",
+            "fetched_at": "2026-11-24T07:35:57.269622Z",
+            "sha256": "682db7bca67b8562b37d15ebce5515e025d44bfd3586248805f9415060b3bdb6",
+            "bytes": 199707,
+            "supports": []
+          },
+          {
+            "seq": 3,
+            "url": "https://pt.wikipedia.org/wiki/Geografia_de_Portugal",
+            "fetched_at": "2026-11-24T07:35:59.332952Z",
+            "sha256": "4c9234bf762d9a63a3007db7dd797557d1cae299c9ab1d2b24026c36a51f301d",
+            "bytes": 340121,
+            "supports": [
+              "C1",
+              "C2"
+            ]
+          },
+          {
+            "seq": 5,
+            "url": "https://pt.wikipedia.org/wiki/Serra_da_Estrela",
+            "fetched_at": "2026-11-24T07:36:00.642492Z",
+            "sha256": "dbf172624731782ac470710d41decebf231dcb0bf1d84cfc0a238f73827f2502",
+            "bytes": 167816,
+            "supports": [
+              "C3"
+            ]
+          },
+          {
+            "seq": 6,
+            "url": "https://pt.wikipedia.org/wiki/Pico_da_Nevosa",
+            "fetched_at": "2026-11-24T07:36:01.780450Z",
+            "sha256": "61e03339d056015e5394074e1f5fd725db1cbe58f74f239a29dab3332bb8bf74",
+            "bytes": 82579,
+            "supports": []
+          },
+          {
+            "seq": 8,
+            "url": "https://pt.wikipedia.org/wiki/Tr%C3%A1s-os-Montes_e_Alto_Douro",
+            "fetched_at": "2026-11-24T07:36:03.642349Z",
+            "sha256": "6de3df3ae0fda800130bf1681625a1150d12ac7896028c6e4cd9c13e4ff4f81a",
+            "bytes": 144875,
+            "supports": []
+          },
+          {
+            "seq": 9,
+            "url": "https://pt.wikipedia.org/wiki/Montes_(Tomar)",
+            "fetched_at": "2026-11-24T07:36:04.810597Z",
+            "sha256": "10a1382a842d96530187ddc7655388253f18e982bcf84db4903d3d63dd14fe69",
+            "bytes": 180523,
+            "supports": []
+          }
+        ]
+      },
+      "timeline": "Execução parcialmente concluída — resultado não verificado · FREE_RESEARCH_PARTIAL_PUBLIC · 58.1 s\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_open_public OK\n#4 web_search_public OK\n#5 web_open_public OK\n#6 web_open_public OK\n#7 web_search_public OK\n#8 web_open_public OK\n#9 web_open_public OK\n#10 web_search_public OK\nOBJECTIVOS\nC1: GROUNDED (#3)\nC2: GROUNDED (#3)\nC3: GROUNDED (#5)\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nModo: INTERNET PÚBLICA (leitura real, allowlist autorizada)\nPergunta: Qual é o ponto mais alto de Portugal?\nPlano: modelo:qwen3.5:2b; consultas: qual é a altura do pico mais alto de Portugal; onde fica o ponto mais elevado de Portugal; alturas dos maiores montes de Portugal; nome oficial do ponto mais alto de Portugal\nC1 [GROUNDED] A Montanha do Pico tem altitute máxima de 2 351 m de altitude na Ilha do Pico. — fonte #3: «É nas ilhas que se encontra o ponto mais Alto de Portugal, na Ilha do Pico com altitute máxima de 2 351 m de altitude na Montanha do Pico,» (relevância 1.0, suporte lexical 0.86)\nC2 [GROUNDED] O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude. — fonte #3: «O ponto mais alto do território português é a Montanha do Pico, situada na Ilha do Pico, arquipélago de Açores, com 2 351 metros de altitude.» (relevância 1.0, suporte lexical 1.0)\nC3 [GROUNDED] Por vezes existe alguma confusão quanto ao concelh"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R1/u9-plan.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R1/u9-result.png"
+    ],
+    "pass": true,
+    "mode": "real"
+  }
+]

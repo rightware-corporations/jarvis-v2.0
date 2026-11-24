@@ -1,0 +1,140 @@
+[
+  {
+    "id": "U9",
+    "action": "Pergunta livre na conversa → plano → código → pesquisa → resposta com citações (W3.1)",
+    "expected": "plano proposto sem rede; código obrigatório; estado final honesto (nunca VERIFICADO para pergunta livre)",
+    "obtained": {
+      "question": "Em que país nasceu o autor do romance Cem Anos de Solidão?",
+      "plan": "Solidão?\n\nDecisão: O modelo propôs pesquisa externa; o anfitrião exige plano e código. (host (proposta do modelo))\n\nPlano: modelo:qwen3.5:2b\n\nObjectivo: Identificar o país de nascimento do autor de 'Cem Anos de Solidão'.\n\nSubperguntas: Quem é o autor de 'Cem Anos de Solidão'?; Em que ano e lugar foi escrito este romance?; Qual a nacionalidade do escritor mencionado?\n\nConsultas: «quem escreveu cem anos de solidao»; «autor de cem anos de solidao nacionalidade»; «nascimento do autor de cem anos de solidao»; «origem do escritor de cem anos de solidao»\n\nCritérios de relevância: localização geográfica precisa; nome completo do autor; data de nascimento ou morte; nacionalidade confirmada\n\nLimites (política do anfitrião, não do modelo): modo public, servidores pt.wikipedia.org, até 10 pedidos e 90 s.\n\nPara executar ESTE plano escreva /autorizar 02FF34 (uso único, 2 min). Sem o código, nada acontece.\n\nrw-d8a96a5e9789c448",
+      "code_present": true,
+      "last": {
+        "state": "RESULTADO_DESCONHECIDO",
+        "label": "Resultado desconhecido — sem provas suficientes",
+        "verified": false,
+        "capability": "pesquisa-livre",
+        "operational_state": "FREE_RESEARCH_ABSTAIN_PUBLIC",
+        "receipts": [
+          {
+            "seq": 1,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 2,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 3,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 4,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 5,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 6,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 7,
+            "tool": "web_search_public",
+            "status": "OK"
+          },
+          {
+            "seq": 8,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 9,
+            "tool": "web_open_public",
+            "status": "OK"
+          },
+          {
+            "seq": 10,
+            "tool": "web_search_public",
+            "status": "OK"
+          }
+        ],
+        "objectives": [],
+        "changes": [],
+        "commentary_unverified": "",
+        "seconds": 18.9,
+        "error_code": "NONE",
+        "halt": "NONE",
+        "findings": [
+          "Modo: INTERNET PÚBLICA (leitura real, allowlist autorizada)",
+          "Pergunta: Em que país nasceu o autor do romance Cem Anos de Solidão?",
+          "Plano: modelo:qwen3.5:2b; consultas: quem escreveu cem anos de solidao; autor de cem anos de solidao nacionalidade; nascimento do autor de cem anos de solidao; origem do escritor de cem anos de solidao",
+          "O JARVIS abstém-se: evidência insuficiente nas fontes consultadas."
+        ],
+        "sources": [
+          {
+            "seq": 2,
+            "url": "https://pt.wikipedia.org/wiki/Gabriel_Garc%C3%ADa_M%C3%A1rquez",
+            "fetched_at": "2026-11-24T07:39:47.801957Z",
+            "sha256": "c3a272320191a255be61b8e066b73d072125c69d9c20f786914176b672bf549c",
+            "bytes": 342160,
+            "supports": []
+          },
+          {
+            "seq": 3,
+            "url": "https://pt.wikipedia.org/wiki/A_incr%C3%ADvel_e_triste_hist%C3%B3ria_de_C%C3%A2ndida_Er%C3%A9ndira_e_sua_av%C3%B3_desalmada",
+            "fetched_at": "2026-11-24T07:39:48.384622Z",
+            "sha256": "107c6e2f5504550f6d3598678914f743ba9e3db779921f79ecedba158621f750",
+            "bytes": 342838,
+            "supports": []
+          },
+          {
+            "seq": 5,
+            "url": "https://pt.wikipedia.org/wiki/Bosco_Brasil",
+            "fetched_at": "2026-11-24T07:39:50.007978Z",
+            "sha256": "60c964e91a73bcec2075f9f110026e56fa044d8fccb2855ae331d380ffb29c22",
+            "bytes": 278779,
+            "supports": []
+          },
+          {
+            "seq": 6,
+            "url": "https://pt.wikipedia.org/wiki/Guerra_de_Canudos",
+            "fetched_at": "2026-11-24T07:39:50.599463Z",
+            "sha256": "5bb34d769b2cbfec807095a1b762b0bb5b04a11b7e6ca87648163b2ffe7f8a2d",
+            "bytes": 524288,
+            "supports": []
+          },
+          {
+            "seq": 8,
+            "url": "https://pt.wikipedia.org/wiki/Do_amor_e_outros_dem%C3%B4nios",
+            "fetched_at": "2026-11-24T07:39:52.034477Z",
+            "sha256": "d58c3accede16bb874d321ac153b5b54be8b94cfcc68bd7040106ed8cc2cee6c",
+            "bytes": 342634,
+            "supports": []
+          },
+          {
+            "seq": 9,
+            "url": "https://pt.wikipedia.org/wiki/S%C3%B4nia_Coutinho",
+            "fetched_at": "2026-11-24T07:39:52.569300Z",
+            "sha256": "c417f79e4eb4a72ecbfefe1a4ff3a74b5e165f4b6308ada7da3e390027efe54a",
+            "bytes": 144820,
+            "supports": []
+          }
+        ]
+      },
+      "timeline": "Resultado desconhecido — sem provas suficientes · FREE_RESEARCH_ABSTAIN_PUBLIC · 18.9 s\nRECIBOS (FERRAMENTAS EXECUTADAS)\n#1 web_search_public OK\n#2 web_open_public OK\n#3 web_open_public OK\n#4 web_search_public OK\n#5 web_open_public OK\n#6 web_open_public OK\n#7 web_search_public OK\n#8 web_open_public OK\n#9 web_open_public OK\n#10 web_search_public OK\nRESULTADO (CALCULADO PELO CÓDIGO A PARTIR DOS RECIBOS)\nModo: INTERNET PÚBLICA (leitura real, allowlist autorizada)\nPergunta: Em que país nasceu o autor do romance Cem Anos de Solidão?\nPlano: modelo:qwen3.5:2b; consultas: quem escreveu cem anos de solidao; autor de cem anos de solidao nacionalidade; nascimento do autor de cem anos de solidao; origem do escritor de cem anos de solidao\nO JARVIS abstém-se: evidência insuficiente nas fontes consultadas.\nFONTES (RECIBOS DE LEITURA)\n#2 https://pt.wikipedia.org/wiki/Gabriel_Garc%C3%ADa_M%C3%A1rquez\n2026-11-24T07:39:47.801957Z · sha256 c3a272320191a255… · 342160 B\n#3 https://pt.wikipedia.org/wiki/A_incr%C3%ADvel_e_triste_hist%C3%B3ria_de_C%C3%A2ndida_Er%C3%A9ndira_e_sua_av%C3%B3_desalmada\n2026-11-24T07:39:48.384622Z · sha256 107c6e2f5504550f… · 342838 B\n#5 https://pt.wikipedia.org/wiki/Bosco_Brasil\n2026-11-24T07:39:50.007978Z · sha256 60c964e91a73bcec… · 278779 B\n#6 https://pt.wikipedia.org/wiki/Guerra_de_Canudos\n2026-11-24T07:39:50.599463Z · sha256 5bb34d769b2cbfec… · 524288 B\n#8 https://pt.wikipedia.org/wiki/Do_amor_e_outros_dem%C3%B4nios\n2026-11-24T07:39:52.034477Z · sha256 d58c3accede16b"
+    },
+    "evidence": [
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R4/u9-plan.png",
+      "/tmp/claude-0/-home-user-jarvis-v2-0/97881f5a-7499-52ed-9225-a1791cbc6c5b/scratchpad/w31r/R4/u9-result.png"
+    ],
+    "pass": true,
+    "mode": "real"
+  }
+]
