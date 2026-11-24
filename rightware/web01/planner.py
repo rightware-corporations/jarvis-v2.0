@@ -160,8 +160,11 @@ def validate_plan(raw: str, question: str, source: str, notes: list | None = Non
     queries = _strings(d["queries"], *LIMITS["queries"], "queries", n_min=1, notes=notes)
     q_stems = {t[:4] for t in content_terms(question)}
     parts_raw = d["answer_parts"]
-    if isinstance(parts_raw, list) and any(isinstance(p, str) and not ({t[:4] for t in content_terms(p)} & q_stems)
-                                          for p in parts_raw):
+    def _from_question(p: str) -> bool:      # a part DESCRIBES the question: mostly its words, short
+        ps = {t[:4] for t in content_terms(p)}
+        return bool(ps) and len(p) <= 120 and len(ps & q_stems) / len(ps) >= 0.6
+
+    if isinstance(parts_raw, list) and any(isinstance(p, str) and not _from_question(p) for p in parts_raw):
         if notes is not None:            # parts that are answers (not words of the question) → host decomposition
             notes.append("answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião")
         parts_raw = list(host_parts(question))

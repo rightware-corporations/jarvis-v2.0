@@ -1,0 +1,133 @@
+[
+ {
+  "id": "R1",
+  "question": "Qual é o ponto mais alto de Portugal?",
+  "adequate": true,
+  "final": "GROUNDED",
+  "parts": [
+   "Qual é o ponto mais alto de Portugal"
+  ],
+  "answer_lines": [
+   "Qual é o ponto mais alto de Portugal — A Montanha do Pico é a mais alta montanha de Portugal. [fonte #2]"
+  ],
+  "accepted": 1,
+  "rejected": 2,
+  "rejected_reasons": [
+   "citação não existe na evidência citada",
+   "evidência inexistente (referência inventada)"
+  ],
+  "candidates": 4,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 38.5,
+  "synthesis_s": 23.7,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R2",
+  "question": "Quem descobriu a penicilina e em que ano?",
+  "adequate": true,
+  "final": "GROUNDED",
+  "parts": [
+   "Quem descobriu a penicilina",
+   "em que ano"
+  ],
+  "answer_lines": [
+   "Quem descobriu a penicilina — Alexander Fleming descobriu a penicilina em 1928. [fonte #2]",
+   "em que ano — Alexander Fleming descobriu a penicilina em 1928. [fonte #2]"
+  ],
+  "accepted": 2,
+  "rejected": 0,
+  "rejected_reasons": [],
+  "candidates": 5,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 32.59,
+  "synthesis_s": 18.18,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R3",
+  "question": "Qual é a capital do Quénia e qual é a moeda oficial do país?",
+  "adequate": false,
+  "final": "PARTIAL",
+  "parts": [
+   "Qual é a capital do Quénia",
+   "qual é a moeda oficial do país"
+  ],
+  "answer_lines": [
+   "Qual é a capital do Quénia — A capital do Quénia é Nairobi. [fonte #2]",
+   "qual é a moeda oficial do país — sem evidência suficiente nas fontes consultadas."
+  ],
+  "accepted": 1,
+  "rejected": 2,
+  "rejected_reasons": [
+   "entidade sem suporte: queni",
+   "negação não corresponde à citação"
+  ],
+  "candidates": 9,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 42.95,
+  "synthesis_s": 28.21,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R4",
+  "question": "Em que país nasceu o autor do romance Cem Anos de Solidão?",
+  "adequate": false,
+  "final": "ABSTAIN",
+  "parts": [
+   "Em que país nasceu o autor do romance Cem Anos de Solidão"
+  ],
+  "answer_lines": [
+   "Em que país nasceu o autor do romance Cem Anos de Solidão — sem evidência suficiente nas fontes consultadas.",
+   "Nota fundamentada: O autor escreveu apenas um livro. [fonte #2]"
+  ],
+  "accepted": 1,
+  "rejected": 2,
+  "rejected_reasons": [
+   "termos sem suporte na citação: auto, roma",
+   "termos sem suporte na citação: fami, filh"
+  ],
+  "candidates": 4,
+  "plan_valid_model": true,
+  "plan_normalised": [
+   "answer_parts do modelo rejeitadas (não descrevem a pergunta); usada a decomposição do anfitrião"
+  ],
+  "seconds": 35.32,
+  "synthesis_s": 20.7,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R5",
+  "question": "Em que ano Albert Einstein recebeu o Prémio Nobel da Química?",
+  "adequate": true,
+  "final": "ABSTAIN",
+  "parts": [
+   "Albert Einstein não recebeu o Prémio Nobel da Química, pois ele foi premiado com a Prêmio Nobel de Física em 1921 por sua teoria da relatividade.",
+   "O Prémio Nobel da Química é concedido anualmente ao pesquisador que mais contribuiu para o desenvolvimento da química e das ciências relacionadas.",
+   "A primeira pessoa a receber o Prémio Nobel da Química foi Marie Curie, em 1903."
+  ],
+  "answer_lines": [
+   "Albert Einstein não recebeu o Prémio Nobel da Química, pois ele foi premiado com a Prêmio Nobel de Física em 1921 por sua teoria da relatividade. — sem evidência suficiente nas fontes consultadas.",
+   "O Prémio Nobel da Química é concedido anualmente ao pesquisador que mais contribuiu para o desenvolvimento da química e das ciências relacionadas. — sem evidência suficiente nas fontes consultadas.",
+   "A primeira pessoa a receber o Prémio Nobel da Química foi Marie Curie, em 1903. — sem evidência suficiente nas fontes consultadas."
+  ],
+  "accepted": 0,
+  "rejected": 0,
+  "rejected_reasons": [],
+  "candidates": 13,
+  "plan_valid_model": true,
+  "plan_normalised": [],
+  "seconds": 91.53,
+  "synthesis_s": 71.11,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ }
+]
