@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -28,6 +29,12 @@ def main(argv=None) -> int:
     s.add_argument("--public-origin", help="B6: origem HTTPS exacta de um túnel privado autenticado (ex.: "
                    "https://<id>-8000.euw.devtunnels.ms); activa o modo de acesso privado temporário")
     s.add_argument("--public-minutes", type=float, default=60.0, help="B6: duração máxima do acesso privado (1–60)")
+    s.add_argument("--ambiente", choices=("cloud", "local", "unknown"), default="unknown",
+                   help="OP01: onde este servidor corre (declarado pelo anfitrião; o JARVIS di-lo com verdade)")
+    s.add_argument("--pesquisa-sites", default="",
+                   help="OP01 ANFITRIÃO: hosts EXACTOS (separados por vírgula) que a ferramenta de pesquisa pode ler; "
+                        "exige --pesquisa-autorizacao")
+    s.add_argument("--pesquisa-autorizacao", default="", help="OP01: referência da autorização de rede do operador")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
     if a.cmd == "setup":
@@ -58,10 +65,21 @@ def main(argv=None) -> int:
             p.error("--missao-goose exige --goose-bin, --goose-ollama-dir e --goose-models-dir (anfitrião)")
         from rightware.goose_adapter import GooseMission, GooseRuntime
         goose = GooseMission(GooseRuntime(a.goose_bin, a.goose_ollama_dir, a.goose_models_dir, a.goose_model))
+    sites, fetcher, label = (), None, ""
+    if a.pesquisa_sites:
+        if not a.pesquisa_autorizacao.strip():
+            p.error("--pesquisa-sites exige --pesquisa-autorizacao (autorização de rede específica do operador)")
+        sites = tuple(h.strip().lower() for h in a.pesquisa_sites.split(",") if h.strip())
+        if not sites or any(not re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}", h) for h in sites):
+            p.error("--pesquisa-sites: só hosts exactos (sem esquema, porta, caminho ou wildcard)")
     from rightware.gui.server import build_app, serve
     app, _ = build_app(port=a.port, models=a.model or ["qwen3.5:2b"], deadline=a.deadline, trial=a.tarefa_ensaio,
                        goose=goose, public_origin=a.public_origin,
-                       public_minutes=a.public_minutes if a.public_origin else None)
+                       public_minutes=a.public_minutes if a.public_origin else None, environment=a.ambiente,
+                       tool_sites=sites, browser_fetcher=fetcher, tool_label=label)
+    if sites:
+        print(f"OP01: pesquisa activada só para {', '.join(sites)}"
+              + (f" (autorização {a.pesquisa_autorizacao})" if a.pesquisa_autorizacao else f" [{label}]"), flush=True)
     print("JARVIS (RIGHTWARE JARVIS HUD sobre a interface OpenJarvis original), só em 127.0.0.1.", flush=True)
     if a.public_origin:                          # never print the login link: it would land in logs
         import time

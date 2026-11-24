@@ -50,9 +50,26 @@ def build_entries(models: list[str], deadline: float, adapter_factory=None) -> d
 def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: bool = False, goose=None,
               runtime: Path | None = None, inner=None, adapter_factory=None, session_factory_builder=None,
               auth: LocalAuth | None = None, static_dir: Path | None = None, public_origin: str | None = None,
-              public_minutes: float | None = None):
+              public_minutes: float | None = None, environment: str = "unknown", tool_sites: tuple[str, ...] = (),
+              browser_fetcher=None, tool_label: str = ""):
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
+    adapters: dict = {}
+    if adapter_factory is None:                   # OP01: every GUI model gets the host-built JARVIS persona
+        from rightware.persona import RuntimeFacts, system_prompt
+        tools = (("pesquisa e leitura de páginas web nas fontes autorizadas" + (f" ({tool_label})" if tool_label else ""),)
+                 if tool_sites else ())
+
+        def adapter_factory(m):
+            prompt = system_prompt(RuntimeFacts(model=m, environment=environment, tools=tools, sites=tuple(tool_sites)))
+            if tool_sites:
+                from rightware.assistant_tools import ToolChatAdapter
+                adapters[m] = ToolChatAdapter(m, sites=tuple(tool_sites), persona=prompt, browser_fetcher=browser_fetcher,
+                                              timeout_seconds=deadline)
+            else:
+                from rightware.text_adapter import LocalSimpleTextAdapter
+                adapters[m] = LocalSimpleTextAdapter(m, timeout_seconds=min(deadline, 300.0), system_prompt=prompt)
+            return adapters[m]
     entries = build_entries(models, deadline, adapter_factory)
     control = None
     if trial or goose is not None or session_factory_builder is not None:
@@ -62,6 +79,7 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
                                session_factory_builder=session_factory_builder, goose=goose)
         entries[models[0]] = control.entry
     bridge = ChatBridge(entries=entries, default_model=models[0], control=control, audit=audit)
+    bridge.adapters = adapters                    # OP01: live activity of tool-using turns (HUD)
     inner = inner if inner is not None else build_inner(models[0], p["home"])
     public_until = None
     if public_origin is not None:                 # B6 private access: single-use link, expiring sessions and access

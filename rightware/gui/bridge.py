@@ -483,7 +483,18 @@ class ChatBridge:
                      "elapsed": round(time.monotonic() - self.task_started, 1)
                      if running and self.task_started else None},
             "last": self.outcome_dict(self.task_outcome) if not running else None,
+            "activity": self.activity(),
         }
+
+    def activity(self) -> dict | None:
+        """OP01: real phase of the current tool-using chat turn (from the live AgentPolicy log), else None."""
+        adapter = (getattr(self, "adapters", None) or {}).get(self.default_model)
+        fn = getattr(adapter, "activity", None)
+        if not callable(fn):
+            return None
+        a = fn()
+        return {"phase": a["phase"], "tool_calls": a["tool_calls"], "sources": a["sources"],
+                "seconds": round(time.monotonic() - a["since"], 1)}
 
     def task_api(self, action: str, req) -> tuple[int, dict]:
         from rightware.control_plane import LABELS, State

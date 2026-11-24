@@ -10,6 +10,16 @@ export function coreLabel(mode: string, queue: number): string {
   return mode === 'thinking' && queue > 1 ? `${base} · ${t('core.queue', { n: queue })}` : base;
 }
 
+// OP01: phases reported by the backend (rightware.assistant_tools.activity) → i18n keys. Unknown phases are ignored.
+const PHASES: Record<string, string> = {
+  'A interpretar': 'activity.interpreting', 'A pesquisar': 'activity.searching',
+  'A consultar fontes': 'activity.reading', 'A analisar': 'activity.analysing', 'Resposta concluída': 'activity.done',
+};
+
+export function activityLabel(mode: string, phase: string | undefined): string | null {
+  return mode === 'thinking' && phase && PHASES[phase] ? t(PHASES[phase]) : null;
+}
+
 export function JarvisCore({ size = 168 }: { size?: number }) {
   useLang();
   const state = useHudValue((s) => s.state);
@@ -38,7 +48,12 @@ export function JarvisCore({ size = 168 }: { size?: number }) {
         <circle className="rw-core__heart" cx="100" cy="100" r="22" />
         <g className="rw-core__tick"><rect x="97" y="10" width="6" height="16" rx="2" /></g>
       </svg>
-      <div className="rw-core__label">{coreLabel(mode, hud.state?.model_busy ?? 0)}</div>
+      <div className="rw-core__label">
+        {activityLabel(mode, hud.state?.activity?.phase) ?? coreLabel(mode, hud.state?.model_busy ?? 0)}
+      </div>
+      {mode === 'thinking' && (hud.state?.activity?.tool_calls ?? 0) > 0 && (
+        <div className="rw-core__sub">{t('activity.calls', { n: hud.state?.activity?.tool_calls ?? 0 })}</div>
+      )}
       {mode === 'mission' && elapsed != null && (
         <div className="rw-core__sub">{hud.state?.task.capability} · {t('core.elapsed', { s: Math.round(elapsed) })}</div>
       )}

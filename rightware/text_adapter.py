@@ -75,6 +75,7 @@ class LocalSimpleTextAdapter:
         engine_factory: Callable | None = None,
         agent_factory: Callable | None = None,
         context_factory: Callable | None = None,
+        system_prompt: str | None = None,
     ):
         chat_command(model)  # runtime's existing local-model/URL guard
         if not (0.0 <= temperature <= 2.0) or not (1 <= max_tokens <= 1024):
@@ -87,16 +88,23 @@ class LocalSimpleTextAdapter:
         self._engine_factory = engine_factory
         self._agent_factory = agent_factory
         self._context_factory = context_factory
+        # OP01: optional host-built persona (rightware.persona). When set it is the ONLY system message; the pinned
+        # SimpleAgent then does not fall back to the OpenJarvis config default prompt.
+        if system_prompt is not None and (not isinstance(system_prompt, str) or not system_prompt.strip()):
+            raise ValueError("Invalid system prompt")
+        self.system_prompt = system_prompt
         self._engine = None
         self._agent = None
         self._lock = RLock()
 
     @staticmethod
-    def _pinned_context(history: tuple[tuple[str, str], ...]):
+    def _pinned_context(history: tuple[tuple[str, str], ...], system_prompt: str | None = None):
         from openjarvis.agents._stubs import AgentContext
         from openjarvis.core.types import Message, Role
 
         context = AgentContext()
+        if system_prompt:
+            context.conversation.add(Message(role=Role.SYSTEM, content=system_prompt))
         for role, text in history:
             if role not in ("user", "assistant") or not isinstance(text, str):
                 raise ValueError("Invalid ephemeral history")
@@ -152,7 +160,7 @@ class LocalSimpleTextAdapter:
     def reply(self, text: str, history: tuple[tuple[str, str], ...]) -> str:
         with self._lock:
             agent = self._ensure_agent()
-            factory = self._context_factory or self._pinned_context
+            factory = self._context_factory or (lambda h: self._pinned_context(h, self.system_prompt))
             context = factory(history)
             result = agent.run(text, context=context)
             content = getattr(result, "content", None)

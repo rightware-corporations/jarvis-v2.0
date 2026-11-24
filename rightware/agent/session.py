@@ -45,6 +45,23 @@ SYSTEM_PROMPT = (
     "ferramenta for recusada ou falhar, explica-o com honestidade. Cita o endereço das páginas usadas."
 )
 
+TOOL_RULES = SYSTEM_PROMPT[SYSTEM_PROMPT.index("Só podes usar"):]      # OP01: rules without the identity
+
+
+def _history_context(history: tuple[tuple[str, str], ...]):
+    """OP01: prior (role, text) turns of THIS conversation as the pinned AgentContext (user/assistant only).
+    None when empty, so runs without history are unchanged."""
+    if not history:
+        return None
+    from openjarvis.agents._stubs import AgentContext
+    ctx = AgentContext()
+    for role, text in history:
+        if role not in ("user", "assistant") or not isinstance(text, str):
+            raise ValueError("histórico inválido")
+        ctx.conversation.add(Message(role=Role.USER if role == "user" else Role.ASSISTANT, content=text))
+    return ctx
+
+
 TOOLS: dict[str, ToolDef] = {
     "web_read": ToolDef(
         "web_read", "Lê o texto de uma página web PÚBLICA (só leitura, sem login, sem formulários).",
@@ -370,8 +387,14 @@ class AgentSession:
                  max_tokens: int = 768, sites: tuple[str, ...] = (), browser_fetcher=None,
                  clock: Callable[[], float] | None = None, start_url: str | None = None,
                  trace: bool = False, task_preset: str | None = None, receipts: bool = False,
-                 completion_gate: bool = False, file_task: str | None = None, file_workspace=None):
+                 completion_gate: bool = False, file_task: str | None = None, file_workspace=None,
+                 persona: str | None = None):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
+        # OP01 (opt-in): host-built identity (rightware.persona) replacing ONLY the identity sentence of
+        # SYSTEM_PROMPT; the tool rules that follow it are always kept.
+        if persona is not None and (not isinstance(persona, str) or not persona.strip()):
+            raise ValueError("persona inválida")
+        self.persona = persona
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
             raise ValueError("a capacidade 'browse' exige sites autorizados")
@@ -480,7 +503,7 @@ class AgentSession:
             self._policy.cancel()
 
     # -- one instruction ----------------------------------------------------------
-    def run(self, instruction: str) -> AgentReply:
+    def run(self, instruction: str, history: tuple[tuple[str, str], ...] = ()) -> AgentReply:
         kwargs = {"clock": self.clock} if self.clock else {}
         self.browser = None
         registry = {**TOOLS, **FILE_TOOLS} if self.file_contract is not None else TOOLS
@@ -489,7 +512,7 @@ class AgentSession:
         self._policy = policy
         outcomes: list[ToolOutcome] = []
         runners = {"web_read": self._web_read, "windows_action": self._windows_action}
-        prompt = SYSTEM_PROMPT
+        prompt = (self.persona + " " + TOOL_RULES) if self.persona else SYSTEM_PROMPT
         if "browse" in self.allow:
             self.browser = b = PublicBrowser(self.sites, self.browser_fetcher,   # fresh, stateless profile
                                              observe=self.trace_enabled)
@@ -537,7 +560,7 @@ class AgentSession:
                                        parallel_tools=False, interactive=False,
                                        before_tool_call=policy.before_tool_call)
         try:
-            result = agent.run(instruction)
+            result = agent.run(instruction, context=_history_context(history))
             answer = result.content or ""
             if not guarded.halted and (getattr(result, "metadata", None) or {}).get("max_turns_exceeded"):
                 guarded.halted = "limite de turnos atingido"

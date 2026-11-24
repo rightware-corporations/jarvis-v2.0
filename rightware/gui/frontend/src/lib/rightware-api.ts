@@ -8,6 +8,7 @@ export interface Outcome {
   receipts?: Receipt[]; objectives?: Objective[]; changes?: string[]; commentary_unverified?: string;
   seconds?: number; error_code?: string; halt?: string; refusal?: string;
 }
+export interface Activity { phase: string; tool_calls: number; sources: string[]; seconds: number }
 export interface HudState {
   engine: { healthy: boolean; models: string[]; default_model: string };
   model_busy: number;
@@ -15,6 +16,7 @@ export interface HudState {
   pending: { capability: string; expires_in: number } | null;
   task: { running: boolean; capability: string | null; elapsed: number | null };
   last: Outcome | null;
+  activity?: Activity | null;          // OP01: real phase of a tool-using chat turn (live policy log)
 }
 export class SessionError extends Error {}
 

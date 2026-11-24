@@ -9,6 +9,8 @@ export const en: Record<string, string> = {
   'chat.generating': 'Generating…', 'chat.researching': 'Researching…', 'chat.noResponse': 'No response was generated. Please try again.',
   'chat.placeholder': 'Message JARVIS…', 'chat.pickModel': 'Pick a model first (⌘K)…', 'chat.toSend': 'to send', 'chat.newLine': 'for new line', 'chat.stop': 'Stop generating', 'chat.send': 'Send message',
   'chat.deepResearch': 'Deep research (not integrated)',
+  'activity.interpreting': 'Interpreting', 'activity.searching': 'Searching', 'activity.reading': 'Reading sources',
+  'activity.analysing': 'Analysing', 'activity.done': 'Answer complete', 'activity.calls': '{n} tool call(s)',
   'core.offline': 'Local engine unavailable', 'core.ready': 'Ready', 'core.thinking': 'Thinking',
   'core.mission': 'Mission running', 'core.verified': 'Verified result', 'core.unverified': 'Unverified result',
   'core.failed': 'Failure', 'core.queue': '{n} model request(s)', 'core.elapsed': '{s} s',

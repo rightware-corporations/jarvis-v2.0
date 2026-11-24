@@ -9,6 +9,8 @@ export const ptMZ: Record<string, string> = {
   'chat.generating': 'A gerar…', 'chat.researching': 'A pesquisar…', 'chat.noResponse': 'Nenhuma resposta foi gerada. Tente novamente.',
   'chat.placeholder': 'Escreva ao JARVIS…', 'chat.pickModel': 'Escolha primeiro um modelo (⌘K)…', 'chat.toSend': 'para enviar', 'chat.newLine': 'para nova linha', 'chat.stop': 'Parar a geração', 'chat.send': 'Enviar mensagem',
   'chat.deepResearch': 'Pesquisa aprofundada (não integrada)',
+  'activity.interpreting': 'A interpretar', 'activity.searching': 'A pesquisar', 'activity.reading': 'A consultar fontes',
+  'activity.analysing': 'A analisar', 'activity.done': 'Resposta concluída', 'activity.calls': '{n} chamada(s) de ferramenta',
   'core.offline': 'Motor local indisponível', 'core.ready': 'Pronto', 'core.thinking': 'A pensar',
   'core.mission': 'Missão em execução', 'core.verified': 'Resultado verificado', 'core.unverified': 'Resultado não verificado',
   'core.failed': 'Falha', 'core.queue': '{n} pedido(s) ao modelo', 'core.elapsed': '{s} s',

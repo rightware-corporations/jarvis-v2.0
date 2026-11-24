@@ -103,3 +103,13 @@ describe('i18n PT-MZ by default, English supported', () => {
     expect(t('missing.key')).toBe('missing.key');
   });
 });
+
+describe('OP01 activity label (real backend phase only)', () => {
+  it('shows the backend phase only while thinking and ignores unknown phases', async () => {
+    const { activityLabel } = await import('./JarvisCore');
+    expect(activityLabel('thinking', 'A pesquisar')).toBeTruthy();
+    expect(activityLabel('thinking', 'qualquer coisa')).toBeNull();
+    expect(activityLabel('ready', 'A pesquisar')).toBeNull();
+    expect(activityLabel('thinking', undefined)).toBeNull();
+  });
+});

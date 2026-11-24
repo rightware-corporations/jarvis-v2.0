@@ -23,6 +23,7 @@ html.rw-hud.dark {
   --color-input-border: rgba(94, 200, 255, 0.28);
   --color-error: #ff5c6c;
   --color-on-accent: #04101c;
+  --color-code-bg: #0d2033;            /* OP01: inline code was the upstream light #f4f4f5 → illegible white chips */
   --rw-ok: #3ddc97;
   --rw-warn: #ffb547;
   --rw-bad: #ff5c6c;
