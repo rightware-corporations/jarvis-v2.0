@@ -4204,3 +4204,38 @@ See `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3.1.
 **Regressions:** venv OK with 0 skips; plain Python OK.
 
 **Not done:** production readiness; general autonomy; W4, voice, memory, tunnel. PR #32 still Draft; no merge. UI-02/B6 untouched for the 15:00 demo.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.2 → `W3_2_PARTIAL`
+**Start:** `be121a2`, CI green. Branch: PR #32 (Draft). No new branch.
+
+**Implemented:**
+- structured extraction (infobox, tables, lists) with integrity;
+- hybrid per-part retrieval with bridge entity and answer type;
+- strict claim support (numbers, units, negation, entities, coverage, relevance);
+- host-composed answer (model free text never shown);
+- adaptive loop with early stop and model-stop rejection;
+- injection filtering;
+- `answer_parts` contract with host decomposition.
+
+**Tests:** `test_web01_w32` (12 tests plus 1 documented expected failure: an inverted relation with identical words). W3.1 tests and the CI fake model migrated to the new protocol. Full venv suite OK; plain Python OK; FAKE E2E U1–U9 PASS.
+
+**CI:** `e75ef21` success (PR and push).
+
+**Evaluation (real Qwen 2b, NO network):**
+- S1 regression: 5/9 (W3.1 v2: 8/9) — a REGRESSION.
+- S2 independent: 5/8.
+- S3 offline revalidation of the real R1–R5 bytes: 4/5 (the W3.1 real run had 3/5), and 5/5 facts recovered by retrieval.
+- Requests per mission halved (4.9 vs 9.8); latency ×1.7 (49.7 s).
+
+**Safety failures:** G7 showed the forum's false claim as an unattributed grounded note; Q3/Q4 accepted claims under the wrong part. Evidence: `docs/evidence/web01/w32-eval/` (`METRICS.json`, `a-prefix/DISCLOSURE.md`).
+
+**Network:** none. Versioned policy has `network_enabled=false`. OP-W31 is consumed.
+
+**Next mission:**
+- coverage confirmed by validated claims (merge assess and synthesis);
+- strict part assignment;
+- mandatory source attribution;
+- a NEW frozen independent set;
+- then a real validation with a new authorisation.
+
+**Untouched:** UI-02/B6 for the 15:00 demo; develop, main, vendor, PR #31, B6. No merge.

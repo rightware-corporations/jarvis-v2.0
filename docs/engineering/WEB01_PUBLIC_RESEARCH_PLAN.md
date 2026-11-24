@@ -235,3 +235,49 @@ Evidência em `docs/evidence/web01/w31-real/`: recibos, auditoria, resultado com
 - política experimental apagada (só existiu no scratchpad);
 - política versionada com `network_enabled=false`;
 - GUI parada; sem túnel.
+
+## W3.2 — investigação adaptativa e inteligência de evidências (24/11/2026): `W3_2_PARTIAL`
+**Implementado** (mesma arquitectura: EgressGuard, providers, ResearchToolkit, ControlPlane, HUD; sem novo motor nem frontend):
+- **A. Recuperação híbrida** (`extract.py`, `evidence.py`):
+  - blocos estruturados (título, secção, parágrafo, lista, linha chave-valor de infobox, linha de tabela), com entidade e secção;
+  - integridade de cada bloco contra os bytes recebidos;
+  - candidatos por parte da pergunta, ordenados por chave de atributo, sobreposição própria e página do sujeito ou da entidade-ponte;
+  - tipo de resposta (ano ou número);
+  - orçamento de contexto;
+  - blocos com aparência de instrução ao agente são excluídos e registados.
+- **B. Resposta construída pelo anfitrião:**
+  - o modelo propõe afirmações {parte, evidência, citação, texto};
+  - verificações estritas: números, unidades, negação, entidades, cobertura e relevância da afirmação;
+  - o texto livre do modelo **nunca** é mostrado;
+  - cada parte aparece respondida ou declarada sem evidência.
+- **C. Ciclo adaptativo:** pesquisar → abrir (o 2.º resultado só se o 1.º não trouxe nada) → avaliar (modelo) → cobertura (anfitrião) → continuar, reformular ou parar.
+  - Limites: no máximo 4 iterações e 5 chamadas ao modelo.
+  - Paragem do modelo rejeitada quando falta evidência.
+  - Decisões, pedidos evitados e latências registados.
+- **Contrato do plano:** `answer_parts` devem descrever a pergunta; caso contrário, entra a decomposição determinística do anfitrião.
+
+**Avaliação** com o Qwen 2b real, **sem rede**, `docs/evidence/web01/w32-eval/`:
+
+| conjunto | W3.1 | W3.2 |
+|---|---|---|
+| S1 regressão fixture (Q1–Q9) | 8/9 (v2) | **5/9** (regressão) |
+| S2 independente fictício (G1–G8, congelado) | — | **5/8** |
+| S3 revalidação offline dos bytes reais R1–R5 | 3/5 (execução real) | **4/5** (não é execução real) |
+| factos perdidos recuperados pela recuperação (R1–R5) | 1/5 | **5/5** |
+| pedidos por missão (S1) | 9,8 | **4,9** (paragem antecipada em 6/9) |
+| chamadas ao modelo por missão (S1) | 2 | 3,3 |
+| latência média (S1) | 29,8 s | **49,7 s** (plano 17,2; avaliação 18,6; síntese 13,8) |
+
+**Falhas reais**, preservadas e não corrigidas sobre S2 (S2 consumido):
+1. **SEGURANÇA, S2 G7:** a afirmação falsa do fórum ("a capital da Valdora é Porto Asel") foi mostrada como "Nota fundamentada", **sem atribuição**. A citação existe, mas a conclusão é falsa.
+2. **SEGURANÇA, S1 Q3/Q4:** afirmações aceites e **atribuídas à parte errada**. O estado ficou GROUNDED sem a parte estar realmente respondida. A relevância ao nível da afirmação (parte *ou* pergunta) é demasiado permissiva.
+3. **Paragem antecipada prematura:** a cobertura do anfitrião (léxica e por tipo) confirmou partes que a síntese depois não sustentou (Q1, Q5, G2, G3, G4, G8).
+4. **O 2b nunca produziu `answer_parts` válidas** (17/17 substituídas pela decomposição do anfitrião).
+5. **Latência:** subiu cerca de 1,7× face ao W3.1, com metade dos pedidos.
+6. **Regressão do próprio processo:** uma alteração de prompt causou uma regressão (ids "(E1)"), detectada e corrigida no anfitrião com tolerância de formato. Uma execução foi parada antes do S2. Divulgação em `a-prefix/`.
+
+**Próxima iteração recomendada** (sem regras por pergunta; precisa de um **novo** conjunto independente):
+1. A cobertura é confirmada por **afirmações validadas**: fundir avaliação e síntese numa só chamada por iteração; parar só quando cada parte tiver uma afirmação aceite.
+2. A atribuição de cada afirmação à sua parte tem de ser estrita: termos da parte ou tipo de resposta.
+3. **Atribuição obrigatória da fonte** em cada linha da resposta ("segundo «fonte»"). Notas sem relevância directa ficam fora.
+4. Rever o custo da avaliação (latência).
