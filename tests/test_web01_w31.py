@@ -81,6 +81,15 @@ class PlanValidation(unittest.TestCase):
                 PL.validate_plan(b if isinstance(b, str) else json.dumps(b), q, "t")
         plan = PL.validate_plan(json.dumps(dict(GOOD_PLAN, objective="x" * 10)), q, "t")
         self.assertEqual(plan.question, q)                           # from the host, never from the model
+        notes = []
+        plan = PL.validate_plan(json.dumps(dict(GOOD_PLAN, subquestions=["a b c"] * 2 + ["d e f", "g h i", "j k l"])),
+                                q, "t", notes=notes)
+        self.assertEqual((len(plan.subquestions), notes), (3, ["subquestions: 5 itens truncados para 3"]))
+        with self.assertRaises(PL.PlanError):                        # objects instead of text stay invalid
+            PL.validate_plan(json.dumps(dict(GOOD_PLAN, subquestions=[{"q": "x"}])), q, "t")
+        seen = []
+        PL.make_plan(q, lambda sys, user: (seen.append(user), ("lixo", 0.0))[1], "fake")
+        self.assertIn("rejeitada pelo anfitrião", seen[1])           # the retry carries the validation error
         plan, meta = PL.make_plan(q, scripted(plan="lixo"), "fake")
         self.assertEqual((plan.source, meta["attempts"], meta["valid_model_plan"]), ("anfitrião (fallback)", 2, False))
 

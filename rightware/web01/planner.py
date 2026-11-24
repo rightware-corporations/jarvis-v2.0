@@ -125,9 +125,15 @@ class PlanError(ValueError):
     pass
 
 
-def _strings(v, n_max: int, l_max: int, key: str, n_min: int = 0) -> tuple[str, ...]:
-    if not isinstance(v, list) or not n_min <= len(v) <= n_max or not all(isinstance(x, str) for x in v):
-        raise PlanError(f"{key}: lista de {n_min}..{n_max} textos")
+def _strings(v, n_max: int, l_max: int, key: str, n_min: int = 0, notes: list | None = None) -> tuple[str, ...]:
+    """Strict on type (list of strings) and content; a list LONGER than allowed is truncated (and noted) — counts
+    are informational, the host budgets bound execution anyway."""
+    if not isinstance(v, list) or len(v) < n_min or not all(isinstance(x, str) for x in v):
+        raise PlanError(f"{key}: tem de ser uma lista de {n_min}..{n_max} textos (não objectos)")
+    if len(v) > n_max:
+        if notes is not None:
+            notes.append(f"{key}: {len(v)} itens truncados para {n_max}")
+        v = v[:n_max]
     out = []
     for x in v:
         x = " ".join(x.split())
@@ -138,7 +144,7 @@ def _strings(v, n_max: int, l_max: int, key: str, n_min: int = 0) -> tuple[str, 
     return tuple(out)
 
 
-def validate_plan(raw: str, question: str, source: str) -> Plan:
+def validate_plan(raw: str, question: str, source: str, notes: list | None = None) -> Plan:
     try:
         d = json.loads(raw)
     except ValueError:
@@ -148,13 +154,14 @@ def validate_plan(raw: str, question: str, source: str) -> Plan:
     objective = d["objective"]
     if not isinstance(objective, str) or not 3 <= len(objective.strip()) <= LIMITS["objective"]:
         raise PlanError("objective inválido")
-    queries = _strings(d["queries"], *LIMITS["queries"], "queries", n_min=1)
+    queries = _strings(d["queries"], *LIMITS["queries"], "queries", n_min=1, notes=notes)
     for q in queries:
         if FORBIDDEN_IN_QUERY.search(q) or len(q) < 3:
             raise PlanError(f"consulta proibida: {q[:40]!r}")
-    return Plan(question, " ".join(objective.split()), _strings(d["subquestions"], *LIMITS["subquestions"], "subquestions"),
-                queries, _strings(d["relevance_criteria"], *LIMITS["relevance_criteria"], "relevance_criteria", n_min=1),
-                _strings(d["missing_info"], *LIMITS["missing_info"], "missing_info"), source)
+    return Plan(question, " ".join(objective.split()),
+                _strings(d["subquestions"], *LIMITS["subquestions"], "subquestions", notes=notes), queries,
+                _strings(d["relevance_criteria"], *LIMITS["relevance_criteria"], "relevance_criteria", n_min=1, notes=notes),
+                _strings(d["missing_info"], *LIMITS["missing_info"], "missing_info", notes=notes), source)
 
 
 STOP = set(_fold("a o os as um uma de do da dos das em no na nos nas por para com sem que qual quais quem quando onde "
@@ -175,15 +182,21 @@ def fallback_plan(question: str) -> Plan:
 
 def make_plan(question: str, call, model_name: str, retries: int = 1) -> tuple[Plan, dict]:
     """(plan, meta). meta: attempts, errors, seconds, valid_model_plan."""
-    meta = {"attempts": 0, "errors": [], "seconds": 0.0, "valid_model_plan": False, "model": model_name}
+    meta = {"attempts": 0, "errors": [], "seconds": 0.0, "valid_model_plan": False, "model": model_name,
+            "normalised": [], "raw_excerpts": []}
+    feedback = ""
     for _ in range(1 + retries):
         meta["attempts"] += 1
+        raw = ""
         try:
-            raw, secs = call(PLAN_SYSTEM, f"Pergunta: {question}")
+            raw, secs = call(PLAN_SYSTEM, f"Pergunta: {question}{feedback}")
             meta["seconds"] += secs
-            plan = validate_plan(raw, question, f"modelo:{model_name}")
+            plan = validate_plan(raw, question, f"modelo:{model_name}", notes=meta["normalised"])
             meta["valid_model_plan"] = True
             return plan, meta
-        except Exception as exc:                 # invalid JSON/schema or model failure → retry, then fallback
+        except Exception as exc:                 # invalid JSON/schema or model failure → retry with feedback
             meta["errors"].append(f"{type(exc).__name__}: {str(exc)[:120]}")
+            meta["raw_excerpts"].append(raw[:300])
+            feedback = (f"\n\nA tua resposta anterior foi rejeitada pelo anfitrião: {str(exc)[:160]}. Devolve de novo "
+                        "UM objecto JSON com exactamente as chaves pedidas; todas as listas contêm apenas textos.")
     return fallback_plan(question), meta
