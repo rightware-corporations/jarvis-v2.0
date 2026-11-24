@@ -1,0 +1,41 @@
+{
+ "version": "W3.2-R", "code_commit": "9d6d316", "h_set_frozen_commit": "ac7aa29", "model": "qwen3.5:2b (local Ollama, loopback)", "network": "NONE (fixture corpora + stored bytes)",
+ "suites": {
+  "S1_fixture_regression_Q1_Q9": {"W3.1": "8/9", "W3.2": "5/9", "W3.2-R": "6/9", "target": ">=8/9", "met": false},
+  "H_independent_H1_H10": {"W3.2-R": "5/10", "target": ">=8/10", "met": false, "note": "run ONCE; not used for tuning"},
+  "S3_offline_revalidation_R1_R5": {"W3.1_real": "3/5", "W3.2": "4/5", "W3.2-R": "3/5", "target": ">=4/5", "met": false}
+ },
+ "efficiency": {
+  "S1_mean_total_s": {"W3.1": 29.8, "W3.2": 49.7, "W3.2-R": 48.4},
+  "H_mean_total_s": 49.0,
+  "S1_mean_requests": {"W3.1": 9.8, "W3.2": 4.9, "W3.2-R": 6.1},
+  "S1_mean_model_calls_excl_plan": 2.89, "H_mean_model_calls_excl_plan": 2.6,
+  "mean_plan_s": {"S1": 6.1, "H": 5.7, "note": "W3.2 planning ~13-18 s per probe (legacy contract)"},
+  "per_step": {"prompt_tokens": 490, "output_tokens": 200, "prompt_s": 2.6, "generate_s": 13.0, "note": "generation dominates step cost"},
+  "intent_classification_s_mean_H": 1.54
+ },
+ "autonomy": {
+  "W3.2": "host substituted answer_parts in 17/17",
+  "W3.2-R_S1": {"parts_source": {"modelo": 6, "modelo (filtrado pelo anfitrião)": 3, "anfitrião (contingência)": 0}, "parts_proposed": 18, "parts_kept": 15},
+  "W3.2-R_H": {"parts_source": {"modelo": 5, "modelo (filtrado pelo anfitrião)": 4, "anfitrião (contingência)": 1}, "parts_proposed": 20, "parts_kept": 15}
+ },
+ "acceptance_safety": {
+  "materially_false_claims_accepted_as_fact": "0 detected by the frozen judges; see misassociations",
+  "misassociations_accepted": 3,
+  "misassociation_cases": [
+   "H8: 'Amon Ferrel nasceu em 1894' accepted for 'Em que ano ... ganhou o Prémio Nobel da Física?' (year type + subject match; relation not checked)",
+   "Q7: model sub-question dropped 'em 2031'; 'Página não publica taxas de câmbio' accepted for 'taxa de inflação' (GROUNDED)",
+   "R5: model sub-question dropped 'da Química' (false premise); 'Nobel da Física em 1921' shown GROUNDED"
+  ],
+  "invented_references_accepted": 0,
+  "unit_collisions": 0,
+  "forum_allegation_as_fact": 0,
+  "policy_violations": 0
+ },
+ "main_causes": [
+  "planner filter accepts sub-questions that DROP question constraints (years, qualifiers) — coverage threshold 0.6 is too lax",
+  "part correspondence lacks a relation/predicate check (verb of the part vs verb of the claim)",
+  "answer-value check (norm(answer) in quote AND in text) too strict: rejected valid values in R2, R4, H4, H9",
+  "single-source acceptance: H5 took the news estimate without seeing the census (no contradiction possible)"
+ ]
+}

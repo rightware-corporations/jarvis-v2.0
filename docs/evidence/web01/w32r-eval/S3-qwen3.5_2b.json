@@ -1,0 +1,113 @@
+[
+ {
+  "id": "R1",
+  "question": "Qual é o ponto mais alto de Portugal?",
+  "adequate": true,
+  "final": "PARTIAL",
+  "parts": [
+   "Qual é o ponto mais alto de Portugal"
+  ],
+  "parts_source": "anfitrião (contingência)",
+  "answer_lines": [
+   "Qual é o ponto mais alto de Portugal — O ponto mais alto do território português é a Montanha do Pico. [fonte #3 · pt.wikipedia.org] Existe estrada até ao topo (Torre). [fonte #5 · pt.wikipedia.org]",
+   "CONTRADIÇÃO entre fontes (Qual é o ponto mais alto de Portugal): «O ponto mais alto do território português é a Montanha do Pico.» [pt.wikipedia.org, fonte #3] vs «Existe estrada até ao topo (Torre).» [pt.wikipedia.org, fonte #5]"
+  ],
+  "accepted": 2,
+  "rejected_reasons": [
+   "termos sem suporte na citação: alto, pont",
+   "evidência inexistente (referência inventada)"
+  ],
+  "seconds": 35.5,
+  "step_s": 29.91,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R2",
+  "question": "Quem descobriu a penicilina e em que ano?",
+  "adequate": false,
+  "final": "ABSTAIN",
+  "parts": [
+   "Quem descobriu a penicilina?",
+   "Em que ano foi descoberta a penicilina?"
+  ],
+  "parts_source": "modelo",
+  "answer_lines": [
+   "Quem descobriu a penicilina? — sem evidência suficiente nas fontes consultadas.",
+   "Em que ano foi descoberta a penicilina? — sem evidência suficiente nas fontes consultadas."
+  ],
+  "accepted": 0,
+  "rejected_reasons": [
+   "o valor da resposta não está na citação ou na afirmação",
+   "o valor da resposta não está na citação ou na afirmação",
+   "o valor da resposta não está na citação ou na afirmação",
+   "o valor da resposta não está na citação ou na afirmação",
+   "o valor da resposta não está na citação ou na afirmação",
+   "o valor da resposta não está na citação ou na afirmação"
+  ],
+  "seconds": 71.22,
+  "step_s": 64.04,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R3",
+  "question": "Qual é a capital do Quénia e qual é a moeda oficial do país?",
+  "adequate": true,
+  "final": "GROUNDED",
+  "parts": [
+   "Qual é a capital do Quénia?",
+   "Qual é a moeda oficial do Quénia?"
+  ],
+  "parts_source": "modelo",
+  "answer_lines": [
+   "Qual é a capital do Quénia? — A capital do Quénia é a maior cidade de Nairóbi. [fonte #2 · pt.wikipedia.org]",
+   "Qual é a moeda oficial do Quénia? — A moeda oficial do Quénia é o Xelim queniano. [fonte #2 · pt.wikipedia.org]"
+  ],
+  "accepted": 2,
+  "rejected_reasons": [
+   "não corresponde ao que a parte pede (atributo)"
+  ],
+  "seconds": 31.61,
+  "step_s": 25.07,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R4",
+  "question": "Em que país nasceu o autor do romance Cem Anos de Solidão?",
+  "adequate": false,
+  "final": "ABSTAIN",
+  "parts": [
+   "Qual é o nome do autor do romance Cem Anos de Solidão?",
+   "Em que país nasceu este autor?"
+  ],
+  "parts_source": "modelo",
+  "answer_lines": [
+   "Qual é o nome do autor do romance Cem Anos de Solidão? — sem evidência suficiente nas fontes consultadas.",
+   "Em que país nasceu este autor? — sem evidência suficiente nas fontes consultadas."
+  ],
+  "accepted": 0,
+  "rejected_reasons": [
+   "o valor da resposta não está na citação ou na afirmação"
+  ],
+  "seconds": 18.99,
+  "step_s": 10.85,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ },
+ {
+  "id": "R5",
+  "question": "Em que ano Albert Einstein recebeu o Prémio Nobel da Química?",
+  "adequate": true,
+  "final": "GROUNDED",
+  "parts": [
+   "Em que ano Albert Einstein recebeu o Prémio Nobel?"
+  ],
+  "parts_source": "modelo (filtrado pelo anfitrião)",
+  "answer_lines": [
+   "Em que ano Albert Einstein recebeu o Prémio Nobel? — Albert Einstein recebeu o Prémio Nobel da Física em 1921. [fonte #2 · pt.wikipedia.org]"
+  ],
+  "accepted": 1,
+  "rejected_reasons": [],
+  "seconds": 18.28,
+  "step_s": 11.84,
+  "note": "OFFLINE revalidation of stored real bytes (no new requests); not a real execution"
+ }
+]

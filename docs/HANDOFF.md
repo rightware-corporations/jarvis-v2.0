@@ -4239,3 +4239,41 @@ See `docs/engineering/WEB01_PUBLIC_RESEARCH_PLAN.md` § W3.1.
 - then a real validation with a new authorisation.
 
 **Untouched:** UI-02/B6 for the 15:00 demo; develop, main, vendor, PR #31, B6. No merge.
+
+## CHECKPOINT — 24/11/2026: JRV-WEB01-W3.2-R → `W3_2_R_PARTIAL`
+- **Start:** `e6c3a96` (W3_2_PARTIAL). Branch: PR #32 (Draft). No new branch. B6 is preserved at `66be4c9` (presentation version). develop, main, vendor and PR #31 are untouched. No merge.
+- **Commits:**
+  - `ac7aa29`: freeze the independent set H1–H10 **before** implementation.
+  - `9d6d316`: W3.2-R implementation. CI green on push and on the PR.
+  - This checkpoint: evidence and documentation.
+- **Changes:**
+  - Coverage comes only from accepted claims, with a single structured call per iteration (max 4).
+  - Claim↔part correspondence: attribute, answer type, temporal context and relation, cross-part, and one value per part.
+  - Source classes (`configs/web01/sources.json`), mandatory attribution, contradictions detected by the host. `part=-1` notes are removed. Rejected claim text is never shown.
+  - Canonical units (fixes the `_unit()[:4]` collision).
+  - Sub-question planner contract with host filtering and autonomy metrics.
+  - Per-phase metrics and Ollama token counts.
+  - Details: `docs/engineering/WEB01_W32R.md`.
+- **Tests:**
+  - `tests/test_web01_w32r.py` (16, UNIT/FAKE).
+  - W3.1/W3.2 tests migrated, with 2 intended behaviour changes documented in the test.
+  - The inverted-relation expected failure is kept.
+  - Full suite OK.
+- **Real eval (Qwen 2b, NO network):**
+  - S1: 6/9 (W3.2 5/9, W3.1 8/9).
+  - H (independent, single run): 5/10.
+  - S3: 3/5 (W3.2 4/5).
+  - Latency 48.4 s (W3.2 49.7 s; W3.1 29.8 s). Requests 6.1 (W3.1 9.8).
+  - Plan parts from the model: S1 9/9, H 9/10 (W3.2: 0/17).
+  - 0 invented references accepted; 0 unit collisions; 0 forum allegations shown as fact.
+  - **3 misassociations accepted** (H8, Q7, R5), including 2 caused by sub-questions that drop constraints.
+  - Targets NOT met.
+  - Evidence: `docs/evidence/web01/w32r-eval/` (METRICS.json, DISCLOSURE.md).
+- **Network:** none. `network_enabled=false`. OP-W31 is not reused. No tunnels.
+- **Next:**
+  - constraint-preserving parts;
+  - a relation/predicate check;
+  - a tolerant `answer` check;
+  - a single-source flag for numbers;
+  - a new frozen set H2;
+  - then a real validation with a new authorisation.
