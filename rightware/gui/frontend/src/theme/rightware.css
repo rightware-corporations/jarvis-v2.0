@@ -126,3 +126,42 @@ html.rw-busy .rw-core__tick { animation-play-state: running !important; }
 .rw-hud-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .rw-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .rw-card .rw-row { justify-content: space-between; }
+
+
+/* JARVIS Personal Experience — JPE-01. Static depth, precision lines and restrained light.
+ * Reuses actual HUD modes and the existing stepped motion budget; no decorative frame loop. */
+html.rw-hud, html.rw-hud.dark {
+  --color-bg: #060b13;
+  --color-bg-secondary: #0b1522;
+  --color-bg-tertiary: #132539;
+  --color-surface: #0a1421;
+  --color-sidebar: #080f19;
+  --color-border: rgba(116, 191, 228, .19);
+  --color-text: #e9f4ff;
+  --color-text-secondary: #a2bacb;
+  --color-text-tertiary: #8299ac;
+  --color-accent: #65d8ff;
+  --color-accent-hover: #a0e7ff;
+  --color-accent-glow: rgba(65, 193, 245, .28);
+}
+.rw-brand { position: relative; overflow: hidden; min-height: 66px; }
+.rw-brand__name { font-size: 17px; line-height: 1.25; font-weight: 650; letter-spacing: .22em; color: var(--color-text); }
+.rw-brand__sub { margin-top: 4px; font-size: 10px; line-height: 1.35; color: var(--color-text-secondary); }
+.rw-brand__mark { display: grid; place-items: center; flex: 0 0 35px; width: 35px; height: 35px; border: 1px solid var(--color-accent); border-radius: 50%; box-shadow: inset 0 0 12px #65d8ff18, 0 0 12px #65d8ff18; }
+.rw-brand__mark span { width: 19px; height: 19px; display: block; border: 2px dotted var(--color-accent); border-radius: 50%; background: radial-gradient(circle, #e6f9ff 0 12%, #65d8ff 15% 24%, transparent 28%); }
+.rw-side { width: 320px; min-width: 320px; padding: 16px 14px; gap: 14px; background: linear-gradient(170deg,#0b1624 0%,#060b13 65%); }
+.rw-side__head { padding: 2px 3px 8px; border-bottom: 1px solid var(--color-border); }
+.rw-side__head .rw-label { font-size: 13px; letter-spacing: .25em; }
+.rw-core-stage { border: 1px solid var(--color-border); border-radius: 16px; padding: 16px 6px 14px; background: radial-gradient(ellipse at 50% 38%,rgba(43,145,203,.14),transparent 72%),linear-gradient(160deg,#0b1827,#080f19); }
+.rw-core svg { max-width: 100%; height: auto; }
+.rw-core__frame { fill: none; stroke: var(--color-accent); opacity: .65; stroke-width: 2; }
+.rw-core__fine { opacity: .5; stroke-width: .8; }
+.rw-core__lens { fill: #e5faff !important; stroke: none !important; opacity: .9; }
+.rw-core[data-mode="offline"] .rw-core__lens { opacity: .25; }
+.rw-core__label { font-size: 12px; font-weight: 600; letter-spacing: .18em; margin-top: 8px; }
+.rw-core__sub { font-size: 11px; letter-spacing: .025em; }
+.rw-panel { border-radius: 13px; background: linear-gradient(150deg,#0d1a2a,#09121d); padding: 14px; }
+.rw-icon-btn, .rw-btn { min-height: 30px; }
+.rw-icon-btn:focus-visible, .rw-btn:focus-visible, .rw-brand:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+@media (max-width: 1100px) { .rw-side { width: 280px; min-width: 280px; padding: 12px; } }
+@media (max-width: 760px) { .rw-side { width: min(320px, 92vw); min-width: 0; } }

@@ -17,7 +17,7 @@ export function SystemPanel() {
         <span className="rw-label">{t('app.name')}</span>
         <button type="button" className="rw-icon-btn" onClick={toggleSystemPanel} aria-label="close"><X size={14} /></button>
       </div>
-      <JarvisCore size={150} />
+      <div className="rw-core-stage"><JarvisCore size={208} /></div>
       {error && <p className="rw-msg">{t(error === 'session' ? 'error.session' : 'error.state')}</p>}
       <p className="rw-muted rw-small rw-center">{t('hud.unverifiedNote')}</p>
       <MissionsPanel compact />

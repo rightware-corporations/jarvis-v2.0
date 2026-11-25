@@ -1,10 +1,11 @@
 export const ptMZ: Record<string, string> = {
-  'app.name': 'RIGHTWARE JARVIS',
+  'app.name': 'JARVIS',
+  'brand.subtitle': 'Assistente pessoal de Issa',
   'nav.chat': 'Conversa', 'nav.hud': 'HUD', 'nav.missions': 'Missões', 'nav.capabilities': 'Capacidades',
   'nav.logs': 'Registos', 'nav.settings': 'Definições', 'nav.newChat': 'Nova conversa', 'nav.lang': 'English',
   'sidebar.search': 'Procurar conversas…', 'sidebar.empty': 'Ainda não há conversas', 'sidebar.noMatch': 'Nenhuma conversa encontrada',
   'chat.greeting.morning': 'Bom dia', 'chat.greeting.afternoon': 'Boa tarde', 'chat.greeting.evening': 'Boa noite',
-  'chat.subtitle': 'Pergunte o que quiser. O modelo corre localmente; as respostas do modelo não são factos verificados.',
+  'chat.subtitle': 'Como posso ajudar-te hoje, Issa? Confirma informações importantes nas fontes indicadas.',
   'chat.connectSources': 'Capacidades do JARVIS', 'chat.channels': 'Canais de mensagens (não integrados)',
   'chat.generating': 'A gerar…', 'chat.researching': 'A pesquisar…', 'chat.noResponse': 'Nenhuma resposta foi gerada. Tente novamente.',
   'chat.placeholder': 'Escreva ao JARVIS…', 'chat.pickModel': 'Escolha primeiro um modelo (⌘K)…', 'chat.toSend': 'para enviar', 'chat.newLine': 'para nova linha', 'chat.stop': 'Parar a geração', 'chat.send': 'Enviar mensagem',
@@ -29,6 +30,6 @@ export const ptMZ: Record<string, string> = {
   'voice.title': 'Voz', 'voice.notIntegrated': 'Voz não integrada', 'voice.enableInSettings': 'Activar a voz nas Definições',
   'voice.wait': 'Aguarde a resposta', 'voice.stop': 'Parar de gravar', 'voice.transcribing': 'A transcrever…', 'voice.start': 'Falar com o JARVIS',
   'finance.title': 'Inteligência financeira', 'finance.note': 'Sem dados: nenhuma cotação, preço ou gráfico é mostrado até existir uma fonte verificada e autorizada.',
-  'hud.title': 'RIGHTWARE JARVIS HUD', 'hud.engine': 'Motor', 'hud.models': 'Modelos', 'hud.unverifiedNote': 'Respostas do modelo: NÃO verificadas',
+  'hud.title': 'JARVIS HUD', 'hud.engine': 'Motor', 'hud.models': 'Modelos', 'hud.unverifiedNote': 'Respostas do modelo: NÃO verificadas',
   'error.state': 'Sem ligação ao JARVIS', 'error.session': 'Sessão local expirada: abra de novo a ligação do anfitrião.',
 };

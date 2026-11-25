@@ -35,10 +35,8 @@ export function Sidebar() {
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const createConversation = useAppStore((s) => s.createConversation);
   const selectedModel = useAppStore((s) => s.selectedModel);
-  const serverInfo = useAppStore((s) => s.serverInfo);
   const setCommandPaletteOpen = useAppStore((s) => s.setCommandPaletteOpen);
   const modelLoading = useAppStore((s) => s.modelLoading);
-  const deepResearch = useAppStore((s) => s.deepResearch);
 
   const settings = useAppStore((s) => s.settings);
   const updateSettings = useAppStore((s) => s.updateSettings);
@@ -137,10 +135,12 @@ export function Sidebar() {
             </div>
           </div>
 
-          {/* Model badge */}
+          {/* Personal identity; model selection remains available on click. */}
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors cursor-pointer"
+            className="rw-brand mx-3 mb-4 flex items-center gap-3 px-3 py-3 rounded-xl text-xs cursor-pointer"
+            title={t('nav.settings')}
+            aria-label={t('nav.settings')}
             style={{
               background: 'var(--color-bg-secondary)',
               color: 'var(--color-text-secondary)',
@@ -152,20 +152,18 @@ export function Sidebar() {
             {modelLoading ? (
               <Loader2 size={14} className="animate-spin" style={{ color: 'var(--color-accent)' }} />
             ) : (
-              <Cpu size={14} />
+              <span className="rw-brand__mark" aria-hidden="true"><span /></span>
             )}
             <div className="flex-1 min-w-0">
               <span
-                className="truncate block text-left"
-                style={{ color: deepResearch ? 'var(--color-accent)' : 'var(--color-text)' }}
+                className="rw-brand__name truncate block text-left"
               >
-                {deepResearch
-                  ? 'Deep Research'
-                  : selectedModel || serverInfo?.model || 'Select model'}
+                JARVIS
               </span>
+              <span className="rw-brand__sub block text-left">{t('brand.subtitle')}</span>
               {modelLoading && (
                 <span className="text-[10px] block text-left" style={{ color: 'var(--color-accent)' }}>
-                  Loading model...
+                  {t('chat.generating')}
                 </span>
               )}
             </div>

@@ -1,10 +1,11 @@
 export const en: Record<string, string> = {
-  'app.name': 'RIGHTWARE JARVIS',
+  'app.name': 'JARVIS',
+  'brand.subtitle': 'Issa’s personal assistant',
   'nav.chat': 'Chat', 'nav.hud': 'HUD', 'nav.missions': 'Missions', 'nav.capabilities': 'Capabilities',
   'nav.logs': 'Logs', 'nav.settings': 'Settings', 'nav.newChat': 'New chat', 'nav.lang': 'Português',
   'sidebar.search': 'Search chats…', 'sidebar.empty': 'No conversations yet', 'sidebar.noMatch': 'No matching chats',
   'chat.greeting.morning': 'Good morning', 'chat.greeting.afternoon': 'Good afternoon', 'chat.greeting.evening': 'Good evening',
-  'chat.subtitle': 'Ask anything. The model runs locally; model answers are not verified facts.',
+  'chat.subtitle': 'How can I help you today, Issa? Verify important information against the cited sources.',
   'chat.connectSources': 'JARVIS capabilities', 'chat.channels': 'Messaging channels (not integrated)',
   'chat.generating': 'Generating…', 'chat.researching': 'Researching…', 'chat.noResponse': 'No response was generated. Please try again.',
   'chat.placeholder': 'Message JARVIS…', 'chat.pickModel': 'Pick a model first (⌘K)…', 'chat.toSend': 'to send', 'chat.newLine': 'for new line', 'chat.stop': 'Stop generating', 'chat.send': 'Send message',
@@ -28,6 +29,6 @@ export const en: Record<string, string> = {
   'voice.title': 'Voice', 'voice.notIntegrated': 'Voice not integrated', 'voice.enableInSettings': 'Enable voice in Settings',
   'voice.wait': 'Wait for the answer', 'voice.stop': 'Stop recording', 'voice.transcribing': 'Transcribing…', 'voice.start': 'Talk to JARVIS',
   'finance.title': 'Financial intelligence', 'finance.note': 'No data: no quote, price or chart is shown until a verified, authorised source exists.',
-  'hud.title': 'RIGHTWARE JARVIS HUD', 'hud.engine': 'Engine', 'hud.models': 'Models', 'hud.unverifiedNote': 'Model answers: NOT verified',
+  'hud.title': 'JARVIS HUD', 'hud.engine': 'Engine', 'hud.models': 'Models', 'hud.unverifiedNote': 'Model answers: NOT verified',
   'error.state': 'No connection to JARVIS', 'error.session': 'Local session expired: open the host link again.',
 };

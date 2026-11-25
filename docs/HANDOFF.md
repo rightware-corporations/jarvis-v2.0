@@ -4238,6 +4238,11 @@ Local mode is unchanged.
   - decide on authorising `api.frankfurter.dev`;
   - resume F01 (config D, 4B) only with a new authorisation.
 
+
+## CHECKPOINT — 25/11/2026: JPE-01 personal experience (source-only; validation pending)
+- Operator requested the permanent JARVIS identity for Issa, with no separate presentation branch.
+- Existing HUD overlay refined: personal sidebar mark, browser title, PT-MZ/EN identity, precision core and static depth. Existing backend-driven states, model picker, warnings and sources preserved. No backend, voice, security or vendor change.
+- See `docs/engineering/JPE01_PERSONAL_EXPERIENCE.md`. Reconcile the current voice work with this commit via normal fetch; no force-push. Build, visual acceptance and CI pending.
 ## CHECKPOINT — 25/11/2026: VOICE & INTELLIGENCE SPRINT (B6 branch) — voice integrated in the same chat (opt-in); routing, calculator and state fixes
 - **Context:** the Issa presentation moved to 25/11. The operator confirmed USD/MZN and XAU/USD in the external HUD on 24/11, and observed calculation errors, irrelevant research and latency.
 - **Disk blocker** (117 MB free): resolved by removing only superseded scratchpad folders and recreatable caches. `/var/lib/docker` (15 GB) was NOT touched.

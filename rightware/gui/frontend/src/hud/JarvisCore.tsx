@@ -37,7 +37,9 @@ export function JarvisCore({ size = 168 }: { size?: number }) {
   return (
     <div className="rw-core" data-mode={mode} role="status" aria-live="polite">
       <svg width={size} height={size} viewBox="0 0 200 200" aria-hidden="true">
-        <circle className="rw-core__halo" cx="100" cy="100" r="92" />
+        <circle className="rw-core__halo" cx="100" cy="100" r="96" />
+        <circle className="rw-core__fine" cx="100" cy="100" r="88" strokeDasharray="1 5" />
+        <path className="rw-core__frame" d="M16 50 A96 96 0 0 1 50 16 M150 16 A96 96 0 0 1 184 50 M184 150 A96 96 0 0 1 150 184 M50 184 A96 96 0 0 1 16 150" />
         <g className="rw-core__ring rw-core__ring--outer">
           <circle cx="100" cy="100" r="80" strokeDasharray="6 10" />
         </g>
@@ -45,7 +47,9 @@ export function JarvisCore({ size = 168 }: { size?: number }) {
           <circle cx="100" cy="100" r="62" strokeDasharray="40 14 6 14" />
         </g>
         <circle className="rw-core__ring--inner" cx="100" cy="100" r="44" />
-        <circle className="rw-core__heart" cx="100" cy="100" r="22" />
+        <circle className="rw-core__fine" cx="100" cy="100" r="33" strokeDasharray="3 5" />
+        <circle className="rw-core__heart" cx="100" cy="100" r="16" />
+        <circle className="rw-core__lens" cx="100" cy="100" r="8" />
         <g className="rw-core__tick"><rect x="97" y="10" width="6" height="16" rx="2" /></g>
       </svg>
       <div className="rw-core__label">
