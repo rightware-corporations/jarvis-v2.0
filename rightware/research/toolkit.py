@@ -298,10 +298,18 @@ class ResearchToolkit:
     # -- after the answer -----------------------------------------------------------------------------------------
     def finalize(self, model_answer: str) -> tuple[list[str], dict, list[str]]:
         """→ (host lines to append, verification dict, flags)."""
-        self.verdicts = C.validate(model_answer, self.sources, self.instruction) if self.sources else []
+        searched = any(r.get("results") for r in self.searches)
+        self.verdicts = (C.validate(model_answer, self.sources, self.instruction)
+                         if self.sources or searched else [])
         lines = C.host_lines(self.verdicts)
         summary = C.summary(self.verdicts)
         flags = []
+        if searched and not self.sources and (C.CITE.search(model_answer) or C.numbers_in(model_answer, self.instruction)):
+            # R02-A closed-list finding: with nothing readable, a small model answers from search SNIPPETS (untrusted,
+            # unread) and may even cite [S#]. Never presented as verified.
+            flags.append("SNIPPETS_ONLY")
+            lines.insert(0, "⚠ Verificação do anfitrião (fontes): nenhuma página foi lida nesta pergunta; valores e "
+                            "factos acima podem vir só de excertos de resultados de pesquisa e não foram verificados.")
         if any(v.status in C.PROBLEM for v in self.verdicts):
             flags.append("UNSUPPORTED_CITATION")
         if summary.get("conflicts"):

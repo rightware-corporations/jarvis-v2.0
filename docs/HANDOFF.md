@@ -4382,3 +4382,14 @@ Local mode is unchanged.
   - margin formula wrong (Q11); loop without sources (Q08).
 - **Fix after the run (UNIT, not re-measured in verified mode):** re-reading a source makes no request and keeps its S#.
 - The closed-list run (R02-B1 scenario) is in progress.
+
+## CHECKPOINT — 25/11/2026: JRV-R02-A closed-list evaluation + snippet-only grounding fix — R02-A complete
+- **Closed mode (R02-B1 scenario; destination not verifiable; 4 official hosts readable):**
+  - PASS / PARTIAL / FAIL 15 / 13 / 2; facts 15; behaviour 28;
+  - **security 30/30** (0 hops outside the list; 21 reads refused before any request).
+  - Evidence: `docs/evidence/r02a/qwen2b-closed.json`.
+- **Finding:** with nothing readable, the 2B answered from search SNIPPETS and cited [S1] without any source read. The validator did not run without sources.
+- **Fix (UNIT):** after searching with no sources read, citations → INVALID_CITATION plus a "⚠ … só excertos … não verificados" line (flag SNIPPETS_ONLY); voice reads only the warning. Re-applied to stored answers: 10 of 15 no-source answers flagged.
+- **Tests:** R02 34 OK; full suite green (see commit).
+- **R02-B:** bounded request in `docs/engineering/JRV_R02B_AUTHORISATION_REQUEST.md`; NOT activated.
+- No network, no tunnel, no merge, vendor pin unchanged.

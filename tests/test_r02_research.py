@@ -171,6 +171,19 @@ class Security(unittest.TestCase):
         lines, info, flags = k.finalize("O câmbio é 70,12 meticais por euro [S1].")
         self.assertIn("INJECTION_SUSPECTED", flags)
 
+    def test_answer_from_search_snippets_only_is_never_presented_as_verified(self):
+        f = CorpusFetcher()
+        f.verifies_destination = False
+        k = kit(f)                                          # empty closed list: nothing is readable
+        k.begin("Quem dirige a Kanimambo Logística?")
+        t = k.tools()
+        t["web_search"][1]({"query": "Kanimambo Logística directora fundada"})
+        self.assertEqual(t["web_read"][1]({"target": "R1"}).status, "REFUSED")
+        lines, info, flags = k.finalize("Foi fundada em 2011 e é dirigida por Amélia Tembe [S1].")
+        self.assertIn("SNIPPETS_ONLY", flags)
+        self.assertTrue(lines[0].startswith("⚠ Verificação do anfitrião (fontes)"))
+        self.assertEqual(info["citations"].get("invalid_citation"), 1)
+
     def test_user_supplied_login_url_is_refused_without_request(self):
         f = CorpusFetcher()
         k = kit(f)

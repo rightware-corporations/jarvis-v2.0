@@ -180,6 +180,12 @@ def _fmt(v: float) -> str:
     return s
 
 
+def numbers_in(answer: str, question: str = "") -> bool:
+    """True if the answer states numbers that are not just repeated from the question."""
+    q = [v for _, v in numbers(question)]
+    return any(all(abs(v - x) > 1e-9 for x in q) for _, v in numbers(DATE_DAY.sub(" ", _strip_citations(answer))))
+
+
 def summary(verdicts: list[Verdict]) -> dict:
     c: dict[str, int] = {}
     for v in verdicts:
