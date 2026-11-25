@@ -4265,4 +4265,9 @@ Local mode is unchanged.
 - **ECB:** moved to `api.frankfurter.dev/v1`; needs a NEW network authorisation including that host.
 - **Tests:** 731 Python OK (new `tests/test_voice_router.py`); tsc 0; Vitest 117/117.
 - **Docs and evidence:** `docs/engineering/VOICE_INTELLIGENCE_SPRINT.md`, `docs/evidence/voice-intelligence/`.
-- **Network today:** PyPI, github.com (kokoro-onnx model releases), huggingface.co (faster-whisper-base). No research/financial requests. No tunnel. No merge.
+- **Network today:** PyPI, github.com (kokoro-onnx model releases), huggingface.co (faster-whisper-base). No research/financial requests. No tunnel. No merge.- **Addendum (post-merge with JPE-01 `099f01a` → `5cf3642`):**
+  - the merge had only a HANDOFF conflict (both checkpoints kept);
+  - HUD rebuilt; voice-setup re-run (models OK); tsc 0; Vitest 117/117; Python 731 OK;
+  - real browser on the merged HUD: mic, transcript into the chat input, answer, then "ouvir" (hover + click), synthesize 200 and playback OK. The speak button is upstream hover-reveal (opacity 0 until hover), which is not a defect;
+  - mobile viewport (Pixel 7): title "JARVIS", microphone active.
+  - JPE-01 acceptance items still pending: model selection, panel toggle, reduced motion and the CPU budget measurement.
