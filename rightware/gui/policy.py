@@ -30,6 +30,15 @@ ALLOW: dict[tuple[str, str], str] = {
     ("POST", "/v1/rightware/tasks/authorize"): "bridge",
     ("POST", "/v1/rightware/tasks/cancel"): "bridge",
 }
+# VOICE (opt-in, only when the host started with --voz): the UPSTREAM speech routes, local STT/TTS. Each POST has a
+# hard body cap (Content-Length required) enforced here, before the upstream handler reads the body.
+VOICE_ALLOW: dict[tuple[str, str], str] = {
+    ("GET", "/v1/speech/health"): "inner",
+    ("GET", "/v1/speech/tts/health"): "inner",
+    ("POST", "/v1/speech/transcribe"): "inner",
+    ("POST", "/v1/speech/synthesize"): "inner",
+}
+BODY_LIMITS = {"/v1/speech/transcribe": 5 * 1024 * 1024, "/v1/speech/synthesize": 16 * 1024}
 LOGIN_PATH = "/rw-login"
 LOGIN_REQUIRED_HTML = (
     "<!doctype html><html lang=\"pt\"><head><meta charset=\"utf-8\"><title>JARVIS — sessão local</title></head>"
@@ -51,7 +60,7 @@ SECURITY_HEADERS = [(b"x-content-type-options", b"nosniff"), (b"referrer-policy"
 # The browser itself may only talk to this origin: the original frontend's optional analytics (PostHog) and
 # leaderboard (Supabase) calls are blocked even if a user opts in by mistake.
 CSP = (b"default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-       b"img-src 'self' data: blob:; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; "
+       b"img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; worker-src 'self'; manifest-src 'self'; "
        b"object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 
 
@@ -243,6 +252,14 @@ class PolicyApp:
                                     (b"content-security-policy", CSP), *SECURITY_HEADERS]})
             await send({"type": "http.response.body", "body": body})
             return None
+        limit = BODY_LIMITS.get(path) if kind == "http" and method == "POST" else None
+        if limit is not None:
+            headers = dict((bytes(k).lower(), bytes(v)) for k, v in scope.get("headers") or [])
+            size = headers.get(b"content-length", b"")
+            if not size.isdigit() or int(size) > limit:
+                self.audit.record(kind, method, path, "DENY", "BODY_TOO_LARGE_OR_UNSIZED")
+                return await send_json(send, 413, {"error": "BLOQUEADO_PELA_POLITICA_RIGHTWARE",
+                                                   "reason": "BODY_TOO_LARGE_OR_UNSIZED"})
         self.audit.record(kind, method, path, "ALLOW", reason, target=target)
         app = self.inner if target == "inner" else self.bridge
         return await app(scope, receive, send)

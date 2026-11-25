@@ -179,7 +179,7 @@ class ExchangeRateTool:
             return None
         import json as _j
         when = "latest" if date in (None, "", "latest") else date
-        url = f"https://api.frankfurter.app/{when}?from={base}&to={quote}"
+        url = f"https://api.frankfurter.dev/v1/{when}?from={base}&to={quote}"   # .app → .dev/v1 (301 observed 24/11)
         got = self.ecb.get(url)
         if got is None:
             return None                                   # not retrieved → caller falls back to the BM cross

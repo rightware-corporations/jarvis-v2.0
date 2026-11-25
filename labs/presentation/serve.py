@@ -24,7 +24,7 @@ from rightware.persona import RuntimeFacts, system_prompt
 
 BM = ("www.bancomoc.mz", "bancomoc.mz")
 WIKI = ("pt.wikipedia.org", "en.wikipedia.org")
-ECB = ("api.frankfurter.app",)
+ECB = ("api.frankfurter.dev",)     # 25/11: .app now 301-redirects here; needs a NEW authorisation including this host
 TEMPLATES = {"pt": "https://pt.wikipedia.org/w/index.php?search={q}&fulltext=1&ns0=1",
              "en": "https://en.wikipedia.org/w/index.php?search={q}&fulltext=1&ns0=1"}
 FX_DEF = ToolDef("get_exchange_rate", TOOL_SPEC["function"]["description"],
@@ -32,6 +32,10 @@ FX_DEF = ToolDef("get_exchange_rate", TOOL_SPEC["function"]["description"],
                   "quote_currency": {"type": "string", "maxLength": 3, "description": "ISO: MZN ou USD"},
                   "reference_date": {"type": "string", "maxLength": 10, "description": "AAAA-MM-DD ou latest"}},
                  ("base_currency",), session_flag="fx", consequential=False, max_calls=4)
+C_DEF = ToolDef("calculator", "Calcula uma expressão matemática exacta (ex.: (50000-35000)/50000*100). Usa para "
+                "qualquer conta com números; não faças contas de cabeça.",
+                {"expression": {"type": "string", "maxLength": 200, "description": "expressão matemática"}},
+                ("expression",), session_flag="calc", consequential=False, max_calls=6)
 R_DEF = ToolDef("web_research", RSPEC["function"]["description"],
                 {"query": {"type": "string", "maxLength": 120, "description": "2 a 6 palavras-chave"},
                  "language": {"type": "string", "enum": ["pt", "en"], "maxLength": 2, "description": "pt ou en"}},
@@ -87,6 +91,7 @@ if __name__ == "__main__":
     a.add_argument("--hoje", default=dt.date.today().isoformat())
     a.add_argument("--public-origin")
     a.add_argument("--public-minutes", type=float)
+    a.add_argument("--voz", action="store_true")
     x = a.parse_args()
     if x.proxy:
         from labs.op01.proxy_transport import SessionProxyFetcher
@@ -115,18 +120,28 @@ if __name__ == "__main__":
             r = rt(args.get("query", ""), args.get("language", "pt"))
             return ToolOutcome("web_research", "OK" if r["status"] == "OK" else "FAILED",
                                json.dumps(r, ensure_ascii=False), {"status": r["status"]})
-        return ({"get_exchange_rate": (FX_DEF, run_fx), "web_research": (R_DEF, run_r)},
+        def run_c(args):                               # REUSE: the pinned OpenJarvis CalculatorTool (safe AST eval)
+            from openjarvis.tools.calculator import CalculatorTool
+            r = CalculatorTool().execute(expression=str(args.get("expression", ""))[:200])
+            return ToolOutcome("calculator", "OK" if r.success else "FAILED", r.content, {"success": r.success})
+        return ({"get_exchange_rate": (FX_DEF, run_fx), "web_research": (R_DEF, run_r), "calculator": (C_DEF, run_c)},
                 lambda: fx.records + rt.records)
 
     facts = RuntimeFacts(model=x.model, environment="cloud",
-                         tools=("cotações oficiais com data e fonte (get_exchange_rate: Banco de Moçambique — metical e "
+                         tools=("calculadora exacta (calculator) para qualquer conta",
+                                "cotações oficiais com data e fonte (get_exchange_rate: Banco de Moçambique — metical e "
                                 "ouro XAU/USD; BCE — EUR/USD, GBP/USD)", "pesquisa geral numa enciclopédia autorizada "
                                 "(web_research)"))
-    adapter = ToolChatAdapter(x.model, sites=(), persona=system_prompt(facts), allow=("fx", "research"),
+    from rightware.assistant_tools import ModelRouter
+    from rightware.text_adapter import LocalSimpleTextAdapter
+    persona = system_prompt(facts)
+    router = ModelRouter(x.model, "cotações (câmbio, ouro), pesquisa geral, calculadora")
+    direct = LocalSimpleTextAdapter(x.model, timeout_seconds=240, max_tokens=768, system_prompt=persona)
+    adapter = ToolChatAdapter(x.model, sites=(), persona=persona, allow=("fx", "research", "calc"),
                               extra_tools_factory=tools, post_check=annotate, timeout_seconds=240,
-                              browser_fetcher=fetcher)
+                              browser_fetcher=fetcher, router=router, direct=direct)
     app, bridge = build_app(port=x.port, models=[x.model], deadline=240.0, adapter_factory=lambda m: adapter,
-                            public_origin=x.public_origin, public_minutes=x.public_minutes)
+                            public_origin=x.public_origin, public_minutes=x.public_minutes, voice=x.voz)
     bridge.adapters = {x.model: adapter}
     bridge.tools_label = lambda m: f"ferramentas: cotações oficiais e pesquisa ({label})"
     print(f"JARVIS — apresentação ({label}).", flush=True)

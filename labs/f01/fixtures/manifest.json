@@ -24,7 +24,7 @@
   "type": "text/plain",
   "retrieved_at": "2031-03-10T12:00:04Z"
  },
- "https://api.frankfurter.app/latest?from=EUR&to=USD": {
+ "https://api.frankfurter.dev/v1/latest?from=EUR&to=USD": {
   "file": "ecb_eur_usd.json",
   "type": "application/json",
   "retrieved_at": "2031-03-10T12:00:05Z"

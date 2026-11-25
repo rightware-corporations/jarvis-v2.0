@@ -717,6 +717,8 @@ class AgentSession:
             completion = "ACTION_VERIFIED" if verified_action else "ACTION_NOT_DONE"
         elif sources:
             completion = "ANSWERED_WITH_SOURCES"
+        elif any(o.status == "OK" for o in outcomes):
+            completion = "ANSWERED_WITH_TOOLS"           # a (host-declared) tool succeeded; no web page was read
         elif outcomes:
             completion = "TOOLS_FAILED"
         elif denied:
@@ -726,7 +728,8 @@ class AgentSession:
         text += {
             "ERROR": "\nEstado: erro de auditoria — o resultado não pode ser confirmado.",
             "HALTED": f"\nEstado: pedido interrompido ({halted}); a resposta pode estar incompleta.",
-            "TOOLS_FAILED": "\nEstado: não foi possível concluir o pedido com as ferramentas.",
+            "TOOLS_FAILED": "\nNota: não foi possível concluir a parte do pedido que dependia de ferramentas (falharam ou "
+                            "foram recusadas); a resposta acima não se baseia em resultados de ferramentas.",
             "TOOLS_REFUSED": "\nEstado: não foi possível concluir o pedido; as ferramentas foram recusadas.",
             "ACTION_NOT_DONE": "\nEstado: a acção não foi executada.",
         }.get(completion, "")

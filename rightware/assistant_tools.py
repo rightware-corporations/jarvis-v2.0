@@ -24,15 +24,61 @@ READ_TOOLS = ("web_open", "web_follow", "web_read")
 MAX_REPLY = 4000
 
 
+ROUTER_SYSTEM = (
+    "Decides se a última mensagem do utilizador precisa de ferramentas. Responde só com JSON "
+    "{\"rota\": \"conversa\"} ou {\"rota\": \"ferramentas\"}. Escolhe \"ferramentas\" quando a resposta exige dados "
+    "externos ou actuais (cotações, câmbio, ouro, notícias, factos que não sabes com segurança) ou um cálculo numérico "
+    "exacto. Escolhe \"conversa\" para cumprimentos, perguntas sobre ti, conselhos, planos e explicações gerais que "
+    "não dependem de dados externos nem de contas exactas. Ferramentas disponíveis: {tools}.")
+
+
+class ModelRouter:
+    """The MODEL decides whether a turn needs tools (no keyword rules). One short JSON call to the local model;
+    any failure or unexpected output → "ferramentas" (fail-safe: the tool path has the policy and receipts)."""
+
+    def __init__(self, model: str, tools_description: str, call=None):
+        self.model, self.system = model, ROUTER_SYSTEM.replace("{tools}", tools_description)
+        self._call = call
+        self.last: dict = {}
+
+    def __call__(self, text: str, history: tuple[tuple[str, str], ...]) -> str:
+        import json as _json
+        import time as _time
+        t0 = _time.monotonic()
+        recent = "\n".join(f"{r}: {t[:300]}" for r, t in tuple(history)[-4:])
+        user = (f"Conversa recente:\n{recent}\n\n" if recent else "") + f"Última mensagem: {text}"
+        try:
+            raw = self._call(self.system, user) if self._call else self._ollama(user)
+            route = _json.loads(raw).get("rota")
+        except Exception:
+            route = None
+        route = route if route in ("conversa", "ferramentas") else "ferramentas"
+        self.last = {"route": route, "seconds": round(_time.monotonic() - t0, 2)}
+        return route
+
+    def _ollama(self, user: str) -> str:
+        import json as _json
+        import urllib.request
+        body = _json.dumps({"model": self.model, "stream": False, "format": "json", "think": False,
+                            "messages": [{"role": "system", "content": self.system}, {"role": "user", "content": user}],
+                            "options": {"temperature": 0, "num_predict": 20}}).encode()
+        req = urllib.request.Request("http://127.0.0.1:11434/api/chat", data=body,
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(req, timeout=60) as r:
+            return _json.loads(r.read())["message"]["content"]
+
+
 class ToolChatAdapter:
     def __init__(self, model: str, *, sites: tuple[str, ...], persona: str, browser_fetcher=None,
                  start_url: str | None = None, search_template: str | None = None,
                  allow: tuple[str, ...] = ("browse",), extra_tools_factory=None, post_check=None,
+                 router=None, direct=None,
                  engine_factory=None, budgets: Budgets | None = None, max_turns: int = 6, timeout_seconds: float = 180.0,
                  audit_path=None, clock=time.monotonic):
         if "browse" in allow and not sites:
             raise ValueError("ToolChatAdapter exige sites autorizados (allowlist exacta)")
         self.allow, self.extra_tools_factory, self.post_check = tuple(allow), extra_tools_factory, post_check
+        self.router, self.direct = router, direct    # optional: model-decided direct conversation (no tools)
         self.model, self.sites, self.persona = model, tuple(sites), persona
         self.start_url = start_url                 # host-declared search/entry page (https, inside the allowlist)
         self.search_template = search_template     # host-declared search URL with {q} → model tool web_search(query)
@@ -60,6 +106,12 @@ class ToolChatAdapter:
         from rightware.agent.session import AgentSession
         with self._lock:
             self._phase, self._since = "A interpretar", self._clock()
+            if self.router is not None and self.direct is not None and self.router(text, tuple(history)) == "conversa":
+                out = self.direct.reply(text, tuple(history))          # same persona, no tools, no receipts
+                self._last = {"completion": "ANSWERED_DIRECT", "sources": [], "tools": [], "halted": None, "flags": [],
+                              "tool_calls": 0, "route": "conversa"}
+                self._phase, self._since = "Resposta concluída", self._clock()
+                return out
             begin = getattr(self.browser_fetcher, "begin_question", None)
             if callable(begin):                       # per-question HTTP budget (experimental proxy transport)
                 begin()

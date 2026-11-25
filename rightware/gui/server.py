@@ -22,7 +22,7 @@ from rightware.gui.runtime import paths
 LOOPBACK = "127.0.0.1"
 
 
-def build_inner(model: str, home: Path):
+def build_inner(model: str, home: Path, voice: bool = False):
     """The original OpenJarvis application with every effect-capable component absent."""
     os.environ["OPENJARVIS_HOME"] = str(home)
     from openjarvis.core.config import load_config
@@ -36,10 +36,17 @@ def build_inner(model: str, home: Path):
     if config.server.agent:
         raise RuntimeError("GUI_CONFIG_UNSAFE: server.agent")
     engine = OllamaEngine(host=config.engine.ollama.host)
-    return create_app(engine, model, agent=None, engine_name="ollama", agent_name="", config=config,
-                      channel_bridge=None, memory_backend=None, speech_backend=None, agent_manager=None,
-                      agent_scheduler=None, mcp_tools=None, mcp_clients=None, webhook_config=None,
-                      cors_origins=[])
+    speech = None
+    if voice:                                      # VOICE (opt-in): upstream STT backend + Kokoro TTS, local only
+        from rightware.gui import voice as V
+        speech = V.whisper_backend()
+    app = create_app(engine, model, agent=None, engine_name="ollama", agent_name="", config=config,
+                     channel_bridge=None, memory_backend=None, speech_backend=speech, agent_manager=None,
+                     agent_scheduler=None, mcp_tools=None, mcp_clients=None, webhook_config=None,
+                     cors_origins=[])
+    if voice:
+        app.state.tts_backend, app.state.tts_resolved = V.make_tts(), True
+    return app
 
 
 def build_entries(models: list[str], deadline: float, adapter_factory=None) -> dict:
@@ -52,7 +59,7 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
               auth: LocalAuth | None = None, static_dir: Path | None = None, public_origin: str | None = None,
               public_minutes: float | None = None, environment: str = "unknown", tool_sites: tuple[str, ...] = (),
               browser_fetcher=None, tool_label: str = "", tool_search_template: str = "",
-              tool_entry_urls: tuple[str, ...] = ()):
+              tool_entry_urls: tuple[str, ...] = (), voice: bool = False):
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
     adapters: dict = {}
@@ -84,7 +91,13 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
         entries[models[0]] = control.entry
     bridge = ChatBridge(entries=entries, default_model=models[0], control=control, audit=audit)
     bridge.adapters = adapters                    # OP01: live activity of tool-using turns (HUD)
-    inner = inner if inner is not None else build_inner(models[0], p["home"])
+    if voice:
+        from rightware.gui import voice as V
+        ok, why = V.available()
+        if not ok:
+            raise RuntimeError(f"VOZ_INDISPONIVEL: {why}")
+    inner = inner if inner is not None else build_inner(models[0], p["home"], voice=voice)
+    bridge.voice = voice
     public_until = None
     if public_origin is not None:                 # B6 private access: single-use link, expiring sessions and access
         if not (public_minutes and 1 <= public_minutes <= 60):
@@ -94,8 +107,10 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
         auth = auth or LocalAuth(single_use=True, token_ttl=15 * 60, session_ttl=public_minutes * 60,
                                  max_failures=20)
     auth = auth or LocalAuth()
+    from rightware.gui.policy import ALLOW, VOICE_ALLOW
     app = PolicyApp(inner=inner, bridge=bridge, static_dir=static_dir or p["static"], port=port, audit=audit,
-                    auth=auth, public_origin=public_origin, public_until=public_until)
+                    auth=auth, public_origin=public_origin, public_until=public_until,
+                    allow={**ALLOW, **VOICE_ALLOW} if voice else None)
     app.public_until = public_until
     app.session_url = auth.write_url(p["runtime"] / "session-url", port, base=public_origin)
     return app, bridge

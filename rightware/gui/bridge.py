@@ -445,7 +445,11 @@ class ChatBridge:
             status, reason, label = CAPABILITY_STATUS.get(c, ("INTEGRADA", "", c))
             caps.append({"id": c, "label": label, "description": self.control.describe(c), "status": status,
                          "reason": reason, "mission": True})
-        caps += [{"id": i, "label": label, "status": st, "reason": why} for i, label, st, why in PENDING_CAPABILITIES]
+        for i, label, st, why in PENDING_CAPABILITIES:
+            if i == "voz" and getattr(self, "voice", False):     # VOICE opt-in: real, local, not yet field-validated
+                st, why = "PARCIAL", ("Ouvir (Whisper base) e falar (Kokoro, voz pt) localmente, na mesma conversa; "
+                                      "não validado no hardware do Issa.")
+            caps.append({"id": i, "label": label, "status": st, "reason": why})
         return caps
 
     @staticmethod

@@ -14,6 +14,7 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("setup", help="prepara .runtime/gui a partir do pin (venv isolado + build do frontend original)")
     sub.add_parser("check", help="mostra o manifesto do runtime preparado")
+    sub.add_parser("voice-setup", help="VOZ: instala os pacotes de voz fixados no venv do runtime e verifica os modelos")
     sub.add_parser("frontend-check", help="TypeScript + Vitest do overlay HUD sobre o frontend do pin")
     s = sub.add_parser("serve", help="arranca a interface em http://127.0.0.1:PORT/")
     s.add_argument("--port", type=int, default=8000)
@@ -36,6 +37,8 @@ def main(argv=None) -> int:
                         "exige --pesquisa-autorizacao")
     s.add_argument("--pesquisa-modelo", default="",
                    help="OP01: URL de pesquisa com {q} (ex.: https://host/search?q={q}), dentro de --pesquisa-sites")
+    s.add_argument("--voz", action="store_true",
+                   help="VOZ: activa ouvir (Whisper) e falar (Kokoro) locais na mesma conversa (modelos em .runtime/voice)")
     s.add_argument("--pesquisa-entradas", default="",
                    help="OP01: páginas https de entrada (separadas por vírgula), dentro de --pesquisa-sites")
     s.add_argument("--pesquisa-autorizacao", default="", help="OP01: referência da autorização de rede do operador")
@@ -43,6 +46,10 @@ def main(argv=None) -> int:
     from rightware.gui import runtime as R
     if a.cmd == "setup":
         print(json.dumps(R.setup(), indent=2))
+        return 0
+    if a.cmd == "voice-setup":
+        from rightware.gui import voice as V
+        print(json.dumps(V.setup(R.paths()["python"]), indent=2))
         return 0
     if a.cmd == "frontend-check":
         res = R.frontend_check()
@@ -88,7 +95,7 @@ def main(argv=None) -> int:
                        public_minutes=a.public_minutes if a.public_origin else None, environment=a.ambiente,
                        tool_sites=sites, browser_fetcher=fetcher, tool_label=label,
                        tool_search_template=a.pesquisa_modelo if sites else "",
-                       tool_entry_urls=entries if sites else ())
+                       tool_entry_urls=entries if sites else (), voice=a.voz)
     if sites:
         print(f"OP01: pesquisa activada só para {', '.join(sites)}"
               + (f" (autorização {a.pesquisa_autorizacao})" if a.pesquisa_autorizacao else f" [{label}]"), flush=True)
