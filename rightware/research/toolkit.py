@@ -210,6 +210,12 @@ class ResearchToolkit:
         entry, reason = self.prov.resolve(str(args.get("target", "")))
         if entry is None:
             return self._outcome(tool, "REFUSED", f"Leitura recusada: {reason}.", {}, "PROVENANCE")
+        done = next((sid for sid, s in self.sources.items() if s["ref"] == entry.ref), None)
+        if done is not None:                              # already read in this question: no new request, same S#
+            return self._outcome(tool, "OK", f"Já leste esta fonte como {done} ({self.sources[done]['url']}). "
+                                 "Usa o que já tens, lê outro resultado ou responde.",
+                                 {"final_url": self.sources[done]["url"], "status": 200, "source_id": done,
+                                  "repeat": True})
         self.reads += 1
         allowed = self.prov.host_allowed
         if not doc and urlsplit(entry.url).path.lower().endswith(".pdf"):

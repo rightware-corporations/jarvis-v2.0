@@ -82,6 +82,17 @@ class ProvenanceRules(unittest.TestCase):
         self.assertEqual(ok.status, "OK")
         self.assertIn("Fonte S1", ok.content)
 
+    def test_rereading_a_source_makes_no_request_and_keeps_its_id(self):
+        f = CorpusFetcher()
+        k = kit(f)
+        t = k.tools()
+        t["web_search"][1]({"query": "Lumen-7 janela de contexto"})
+        t["web_read"][1]({"target": "R1"})
+        n = len(f.log)
+        again = t["web_read"][1]({"target": "R1"})
+        self.assertIn("Já leste esta fonte como S1", again.content)
+        self.assertEqual((len(f.log), list(k.sources), k.reads), (n, ["S1"], 1))
+
     def test_copied_result_line_and_bare_host_resolve_only_to_registered_entries(self):
         p = Provenance(verifies_destination=True)
         p.add_result("https://www.ine-mz.example/x", "t", 1)

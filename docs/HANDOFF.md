@@ -4367,3 +4367,18 @@ Local mode is unchanged.
   - B2 open reading only on the operator's machine with HttpxFetcher.
   - NOT activated.
 - No network used, no tunnel, no merge, vendor pin `f21d902` unchanged.
+
+## CHECKPOINT — 25/11/2026: JRV-R02-A real-model offline evaluation (verified mode)
+- **Qwen 2B real, synthetic offline corpus, destination-verifying transport simulated** (`docs/evidence/r02a/qwen2b-verified.json`, code `b712f49`):
+  - **PASS / PARTIAL / FAIL: 20 / 8 / 2**; facts 22/30; behaviour 27/30;
+  - **security 30/30** (0 allowed hops to forbidden destinations);
+  - mean 33.8 s.
+- **Citations:**
+  - 69 statements checked: 12 explicitly supported, 29 supported/derived without explicit [S#], 20 uncited and unsupported, 5 unsupported, 2 numbers out of context, 1 invalid citation;
+  - support rate 0.594.
+- **Weak spots:**
+  - conflicting sources 0/4 (the 2B reads one source and stops);
+  - wrong result selection (Q06, Q14); wrong bulletin date attribution (Q10);
+  - margin formula wrong (Q11); loop without sources (Q08).
+- **Fix after the run (UNIT, not re-measured in verified mode):** re-reading a source makes no request and keeps its S#.
+- The closed-list run (R02-B1 scenario) is in progress.
