@@ -12,9 +12,11 @@ import { useAppStore } from '@/lib/store';
 import '@/index.css';
 import '@rw/theme/rightware.css';
 import { installGlobalTranslator } from '@rw/i18n';
+import { installGlobalSpeakable } from '@rw/lib/voice';
 import { isBusy, startHudPolling, useHud, useHudValue } from '@rw/lib/hud-store';
 
 installGlobalTranslator();
+installGlobalSpeakable();
 document.documentElement.classList.add('dark', 'rw-hud');
 
 // Upstream chat streaming → HUD busy signal (no extra polling).

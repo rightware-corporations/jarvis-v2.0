@@ -24,6 +24,23 @@ WHISPER_CACHE = VOICE_DIR / "whisper"
 DEFAULT_VOICE = "pf_dora"                       # Portuguese (pt-br) female voice of Kokoro v1.0
 LANG_BY_PREFIX = {"p": "pt-br", "a": "en-us", "b": "en-gb", "e": "es", "f": "fr-fr", "i": "it"}
 MAX_TTS_CHARS = 1500
+CACHE_DIR = VOICE_DIR / "cache"
+CACHE_MAX_CHARS = 300                            # only short, repeatable phrases (greetings, fixed notices) are cached
+PROFILE = ROOT / "configs" / "profile.json"
+
+
+def profile() -> dict:
+    """The authorised profile (name, language, voice approval). Missing/invalid → empty (nothing invented)."""
+    import json
+    try:
+        d = json.loads(PROFILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    v = d.get("voice") or {}
+    return {"display_name": d.get("display_name") if isinstance(d.get("display_name"), str) else None,
+            "preferred_language": d.get("preferred_language"),
+            "voice_id": v.get("voice_id") if v.get("status") == "APROVADA" else None,
+            "voice_status": v.get("status", "PENDENTE_APROVACAO")}
 
 
 PACKAGES = ("faster-whisper==1.2.1", "av==16.1.0", "ctranslate2==4.7.1", "kokoro-onnx==0.6.1", "soundfile==0.14.0",
@@ -82,15 +99,31 @@ def make_tts():
                 return self._k
 
         def synthesize(self, text, *, voice_id="", speed=1.0, output_format="wav"):
+            import hashlib
             import soundfile as sf
-            voice = voice_id if voice_id in self.available_voices() else DEFAULT_VOICE
+            approved = profile().get("voice_id")
+            voice = voice_id if voice_id in self.available_voices() else (approved or DEFAULT_VOICE)
             text = " ".join(str(text).split())[:MAX_TTS_CHARS]
-            audio, rate = self._engine().create(text, voice=voice, speed=max(0.5, min(2.0, float(speed or 1.0))),
+            speed = max(0.5, min(2.0, float(speed or 1.0)))
+            key = hashlib.sha256(f"{voice}|{speed}|{text}".encode()).hexdigest()
+            cached = CACHE_DIR / f"{key}.wav"
+            if len(text) <= CACHE_MAX_CHARS and cached.is_file():       # repeat phrase: no inference
+                data = cached.read_bytes()
+                return TTSResult(audio=data, format="wav", voice_id=voice, sample_rate=24000,
+                                 metadata={"cache": "hit"})
+            audio, rate = self._engine().create(text, voice=voice, speed=speed,
                                                 lang=LANG_BY_PREFIX.get(voice[0], "pt-br"))
             buf = io.BytesIO()
             sf.write(buf, audio, rate, format="WAV")
-            return TTSResult(audio=buf.getvalue(), format="wav", duration_seconds=round(len(audio) / rate, 2),
-                             voice_id=voice, sample_rate=rate)
+            data = buf.getvalue()
+            if len(text) <= CACHE_MAX_CHARS:
+                try:
+                    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+                    cached.write_bytes(data)
+                except OSError:
+                    pass                                 # cache is an optimisation only
+            return TTSResult(audio=data, format="wav", duration_seconds=round(len(audio) / rate, 2),
+                             voice_id=voice, sample_rate=rate, metadata={"cache": "miss"})
 
         def available_voices(self):
             try:

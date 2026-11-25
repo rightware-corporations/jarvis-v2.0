@@ -1,0 +1,110 @@
+[
+ {
+  "voice": "pf_dora",
+  "phrase": 1,
+  "synth_s": 1.5,
+  "audio_s": 3.58,
+  "rtf": 0.419,
+  "whisper": "Boa noite, Isa. Estou operacional, como posso ajudar-te hoje.",
+  "wer": 0.1
+ },
+ {
+  "voice": "pf_dora",
+  "phrase": 2,
+  "synth_s": 0.91,
+  "audio_s": 2.77,
+  "rtf": 0.329,
+  "whisper": "Estou analisar a informação solicitaste.",
+  "wer": 0.29
+ },
+ {
+  "voice": "pf_dora",
+  "phrase": 3,
+  "synth_s": 2.01,
+  "audio_s": 6.06,
+  "rtf": 0.332,
+  "whisper": "A taxa de câmbio de referência do dólar é de 60 e 3 medicais e 90 e uns centavos.",
+  "wer": 0.26
+ },
+ {
+  "voice": "pf_dora",
+  "phrase": 4,
+  "synth_s": 1.55,
+  "audio_s": 4.65,
+  "rtf": 0.334,
+  "whisper": "Posso ajudar-te a organizar as suas atividades e analisar os seus objetivos.",
+  "wer": 0.31
+ },
+ {
+  "voice": "pm_alex",
+  "phrase": 1,
+  "synth_s": 1.37,
+  "audio_s": 3.65,
+  "rtf": 0.376,
+  "whisper": "Boa noite e isso estou operacional, como posso ajudar-te hoje.",
+  "wer": 0.2
+ },
+ {
+  "voice": "pm_alex",
+  "phrase": 2,
+  "synth_s": 0.98,
+  "audio_s": 2.77,
+  "rtf": 0.353,
+  "whisper": "Estou analisar a informação de solicitaste.",
+  "wer": 0.29
+ },
+ {
+  "voice": "pm_alex",
+  "phrase": 3,
+  "synth_s": 1.91,
+  "audio_s": 6.14,
+  "rtf": 0.311,
+  "whisper": "A taxa de câmbio de referência do dólar é de 60 e 3 medicais e 90 e uns centavos.",
+  "wer": 0.26
+ },
+ {
+  "voice": "pm_alex",
+  "phrase": 4,
+  "synth_s": 1.46,
+  "audio_s": 4.78,
+  "rtf": 0.305,
+  "whisper": "Posso ajudar-te a organizar as suas atividades e analisar os seus objetivos.",
+  "wer": 0.31
+ },
+ {
+  "voice": "pm_santa",
+  "phrase": 1,
+  "synth_s": 1.14,
+  "audio_s": 3.73,
+  "rtf": 0.304,
+  "whisper": "Boa noite e isso estou operacional, como posso ajudar-te hoje.",
+  "wer": 0.2
+ },
+ {
+  "voice": "pm_santa",
+  "phrase": 2,
+  "synth_s": 1.04,
+  "audio_s": 2.79,
+  "rtf": 0.37,
+  "whisper": "Estou analisar a informação solicitante.",
+  "wer": 0.43
+ },
+ {
+  "voice": "pm_santa",
+  "phrase": 3,
+  "synth_s": 2.05,
+  "audio_s": 6.29,
+  "rtf": 0.326,
+  "whisper": "A taxa de câmbio de referência do dólar é de 60 e 3 medicais e 90 e uns centavos.",
+  "wer": 0.26
+ },
+ {
+  "voice": "pm_santa",
+  "phrase": 4,
+  "synth_s": 1.52,
+  "audio_s": 4.86,
+  "rtf": 0.312,
+  "whisper": "Posso ajudar-te a organizar as suas atividades e analisar os seus objetivos.",
+  "wer": 0.31
+ }
+]

@@ -12,6 +12,8 @@ export const en: Record<string, string> = {
   'chat.deepResearch': 'Deep research (not integrated)',
   'activity.interpreting': 'Interpreting', 'activity.searching': 'Searching', 'activity.reading': 'Reading sources',
   'activity.analysing': 'Analysing', 'activity.done': 'Answer complete', 'activity.calls': '{n} tool call(s)',
+  'voice.greeting': '{greeting}{name}. I am operational. How can I help you today?', 'voice.playGreeting': 'Play greeting',
+  'voice.unconfirmed': 'Warning: this answer contains financial values the system could not confirm at the source, so I will not read them; please check the text and the sources shown.',
   'core.offline': 'Local engine unavailable', 'core.ready': 'Ready', 'core.thinking': 'Thinking',
   'core.mission': 'Mission running', 'core.verified': 'Verified result', 'core.unverified': 'Unverified result',
   'core.failed': 'Failure', 'core.queue': '{n} model request(s)', 'core.elapsed': '{s} s',

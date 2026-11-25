@@ -1,0 +1,7 @@
+{
+  "version": "rightware.profile.v1",
+  "rule": "Authorised operator profile. Only what is here may be used about the user; nothing else is inferred or invented.",
+  "display_name": "Issa",
+  "preferred_language": "pt-MZ",
+  "voice": {"voice_id": null, "status": "PENDENTE_APROVACAO", "candidates": ["pf_dora", "pm_alex", "pm_santa"]}
+}

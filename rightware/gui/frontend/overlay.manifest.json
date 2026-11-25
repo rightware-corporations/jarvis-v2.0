@@ -201,6 +201,17 @@
           "count": 1
         }
       ]
+    },
+    {
+      "file": "src/lib/message-text.ts",
+      "sha256": "dd7e7061cdc7537efe1972919f5c9891c7aa57f3e39fc0d4adf650c0eb9c77ae",
+      "items": [
+        {
+          "find": "  let t = stripThinkTags(text);\n",
+          "replace": "  let t = (globalThis.__rwSpeakable ? globalThis.__rwSpeakable(stripThinkTags(text)) : stripThinkTags(text));\n",
+          "count": 1
+        }
+      ]
     }
   ],
   "html": {

@@ -3,5 +3,7 @@
 declare global {
   // eslint-disable-next-line no-var
   var __rwT: (key: string) => string;
+  // eslint-disable-next-line no-var
+  var __rwSpeakable: (text: string) => string;
 }
 export {};

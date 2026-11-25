@@ -12,6 +12,8 @@ export const ptMZ: Record<string, string> = {
   'chat.deepResearch': 'Pesquisa aprofundada (não integrada)',
   'activity.interpreting': 'A interpretar', 'activity.searching': 'A pesquisar', 'activity.reading': 'A consultar fontes',
   'activity.analysing': 'A analisar', 'activity.done': 'Resposta concluída', 'activity.calls': '{n} chamada(s) de ferramenta',
+  'voice.greeting': '{greeting}{name}. Estou operacional. Como posso ajudar-te hoje?', 'voice.playGreeting': 'Ouvir saudação',
+  'voice.unconfirmed': 'Atenção: esta resposta contém valores financeiros que o sistema não conseguiu confirmar na fonte. Por isso não os vou ler; consulta o texto e as fontes indicadas.',
   'core.offline': 'Motor local indisponível', 'core.ready': 'Pronto', 'core.thinking': 'A pensar',
   'core.mission': 'Missão em execução', 'core.verified': 'Resultado verificado', 'core.unverified': 'Resultado não verificado',
   'core.failed': 'Falha', 'core.queue': '{n} pedido(s) ao modelo', 'core.elapsed': '{s} s',

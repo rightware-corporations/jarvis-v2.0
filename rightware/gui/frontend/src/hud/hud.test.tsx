@@ -113,3 +113,16 @@ describe('OP01 activity label (real backend phase only)', () => {
     expect(activityLabel('thinking', undefined)).toBeNull();
   });
 });
+
+describe('JRV-V02 voice helpers', () => {
+  it('greets by the local hour with the profile name only, and never speaks unconfirmed values or host lines', async () => {
+    const { greetingText, dayPart, speakable } = await import('../lib/voice');
+    expect([dayPart(8), dayPart(14), dayPart(21)]).toEqual(['morning', 'afternoon', 'evening']);
+    expect(greetingText(21, 'Issa')).toContain(', Issa.');
+    expect(greetingText(9, null)).not.toContain(',');
+    const ans = 'A taxa média é 63,91 MZN.\nFonte: https://x/y.pdf — dados de 2026-11-24\n✓ Verificação do anfitrião: 1 valor\n\n---\n_JARVIS · resposta…_\n\n`rw-0123456789abcdef`';
+    expect(speakable(ans)).toBe('A taxa média é 63,91 MZN.');
+    const bad = 'A taxa é 99,99.\n⚠ Verificação do anfitrião: valores sem correspondência';
+    expect(speakable(bad)).not.toContain('99,99');
+  });
+});

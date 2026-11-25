@@ -488,7 +488,15 @@ class ChatBridge:
                      if running and self.task_started else None},
             "last": self.outcome_dict(self.task_outcome) if not running else None,
             "activity": self.activity(),
+            "profile": self.profile(),
         }
+
+    def profile(self) -> dict:
+        """JRV-V02: only the authorised profile fields the HUD needs (name for the greeting; voice approval state)."""
+        from rightware.gui.voice import profile
+        p = profile()
+        return {"display_name": p.get("display_name"), "voice_status": p.get("voice_status"),
+                "voice": bool(getattr(self, "voice", False))}
 
     def tools_label(self, model: str) -> str:
         """OP01: the footer states the REAL tool configuration of this model's adapter."""

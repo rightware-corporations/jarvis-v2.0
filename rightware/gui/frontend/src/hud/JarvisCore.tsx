@@ -4,6 +4,8 @@
 import { useEffect, useState } from 'react';
 import { t, useLang } from '../i18n';
 import { coreMode, useHudValue } from '../lib/hud-store';
+import { useTtsStore } from '@/lib/tts';
+import { greetingText } from '../lib/voice';
 
 export function coreLabel(mode: string, queue: number): string {
   const base = t(`core.${mode}`);
@@ -61,6 +63,23 @@ export function JarvisCore({ size = 168 }: { size?: number }) {
       {mode === 'mission' && elapsed != null && (
         <div className="rw-core__sub">{hud.state?.task.capability} · {t('core.elapsed', { s: Math.round(elapsed) })}</div>
       )}
+      <GreetingButton name={hud.state?.profile?.display_name} enabled={!!hud.state?.profile?.voice} />
     </div>
+  );
+}
+
+/** JRV-V02: spoken greeting, ONLY on an explicit click (browser autoplay policy), through the SHARED upstream audio
+ *  store (a new playback stops the previous one). Uses the user's local hour and the authorised profile name only. */
+export function GreetingButton({ name, enabled }: { name?: string | null; enabled: boolean }) {
+  const available = useTtsStore((s) => s.available);
+  const speak = useTtsStore((s) => s.speak);
+  const ensureHealth = useTtsStore((s) => s.ensureHealth);
+  useEffect(() => { if (enabled) void ensureHealth(); }, [enabled, ensureHealth]);
+  if (!enabled || available !== true) return null;
+  return (
+    <button type="button" className="rw-btn rw-core__greet" data-rw="voice-greeting"
+            onClick={() => void speak('rw-greeting', greetingText(new Date().getHours(), name))}>
+      {t('voice.playGreeting')}
+    </button>
   );
 }

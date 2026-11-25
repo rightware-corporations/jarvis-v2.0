@@ -4271,3 +4271,23 @@ Local mode is unchanged.
   - real browser on the merged HUD: mic, transcript into the chat input, answer, then "ouvir" (hover + click), synthesize 200 and playback OK. The speak button is upstream hover-reveal (opacity 0 until hover), which is not a defect;
   - mobile viewport (Pixel 7): title "JARVIS", microphone active.
   - JPE-01 acceptance items still pending: model selection, panel toggle, reduced motion and the CPU budget measurement.
+
+## CHECKPOINT — 25/11/2026: JRV-V02 Phases A+B (voice identity samples; contextual spoken greeting)
+- **Baseline:** `9d75477`; same integration branch; JPE-01 preserved. No merge to main/develop, no tunnel, no new model installed.
+- **Phase A (FACT):**
+  - Kokoro ONNX pack: 54 voices, 3 Portuguese (all pt-br): `pf_dora` (F), `pm_alex` (M), `pm_santa` (M).
+  - 12 real samples (4 operator phrases × 3 voices) in `docs/evidence/voice-samples/` (MP3 plus `metrics.json`).
+  - Synthesis RTF 0.33–0.35 (about 3× faster than real time).
+  - Whisper intelligibility indicator, mean WER: dora 0.24, alex 0.27, santa 0.30. Only dora's "Issa" was recognised; "tuas" came out as "suas" in all three.
+  - **No voice selected:** `configs/profile.json` has voice status `PENDENTE_APROVACAO`.
+- **Phase B:**
+  - authorised profile `configs/profile.json` (name, language, voice approval; nothing else); `/v1/rightware/state.profile` exposes only name, voice status and whether voice is on;
+  - "Ouvir saudação" on the HUD core, played ONLY on an explicit click, through the shared upstream TTS store;
+  - greeting from the browser's local hour plus the profile name;
+  - TTS cache for phrases of ≤300 chars (memory/disk `.runtime/voice/cache`).
+  - REAL browser (Africa/Maputo, 19h): 0 audio before the click; "Boa noite, Issa. Estou operacional…"; 1st click 2.08 s (synthesis), 2nd 0.30 s (cache).
+- **Speech safety:** the pinned `toSpeakableText` gets a declared, hash-verified patch to call `__rwSpeakable`:
+  - the RIGHTWARE footer, request ids, context notes and host source/verification lines are never spoken;
+  - if the host flagged unconfirmed financial values (⚠), the answer is NOT read; only a spoken warning is.
+- **Tests:** Python OK; tsc 0; Vitest 118/118 (new voice helper test).
+- **Next:** C (autoplay toggle, interruption, states, optional continuous mode with VAD, self-echo), D (latency per stage), E (engine comparison, documentary), F (real audio validation).

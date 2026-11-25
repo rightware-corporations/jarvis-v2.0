@@ -16,7 +16,8 @@ export interface HudState {
   pending: { capability: string; expires_in: number } | null;
   task: { running: boolean; capability: string | null; elapsed: number | null };
   last: Outcome | null;
-  activity?: Activity | null;          // OP01: real phase of a tool-using chat turn (live policy log)
+  activity?: Activity | null;
+  profile?: { display_name: string | null; voice_status: string; voice: boolean };          // OP01: real phase of a tool-using chat turn (live policy log)
 }
 export class SessionError extends Error {}
 
