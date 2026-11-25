@@ -103,6 +103,7 @@ if __name__ == "__main__":
     m.add_argument("--proxy", action="store_true")
     a.add_argument("--autorizacao", default="")
     a.add_argument("--janela-inicio", type=float)
+    a.add_argument("--janela-minutos", type=float, default=60.0)   # authorised window length (operator decision)
     a.add_argument("--port", type=int, default=8000)
     a.add_argument("--model", default="qwen3.5:2b")
     a.add_argument("--hoje", default=dt.date.today().isoformat())
@@ -116,7 +117,8 @@ if __name__ == "__main__":
             a.error("--proxy exige --autorizacao e --janela-inicio")
         store = Path(".runtime/presentation-net")
         fetcher = SessionProxyFetcher(BM + WIKI + ECB, authorisation=x.autorizacao, store=store,
-                                      window_start=x.janela_inicio, per_question=8, per_window=80)
+                                      window_start=x.janela_inicio, per_question=8, per_window=80,
+                                      window_s=min(x.janela_minutos, 90.0) * 60)
         src, ecb, rfetch, label = proxy_source(fetcher, store), proxy_source(fetcher, store), fetcher, "EXPERIMENTAL session_proxy"
     else:
         from labs.f01.offline import replay_source

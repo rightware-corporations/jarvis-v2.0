@@ -4409,3 +4409,17 @@ Local mode is unchanged.
 - **Session isolation:** the browser keeps its own history (localStorage). The server binds conversation history to the authenticated session. A JARVIS restart revokes all sessions and issues a new single-use link.
 - **Dev Tunnels individual access (CLI 1.0.2115 help, FACT):** access entries exist only for anonymous, `--tenant` (Entra tenant), `--org` (GitHub org) and `--repo` (GitHub repo); there is no per-individual Microsoft-account entry. learn.microsoft.com was not reachable from this session, so the details are NOT VERIFIED.
 - **Pending operator approvals:** network window, 90-min tunnel, Phase B access mode. Nothing opened; `network_enabled=false` unchanged.
+
+## CHECKPOINT — 25/11/2026: PRIVATE LIVE SESSION — window OPEN (Phase A)
+- **Authorisation:** operator wrote "AUTORIZO OP01-ISSA-LIVE-20261125 e ABRIR_TUNEL 90 min".
+  - Network: www.bancomoc.mz, bancomoc.mz, pt.wikipedia.org, en.wikipedia.org, api.frankfurter.dev via the session proxy; 8 requests per question, 80 per window, 512 KB, 10 s.
+  - Network window started 19:23:59 UTC for 90 min (`--janela-minutos 90`, new launcher flag, capped at 90).
+- **Tunnel:** private Dev Tunnel `majestic-cat-g97crts.use`; port 8000 only; `Access control: {}`; Host/Origin headers `unchanged`; tunnel expiration 2 h; host process hard limit 5400 s.
+- **JARVIS:** `labs.presentation.serve --proxy --voz` at `5098cb6`+launcher flag. B6 private access with exact public origin.
+  - The product caps private access at 60 min (guard NOT changed): this run is 59 min (started 19:24:53 UTC).
+  - The Phase B restart gets the remaining window time.
+- **Checks (FACT):**
+  - JARVIS and Ollama listen only on 127.0.0.1 (8000, 11434);
+  - anonymous external request → tunnel 401 (non-browser) / 302 to Microsoft login (browser);
+  - no anonymous request reached JARVIS (audit).
+- R02 tools are not wired; no open reading. No tokens or links are recorded here.
