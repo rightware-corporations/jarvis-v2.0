@@ -40,6 +40,7 @@ def profile() -> dict:
     return {"display_name": d.get("display_name") if isinstance(d.get("display_name"), str) else None,
             "preferred_language": d.get("preferred_language"),
             "voice_id": v.get("voice_id") if v.get("status") == "APROVADA" else None,
+            "voice_speed": float(v["speed"]) if isinstance(v.get("speed"), (int, float)) and 0.5 <= v["speed"] <= 2.0 else 1.0,
             "voice_status": v.get("status", "PENDENTE_APROVACAO")}
 
 
@@ -104,7 +105,9 @@ def make_tts():
             approved = profile().get("voice_id")
             voice = voice_id if voice_id in self.available_voices() else (approved or DEFAULT_VOICE)
             text = " ".join(str(text).split())[:MAX_TTS_CHARS]
-            speed = max(0.5, min(2.0, float(speed or 1.0)))
+            requested = float(speed or 1.0)
+            # The upstream route always passes its config speed (1.0); the approved profile speed applies then.
+            speed = max(0.5, min(2.0, profile().get("voice_speed", 1.0) if requested == 1.0 else requested))
             key = hashlib.sha256(f"{voice}|{speed}|{text}".encode()).hexdigest()
             cached = CACHE_DIR / f"{key}.wav"
             if len(text) <= CACHE_MAX_CHARS and cached.is_file():       # repeat phrase: no inference
@@ -134,3 +137,29 @@ def make_tts():
         def health(self):
             return available()[0]
     return KokoroOnnxTTS()
+
+
+def preload(stt, tts) -> threading.Thread:
+    """Load both models in the background at start-up (first-use latency moved out of the conversation).
+    STT: transcribe 0.5 s of silence; TTS: synthesize a short warm-up phrase (cached). Failures only log."""
+    def run():
+        import logging
+        import numpy as np
+        import soundfile as sf
+        t0 = __import__("time").monotonic()
+        try:
+            buf = io.BytesIO()
+            sf.write(buf, np.zeros(8000, dtype="float32"), 16000, format="WAV")
+            stt.transcribe(buf.getvalue(), format="wav", language="pt")
+            tts.synthesize("Olá.")
+            PRELOAD["seconds"] = round(__import__("time").monotonic() - t0, 2)
+            PRELOAD["ok"] = True
+        except Exception as exc:                     # never blocks the server
+            PRELOAD["error"] = type(exc).__name__
+            logging.getLogger(__name__).warning("voice preload failed: %s", exc)
+    th = threading.Thread(target=run, name="jarvis-voice-preload", daemon=True)
+    th.start()
+    return th
+
+
+PRELOAD: dict = {"ok": False}

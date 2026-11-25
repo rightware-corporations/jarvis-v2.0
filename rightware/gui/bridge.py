@@ -495,8 +495,10 @@ class ChatBridge:
         """JRV-V02: only the authorised profile fields the HUD needs (name for the greeting; voice approval state)."""
         from rightware.gui.voice import profile
         p = profile()
+        from rightware.gui.voice import PRELOAD
         return {"display_name": p.get("display_name"), "voice_status": p.get("voice_status"),
-                "voice": bool(getattr(self, "voice", False))}
+                "voice": bool(getattr(self, "voice", False)), "voice_preloaded": bool(PRELOAD.get("ok")),
+                "voice_preload_s": PRELOAD.get("seconds")}
 
     def tools_label(self, model: str) -> str:
         """OP01: the footer states the REAL tool configuration of this model's adapter."""

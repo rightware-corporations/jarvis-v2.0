@@ -13,6 +13,8 @@ import '@/index.css';
 import '@rw/theme/rightware.css';
 import { installGlobalTranslator } from '@rw/i18n';
 import { installGlobalSpeakable } from '@rw/lib/voice';
+import { ConversationController } from '@rw/hud/ConversationController';
+import { SessionActivation } from '@rw/hud/SessionActivation';
 import { isBusy, startHudPolling, useHud, useHudValue } from '@rw/lib/hud-store';
 
 installGlobalTranslator();
@@ -38,6 +40,8 @@ initApiBase().finally(() => {
         <BrowserRouter>
           <Budget>
             <App />
+            <SessionActivation />
+            <ConversationController />
           </Budget>
         </BrowserRouter>
       </ErrorBoundary>

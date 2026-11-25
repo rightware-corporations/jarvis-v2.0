@@ -126,3 +126,25 @@ describe('JRV-V02 voice helpers', () => {
     expect(speakable(bad)).not.toContain('99,99');
   });
 });
+
+describe('JRV-V02 continuous conversation helpers', () => {
+  it('VAD starts after sustained energy and ends after silence; sentences split; progressive speech is cancellable', async () => {
+    const { VadDecider, splitSentences, speakProgressive } = await import('../lib/conversation');
+    const v = new VadDecider();
+    const ev: (string | null)[] = [];
+    for (let i = 0; i < 20; i++) ev.push(v.push(0.001, 50));                 // room noise
+    for (let i = 0; i < 10; i++) ev.push(v.push(0.2, 50));                   // speech 500 ms
+    for (let i = 0; i < 25; i++) ev.push(v.push(0.001, 50));                 // silence 1250 ms
+    expect(ev.filter(Boolean)).toEqual(['start', 'end']);
+    expect(splitSentences('Olá. A taxa média de referência é 63,91 meticais por dólar. Os dados são do boletim do dia 24 de Novembro.')).toEqual(
+      ['Olá. A taxa média de referência é 63,91 meticais por dólar.', 'Os dados são do boletim do dia 24 de Novembro.']);
+    expect(splitSentences('Compra: 63,27 meticais por dólar americano hoje.')).toHaveLength(1);
+    const said: string[] = [];
+    let stop = false;
+    const r = await speakProgressive('m', ['um.', 'dois.', 'três.'], {
+      speak: async (_id, t) => { said.push(t); if (t === 'dois.') stop = true; },
+      waitIdle: async () => undefined, cancelled: () => stop, now: () => 0 });
+    expect(said).toEqual(['um.', 'dois.']);                                    // 'três.' dropped after interrupt
+    expect(r.spoken).toBe(1);
+  });
+});

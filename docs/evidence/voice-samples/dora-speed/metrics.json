@@ -1,0 +1,130 @@
+[
+ {
+  "speed": 1.0,
+  "phrase": 1,
+  "synth_s": 1.04,
+  "audio_s": 3.58,
+  "wer": 0.1,
+  "whisper": "Boa noite, Isa. Estou operacional, como posso ajudar-te hoje."
+ },
+ {
+  "speed": 1.0,
+  "phrase": 2,
+  "synth_s": 0.77,
+  "audio_s": 2.77,
+  "wer": 0.29,
+  "whisper": "Estou analisar a informação solicitaste."
+ },
+ {
+  "speed": 1.0,
+  "phrase": 3,
+  "synth_s": 1.6,
+  "audio_s": 6.06,
+  "wer": 0.26,
+  "whisper": "A taxa de câmbio de referência do dólar é de 60 e 3 medicais e 90 e uns centavos."
+ },
+ {
+  "speed": 1.0,
+  "phrase": 4,
+  "synth_s": 1.28,
+  "audio_s": 4.65,
+  "wer": 0.31,
+  "whisper": "Posso ajudar-te a organizar as suas atividades e analisar os seus objetivos."
+ },
+ {
+  "speed": 1.1,
+  "phrase": 1,
+  "synth_s": 1.05,
+  "audio_s": 3.46,
+  "wer": 0.2,
+  "whisper": "Boa noite e isso estou operacional, como posso ajudar-te hoje."
+ },
+ {
+  "speed": 1.1,
+  "phrase": 2,
+  "synth_s": 0.71,
+  "audio_s": 2.56,
+  "wer": 0.29,
+  "whisper": "Estou analisar a informação solicitaste."
+ },
+ {
+  "speed": 1.1,
+  "phrase": 3,
+  "synth_s": 1.51,
+  "audio_s": 5.65,
+  "wer": 0.21,
+  "whisper": "A taxa de câmbio de referência do dólar é de 60 e três medicais e 90 e uns centavos."
+ },
+ {
+  "speed": 1.1,
+  "phrase": 4,
+  "synth_s": 1.27,
+  "audio_s": 4.44,
+  "wer": 0.31,
+  "whisper": "Posso ajudar-te a organizar as suas atividades e analisar os seus objetivos."
+ },
+ {
+  "speed": 1.15,
+  "phrase": 1,
+  "synth_s": 0.94,
+  "audio_s": 3.43,
+  "wer": 0.1,
+  "whisper": "Boa noite, Isa, estou operacional, como posso ajudar-te hoje."
+ },
+ {
+  "speed": 1.15,
+  "phrase": 2,
+  "synth_s": 0.74,
+  "audio_s": 2.5,
+  "wer": 0.29,
+  "whisper": "Estou analisar a informação solicitaste."
+ },
+ {
+  "speed": 1.15,
+  "phrase": 3,
+  "synth_s": 1.58,
+  "audio_s": 5.48,
+  "wer": 0.21,
+  "whisper": "A taxa de câmbio de referência do dólar é de 60 e três medicais e 90 e uns centavos."
+ },
+ {
+  "speed": 1.15,
+  "phrase": 4,
+  "synth_s": 1.19,
+  "audio_s": 4.33,
+  "wer": 0.31,
+  "whisper": "Posso ajudar-te a organizar as suas atividades e analisar os seus objetivos."
+ },
+ {
+  "speed": 1.2,
+  "phrase": 1,
+  "synth_s": 0.96,
+  "audio_s": 3.29,
+  "wer": 0.2,
+  "whisper": "Boa noite e isso estou operacional, como posso ajudar-te hoje."
+ },
+ {
+  "speed": 1.2,
+  "phrase": 2,
+  "synth_s": 0.73,
+  "audio_s": 2.33,
+  "wer": 0.29,
+  "whisper": "Estou analisar a informação solicitaste."
+ },
+ {
+  "speed": 1.2,
+  "phrase": 3,
+  "synth_s": 1.41,
+  "audio_s": 5.16,
+  "wer": 0.26,
+  "whisper": "A taxa de câmbio de referência do dólar é de 60 e 3 medicais e 90 e uns centavos."
+ },
+ {
+  "speed": 1.2,
+  "phrase": 4,
+  "synth_s": 1.1,
+  "audio_s": 4.16,
+  "wer": 0.23,
+  "whisper": "Posso ajudar-te a organizar as suas actividades e analisar os seus objetivos."
+ }
+]

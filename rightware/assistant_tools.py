@@ -109,7 +109,7 @@ class ToolChatAdapter:
             if self.router is not None and self.direct is not None and self.router(text, tuple(history)) == "conversa":
                 out = self.direct.reply(text, tuple(history))          # same persona, no tools, no receipts
                 self._last = {"completion": "ANSWERED_DIRECT", "sources": [], "tools": [], "halted": None, "flags": [],
-                              "tool_calls": 0, "route": "conversa"}
+                              "tool_calls": 0, "route": "conversa", "route_s": getattr(self.router, "last", {}).get("seconds")}
                 self._phase, self._since = "Resposta concluída", self._clock()
                 return out
             begin = getattr(self.browser_fetcher, "begin_question", None)
@@ -130,7 +130,8 @@ class ToolChatAdapter:
             log = list(getattr(getattr(session, "_policy", None), "log", []) or [])
             self._last = {"completion": result.completion, "sources": [s.get("final_url") for s in result.sources],
                           "tools": [o.tool for o in result.outcomes], "halted": result.halted, "flags": result.flags,
-                          "tool_calls": len(log)}
+                          "tool_calls": len(log), "route": "ferramentas" if self.router is not None else None,
+                          "route_s": getattr(self.router, "last", {}).get("seconds") if self.router is not None else None}
             self._phase, self._since = "Resposta concluída", self._clock()
             out = result.text.strip()
             if self.post_check is not None:              # host annotations (sources, integrity) from tool records

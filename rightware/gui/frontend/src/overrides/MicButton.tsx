@@ -1,8 +1,9 @@
 // RIGHTWARE JARVIS (VOICE): the pinned microphone, in PT-MZ/EN. Active ONLY when the host started with --voz and the
 // upstream /v1/speech/health reports a backend; otherwise an explicit "Voz não integrada" indicator (never records).
 // Recording, upload and transcription stay in the pinned useSpeech hook; the transcript goes into the SAME chat input.
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Loader2, AudioLines } from 'lucide-react';
 import { t, useLang } from '@rw/i18n';
+import { useConversation } from '@rw/lib/conversation';
 
 interface MicButtonProps {
   state: 'idle' | 'recording' | 'transcribing' | string;
@@ -33,12 +34,31 @@ export function MicButton({ state, onClick, disabled, reason }: MicButtonProps) 
   }
   const inactive = !!disabled || state === 'transcribing';
   return (
-    <button type="button" onClick={onClick} disabled={inactive} title={title} aria-label={title}
-            data-rw={`voice-${state}`} className="p-2 rounded-xl shrink-0"
-            style={{ background: state === 'recording' ? 'var(--color-error)' : 'transparent',
-                     color: state === 'recording' ? 'white' : 'var(--color-text-secondary)',
-                     opacity: inactive ? 0.4 : 1, cursor: inactive ? 'default' : 'pointer' }}>
-      {state === 'transcribing' ? <Loader2 size={16} /> : <Mic size={16} />}
+    <span className="flex items-center gap-1">
+      <ContinuousToggle disabled={reason === 'not-enabled'} />
+      <button type="button" onClick={onClick} disabled={inactive} title={title} aria-label={title}
+              data-rw={`voice-${state}`} className="p-2 rounded-xl shrink-0"
+              style={{ background: state === 'recording' ? 'var(--color-error)' : 'transparent',
+                       color: state === 'recording' ? 'white' : 'var(--color-text-secondary)',
+                       opacity: inactive ? 0.4 : 1, cursor: inactive ? 'default' : 'pointer' }}>
+        {state === 'transcribing' ? <Loader2 size={16} /> : <Mic size={16} />}
+      </button>
+    </span>
+  );
+}
+
+/** Continuous conversation: the microphone stays open ONLY while this is on (explicit consent). */
+function ContinuousToggle({ disabled }: { disabled: boolean }) {
+  const enabled = useConversation((s) => s.enabled);
+  const title = t(enabled ? 'conv.off' : 'conv.on');
+  return (
+    <button type="button" disabled={disabled} title={title} aria-label={title} aria-pressed={enabled}
+            data-rw={enabled ? 'conv-toggle-on' : 'conv-toggle-off'} className="p-2 rounded-xl shrink-0"
+            onClick={() => useConversation.getState().setEnabled(!enabled)}
+            style={{ background: enabled ? 'var(--color-accent)' : 'transparent',
+                     color: enabled ? 'var(--color-on-accent)' : 'var(--color-text-secondary)',
+                     opacity: disabled ? 0.4 : 1 }}>
+      <AudioLines size={16} />
     </button>
   );
 }

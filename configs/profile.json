@@ -3,5 +3,15 @@
   "rule": "Authorised operator profile. Only what is here may be used about the user; nothing else is inferred or invented.",
   "display_name": "Issa",
   "preferred_language": "pt-MZ",
-  "voice": {"voice_id": null, "status": "PENDENTE_APROVACAO", "candidates": ["pf_dora", "pm_alex", "pm_santa"]}
+  "voice": {
+    "voice_id": "pf_dora",
+    "status": "APROVADA",
+    "approved": "2026-11-25 (operador, JRV-V02)",
+    "speed": 1.0,
+    "candidates_preserved": [
+      "pm_alex",
+      "pm_santa"
+    ],
+    "engine": "kokoro-onnx (Kokoro-82M int8)"
+  }
 }

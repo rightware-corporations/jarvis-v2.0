@@ -1,0 +1,8 @@
+Real browser (Chromium, fake microphone = WAV loop "Quanto é doze vezes sete?"), 25/11/2026, GUI --voz, Qwen 2B:
+A) activation button 1; mic streams before/after activation: 0/0; greeting synthesized after click; not shown again after page changes.
+B) 12.7s listening → 14.9s recording → 17.2s transcribing → 19.6s thinking → 39.7s speaking → 48.0s listening
+   metrics: transcription_ms 2367, reply_ms 20242, first_audio_after_reply_ms 1835, speech_end_to_first_audio_ms 30348
+   no /transcribe during speaking.
+C) interrupt: reaction 43 ms; synth requests after interrupt (3 s): 0
+D) off: mic tracks ["ended"]; new transcriptions after off (6 s): 0
+Quality: answer on the plain chat path was wrong ("2 × 2 = 4 e 4 × 7 = 28"); on the router path the model answered 84.

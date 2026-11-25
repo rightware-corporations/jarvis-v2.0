@@ -1,0 +1,32 @@
+[
+ {
+  "q": "Olá JARVIS, tudo bem?",
+  "stt_s": 1.17,
+  "stt_text": "Quanto a 12 vezes sete.",
+  "chat_total_s": 5.15,
+  "route": null,
+  "tts_first_sentence_s": 0.44,
+  "tts_whole_answer_s": 0.92,
+  "answer": "Olá, Issa. Tudo bem por aqui. Como posso ajudar hoje?\n\n---\n_JARVIS · resposta do modelo local `qwen3.5:2b` — **NÃO verificada** · ferramentas: cotações oficiais"
+ },
+ {
+  "q": "Quanto é 12 vezes 7?",
+  "stt_s": 1.2,
+  "stt_text": "Quanto a 12 vezes sete.",
+  "chat_total_s": 7.85,
+  "route": null,
+  "tts_first_sentence_s": 3.82,
+  "tts_whole_answer_s": 5.78,
+  "answer": "Já sei a resposta diretamente: **84**.\n\nNão há necessidade de cálculos ou simulações aqui; é um fato matemático que não depende de dados externos, fontes ou pre"
+ },
+ {
+  "q": "Qual é a taxa de câmbio do dólar em relação ao metical?",
+  "stt_s": 1.11,
+  "stt_text": "Quanto a 12 vezes sete.",
+  "chat_total_s": 31.03,
+  "route": null,
+  "tts_first_sentence_s": 0.0,
+  "tts_whole_answer_s": 24.71,
+  "answer": "Olá, Issa. Como JARVIS, apresento-te as cotações oficiais de hoje, **24 de Novembro de 2026**, baseadas no Banco de Moçambique:\n\n*   **Compra:** 63,27 MZN por 1"
+ }
+]

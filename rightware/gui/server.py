@@ -46,6 +46,7 @@ def build_inner(model: str, home: Path, voice: bool = False):
                      cors_origins=[])
     if voice:
         app.state.tts_backend, app.state.tts_resolved = V.make_tts(), True
+        V.preload(speech, app.state.tts_backend)          # models loaded before the first interaction
     return app
 
 

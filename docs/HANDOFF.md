@@ -4291,3 +4291,28 @@ Local mode is unchanged.
   - if the host flagged unconfirmed financial values (⚠), the answer is NOT read; only a spoken warning is.
 - **Tests:** Python OK; tsc 0; Vitest 118/118 (new voice helper test).
 - **Next:** C (autoplay toggle, interruption, states, optional continuous mode with VAD, self-echo), D (latency per stage), E (engine comparison, documentary), F (real audio validation).
+
+## CHECKPOINT — 25/11/2026: JRV-V02 voice approval + continuation (C–F) — continuous voice conversation working (opt-in)
+- **Decision:** operator approved `pf_dora` (Kokoro ONNX) as the current voice. `configs/profile.json` voice is `APROVADA`, speed 1.00, persistent `voice.speed`. pm_alex/pm_santa samples preserved. No other engine installed.
+- **Speed (FACT):** 1.00 / 1.10 / 1.15 / 1.20 give audio 17.1 / 16.1 / 15.7 / 14.9 s; synthesis 4.7 to 4.2 s; WER about 0.24 unchanged. Samples in `docs/evidence/voice-samples/dora-speed/`.
+- **Session activation:** one explicit "Activar JARVIS" per browser session (`sessionStorage`), then the greeting plays automatically (shared player, cache). Not repeated across pages. Microphone NOT opened (FACT: 0 streams).
+- **Continuous conversation** (`ConversationController`, opt-in toggle):
+  - local energy VAD (start ≥200 ms, end = 900 ms silence), upstream transcription, same chat input and send;
+  - half-duplex (no self-transcription), progressive sentence speech through the shared player;
+  - Interrupt (43 ms, pending phrases dropped); switch-off releases the microphone (tracks "ended"); real phase states.
+  - Speech still never reads host lines or unconfirmed financial values.
+  - FACT, real browser cycle: listening → recording → transcribing → thinking → speaking → listening.
+- **Latency (FACT):**
+  - preload of STT+TTS at start-up 2.6 s;
+  - STT 1.1–1.2 s per 6 s of audio; router 1.4–1.6 s (5.3 s cold);
+  - chat 5.2 s (conversation), 7.9 s (calculation), 31 s (FX with tools);
+  - first audio after reply 1.8 s progressive vs up to 24.7 s whole;
+  - time to first token = total (no token streaming; financial verification needs the full text before speech).
+- **Known limits:** Whisper base accuracy; pt-br voice; half-duplex (no voice barge-in); energy VAD; operator's real mic/speaker not yet tested; 2B wrong on "doze vezes sete" on the plain chat path; router decisions imperfect.
+- **Engine research** (documentary, nothing installed; about 510 MB free; Docker images kept): Kokoro, Piper, Chatterbox Multilingual (+ the pt-pt repo NOT VERIFIED), with requirements in `docs/engineering/JRV_V02_VOICE_EXPERIENCE.md`.
+- **NEXT MISSION REGISTERED — JRV-R02 (Internet research agent), after voice stabilisation:**
+  - Wikipedia must not be the only general source;
+  - evaluate reuse of OpenJarvis WebSearchTool, Browser, PDFTool, DeepResearchAgent, ResearchLoop and Browser Assistant, plus SearXNG, DuckDuckGo, Crawl4AI and self-hosted Firecrawl;
+  - general search, autonomous navigation, documents, source comparison, verification, citations.
+  - Not started.
+- **Tests:** Python 731 OK; tsc 0; Vitest 119/119. No merge, no tunnel, no security policy change.
