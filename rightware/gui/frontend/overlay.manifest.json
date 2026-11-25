@@ -209,7 +209,7 @@
     "items": [
       {
         "find": "<title>OpenJarvis</title>",
-        "replace": "<title>RIGHTWARE JARVIS</title>",
+        "replace": "<title>JARVIS</title>",
         "count": 1
       }
     ]

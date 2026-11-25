@@ -4237,3 +4237,9 @@ Local mode is unchanged.
   - fix the over-use of tools on planning requests ("organizar receitas e despesas");
   - decide on authorising `api.frankfurter.dev`;
   - resume F01 (config D, 4B) only with a new authorisation.
+
+
+## CHECKPOINT — 25/11/2026: JPE-01 personal experience (source-only; validation pending)
+- Operator requested the permanent JARVIS identity for Issa, with no separate presentation branch.
+- Existing HUD overlay refined: personal sidebar mark, browser title, PT-MZ/EN identity, precision core and static depth. Existing backend-driven states, model picker, warnings and sources preserved. No backend, voice, security or vendor change.
+- See `docs/engineering/JPE01_PERSONAL_EXPERIENCE.md`. Reconcile the current voice work with this commit via normal fetch; no force-push. Build, visual acceptance and CI pending.
