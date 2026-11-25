@@ -4393,3 +4393,19 @@ Local mode is unchanged.
 - **Tests:** R02 34 OK; full suite green (see commit).
 - **R02-B:** bounded request in `docs/engineering/JRV_R02B_AUTHORISATION_REQUEST.md`; NOT activated.
 - No network, no tunnel, no merge, vendor pin unchanged.
+
+## CHECKPOINT — 25/11/2026: PRIVATE LIVE SESSION — preparation (nothing opened)
+- **R02 state:** both R02-A evaluations (verified, closed) had already FINISHED and are committed (`5098cb6`). Nothing is running; Ollama is idle (qwen3.5:2b loaded, loopback only).
+- **Revision for the live session:** `5098cb6`, the stable presentation launcher `labs.presentation.serve` with `--voz`. R02 tools are NOT wired in that launcher (no `research_factory`/`websearch`); open reading is not possible.
+- **Local smoke (FACT, offline, no tunnel):**
+  - one-time login 303, HUD 200, 401 without a session;
+  - STT faster-whisper available; TTS kokoro-onnx available;
+  - greeting synthesis 1.94 s audio (profile pf_dora 1.15);
+  - calculator answer 159 775 (2500 × 63,91);
+  - USD/MZN 63,27/64,54/63,91 with source (BM 24/11/2026, offline replay).
+  - Built frontend contains activation, continuous conversation, interrupt, greeting and speech filter.
+  - Server stopped afterwards; port 8000 free.
+- **Resources:** 4 vCPU, ~7 GB RAM free, **~290 MB disk free** (Goose Docker images kept); only one model instance, so one active user at a time is recommended.
+- **Session isolation:** the browser keeps its own history (localStorage). The server binds conversation history to the authenticated session. A JARVIS restart revokes all sessions and issues a new single-use link.
+- **Dev Tunnels individual access (CLI 1.0.2115 help, FACT):** access entries exist only for anonymous, `--tenant` (Entra tenant), `--org` (GitHub org) and `--repo` (GitHub repo); there is no per-individual Microsoft-account entry. learn.microsoft.com was not reachable from this session, so the details are NOT VERIFIED.
+- **Pending operator approvals:** network window, 90-min tunnel, Phase B access mode. Nothing opened; `network_enabled=false` unchanged.
