@@ -134,6 +134,9 @@ class ToolChatAdapter:
             self._phase, self._since = "Resposta concluída", self._clock()
             out = result.text.strip()
             if self.post_check is not None:              # host annotations (sources, integrity) from tool records
+                clean = getattr(self.post_check, "clean", None)
+                if callable(clean):                        # remove model lines imitating host labels first
+                    out, _ = clean(out)
                 out += self.post_check(out, records(), text)
             return out if len(out) <= MAX_REPLY else out[:MAX_REPLY] + "\n(resposta truncada pelo limite da interface)"
 

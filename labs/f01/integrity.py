@@ -80,7 +80,8 @@ def check(answer: str, records: list[dict], question: str = "") -> dict:
         if not matches:
             issues.append({"value": raw, "problem": "UNSUSTAINED", "context": window.strip()})
             continue
-        attr_said = [a for a, words in ATTR.items() if any(w in window for w in words)]
+        line = fold(text[text.rfind("\n", 0, m.start()) + 1: m.start()])   # attribute words BEFORE it, same line
+        attr_said = [a for a, words in ATTR.items() if any(w in line for w in words)]
         cur_said = [iso for iso, words in CURRENCY_WORDS.items() if any(w in window for w in words)]
         good = [c for c in matches if (not attr_said or c[2].split("×")[0] in attr_said or c[2] in ("spread", "cross", "inverse"))
                 and (not cur_said or c[1] in cur_said)]

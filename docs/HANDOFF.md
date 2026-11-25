@@ -4237,3 +4237,27 @@ Local mode is unchanged.
   - fix the over-use of tools on planning requests ("organizar receitas e despesas");
   - decide on authorising `api.frankfurter.dev`;
   - resume F01 (config D, 4B) only with a new authorisation.
+
+## CHECKPOINT — 25/11/2026: VOICE & INTELLIGENCE SPRINT (B6 branch) — voice integrated in the same chat (opt-in); routing, calculator and state fixes
+- **Context:** the Issa presentation moved to 25/11. The operator confirmed USD/MZN and XAU/USD in the external HUD on 24/11, and observed calculation errors, irrelevant research and latency.
+- **Disk blocker** (117 MB free): resolved by removing only superseded scratchpad folders and recreatable caches. `/var/lib/docker` (15 GB) was NOT touched.
+- **Voice** (`--voz`, `rightware/gui/voice.py`):
+  - upstream `FasterWhisperBackend` (base, CPU int8);
+  - Kokoro-82M via kokoro-onnx behind the upstream `TTSBackend` (PyTorch upstream backend does not fit the disk);
+  - upstream `/v1/speech/*` routes and the upstream frontend (`useSpeech`, `useTts`), so the transcript goes into the SAME chat;
+  - voice routes allowed only with `--voz`; body caps (5 MB / 16 KB); Origin required in public mode; CSP `media-src 'self' blob:`;
+  - `python -m rightware.gui voice-setup` (pinned packages + model sha256);
+  - models in `.runtime/voice` (not committed).
+  - REAL: TTS 1.8 s per 6 s of audio; STT 1–2 s; browser E2E with a fake microphone: record, transcript into the chat input, answer, then synthesize 200 and playback OK.
+  - Limits: Whisper base mishears names and numbers; pt-br voice; not validated on Issa's hardware.
+- **Intelligence:**
+  - model-decided `ModelRouter` (direct conversation vs tools, fail-safe to tools);
+  - upstream `CalculatorTool` as a host tool;
+  - `ANSWERED_WITH_TOOLS` and truthful `TOOLS_FAILED` wording;
+  - host strips model-imitated host labels; line-local attribute check; unambiguous tool values for the model;
+  - persona: tool values are facts; margin vs markup.
+  - REAL offline: margin fixed (66.67% to 40%); XAU fixed (3 629,39 / 3 630,60); greeting direct with no tools. Still labels official values as "simulação" (2B).
+- **ECB:** moved to `api.frankfurter.dev/v1`; needs a NEW network authorisation including that host.
+- **Tests:** 731 Python OK (new `tests/test_voice_router.py`); tsc 0; Vitest 117/117.
+- **Docs and evidence:** `docs/engineering/VOICE_INTELLIGENCE_SPRINT.md`, `docs/evidence/voice-intelligence/`.
+- **Network today:** PyPI, github.com (kokoro-onnx model releases), huggingface.co (faster-whisper-base). No research/financial requests. No tunnel. No merge.

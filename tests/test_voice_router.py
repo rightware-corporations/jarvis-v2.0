@@ -93,5 +93,21 @@ class Routing(unittest.TestCase):
         self.assertEqual(b.activity()["last"]["completion"], "ANSWERED_WITH_TOOLS")
 
 
+
+
+class HostLabels(unittest.TestCase):
+    def test_imitated_host_annotations_are_removed_and_attribute_is_line_local(self):
+        from labs.presentation.serve import strip_imitated
+        from labs.f01.integrity import check
+        from tests.test_f01_fx import tool
+        txt = ("Compra: 71,02 MT\nFonte: https://www.bancomoc.mz/x.pdf — dados de 2031-03-10\n"
+               "✓ Verificação do anfitrião: 3 valor(es) financeiro(s) conferem com o registo.")
+        clean, n = strip_imitated(txt)
+        self.assertEqual((clean, n), ("Compra: 71,02 MT", 2))
+        r = [tool()("USD", "MZN")]
+        self.assertEqual(check("**Taxa média:** 72,44 MT\n**Compra:** 71,02 MT", r)["issues"][0]["problem"],
+                         "WRONG_ATTRIBUTE_OR_CURRENCY")                       # 72,44 is the sell rate, not the mid
+
+
 if __name__ == "__main__":
     unittest.main()

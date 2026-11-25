@@ -8,6 +8,7 @@ Modes: --offline (replay of the documents collected in OP01-FX-REAL-PROXY; resea
        --proxy   (session-proxy transport; requires --autorizacao and --janela-inicio of an operator authorisation).
 Usage: .runtime/gui/venv/bin/python -m labs.presentation.serve --offline|--proxy [...] [--public-origin URL --public-minutes N]"""
 import argparse
+import re
 import datetime as dt
 import json
 from pathlib import Path
@@ -54,6 +55,22 @@ def proxy_source(fetcher, store: Path) -> Source:
             return None
         return (store / f"{last['sha256']}.bin").read_bytes(), last.get("content_type", ""), last["utc"]
     return Source(get, "Banco de Moçambique / BCE via transporte EXPERIMENTAL session_proxy")
+
+
+HOST_LABEL = re.compile(r"^\s*[*_>\-•]*\s*(Fonte:|\*\*Fonte|✓ Verificação do anfitrião|⚠ Verificação do anfitrião|"
+                        r"⚠ Nenhuma ferramenta financeira)", re.I)
+
+
+def strip_imitated(answer: str) -> tuple[str, int]:
+    """The HOST owns its labels: model lines imitating host source/verification annotations are removed."""
+    kept, removed = [], 0
+    for line in answer.split("\n"):
+        if HOST_LABEL.match(line) and ("anfitrião" in line or "bancomoc.mz" in line or "wikipedia.org" in line
+                                       or "frankfurter" in line or "Nenhuma ferramenta" in line):
+            removed += 1
+            continue
+        kept.append(line)
+    return "\n".join(kept), removed
 
 
 def annotate(answer, records, question):
@@ -111,10 +128,25 @@ if __name__ == "__main__":
         fx = ExchangeRateTool(src, today=x.hoje, ecb=ecb)
         rt = ResearchTool(rfetch, templates=TEMPLATES, article_hosts=WIKI)
 
+        def model_view(r):
+            """What the MODEL sees: unambiguous values only (number + formatted text with unit); the printed
+            document form and full provenance stay in the HOST record (used for sources and the integrity check)."""
+            def fmt(v):
+                return None if v is None else f"{v:,.2f}".replace(",", " ").replace(".", ",")
+            unit = r.get("unit", "")
+            keep = {k: r[k] for k in ("status", "detail", "reference_date", "instrument", "rate_type", "note",
+                                      "consulted_on", "derivation") if r.get(k) is not None}
+            for f, label in (("buy", "compra"), ("sell", "venda"), ("mid", "média"), ("value", "valor")):
+                if r.get(f) is not None:
+                    keep[label] = f"{fmt(r[f])} {unit}"
+            if r.get("inverse"):
+                keep["inverso"] = f"{r['inverse']['value']} {r['inverse']['unit']}"
+            return keep
+
         def run_fx(args):
             r = fx(args.get("base_currency", ""), args.get("quote_currency", "MZN"), args.get("reference_date"))
             return ToolOutcome("get_exchange_rate", "OK" if r["status"] in ("OK", "DERIVED") else "FAILED",
-                               json.dumps(r, ensure_ascii=False), {"status": r["status"]})
+                               json.dumps(model_view(r), ensure_ascii=False), {"status": r["status"]})
 
         def run_r(args):
             r = rt(args.get("query", ""), args.get("language", "pt"))
@@ -137,6 +169,7 @@ if __name__ == "__main__":
     persona = system_prompt(facts)
     router = ModelRouter(x.model, "cotações (câmbio, ouro), pesquisa geral, calculadora")
     direct = LocalSimpleTextAdapter(x.model, timeout_seconds=240, max_tokens=768, system_prompt=persona)
+    annotate.clean = strip_imitated
     adapter = ToolChatAdapter(x.model, sites=(), persona=persona, allow=("fx", "research", "calc"),
                               extra_tools_factory=tools, post_check=annotate, timeout_seconds=240,
                               browser_fetcher=fetcher, router=router, direct=direct)
