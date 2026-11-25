@@ -4341,3 +4341,29 @@ Local mode is unchanged.
     - host-verified citations against receipts; PT-MZ 30-question eval modelled on Browser Assistant.
   - **Consolidated network authorisation request** `JRV-R02-EVAL-<date>` drafted (section 6). NOT active.
 - No merge, no tunnel, no security policy change, vendor pin `f21d902` unchanged.
+
+## CHECKPOINT — 25/11/2026: JRV-R02-A research foundation (offline) — code + tests committed; real-model eval running
+- **Operator decisions:**
+  - voice `pf_dora` at 1.15 confirmed final;
+  - general research with provenance approved as permanent direction;
+  - open reading through the experimental proxy NOT authorised (no independent destination-IP verification).
+- **Built (`rightware/research/`):**
+  - `provenance.py` (R#/L#/U# only, depth ≤ 2, static destination rules; open reading only with a destination-verifying transport, else closed list);
+  - `search.py` (DuckDuckGo HTML via the audited fetcher; `ddgs` client NOT used: own `primp` client/impersonation/redirects bypass per-hop policy);
+  - `documents.py` (pdftotext, fixed argv, bounded);
+  - `citations.py` (SUPPORTED / DERIVED / NUMBERS_OUT_OF_CONTEXT / UNSUPPORTED / INVALID_CITATION / SUPPORTED_UNCITED / UNCITED + source conflicts);
+  - `toolkit.py` (web_search/web_read/doc_read, source registry S#, injection flagging, budgets, forced no-tools synthesis).
+- **Integration:**
+  - `AgentSession(research=…)` under capability `websearch` (`research` stays the presentation's Wikipedia tool);
+  - `ToolChatAdapter(research_factory=…)`;
+  - `HttpxFetcher.fetch_document` (complete PDFs only) + `verifies_destination`.
+- **Tests:** 32 new UNIT/FAKE (functional + security); full suite 765 OK.
+- **Eval (LAB):** `labs/r02/`:
+  - synthetic `.example` corpus (36 docs, 7 real PDFs, DDG-format results);
+  - 30 PT questions;
+  - scorer; real Qwen 2B run in progress → `docs/evidence/r02a/`.
+- **R02-B proposal:** `docs/engineering/JRV_R02B_AUTHORISATION_REQUEST.md`:
+  - B1 cloud closed list + environment network "limited" as a second layer;
+  - B2 open reading only on the operator's machine with HttpxFetcher.
+  - NOT activated.
+- No network used, no tunnel, no merge, vendor pin `f21d902` unchanged.

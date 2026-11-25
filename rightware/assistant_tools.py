@@ -20,7 +20,7 @@ import time
 from rightware.agent.policy import Budgets
 
 SEARCH_TOOLS = ("web_search", "web_type", "web_submit", "web_find")
-READ_TOOLS = ("web_open", "web_follow", "web_read")
+READ_TOOLS = ("web_open", "web_follow", "web_read", "doc_read")
 MAX_REPLY = 4000
 
 
@@ -72,13 +72,18 @@ class ToolChatAdapter:
     def __init__(self, model: str, *, sites: tuple[str, ...], persona: str, browser_fetcher=None,
                  start_url: str | None = None, search_template: str | None = None,
                  allow: tuple[str, ...] = ("browse",), extra_tools_factory=None, post_check=None,
-                 router=None, direct=None,
+                 router=None, direct=None, research_factory=None,
                  engine_factory=None, budgets: Budgets | None = None, max_turns: int = 6, timeout_seconds: float = 180.0,
                  audit_path=None, clock=time.monotonic):
         if "browse" in allow and not sites:
             raise ValueError("ToolChatAdapter exige sites autorizados (allowlist exacta)")
         self.allow, self.extra_tools_factory, self.post_check = tuple(allow), extra_tools_factory, post_check
         self.router, self.direct = router, direct    # optional: model-decided direct conversation (no tools)
+        # JRV-R02 (optional): a fresh host research toolkit per question (web_search/web_read/doc_read, provenance,
+        # citation validation); requires the "websearch" capability in ``allow``.
+        if research_factory is not None and "websearch" not in allow:
+            raise ValueError("research_factory exige a capacidade 'websearch'")
+        self.research_factory, self.research = research_factory, None
         self.model, self.sites, self.persona = model, tuple(sites), persona
         self.start_url = start_url                 # host-declared search/entry page (https, inside the allowlist)
         self.search_template = search_template     # host-declared search URL with {q} → model tool web_search(query)
@@ -121,7 +126,9 @@ class ToolChatAdapter:
                                    extra_tools=extra,
                                    max_turns=self.max_turns, audit_path=self.audit_path, receipts=True,
                                    persona=self.persona, start_url=self.start_url,
-                                   search_template=self.search_template)
+                                   search_template=self.search_template,
+                                   research=(self.research_factory() if self.research_factory else None))
+            self.research = session.research
             self._session = session
             try:
                 result = session.run(text, history=tuple(history))
@@ -131,6 +138,8 @@ class ToolChatAdapter:
             self._last = {"completion": result.completion, "sources": [s.get("final_url") for s in result.sources],
                           "tools": [o.tool for o in result.outcomes], "halted": result.halted, "flags": result.flags,
                           "tool_calls": len(log), "route": "ferramentas" if self.router is not None else None,
+                          "research": result.verification.get("research"),
+                          "denials": [(e.get("tool"), e.get("reason")) for e in log if not e.get("allowed")][:10],
                           "route_s": getattr(self.router, "last", {}).get("seconds") if self.router is not None else None}
             self._phase, self._since = "Resposta concluída", self._clock()
             out = result.text.strip()

@@ -44,6 +44,8 @@ MAX_REDIRECTS = 5
 TIMEOUT_S = 15.0
 USER_AGENT = "RIGHTWARE-Jarvis/0.1 (+read-only)"
 ALLOWED_TYPES = ("text/html", "text/plain", "application/xhtml+xml")
+DOCUMENT_TYPES = ("application/pdf",)
+MAX_DOCUMENT_BYTES = 5_000_000
 
 
 class WebRefused(ValueError):
@@ -60,6 +62,7 @@ class Page:
     sha256: str
     truncated: bool
     markup: str = ""          # bounded raw HTML, for the semantic browser only (never sent to the model)
+    raw: bytes = b""          # JRV-R02: bounded raw document bytes (PDF only; converted on the host, never sent raw)
 
 
 def _resolve(host: str) -> list[str]:
@@ -288,9 +291,22 @@ class HttpxFetcher:
         peer = stream.get_extra_info("server_addr")
         return bool(peer) and _global(str(peer[0]))
 
+    @property
+    def verifies_destination(self) -> bool:
+        """JRV-R02: True only with the pinned production transport (own DNS, pinned IP, global-peer check). A test
+        or injected transport does not prove the destination, so research open reading stays closed with it."""
+        return self.transport is None
+
     def fetch(self, url: str, host_allowed: Callable[[str], bool] | None = None) -> Page:
         """GET one page. ``host_allowed`` (WORK-07 browser) is enforced on the first URL AND on
         every redirect hop, before any connection to that host."""
+        return self._get(url, host_allowed, ALLOWED_TYPES, MAX_BYTES)
+
+    def fetch_document(self, url: str, host_allowed: Callable[[str], bool] | None = None) -> Page:
+        """JRV-R02: GET one PDF document with the same checks; complete bytes only (a truncated PDF is refused)."""
+        return self._get(url, host_allowed, DOCUMENT_TYPES, MAX_DOCUMENT_BYTES)
+
+    def _get(self, url: str, host_allowed, types: tuple[str, ...], max_bytes: int) -> Page:
         import httpx
 
         def scoped(target: str) -> str:
@@ -302,8 +318,9 @@ class HttpxFetcher:
 
         requested = scoped(url)
         current = requested
+        accept = "application/pdf" if types == DOCUMENT_TYPES else "text/html,text/plain"
         kwargs = {"timeout": TIMEOUT_S, "follow_redirects": False, "trust_env": False,
-                  "headers": {"User-Agent": USER_AGENT, "Accept": "text/html,text/plain"}}
+                  "headers": {"User-Agent": USER_AGENT, "Accept": accept}}
         if self.transport is not None:
             kwargs["transport"] = self.transport          # tests: deterministic MockTransport
         else:
@@ -319,17 +336,22 @@ class HttpxFetcher:
                         current = scoped(urljoin(current, location))
                         continue
                     ctype = resp.headers.get("content-type", "").split(";")[0].strip().lower()
-                    if ctype not in ALLOWED_TYPES:
+                    if ctype not in types:
                         raise WebRefused(f"tipo de conteúdo não suportado ({ctype or 'desconhecido'})")
                     chunks, size, truncated = [], 0, False
                     for chunk in resp.iter_bytes():
                         size += len(chunk)
-                        if size > MAX_BYTES:
-                            chunks.append(chunk[:MAX_BYTES - (size - len(chunk))])
+                        if size > max_bytes:
+                            chunks.append(chunk[:max_bytes - (size - len(chunk))])
                             truncated = True
                             break
                         chunks.append(chunk)
                     raw = b"".join(chunks)
+                    if types == DOCUMENT_TYPES:
+                        if truncated:
+                            raise WebRefused("documento acima do limite de tamanho")
+                        return Page(requested, current, resp.status_code, ctype, "", hashlib.sha256(raw).hexdigest(),
+                                    False, "", raw)
                     text_raw = raw.decode(resp.encoding or "utf-8", errors="replace")
                     text = html_to_text(text_raw) if "html" in ctype else text_raw
                     if len(text) > MAX_TEXT_CHARS:

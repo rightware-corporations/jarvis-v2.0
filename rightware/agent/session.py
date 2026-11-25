@@ -115,7 +115,7 @@ SEARCH_TOOLS = {
         {"query": {"type": "string", "maxLength": 120, "description": "2 a 6 palavras-chave da pesquisa"}},
         ("query",), session_flag="browse", consequential=False, max_calls=3),
 }
-READ_TOOLS = ("web_read", "web_open", "web_follow", "web_submit")
+READ_TOOLS = ("web_read", "web_open", "web_follow", "web_submit", "doc_read")
 BROWSE_PROMPT = (
     " Nesta tarefa podes navegar SÓ nestes sites autorizados: {sites}. Ferramentas de navegação: web_open "
     "abre uma página; web_type escreve uma pesquisa num campo F#; web_submit activa essa pesquisa; "
@@ -398,7 +398,7 @@ class AgentSession:
                  trace: bool = False, task_preset: str | None = None, receipts: bool = False,
                  completion_gate: bool = False, file_task: str | None = None, file_workspace=None,
                  persona: str | None = None, search_template: str | None = None,
-                 extra_tools: dict | None = None):
+                 extra_tools: dict | None = None, research=None):
         self.engine, self.model, self.allow, self.confirm = engine, model, set(allow), confirm
         # OP01 (opt-in): host-built identity (rightware.persona) replacing ONLY the identity sentence of
         # SYSTEM_PROMPT; the tool rules that follow it are always kept.
@@ -419,6 +419,15 @@ class AgentSession:
             if (name != tdef.name or name in TOOLS or name in FILE_TOOLS or name in SEARCH_TOOLS or tdef.consequential
                     or tdef.session_flag not in self.allow or not callable(runner)):
                 raise ValueError(f"ferramenta extra inválida: {name}")
+        # JRV-R02 (opt-in): host-built research toolkit (rightware.research) providing web_search / web_read /
+        # doc_read under the "websearch" capability, with provenance, destination rules and citation validation.
+        # It replaces the plain web_read and cannot be combined with the template search.
+        if research is not None and ("websearch" not in self.allow or search_template is not None
+                                     or not callable(getattr(research, "tools", None))):
+            raise ValueError("a investigação exige a capacidade 'websearch' e não se combina com o modelo de pesquisa")
+        if research is None and "websearch" in self.allow:
+            raise ValueError("a capacidade 'websearch' exige o kit de investigação do anfitrião")
+        self.research = research
         self.fetcher = fetcher or HttpxFetcher()
         if "browse" in self.allow and not sites:
             raise ValueError("a capacidade 'browse' exige sites autorizados")
@@ -533,6 +542,13 @@ class AgentSession:
         registry = {**TOOLS, **FILE_TOOLS} if self.file_contract is not None else dict(TOOLS)
         if self.search_template:
             registry.update(SEARCH_TOOLS)
+        research_tools = {}
+        if self.research is not None:
+            self.research.begin(instruction)
+            research_tools = self.research.tools()
+            registry.pop("web_read", None)                # replaced by the provenance-bound research web_read
+            for name, (tdef, _) in research_tools.items():
+                registry[name] = tdef
         for name, (tdef, _) in self.extra_tools.items():
             registry[name] = tdef
         policy = AgentPolicy(registry, allow=self.allow, budgets=self.budgets, audit_path=self.audit_path,
@@ -564,6 +580,10 @@ class AgentSession:
             runners["fixture_compare"] = lambda args: ToolOutcome("fixture_compare", *file_run.compare())
             prompt += F.FILES_PROMPT + F.objectives_prompt(self.file_contract)
 
+        for name, (_, runner) in research_tools.items():
+            runners[name] = runner
+        if self.research is not None:
+            prompt += self.research.prompt()
         for name, (_, runner) in self.extra_tools.items():
             runners[name] = runner
         self.generation_metrics = ()
@@ -596,7 +616,19 @@ class AgentSession:
         try:
             result = agent.run(instruction, context=_history_context(history))
             answer = result.content or ""
-            if not guarded.halted and (getattr(result, "metadata", None) or {}).get("max_turns_exceeded"):
+            exceeded = bool((getattr(result, "metadata", None) or {}).get("max_turns_exceeded"))
+            if (exceeded and self.research is not None and not policy.cancelled
+                    and getattr(self.research, "sources", None)):
+                # JRV-R02 (DeepResearchAgent pattern): turns ran out after sources were read → ONE final generation
+                # WITHOUT tools, over the host-held sources only. Citations are validated afterwards as usual.
+                msgs = [Message(role=Role.SYSTEM, content=prompt),
+                        Message(role=Role.USER, content=self.research.synthesis_request(instruction))]
+                synth = self.engine.generate(msgs, model=self.model, temperature=self.temperature,
+                                             max_tokens=self.max_tokens)
+                if (synth.get("content") or "").strip():
+                    answer, exceeded = synth["content"], False
+                    self.research.forced_synthesis = True
+            if not guarded.halted and exceeded:
                 guarded.halted = "limite de turnos atingido"
         except Exception as exc:
             self.error_code = guarded.engine_error or "AGENT_FAILURE"      # TE-05E: types only, never text
@@ -613,6 +645,12 @@ class AgentSession:
         self.generation_metrics = tuple(guarded.metrics)
         if reply.completion == "ERROR" and self.error_code == "NONE":
             self.error_code = "AUDIT_FAILURE" if "AUDIT_FAILED" in reply.flags else "OTHER"
+        if self.research is not None and reply.completion != "ERROR":
+            lines, info, flags = self.research.finalize(answer)
+            if lines:
+                reply.text += "\n" + "\n".join(lines)
+            reply.flags += [f for f in flags if f not in reply.flags]
+            reply.verification["research"] = info
         if self.completion_gate:
             reply = self._apply_completion_gate(reply, guarded)
         elif self.file_contract is not None:
