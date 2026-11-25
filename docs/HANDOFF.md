@@ -4316,3 +4316,28 @@ Local mode is unchanged.
   - general search, autonomous navigation, documents, source comparison, verification, citations.
   - Not started.
 - **Tests:** Python 731 OK; tsc 0; Vitest 119/119. No merge, no tunnel, no security policy change.
+
+## CHECKPOINT — 25/11/2026: JRV-V02 final voice approval + JRV-R02 investigation started
+- **Decision (operator, final):** voice `pf_dora`, speed **1.15**. `configs/profile.json` → `voice.speed = 1.15`. Earlier samples and benchmarks preserved; benchmarks NOT repeated.
+- **Speed path:** the frontend never sends a speed; the upstream route passes the config default (1.0), so the profile speed applies to the greeting, progressive sentences and "ouvir". The TTS cache key is `voice|speed|text`, so 1.00 entries are never served at 1.15. The local cache was cleared anyway.
+- **Regression (FACT, short):** real Kokoro through the upstream `/v1/speech/synthesize` route:
+  - greeting phrase 3.39 s of audio (3.58 s at 1.00 in the evidence);
+  - second request served from cache.
+- **Regression (UNIT):** new `VoiceSpeed` tests (profile speed applied; cache keyed by speed; explicit speed honoured; out-of-range → 1.0; repository profile is dora/1.15).
+- **JRV-R02 (investigation, no code, no network, nothing installed):** `docs/engineering/JRV_R02_RESEARCH_AGENT.md`.
+  - **Pinned OpenJarvis components:**
+    - WebSearchTool: default "auto" is keyless You.com (third party); DDG via `ddgs`; its URL fetch re-resolves DNS and has no byte cap; PDFs refused.
+    - Browser: Playwright, not installed; SSRF only on navigate.
+    - PDFTool: local files, pdfplumber not installed.
+    - DeepResearchAgent and ResearchLoop: personal knowledge base / HybridSearch, not web.
+    - Browser Assistant: an eval dataset and scorer only.
+  - None can be wired as-is without weakening policy. Reuse = interfaces, loop/citation patterns, eval method.
+  - **Engines:**
+    - `ddgs` 9.16.0 already installed (fixed backend `duckduckgo` recommended; "auto" forbidden);
+    - SearXNG phase 2 if disk allows;
+    - Crawl4AI and self-hosted Firecrawl don't fit (~430 MB free; goose Docker images kept).
+  - **Proposal:**
+    - `web_search` (fixed DDG), `web_read` with a provenance rule (only URLs from this question's results/links, depth ≤ 2), `doc_read` (pdftotext);
+    - host-verified citations against receipts; PT-MZ 30-question eval modelled on Browser Assistant.
+  - **Consolidated network authorisation request** `JRV-R02-EVAL-<date>` drafted (section 6). NOT active.
+- No merge, no tunnel, no security policy change, vendor pin `f21d902` unchanged.

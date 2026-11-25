@@ -6,7 +6,7 @@ Classificação: **FACTO** (medido aqui com áudio e browser reais), **UNIT** (t
 ## 1. Identidade vocal (decisão do operador)
 - **Voz aprovada:** `pf_dora` (Kokoro-82M, ONNX int8), em `configs/profile.json` (`voice.status = APROVADA`).
 - As amostras de `pm_alex` e `pm_santa` ficam preservadas em `docs/evidence/voice-samples/`.
-- **Velocidade persistente:** `voice.speed` (0,5–2,0; actual 1,00). Aplica-se quando a rota upstream não pede outra.
+- **Velocidade persistente:** `voice.speed` (0,5–2,0). **Aprovada: 1,15** (operador, 25/11/2026, decisão final). Aplica-se a todas as sínteses pela rota upstream (saudação, fala progressiva por frases, "ouvir"), que não pedem outra velocidade. A cache de frases tem a velocidade na chave: áudio antigo a 1,00 nunca é servido a 1,15.
 - **Teste de velocidade (FACTO; 4 frases; amostras em `docs/evidence/voice-samples/dora-speed/`):**
 
 | Velocidade | Duração do áudio | Tempo de síntese | WER (Whisper) |

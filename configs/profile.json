@@ -7,11 +7,12 @@
     "voice_id": "pf_dora",
     "status": "APROVADA",
     "approved": "2026-11-25 (operador, JRV-V02)",
-    "speed": 1.0,
+    "speed": 1.15,
     "candidates_preserved": [
       "pm_alex",
       "pm_santa"
     ],
-    "engine": "kokoro-onnx (Kokoro-82M int8)"
+    "engine": "kokoro-onnx (Kokoro-82M int8)",
+    "speed_approved": "2026-11-25 (operador, JRV-V02 final)"
   }
 }

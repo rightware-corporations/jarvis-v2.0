@@ -111,3 +111,50 @@ class HostLabels(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+@unittest.skipIf(P is None, "pinned OpenJarvis venv required")
+class VoiceSpeed(unittest.TestCase):
+    """The approved profile speed reaches every synthesis that goes through the upstream route (greeting, progressive
+    sentences, 'ouvir'), and the phrase cache is keyed by speed (an old 1.00 entry is never served at 1.15). FAKE engine."""
+
+    def test_profile_speed_applies_and_cache_is_keyed_by_speed(self):
+        from rightware.gui import voice as V
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        saved = (V.PROFILE, V.CACHE_DIR)
+        self.addCleanup(lambda: (setattr(V, "PROFILE", saved[0]), setattr(V, "CACHE_DIR", saved[1])))
+        V.CACHE_DIR = tmp / "cache"
+        V.PROFILE = tmp / "profile.json"
+        calls = []
+
+        class Eng:
+            def create(self, text, voice, speed, lang):
+                import numpy as np
+                calls.append(speed)
+                return np.zeros(240, dtype="float32"), 24000
+
+            def get_voices(self):
+                return ["pf_dora"]
+
+        def write(speed):
+            V.PROFILE.write_text(json.dumps({"voice": {"voice_id": "pf_dora", "status": "APROVADA", "speed": speed}}))
+
+        tts = V.make_tts()
+        tts._engine = lambda: Eng()
+        write(1.0)
+        self.assertEqual(tts.synthesize("Boa noite, Issa.").metadata["cache"], "miss")
+        write(1.15)
+        r = tts.synthesize("Boa noite, Issa.")                 # same text, new speed: NOT the cached 1.00 audio
+        self.assertEqual(r.metadata["cache"], "miss")
+        self.assertEqual(calls, [1.0, 1.15])
+        self.assertEqual(tts.synthesize("Boa noite, Issa.").metadata["cache"], "hit")
+        tts.synthesize("Frase explícita.", speed=1.3)          # an explicit non-default request is honoured
+        self.assertEqual(calls[-1], 1.3)
+        write(9.0)                                              # out of range → safe default 1.0
+        tts.synthesize("Outra frase.")
+        self.assertEqual(calls[-1], 1.0)
+
+    def test_repository_profile_is_dora_at_1_15(self):
+        d = json.loads((Path(__file__).resolve().parents[1] / "configs" / "profile.json").read_text(encoding="utf-8"))
+        self.assertEqual((d["voice"]["voice_id"], d["voice"]["status"], d["voice"]["speed"]), ("pf_dora", "APROVADA", 1.15))
