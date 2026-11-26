@@ -4519,3 +4519,21 @@ Local mode is unchanged.
 - **Integration:** `ToolChatAdapter(documents=…)`; document questions go to the tools path; launcher `--documentos` (requires `--memoria-dono`). Documents never create or change memories (memory writes need user intent from the user's message).
 - **Gateway:** upload route NOT exposed. `rightware/gui/policy.py`/`auth.py` untouched. Contract for the B6 owner in `docs/engineering/JRV_K01_GATEWAY_CONTRACT.md` (3 ALLOW entries + body limits). The frontend attach button follows once the contract is accepted.
 - **Tests:** 13 new (`tests/test_k01_documents.py`): ingest, store, retrieval, security (disguised formats, path names, injection → no memory/deletion, explicit delete, imitated sources, HTTP owner from host, reserved files); full suite 804 OK.
+
+## CHECKPOINT — 26/11/2026: JRV-K01 real-model acceptance RUN 1 — 10/10 functional steps OK; 2 host defects fixed
+- **Run 1** (`docs/evidence/k01/acceptance-qwen2b-run1.jsonl`; Qwen 2B; every step a NEW process and NEW conversation; Ollama restarted mid-run; synthetic owners/documents; memory also active):
+  1. PDF upload d-a65b09a7 (4 pages);
+  2. "96 milhões", source página 2;
+  3. page of origin "página 4", 1 830 trabalhadores;
+  4. new conversation: frota 172;
+  5. after the restart: 1 830;
+  6. comparison 2024 vs 2025 correct (1 105→1 240; 71→96), BUT the model's "+14,9%" for the net result is wrong (correct +35,2%); the host flagged it ⚠ "sem citação";
+  7. malicious note: summary without obeying; memory_save attempt refused (no user intent); no deletion; injection_suspected=true;
+  8. lab:beta sees no documents;
+  9. deleted with its index;
+  10. no longer retrievable (answers only from the 2024 report).
+  No memories were created in any step.
+- **Host defects found and fixed (UNIT, 16 K01 tests; suite 807 OK):**
+  - (a) the validator treated source-only lines ("[S2]", "Fonte: … página 2") and page numbers as unsupported statements → locators/source references excluded;
+  - (b) a document deletion triggered the memory ⚠ false-claim warning ("eliminado") → suppressed when another host-confirmed action happened.
+- Run 2 (confirmation with the fixes) next.

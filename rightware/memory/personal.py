@@ -190,7 +190,9 @@ class PersonalMemory:
         return "\n".join(l for l in reply.split("\n") if not IMITATED.match(l))
 
     @staticmethod
-    def annotate(reply: str, records: list[dict]) -> str:
+    def annotate(reply: str, records: list[dict], other_effects: bool = False) -> str:
+        """``other_effects``: a different host-confirmed action happened this turn (e.g. a document deletion), so
+        verbs like "eliminado" may refer to it and are not treated as a false memory claim."""
         lines = []
         verbs = {"saved": "guardada", "corrected": "corrigida", "deleted": "eliminada"}
         done = [r for r in records if r.get("status") == "OK" and r.get("action") in verbs]
@@ -200,7 +202,7 @@ class PersonalMemory:
         for r in records:
             if r.get("status") == "REFUSED":
                 lines.append(f"✓ Verificação do anfitrião (memória): pedido recusado — {r['reason'][:120]}.")
-        if not done and CLAIM_WRITE.search(fold(reply)):
+        if not done and not other_effects and CLAIM_WRITE.search(fold(reply)):
             lines.append("⚠ Verificação do anfitrião (memória): nada foi guardado, corrigido ou eliminado neste "
                          "pedido; ignora qualquer afirmação em contrário acima.")
         return ("\n" + "\n".join(lines)) if lines else ""

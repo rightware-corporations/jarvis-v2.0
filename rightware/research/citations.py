@@ -24,6 +24,8 @@ from rightware.research.text import content_words, decimals, fold, numbers, sent
 CITE = re.compile(r"[\[(]\s*((?:S\d{1,2}\s*[,;e/]?\s*)+)[\])]|\bfonte\s+(S\d{1,2})\b", re.I)
 SRC_ID = re.compile(r"S(\d{1,2})", re.I)
 YEARLIKE = range(1900, 2101)
+LOCATOR = re.compile(r"\b(p[aá]gina|p[aá]g\.|p\.|linhas?)\s*\d+(\s*[–-]\s*\d+)?|\bS\d{1,2}\b|\bd-[0-9a-f]{8}\b", re.I)
+SOURCE_REF = re.compile(r"^\W*(fonte|fontes|source|refer[eê]ncia)s?\b", re.I)
 DATE_DAY = re.compile(r"\b\d{1,2}(?=\s+de\s+(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|"
                       r"outubro|novembro|dezembro)\b)", re.I)
 
@@ -98,10 +100,15 @@ def validate(answer: str, sources: dict[str, dict], question: str = "") -> list[
         for m in CITE.finditer(st):
             cited += [f"S{int(x)}" for x in SRC_ID.findall(m.group(1) or m.group(2) or "")]
         body = _strip_citations(st).replace("**", "").replace("__", "")
+        body = LOCATOR.sub(" ", body)                 # "página 4", "linhas 2–26", "S2" are locators, not claims
+        if SOURCE_REF.match(body) or not body.strip(" .:;,-()[]*_•"):
+            continue                                  # a line that only names a source is not a statement
         # numbers already in the QUESTION (dates, amounts the user gave) are not new factual claims
         nums = [(t, v) for t, v in numbers(DATE_DAY.sub(" ", body)) if not any(abs(v - q) < 1e-9 for q in q_nums)]
         words = content_words(body)
         implicit = False
+        if not nums and len(words) < 3:
+            continue                                  # too little content to be a checkable statement
         if not cited:
             if not (nums and sources and len(words) >= 2):
                 continue

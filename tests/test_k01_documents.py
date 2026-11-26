@@ -131,6 +131,38 @@ class Retrieval(Base):
         self.assertNotIn("divergência", suffix)
 
 
+class RealRunRegressions(Base):
+    """Defects found in the K01 real-model run 1."""
+
+    def test_source_only_lines_and_page_locators_are_not_statements(self):
+        from rightware.research.citations import validate
+        src = {"S1": {"text": "Em 31 de Dezembro de 2025 a empresa tinha 1 830 trabalhadores."}}
+        for line in ("[S1]", "**Fonte:** [S1] (relatorio.pdf, página 2)", "Página: 4", "[Fonte: S2]"):
+            self.assertEqual(validate(line, src, "Quantos trabalhadores?"), [], line)
+        self.assertEqual([v.status for v in validate("Tinha 2 000 trabalhadores [S1].", src)], ["UNSUPPORTED"])
+
+    def test_document_deletion_does_not_trigger_the_memory_false_claim_warning(self):
+        lib = self.lib()
+        did = lib.upload("relatorio-anual-2024.pdf", make_pdf(REPORT_2024))["document_id"]
+        mem = PersonalMemory(MemoryStore(self.dir / "m.sqlite3"), StaticOwner("lab:alfa", "lab-synthetic"))
+        a = ToolChatAdapter("fake", sites=(), persona="P", allow=(), memory=mem, documents=lib, engine_factory=lambda:
+                            Scripted([step("doc_delete", document_id=did), say("O documento foi eliminado.")]))
+        out = a.reply("Elimina o documento relatório anual 2024.", ())
+        self.assertIn("eliminado " + did, out)
+        self.assertNotIn("⚠ Verificação do anfitrião (memória)", out)
+
+    def test_wrong_percentage_in_a_comparison_is_flagged(self):
+        lib = self.lib()
+        lib.upload("relatorio-anual-2025.pdf", make_pdf(REPORT_2025))
+        lib.upload("relatorio-anual-2024.pdf", make_pdf(REPORT_2024))
+        lib.begin("q")
+        lib.context_block("Compara o resultado líquido dos relatórios anuais 2024 e 2025.")
+        s2025 = next(k for k, v in lib.sources.items() if "96 milhões" in v["text"])
+        suffix, _ = lib.finalize(f"O resultado líquido subiu de 71 para 96 milhões de meticais, um aumento de "
+                                 f"14,9% [{s2025}].")
+        self.assertIn("⚠ Verificação do anfitrião (documentos)", suffix)
+
+
 class Security(Base):
     def test_injection_in_document_is_flagged_and_cannot_change_memory(self):
         lib = self.lib()

@@ -201,7 +201,9 @@ class ToolChatAdapter:
                 mem_info["writes"] = [{k: r.get(k) for k in ("tool", "status", "action", "memory_id", "reason", "content")}
                                       for r in mem_records]
                 out = self.memory.strip_imitated(out)
-                out += self.memory.annotate(out, mem_records)
+                doc_effect = self.documents is not None and any(
+                    r.get("tool") == "doc_delete" and r.get("status") == "OK" for r in self.documents.records)
+                out += self.memory.annotate(out, mem_records, other_effects=doc_effect)
             return out if len(out) <= MAX_REPLY else out[:MAX_REPLY] + "\n(resposta truncada pelo limite da interface)"
 
     def activity(self) -> dict:
