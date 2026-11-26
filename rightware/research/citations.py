@@ -25,6 +25,9 @@ CITE = re.compile(r"[\[(]\s*((?:S\d{1,2}\s*[,;e/]?\s*)+)[\])]|\bfonte\s+(S\d{1,2
 SRC_ID = re.compile(r"S(\d{1,2})", re.I)
 YEARLIKE = range(1900, 2101)
 LOCATOR = re.compile(r"\b(p[aá]gina|p[aá]g\.|p\.|linhas?)\s*\d+(\s*[–-]\s*\d+)?|\bS\d{1,2}\b|\bd-[0-9a-f]{8}\b", re.I)
+META = {"informacao", "encontra", "encontrase", "documento", "documentos", "fonte", "fontes", "consta", "indicado",
+        "indicada", "referido", "referida", "segundo", "conforme", "pagina", "paginas", "relatorio", "aparece",
+        "mencionado", "mencionada", "dados", "este", "esta", "neste", "nesta"}
 SOURCE_REF = re.compile(r"^\W*(fonte|fontes|source|refer[eê]ncia)s?\b", re.I)
 DATE_DAY = re.compile(r"\b\d{1,2}(?=\s+de\s+(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|"
                       r"outubro|novembro|dezembro)\b)", re.I)
@@ -107,8 +110,8 @@ def validate(answer: str, sources: dict[str, dict], question: str = "") -> list[
         nums = [(t, v) for t, v in numbers(DATE_DAY.sub(" ", body)) if not any(abs(v - q) < 1e-9 for q in q_nums)]
         words = content_words(body)
         implicit = False
-        if not nums and len(words) < 3:
-            continue                                  # too little content to be a checkable statement
+        if not nums and (len(words) < 3 or all(w in META for w in words)):
+            continue                                  # too little / only "where it is" wording: not a checkable claim
         if not cited:
             if not (nums and sources and len(words) >= 2):
                 continue

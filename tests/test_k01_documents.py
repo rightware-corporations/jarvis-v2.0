@@ -203,6 +203,13 @@ class Int01Revisions(Base):
         out, lines = self.l.revise("Em 2024 o resultado líquido foi de 96 milhões de meticais.")
         self.assertIn("⚠(valor de «relatorio-anual-2025.pdf», não de 2024)", out)
 
+    def test_locator_only_sentence_is_not_marked(self):
+        self.l.begin("q")
+        self.l.context_block("No relatório anual 2025, qual foi o resultado líquido e em que página?")
+        out, _ = self.l.revise("O resultado líquido foi de 96 milhões de meticais. Esta informação encontra-se na "
+                               "página 2 do documento [S1].")
+        self.assertNotIn("⚠", out)
+
     def test_reproduced_instructions_are_omitted(self):
         lib = self.lib("lab:gama")
         lib.upload("nota-fornecedores.pdf", make_pdf(MALICIOUS))

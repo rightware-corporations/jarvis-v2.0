@@ -127,8 +127,11 @@ try {
   await page.waitForSelector('[data-rw="mem-empty"]', { timeout: 10000 });
   step('eliminar documento e memória pelo painel', true);
   await page.locator('[data-rw="library-close"]').click();
+  await page.locator('button[title="Nova conversa"]').first().click();      // a NEW conversation: no chat history
+  await page.waitForTimeout(1000);
   const a5 = await ask(page, 'No relatório anual 2025, qual foi o resultado líquido?');
-  step('documento eliminado deixa de ser recuperado', !/96 milhões/.test(a5), a5.slice(0, 200).replace(/\n/g, ' '));
+  step('documento eliminado deixa de ser recuperado (nova conversa)', !/Fonte: documento/.test(a5) && !/96 milhões/.test(a5),
+       a5.slice(0, 200).replace(/\n/g, ' '));
 
   // ---------------- isolation: Issa's own link, own session ----------------
   execSync(ISSUE, { stdio: 'inherit' });

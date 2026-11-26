@@ -1,0 +1,1136 @@
+{
+ "steps": [
+  {
+   "n": "operador: GET confirmação (2×) não consome",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "n": "operador: POST consome + cookie Secure/HttpOnly/Strict + redirecção /",
+   "ok": true,
+   "detail": "secure=true"
+  },
+  {
+   "n": "operador: Origin real no POST do formulário (não null)",
+   "ok": true,
+   "detail": "Origin=https://jarvis-e2e.example"
+  },
+  {
+   "n": "operador: link usado já não serve",
+   "ok": true,
+   "detail": "status=403"
+  },
+  {
+   "n": "build: bundle corresponde ao código (overlay) e revisão registada",
+   "ok": true,
+   "detail": "{\"backend_commit\":\"c07b0319c665\",\"bundle_commit\":\"0bf2c6d08f32\",\"bundle_overlay_matches_source\":true,\"match\":true}"
+  },
+  {
+   "n": "activar JARVIS → saudação sintetizada (pf_dora)",
+   "ok": true,
+   "detail": "status=200"
+  },
+  {
+   "n": "conversa por texto (calculadora)",
+   "ok": true,
+   "detail": "Quanto é 12 vezes 7?  A resposta a esta pergunta é um facto matemático e não uma simulação ou cálculo que dependa de dados externos. Portanto, não há necessidad"
+  },
+  {
+   "n": "transcrição: multipart aceite e texto ditado no campo",
+   "ok": true,
+   "detail": "status=200 texto=«Quanto a 12 vezes 7.»"
+  },
+  {
+   "n": "reproduzir resposta (ouvir)",
+   "ok": true,
+   "detail": "status=200"
+  },
+  {
+   "n": "ensinar preferência (escrita real confirmada pelo anfitrião)",
+   "ok": true,
+   "detail": "er para enviar · Shift+Enter para nova linha JARVIS PRONTO Ouvir saudação  Respostas do modelo: NÃO verificadas  MISSÕES SUPERVISIONADAS  Nenhuma missão foi activada pelo anfitrião.  Ainda não há resultados nesta sessão."
+  },
+  {
+   "n": "nova conversa recupera a preferência",
+   "ok": true,
+   "detail": "Em que moeda devo apresentar o relatório mensal de vendas?  JARVIS: A sua preferência foi registada com sucesso no sistema de memória pessoal (ID: m-9b4b2713). Os relatórios mensais de vendas serão ap"
+  },
+  {
+   "n": "carregar PDF pela interface",
+   "ok": true,
+   "detail": "Documento «relatorio-anual-2025.pdf» carregado. Pergunta ao JARVIS sobre ele."
+  },
+  {
+   "n": "consultar informação e página",
+   "ok": true,
+   "detail": "No relatório anual 2025, qual foi o resultado líquido e em que página aparece?  No relatório anual 2025, o resultado líquido foi de 96 milhões de meticais.  Esta informação encontra-se na página 2 do documento [S1]. ⚠(não confirmado)  ⚠ Nota: O documento conté"
+  },
+  {
+   "n": "conversa contínua: a ouvir → a gravar → a transcrever → a pensar → a falar",
+   "ok": true,
+   "detail": "listening,recording,transcribing,thinking,speaking"
+  },
+  {
+   "n": "eliminar documento e memória pelo painel",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "n": "documento eliminado deixa de ser recuperado",
+   "ok": false,
+   "detail": "No relatório anual 2025, qual foi o resultado líquido?  JARVIS: O resultado líquido do relatório anual 2025 foi de 96 milhões de meticais.  Esta informação encontra-se na página 2 do documento [S1]. ⚠"
+  },
+  {
+   "n": "issa: GET confirmação (2×) não consome",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "n": "issa: POST consome + cookie Secure/HttpOnly/Strict + redirecção /",
+   "ok": true,
+   "detail": "secure=true"
+  },
+  {
+   "n": "issa: Origin real no POST do formulário (não null)",
+   "ok": true,
+   "detail": "Origin=https://jarvis-e2e.example"
+  },
+  {
+   "n": "issa: link usado já não serve",
+   "ok": true,
+   "detail": "status=403"
+  },
+  {
+   "n": "isolamento: a sessão do Issa não vê documentos nem memórias do operador",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "network": [
+  {
+   "m": "GET",
+   "p": "/rw-login",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/rw-login",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/rw-login",
+   "s": 303
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/connectors",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/speech/health",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/speech/tts/health",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/models",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/info",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "POST",
+   "p": "/v1/speech/synthesize",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/chat/completions",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/speech/transcribe",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/speech/synthesize",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/chat/completions",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "POST",
+   "p": "/v1/chat/completions",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/rightware/documents/upload",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "POST",
+   "p": "/v1/chat/completions",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "POST",
+   "p": "/v1/speech/transcribe",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/chat/completions",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/memory",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/rightware/documents/delete",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/memory",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/rightware/memory/delete",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/memory",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/v1/chat/completions",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/rw-login",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/rw-login",
+   "s": 200
+  },
+  {
+   "m": "POST",
+   "p": "/rw-login",
+   "s": 303
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/state",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/approvals/pending",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/connectors",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/speech/health",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/speech/tts/health",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/savings",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/models",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/info",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/managed-agents",
+   "s": 403
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/documents",
+   "s": 200
+  },
+  {
+   "m": "GET",
+   "p": "/v1/rightware/memory",
+   "s": 200
+  }
+ ],
+ "origins": [
+  {
+   "path": "/rw-login",
+   "origin": "https://jarvis-e2e.example"
+  },
+  {
+   "path": "/v1/speech/synthesize",
+   "origin": null
+  },
+  {
+   "path": "/v1/chat/completions",
+   "origin": null
+  },
+  {
+   "path": "/v1/speech/transcribe",
+   "origin": null
+  },
+  {
+   "path": "/v1/speech/synthesize",
+   "origin": null
+  },
+  {
+   "path": "/v1/chat/completions",
+   "origin": null
+  },
+  {
+   "path": "/v1/chat/completions",
+   "origin": null
+  },
+  {
+   "path": "/v1/rightware/documents/upload",
+   "origin": null
+  },
+  {
+   "path": "/v1/chat/completions",
+   "origin": null
+  },
+  {
+   "path": "/v1/speech/transcribe",
+   "origin": null
+  },
+  {
+   "path": "/v1/chat/completions",
+   "origin": null
+  },
+  {
+   "path": "/v1/speech/synthesize",
+   "origin": null
+  },
+  {
+   "path": "/v1/rightware/documents/delete",
+   "origin": null
+  },
+  {
+   "path": "/v1/rightware/memory/delete",
+   "origin": null
+  },
+  {
+   "path": "/v1/chat/completions",
+   "origin": null
+  },
+  {
+   "path": "/rw-login",
+   "origin": "https://jarvis-e2e.example"
+  }
+ ],
+ "started": "2026-11-26T13:57:16.005Z",
+ "finished": "2026-11-26T14:00:22.893Z",
+ "pass": 20,
+ "total": 21
+}

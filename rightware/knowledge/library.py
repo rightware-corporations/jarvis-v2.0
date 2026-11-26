@@ -270,7 +270,7 @@ class DocumentLibrary:
                             lines.append(f"✓ Verificação do anfitrião (cálculo): {shown} % confere com a calculadora "
                                          f"({expr}).")
                         continue
-            if v.status in C.PROBLEM and numbers(st):
+            if v.status in C.PROBLEM and numbers(C.LOCATOR.sub(" ", st)):
                 marks.append((st, "⚠(não confirmado)"))
             elif v.status.startswith("SUPPORTED") and v.source in self.sources:
                 years = set(re.findall(r"\b(19\d\d|20\d\d)\b", st))
