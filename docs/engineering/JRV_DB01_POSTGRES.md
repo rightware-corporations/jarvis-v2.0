@@ -12,3 +12,13 @@ Baseline 83c7df9df247e816c21ca1ecf1bbffe3a1fa9cb2. Operator approved development
 
 ## Contract test command (disposable DB only)
 Inject `JARVIS_DB01_TEST=1`, `JARVIS_DB01_TEST_DSN` and `JARVIS_DB01_TEST_INSTANCE` using approved cloud secrets, distinct from runtime. Run `python -m unittest discover -s tests -p test_db01_postgres.py -v`. Five tests cover memory roundtrip and recursive deletion, direct RLS, documents/FTS, concurrent supersession and wrong instance. Synthetic audit events remain in disposable DB. No tests have been executed against PostgreSQL yet. Test role requires TLS verify-full too. Check actual database policies and grants as migration administrator; runtime introspection is not a substitute for adversarial tests.
+
+
+## DB01-G migration candidate
+Stop source and target writers. Keep original SQLite files on private storage; the tool accepts LIVE02-compatible 0700 state directory with mem.sqlite3 and docs.sqlite3. Do not rename/move production files without a verified SQLite-aware transfer. Inspect only:
+`python -m rightware.persistence.migrate --state-dir /approved/private/state --confirm-quiescent`
+This reads both DBs without creating replacements; validates schema, owners, active quotas, supersession chains, document/segment consistency; prints counts only. Refuses dangling supersession history (possible legacy SQLite defect), duplicates, invalid rows or oversized snapshots. Resolve conflicts explicitly before retry.
+Apply only with separate authorization, dedicated EMPTY PostgreSQL target (administrator verifies global emptiness; RLS cannot prove this), original writers stopped, target identity confirmed, TLS runtime credentials injected:
+`python -m rightware.persistence.migrate --state-dir /approved/private/state --confirm-quiescent --apply --confirm-empty-target --confirm-instance <approved UUID>`
+No auto cutover. One PostgreSQL transaction, all imported owners locked in deterministic order, refuses any nonempty imported owner, preserves IDs/events, regenerates FTS by schema; compares canonical multiset fingerprints and row counts before commit. No data or digests in logs. If commit outcome is uncertain after network failure, inspect target first; never blindly retry. Other target owners are not visible under RLS. The source snapshot is bounded and two-file consistency depends on operator quiescence, not automatic source locking. After acceptance, retain source according to agreed retention/deletion policy; never re-enable writes to both backends.
+Source-only tests: `python -m unittest discover -s tests -p test_db01_migrate.py -v`. Real PostgreSQL migration rollback/read-back tests remain required.
