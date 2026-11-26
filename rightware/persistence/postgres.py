@@ -48,10 +48,23 @@ class PostgresDatabase:
         if row != (self.instance_id, 1):
             raise DatabaseUnavailable("PostgreSQL instance or schema version mismatch")
         role = con.execute(
-            "SELECT r.rolsuper OR r.rolbypassrls OR r.rolcreaterole OR r.rolcreatedb "
+            "SELECT r.rolsuper OR r.rolbypassrls OR r.rolcreaterole OR r.rolcreatedb OR r.rolreplication "
             "FROM pg_catalog.pg_roles r WHERE r.rolname=current_user").fetchone()
         if role != (False,):
             raise DatabaseUnavailable("PostgreSQL runtime role is too privileged")
+        # Neon console/API roles are administrators. The runtime must be a separate SQL role.
+        elevated = con.execute(
+            "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles r "
+            "WHERE r.rolname <> current_user AND "
+            "(r.rolsuper OR r.rolbypassrls OR r.rolcreaterole OR r.rolcreatedb OR r.rolreplication "
+            "OR r.rolname IN ('neon_superuser','pg_read_all_data','pg_write_all_data',"
+            "'pg_execute_server_program','pg_read_server_files','pg_write_server_files')) "
+            "AND pg_catalog.pg_has_role(current_user,r.oid,'MEMBER'))").fetchone()
+        owns_database = con.execute(
+            "SELECT pg_catalog.pg_has_role(current_user,datdba,'MEMBER') "
+            "FROM pg_catalog.pg_database WHERE datname=current_database()").fetchone()
+        if elevated != (False,) or owns_database != (False,):
+            raise DatabaseUnavailable("PostgreSQL runtime has elevated membership or database ownership")
         rows = con.execute(
             "SELECT c.relname, c.relrowsecurity AND c.relforcerowsecurity, "
             "pg_catalog.pg_has_role(current_user,c.relowner,'MEMBER') "
@@ -79,7 +92,8 @@ class PostgresDatabase:
             Owner(owner, "operator-config")
         try:
             with self._driver.connect(self._dsn, connect_timeout=5, autocommit=False,
-                                      sslmode="verify-full", options="-c search_path=pg_catalog") as con:
+                                      sslmode="verify-full", gssencmode="disable",
+                                      options="-c search_path=pg_catalog") as con:
                 con.execute("SET LOCAL statement_timeout = '8s'")
                 con.execute("SET LOCAL lock_timeout = '4s'")
                 con.execute("SELECT set_config('jarvis.owner', '', true)")
