@@ -4779,3 +4779,14 @@ Local mode is unchanged.
 - Operator requests immediate presentation while together with the intended recipient. Priority is an operator-controlled shared-screen demonstration, not an independent recipient login or production release. Baseline `913c455776f7fefbff90fb02f19c42afd98f5b72`: Claude reconciled DB01 imports, combined suite 851 tests OK (6 live PG skipped), tsc 0/Vitest 121/121 on earlier fixed tree; ARM64 dependency resolution only; OCI and live PG blocked. No evidence of an active current preview endpoint.
 - Proposed immediate execution: Claude cloud, existing B6 private HTTPS authentication, explicit fresh bounded authorization in operator's launch prompt (maximum 59 minutes), one synthetic owner, offline/replay web mode, temporary SQLite laboratory storage, no real data, no new infrastructure, no public/anonymous link. Check runtime and build, smoke test text and voice, issue operator-only link privately. Physical voice remains unaccepted until actual browser test; if it fails, report FAIL and demonstrate text mode with explicit limitation; no independent recipient access. Automatic deadline and cleanup required. Do not reuse consumed access/network windows.
 - This checkpoint records intent and launch procedure, not a started tunnel or service. Claude must record actual startup/verification/closure, with no tokens/URLs/credentials in Git. HANDOFF-FIRST/LAST. No production cutover, paid services, merges or local PC installations.
+
+## CHECKPOINT — 26/11/2026 20:56 Maputo: JRV-LIVE03 — immediate operator preview window OPEN (Claude Code)
+- **Authorisation:** operator wrote "AUTORIZAÇÃO: ABRIR_TUNEL — nova janela privada de, no máximo, 59 minutos, exclusivamente para a minha sessão de operador e apresentação presencial supervisionada". No network grant: offline mode; SQLite lab storage; synthetic owner `lab:operador-live03` (fresh files `.runtime/live03/`); no Issa account; no anonymous access; no real data.
+- **Start HEAD:** `a5849aa` (fast-forward). The frontend was rebuilt from `a5849aa` (it includes the ChatGPT LIVE01-R02 voice changes); state `build.match: true`.
+- **Run:** Ollama + qwen3.5:2b warm; voice available (pf_dora 1.15); private Dev Tunnel (port 8000 only, Host/Origin unchanged, `Access control {}`); host and JARVIS hard limit 3540 s → ends 21:55 Maputo; B6 two-step login.
+- **Smoke via loopback with an extra link for the SAME synthetic owner (consumed and deleted):**
+  - login 303; state build.match true, documents+memory enabled;
+  - STT 200 in 1.2 s (synthetic WebM/Opus); TTS 200 in 0.8 s;
+  - chat "12 × 7" → 84;
+  - anonymous request through the tunnel → 302 (Microsoft login).
+- **Monitoring:** audit decisions only + voice RESULT diagnostics (status/seconds/bytes/type/text length, no audio or text). Check-ins every 3 min (container restarts were observed before).
