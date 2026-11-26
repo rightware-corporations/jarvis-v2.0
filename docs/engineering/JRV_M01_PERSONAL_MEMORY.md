@@ -94,7 +94,7 @@ O B6 prova a posse de um link de uso único, não **quem** é a pessoa. Por isso
 - **Embelezamento:** o 2B acrescenta texto ao responder ("relatórios financeiros e de desempenho" no passo 1), embora o que fica guardado sejam as palavras do utilizador.
 - **Alucinação sem relação com a memória:** no passo 6 disse "tenho acesso a dados financeiros reais".
 - **Dono vs. nome de perfil:** chama "Issa" ao dono sintético, porque a persona usa o nome do perfil autorizado (`configs/profile.json`). A persona e o perfil não estão ligados ao dono da memória. Fica pendente com a integração de identidade.
-- **Aviso falso no passo 7 da execução 2:** havia ⚠ "nada foi eliminado"; na execução 3, a eliminação foi real e confirmada.
+- **Aviso correcto no passo 7 da execução 2:** o modelo disse "tem apagado" sem nenhuma eliminação real (não havia memória), e o anfitrião acrescentou correctamente ⚠ "nada foi … eliminado". Na execução 3 a eliminação foi real e confirmada pela base de dados.
 
 ## 6. Limitações
 - **Identidade:** um dono por processo. Não há ligação sessão B6 ↔ dono (ver secção 3).
