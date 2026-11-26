@@ -61,7 +61,50 @@ O B6 prova a posse de um link de uso único, não **quem** é a pessoa. Por isso
   - **Ferramentas:** sem intenção → recusa; invenção ou conteúdo externo → recusa; dono alheio → não encontrado.
   - **Recuperação:** só o relevante, mais as preferências.
   - **Adaptador:** ensinar → nova conversa → reinício → corrigir → eliminar → isolamento; conversa directa com memória; confirmação falsa assinalada; ficheiros protegidos intocados.
-- **Suite completa:** 785 OK.
+- **Suite completa:** 787 OK (20 testes de memória).
 
-## 5. Aceitação com o modelo real
-Ver a secção seguinte, preenchida com a execução: `docs/evidence/m01/acceptance-qwen2b.jsonl`.
+## 5. Aceitação com o modelo real (Qwen 2B local, donos sintéticos `lab:alfa`/`lab:beta`)
+- **Harness:** `labs/m01/run_acceptance.sh`.
+  - Cada passo corre num **processo novo**, numa **conversa nova** (sem histórico), pelo núcleo do produto: router → conversa directa ou ferramentas, com `PersonalMemory`.
+  - O **Ollama é reiniciado** a meio.
+  - A base SQLite fica no scratchpad (nunca no git).
+
+| Execução | Resultado | Causa / correcção |
+|---|---|---|
+| 1 (`run1.jsonl`) | **FALHA** no passo 1: nada guardado | O 2B parafraseou ("O utilizador prefere… moçambicanos"); a fundamentação recusou. "Guardado"/"MEMÓRIA GUARDADA" não foram assinalados (o detector só conhecia "guardei"). → palavras-meta ignoradas; detector de particípios; conteúdo proposto registado. |
+| 2 (`run2.jsonl`) | **FALHA** no passo 1 | O 2B embelezou ("financeiros e de desempenho… em vez de outras moedas") e não repetiu a chamada. → **Desenho corrigido:** o modelo decide guardar; se o texto não for fiel, o anfitrião guarda as **palavras do próprio utilizador** (sem o comando), com os mesmos filtros. |
+| 3 (`run3.jsonl`) | **PASSA nos 9 passos** | Ver a tabela seguinte. |
+
+**Execução 3 (FACTO):**
+
+| Passo | Processo | Resultado |
+|---|---|---|
+| 1 Ensinar | 13363 | O modelo propôs uma paráfrase não fiel. O anfitrião guardou `m-75ba45f4` «Prefiro que os meus relatórios sejam apresentados em meticais». Confirmação do anfitrião baseada na escrita real. |
+| 2 Nova conversa | 14088 | Recuperou `m-75ba45f4` (caminho de conversa directa) e respondeu "meticais". |
+| 9a Isolamento (antes de eliminar) | 14708 | O dono `lab:beta` não recuperou nada; `memory_list` devolveu vazio para beta. |
+| 3 Reinício completo | — | Ollama reiniciado; todos os passos em processos novos. |
+| 4 Depois do reinício | 15402 | Recuperou `m-75ba45f4` e respondeu "Meticais". |
+| 5 Corrigir | 16024 | `memory_list` → `memory_update` `m-75ba45f4` (o id mantém-se). Base de dados: «… em dólares americanos». |
+| 6 Confirmar | 16652 | Respondeu "dólares americanos (USD)". |
+| 7 Eliminar | 17274 | `memory_forget` `m-75ba45f4`; base de dados vazia. |
+| 8 Confirmar a eliminação | 17906 | Nada recuperado; "memória pessoal vazia". |
+| 9b Isolamento | 17915 | O dono `lab:beta` continua sem memórias. |
+
+**Observações do modelo, não da memória:**
+- **Embelezamento:** o 2B acrescenta texto ao responder ("relatórios financeiros e de desempenho" no passo 1), embora o que fica guardado sejam as palavras do utilizador.
+- **Alucinação sem relação com a memória:** no passo 6 disse "tenho acesso a dados financeiros reais".
+- **Dono vs. nome de perfil:** chama "Issa" ao dono sintético, porque a persona usa o nome do perfil autorizado (`configs/profile.json`). A persona e o perfil não estão ligados ao dono da memória. Fica pendente com a integração de identidade.
+- **Aviso falso no passo 7 da execução 2:** havia ⚠ "nada foi eliminado"; na execução 3, a eliminação foi real e confirmada.
+
+## 6. Limitações
+- **Identidade:** um dono por processo. Não há ligação sessão B6 ↔ dono (ver secção 3).
+- **Recuperação:** é lexical; sinónimos sem palavras em comum podem não ser recuperados (por isso as preferências entram sempre, até 3).
+- **Detecção de intenção:** usa expressões em português. Pedidos implícitos ("o meu fornecedor agora é X") não são guardados sem "lembra-te", "prefiro", "corrige"… É deliberado: só se guarda com consentimento explícito.
+- **Palavras literais:** quando o anfitrião guarda as palavras do utilizador, o conteúdo fica na 1.ª pessoa e em bruto, sem normalização.
+- **Interface:** não há ainda ecrã para ver, editar ou apagar memórias; isso faz-se por conversa (`memory_list`, corrigir, esquecer).
+- **Base de dados:** sem cifragem em repouso (ficheiro 0600 em `.runtime`).
+
+## 7. Próximo passo
+- Coordenar com o responsável do B6 a ligação sessão ↔ dono, depois do JRV-ID01-A.
+- Ecrã de memórias na HUD (ver, editar, apagar), com aprovação do design.
+- Activar `--memoria-dono local:issa` só no computador do Issa, depois da aceitação do operador.

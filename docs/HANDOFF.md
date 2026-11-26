@@ -4474,3 +4474,19 @@ Local mode is unchanged.
   - provenance records `content_from`; recall shows them as «o utilizador disse: …»;
   - model inventions are never stored;
   - the false-claim detector covers present tense (guardo/registo/apago…).
+
+## CHECKPOINT — 26/11/2026: JRV-M01 real-model acceptance RUN 3 = PASS (9/9) — first usable persistent memory
+- **Run 3** (`docs/evidence/m01/acceptance-qwen2b-run3.jsonl`; Qwen 2B; every step a NEW process and NEW conversation; Ollama restarted mid-run; synthetic owners lab:alfa/lab:beta):
+  1. teach → the host stored the user's own words `m-75ba45f4` (the model paraphrase was not grounded);
+  2. new conversation recalls it (direct path) → "meticais";
+  3. beta isolation (alfa still had the memory) → nothing;
+  4. after the restart → recalled → "Meticais";
+  5. correct → `memory_update` with the same id → "dólares americanos";
+  6. → "USD";
+  7. forget → deleted, DB empty;
+  8. → "memória pessoal vazia";
+  9. beta → nothing.
+- **Model-side issues remain:** embellishment in replies; one unrelated hallucination (step 6); the persona addresses the synthetic owner as "Issa" (profile not bound to the memory owner).
+- **Tests:** 787 OK (20 memory). Docs: `docs/engineering/JRV_M01_PERSONAL_MEMORY.md` (audit, design, runs 1–3, limitations).
+- **Next:** owner ↔ B6 session binding (coordinate after JRV-ID01-A); HUD memory screen; enable `--memoria-dono local:issa` only on Issa's machine after operator acceptance.
+- Unchanged: `auth.py`, `gui/policy.py`, B6, voice, vendor pin. No network, no merge.
