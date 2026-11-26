@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-26",
+  "baseline": "c67ca761d33c902ad741df2cfe6edda3e60679cb",
+  "environment": {
+    "python": "3.13.5",
+    "sqlite": "3.46.1",
+    "host": "isolated Linux sandbox, reconstructed source subset, namespace packages (docstring-only package initializers omitted), no direct GitHub DNS or psycopg"
+  },
+  "verified_blobs": {
+    "labs/infra01/acceptance.py": "f295fae69e5b07cea2802e09853c95f6706a930d",
+    "rightware/gui/recovery.py": "38050d9a7f5f670aa1842850f02912dcf97f2137",
+    "rightware/memory/store.py": "71ed5e33bfcbe004963f15454ac2823619f4f371",
+    "rightware/memory/identity.py": "ed34d0ec7735d66023b415f2f2f738daa3894390",
+    "rightware/knowledge/store.py": "bc5ec5ca730d78eff699b3219919e1362b5f94cd",
+    "rightware/knowledge/ingest.py": "6d9559714cd4cab5b6c46a1f63767282dee5e4c2",
+    "rightware/research/text.py": "4c54c632f1b40e34e552ac2c0ef05b8f2ca4755c",
+    "rightware/research/documents.py": "452efa5f3bf03f3b69375369ee447db2eae1470d",
+    "rightware/persistence/migrate.py": "e826f3a02a95a387610a564bc231faccd10bc04f",
+    "rightware/persistence/pg_guard.py": "0ee2ddc0626992e0af2a635a52f44643b9c7e3fd",
+    "tests/test_db01_migrate.py": "50b6ac4ad5774d8ae1bf8829cbf49327d0c6bc11",
+    "tests/test_db01_guard.py": "544feb7ebf4875423f39e7dbb995cb3ee3b04382"
+  },
+  "commands": [
+    {
+      "command": "PYTHONPATH=. python -m labs.infra01.acceptance",
+      "exit": 0,
+      "sqlite_source": {
+        "status": "PASS",
+        "expected": 9,
+        "executed": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.036
+      },
+      "postgres": {
+        "status": "NOT_RUN"
+      }
+    },
+    {
+      "command": "env -u JARVIS_DB01_TEST -u JARVIS_DB01_TEST_DSN -u JARVIS_DB01_TEST_INSTANCE PYTHONPATH=. python -m labs.infra01.acceptance --live",
+      "exit": 2,
+      "sqlite_source": {
+        "status": "PASS",
+        "expected": 9,
+        "executed": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "seconds": 0.039
+      },
+      "postgres": {
+        "status": "BLOCKED",
+        "reason": "DISPOSABLE_TEST_CONFIGURATION_REQUIRED"
+      }
+    },
+    {
+      "command": "PYTHONPATH=. python -m unittest discover -s tests -p test_db01_guard.py -v",
+      "executed": 7,
+      "passed": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "unique_directed_tests": {
+    "passed": 16,
+    "postgres_tests_not_run": 6
+  },
+  "limits": "Synthetic SQLite stores only; no direct PostgreSQL connection, live migration, full suite, model, GUI, ARM64 or physical voice."
+}

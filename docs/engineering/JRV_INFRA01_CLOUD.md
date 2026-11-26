@@ -42,3 +42,6 @@ References (official): https://neon.com/docs/manage/roles ; https://neon.com/doc
 
 ## Live Neon SQL checkpoint
 Free lab created and schema applied. Provider now supports scoped read_write roles; this was used instead of administrative default, then explicit revokes narrowed broad DML grants. See `docs/evidence/infra01/neon-sql.json`. SQL-level evidence is not equivalent to Python acceptance; direct TLS and full runtime remain pending. Synthetic rows retained; no destructive cleanup performed.
+
+## DB01-H source acceptance update
+The source-only acceptance runner and seven guard tests passed in an isolated Linux sandbox using 12 exact-hash source/test files from the integration branch. See `docs/evidence/infra01/db01-source-acceptance.json`. The live runner deliberately failed closed without test configuration (exit 2); the six PostgreSQL Python tests remain NOT_RUN. Full checkout/cloud-host regression is still required. No real data or external SQL writes were performed in this cycle.
