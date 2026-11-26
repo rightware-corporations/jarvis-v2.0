@@ -4617,3 +4617,16 @@ Local mode is unchanged.
   - anonymous request → tunnel 401 / 302 to Microsoft login; no anonymous request reached JARVIS.
 - **Known cosmetic defect (not fixed, no new implementation in this window):** the launcher prints/labels the tools as "(operador)" because the `--donos` loop reuses the variable `label`; the tool footer may show "(operador)" instead of the network mode. Functionality unaffected.
 - **Monitoring:** decisions only (method/path/decision, no content); keep-alive check-ins every 4 min.
+
+## CHECKPOINT — 26/11/2026 16:38 Maputo: JRV-LIVE01 — CRITICAL STT FAILURE investigation (in progress)
+- **Operator:** physical microphone → ellipsis, no dictated text. Real voice acceptance REJECTED.
+- **Facts so far:**
+  - only 2 `POST /v1/speech/transcribe` from the operator's browser reached JARVIS (16:23:45, 16:24:01); none afterwards, while chat kept working (6 answers);
+  - the tunnel host log shows no errors;
+  - the live server transcribed a synthetic WebM/Opus (MediaRecorder-like, 48 kHz mono) sent via loopback with a session: 200 in 6.2 s, text returned → backend decode + Faster Whisper OK when idle;
+  - the outcome of the operator's 2 requests is unknown (the audit had no response status).
+- **Minimal diagnostic change (policy.py, authorised):** voice routes now audit RESULT status, seconds, request bytes, content-type and the LENGTH of the transcribed text (never audio or text). JARVIS was restarted in the same window (ends 17:17/17:19); a new operator link was issued (not the Issa link).
+- **Hypotheses to discriminate:**
+  1. empty transcript from low-level physical audio;
+  2. >45 s when competing with chat inference on 4 vCPU;
+  3. continuous mode: the energy VAD never triggers with the physical mic (no POST at all).

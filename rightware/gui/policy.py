@@ -296,7 +296,37 @@ class PolicyApp:
                                                    "reason": "BODY_TOO_LARGE_OR_UNSIZED"})
         self.audit.record(kind, method, path, "ALLOW", reason, target=target)
         app = self.inner if target == "inner" else self.bridge
+        if kind == "http" and path in ("/v1/speech/transcribe", "/v1/speech/synthesize"):
+            return await self._observed(app, scope, receive, send, method, path)
         return await app(scope, receive, send)
+
+    async def _observed(self, app, scope, receive, send, method, path):
+        """LIVE01 diagnostics for the voice routes: status, duration, request size/type and (transcribe) the LENGTH of
+        the returned text. Never audio, never text."""
+        t0 = time.monotonic()
+        hdr = dict((bytes(k).lower(), bytes(v)) for k, v in scope.get("headers") or [])
+        info = {"status": 0, "body": b""}
+
+        async def send_wrap(m):
+            if m["type"] == "http.response.start":
+                info["status"] = m.get("status", 0)
+            elif m["type"] == "http.response.body" and path.endswith("transcribe") and len(info["body"]) < 65536:
+                info["body"] += m.get("body", b"")
+            await send(m)
+        try:
+            await app(scope, receive, send_wrap)
+        finally:
+            chars = -1
+            if path.endswith("transcribe"):
+                try:
+                    chars = len((json.loads(info["body"] or b"{}").get("text") or "").strip())
+                except (ValueError, AttributeError):
+                    chars = -2
+            self.audit.record("http", method, path, "RESULT", str(info["status"]),
+                              seconds=round(time.monotonic() - t0, 2),
+                              bytes_in=int(hdr.get(b"content-length", b"0") or 0) if hdr.get(b"content-length", b"").isdigit() else -1,
+                              ctype=hdr.get(b"content-type", b"").split(b";")[0].decode("ascii", "replace")[:40],
+                              text_chars=chars)
 
     async def _login_post(self, scope, receive, send, kind, method, path):
         """ID01-A explicit confirmation: exact Origin was already enforced by ``decide`` (null is refused there);
