@@ -4537,3 +4537,15 @@ Local mode is unchanged.
   - (a) the validator treated source-only lines ("[S2]", "Fonte: … página 2") and page numbers as unsupported statements → locators/source references excluded;
   - (b) a document deletion triggered the memory ⚠ false-claim warning ("eliminado") → suppressed when another host-confirmed action happened.
 - Run 2 (confirmation with the fixes) next.
+
+## CHECKPOINT — 26/11/2026: JRV-K01 real-model run 2 + host fixes — first usable document knowledge (lab)
+- **Run 2** (`docs/evidence/k01/acceptance-qwen2b-run2.jsonl`):
+  - all 10 steps functional again;
+  - the run-1 host fixes are confirmed (verification ✓ without source-line noise; no false memory warning on document deletion).
+- **Model errors:** step 6 wrong percentage again (14,97%; correct 35,2%) and margin 7,69% (correct 7,74%), both flagged ⚠ by the host. In step 7 the model did not obey the injection but REPEATED the malicious text in its summary.
+- **Host fixes after run 2 (UNIT, 17 K01 tests; full suite green):**
+  - derived values may combine numbers from different provided sources (a correct +12,2% revenue change is no longer "sem citação");
+  - documents with instruction-like text always get a host security line ("tratado só como dado — nada foi executado, guardado ou eliminado").
+- **Docs:** `docs/engineering/JRV_K01_DOCUMENT_KNOWLEDGE.md` (reuse, design, security, runs 1–2, limitations); `JRV_K01_GATEWAY_CONTRACT.md` (pending the B6 owner).
+- **Next:** the B6 owner reviews the gateway contract → wire `http_api` in the bridge → attach button → operator UI acceptance.
+- Unchanged: auth.py, gui/policy.py, B6, voice, vendor pin. No network, no paid API, no new model, no merge.

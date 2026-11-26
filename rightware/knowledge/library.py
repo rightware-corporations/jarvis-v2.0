@@ -227,7 +227,12 @@ class DocumentLibrary:
             lines.append(f"Fonte: documento «{s['doc']}», {s['locator']} ({sid}; {s['doc_id']})")
         if verdicts:
             lines += [l.replace("(citações)", "(documentos)") for l in C.host_lines(verdicts)]
+        injected = sorted({s["doc"] for s in self.sources.values() if INJECTION.search(s["text"])})
+        if injected:
+            lines.append("✓ Verificação do anfitrião (segurança): " + ", ".join(f"«{d}»" for d in injected) +
+                         " contém texto a tentar dar instruções; foi tratado só como dado — nada foi executado, "
+                         "guardado na memória ou eliminado por causa dele.")
         info = {"passages": list(self.sources), "citations": C.summary(verdicts) if verdicts else {},
-                "sources_used": [{"sid": s, "doc_id": self.sources[s]["doc_id"], "locator": self.sources[s]["locator"]}
+                "injection_in": injected, "sources_used": [{"sid": s, "doc_id": self.sources[s]["doc_id"], "locator": self.sources[s]["locator"]}
                                  for s in used]}
         return ("\n" + "\n".join(lines)) if lines else "", info

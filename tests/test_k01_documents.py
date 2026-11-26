@@ -151,6 +151,22 @@ class RealRunRegressions(Base):
         self.assertIn("eliminado " + did, out)
         self.assertNotIn("⚠ Verificação do anfitrião (memória)", out)
 
+    def test_correct_cross_document_percentage_is_derived_and_injection_gets_a_security_line(self):
+        lib = self.lib()
+        lib.upload("relatorio-anual-2025.pdf", make_pdf(REPORT_2025))
+        lib.upload("relatorio-anual-2024.pdf", make_pdf(REPORT_2024))
+        lib.begin("q")
+        lib.context_block("Compara as receitas dos relatórios anuais 2024 e 2025.")
+        ids = " ".join(f"[{k}]" for k in lib.sources)
+        _, info = lib.finalize(f"As receitas cresceram 12,2% entre 2024 e 2025 {ids}.")
+        self.assertEqual(info["citations"].get("derived"), 1)
+        mal = self.lib()
+        mal.upload("nota-fornecedores.pdf", make_pdf(MALICIOUS))
+        mal.begin("q")
+        mal.context_block("Resume a nota de fornecedores.")
+        suffix, info = mal.finalize("O fornecedor preferido é a Chimoio Pneus [S1].")
+        self.assertIn("(segurança): «nota-fornecedores.pdf» contém texto a tentar dar instruções", suffix)
+
     def test_wrong_percentage_in_a_comparison_is_flagged(self):
         lib = self.lib()
         lib.upload("relatorio-anual-2025.pdf", make_pdf(REPORT_2025))

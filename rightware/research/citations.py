@@ -143,6 +143,11 @@ def validate(answer: str, sources: dict[str, dict], question: str = "") -> list[
         if status != "SUPPORTED" and nums and best is not None:
             missing = [(t, v) for t, v in nums if not _matches(t, v, best[3])]
             pool = [v for _, v in best[3]] + q_nums
+            # derived values may combine numbers from different provided sources (e.g. 2024 vs 2025 reports)
+            for c in cited:
+                for _, _, pn in src_pass.get(c, []):
+                    pool += [v for _, v in pn if v not in pool]
+            pool = pool[:40]
             how = [_derived(v, decimals(t), pool) for t, v in missing]
             ctx_ok = _word_ratio(words, fold(best[2])) >= 0.33
             if ctx_ok and missing and all(how):
