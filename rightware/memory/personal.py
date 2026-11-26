@@ -11,6 +11,7 @@ voice. Per turn:
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import re
 
 from rightware.agent.policy import ToolDef
@@ -20,18 +21,17 @@ from rightware.research.text import content_words, fold
 
 TOOL_DEFS = {
     "memory_save": ToolDef(
-        "memory_save", "Guarda na memória pessoal permanente uma informação que o utilizador PEDIU para lembrar "
-        "(preferência, facto, objectivo ou contexto). Escreve o conteúdo curto, na 3.ª pessoa, só com o que o "
-        "utilizador disse. O tópico identifica o assunto (ex.: 'moeda dos relatórios') para substituir versões antigas.",
-        {"content": {"type": "string", "maxLength": 400, "description": "o que guardar, curto"},
-         "category": {"type": "string", "enum": list(CATEGORIES), "description": "tipo de memória"},
+        "memory_save", "Guarda na memória pessoal permanente o que o utilizador PEDIU nesta mensagem para lembrar. "
+        "O anfitrião guarda as palavras exactas do utilizador; tu só classificas: categoria (preferência, facto, "
+        "objectivo ou contexto) e tópico curto e estável (ex.: 'moeda dos relatórios'), que substitui versões antigas.",
+        {"category": {"type": "string", "enum": list(CATEGORIES), "description": "tipo de memória"},
          "topic": {"type": "string", "maxLength": 80, "description": "assunto curto e estável"}},
-        ("content", "category", "topic"), session_flag="memory", consequential=False, max_calls=3),
+        ("category", "topic"), session_flag="memory", consequential=False, max_calls=3),
     "memory_update": ToolDef(
-        "memory_update", "Corrige uma memória existente (id m-…) com a nova informação dada pelo utilizador.",
-        {"memory_id": {"type": "string", "maxLength": 120, "description": "id m-… da memória a corrigir"},
-         "content": {"type": "string", "maxLength": 400, "description": "conteúdo corrigido"}},
-        ("memory_id", "content"), session_flag="memory", consequential=False, max_calls=2),
+        "memory_update", "Corrige uma memória existente (id m-…) com o que o utilizador disse nesta mensagem "
+        "(o anfitrião guarda as palavras exactas do utilizador).",
+        {"memory_id": {"type": "string", "maxLength": 120, "description": "id m-… da memória a corrigir"}},
+        ("memory_id",), session_flag="memory", consequential=False, max_calls=2),
     "memory_forget": ToolDef(
         "memory_forget", "Elimina uma memória (id m-…) quando o utilizador pede para a esquecer.",
         {"memory_id": {"type": "string", "maxLength": 120, "description": "id m-… da memória a eliminar"}},
@@ -100,7 +100,10 @@ class PersonalMemory:
         """→ (extra_tools dict for AgentSession, records list filled by the runners)."""
         from rightware.agent.session import ToolOutcome
         owner, intent, records = self.owner(), P.intents(user_text), []
-        prov = {"source": "pedido do utilizador", "channel": channel, "quote": " ".join(user_text.split())[:200]}
+        # Provenance without a copy of the message (a refused sensitive message must leave no trace).
+        prov = {"source": "pedido do utilizador", "channel": channel, "content_from": "palavras do utilizador",
+                "message_sha256": hashlib.sha256((user_text or "").encode("utf-8")).hexdigest()[:16]}
+        statement = P.user_statement(user_text)
 
         def out(tool, status, content, evidence, code=None):
             records.append({"tool": tool, "status": status, **evidence})
@@ -127,19 +130,15 @@ class PersonalMemory:
         def save(args):
             if "save" not in intent:
                 return refuse("memory_save", "o utilizador não pediu para guardar nada nesta mensagem", "NO_USER_INTENT")
-            content, cat, topic = str(args.get("content", "")), str(args.get("category", "")), str(args.get("topic", ""))
+            cat, topic = str(args.get("category", "")), str(args.get("topic", ""))
+            # The stored content is ALWAYS the user's authorised words (meaning preserved: negations, currencies,
+            # values, dates, names). The model only classifies and indexes.
+            content = statement
             why = P.sensitive_reason(content)
-            if why:
-                return refuse("memory_save", why, "SENSITIVE")
-            used = "modelo"
-            if not P.grounded(content, user_text):
-                # The model decided to save; the HOST keeps the user's own words instead of the model's paraphrase.
-                records.append({"tool": "memory_save", "status": "PROPOSED", "content": content[:160]})
-                content, used = P.user_statement(user_text), "palavras do utilizador"
-                why = P.sensitive_reason(content)
-                if why or not content:
-                    return refuse("memory_save", why or "não há conteúdo para guardar", "SENSITIVE" if why else "EMPTY")
-            prov["content_from"] = used
+            if why or not content:
+                return refuse("memory_save", why or "não há conteúdo para guardar", "SENSITIVE" if why else "EMPTY")
+            if P.sensitive_reason(topic):
+                topic = ""
             try:
                 mem, old = self.store.add(owner, cat, topic or " ".join(content_words(content)[:3]), content, prov)
             except ValueError as exc:
@@ -154,17 +153,10 @@ class PersonalMemory:
             target, why = resolve(str(args.get("memory_id", "")))
             if target is None:
                 return refuse("memory_update", why, "NOT_FOUND")
-            content = str(args.get("content", ""))
+            content = statement
             why = P.sensitive_reason(content)
-            if why:
-                return refuse("memory_update", why, "SENSITIVE")
-            if not P.grounded(content, user_text, 0.5):
-                records.append({"tool": "memory_update", "status": "PROPOSED", "content": content[:160]})
-                content = P.user_statement(user_text)
-                prov["content_from"] = "palavras do utilizador"
-                why = P.sensitive_reason(content)
-                if why or not content:
-                    return refuse("memory_update", why or "não há conteúdo para corrigir", "SENSITIVE" if why else "EMPTY")
+            if why or not content:
+                return refuse("memory_update", why or "não há conteúdo para corrigir", "SENSITIVE" if why else "EMPTY")
             mem = self.store.update(owner, target.id, content, prov)
             if mem is None:
                 return refuse("memory_update", "a memória já não existe", "NOT_FOUND")

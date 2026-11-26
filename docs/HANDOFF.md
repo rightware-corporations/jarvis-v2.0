@@ -4490,3 +4490,14 @@ Local mode is unchanged.
 - **Tests:** 787 OK (20 memory). Docs: `docs/engineering/JRV_M01_PERSONAL_MEMORY.md` (audit, design, runs 1–3, limitations).
 - **Next:** owner ↔ B6 session binding (coordinate after JRV-ID01-A); HUD memory screen; enable `--memoria-dono local:issa` only on Issa's machine after operator acceptance.
 - Unchanged: `auth.py`, `gui/policy.py`, B6, voice, vendor pin. No network, no merge.
+
+## CHECKPOINT — 26/11/2026: JRV-M01 bounded regression (K01 §1) — meaning preservation + no sensitive traces
+- **Operator:** approved the M01 first lab acceptance with its documented limitations.
+- **Finding (FACT):** the lexical grounding rule accepted 5/5 meaning-changing paraphrases (negation dropped, meticais→dólares, 50 000→5000, 21→12 Março, Pedro→João). Lexical similarity is not meaning.
+- **Fix (no redesign):**
+  - the stored content is now ALWAYS the user's authorised words (`policy.user_statement`, memory command removed); the model only classifies (category, topic);
+  - `memory_save`/`memory_update` have NO content parameter, so model-written content cannot reach the store, the AgentPolicy log or diagnostics;
+  - provenance keeps `message_sha256` (16 hex), not a copy of the message;
+  - the topic is screened (a sensitive topic is dropped).
+- **Tests:** 24 memory tests (+ the 5 meaning cases, schema without content, refused secret absent from reply, `_last`, DB/WAL and events, provenance hash); full suite green.
+- The model-side real acceptance (M01 run 3) used the earlier content parameter; the new schema is covered by UNIT/FAKE and will be exercised by the K01 real acceptance on the same core.

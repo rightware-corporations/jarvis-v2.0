@@ -164,6 +164,53 @@ class Tools(Base):
         self.assertEqual(m.store.active("lab:alfa"), [])
 
 
+class MeaningPreservation(Base):
+    """K01 §1: whatever the model proposes, the stored content is the user's authorised words."""
+    CASES = [("Lembra-te: não prefiro relatórios em meticais.", "Não prefiro relatórios em meticais"),
+             ("Lembra-te: prefiro relatórios em meticais, não em dólares.", "Prefiro relatórios em meticais, não em dólares"),
+             ("Lembra-te: o orçamento anual é 50 000 meticais.", "O orçamento anual é 50 000 meticais"),
+             ("Lembra-te: a reunião com o banco é a 21 de Março de 2027.", "A reunião com o banco é a 21 de Março de 2027"),
+             ("Lembra-te: o meu contabilista chama-se Pedro Mabunda.", "O meu contabilista chama-se Pedro Mabunda")]
+
+    def test_negation_currency_value_date_and_name_are_never_rewritten(self):
+        for user, want in self.CASES:
+            m = self.mem("lab:alfa")
+            tools, _ = m.tools(user)
+            out = tools["memory_save"][1]({"category": "facto", "topic": "t" + str(len(want)),
+                                           "content": "Prefere dólares; orçamento 5000; 12 de Março; João"})
+            self.assertEqual(out.status, "OK", user)
+            got = m.store.get("lab:alfa", out.evidence["memory_id"]).content
+            self.assertEqual(got, want)
+            m.store.delete("lab:alfa", out.evidence["memory_id"])
+
+    def test_model_schema_has_no_content_field(self):
+        from rightware.memory.personal import TOOL_DEFS
+        self.assertNotIn("content", TOOL_DEFS["memory_save"].params)
+        self.assertNotIn("content", TOOL_DEFS["memory_update"].params)
+
+    def test_refused_sensitive_content_leaves_no_trace(self):
+        secret = "Kanimambo2026!"
+        a = ToolChatAdapter("fake", sites=(), persona="P", allow=(), memory=self.mem(),
+                            engine_factory=lambda: Scripted([step("memory_save", category="facto", topic="email"),
+                                                             say("Não posso guardar isso.")]))
+        out = a.reply(f"Lembra-te que a senha do meu email é {secret}", ())
+        self.assertNotIn(secret, out)
+        self.assertNotIn(secret, json.dumps(a._last, ensure_ascii=False))
+        raw = b"".join(f.read_bytes() for f in self.dir.iterdir())
+        self.assertNotIn(secret.encode(), raw)                       # DB, WAL: nothing
+        self.assertEqual(MemoryStore(self.db).active("lab:alfa"), [])
+        self.assertEqual(MemoryStore(self.db).events("lab:alfa"), [])
+
+    def test_provenance_keeps_a_hash_not_a_copy_of_the_message(self):
+        m = self.mem()
+        tools, _ = m.tools("Lembra-te que prefiro chá verde.")
+        out = tools["memory_save"][1]({"category": "preferencia", "topic": "bebida"})
+        prov = m.store.get("lab:alfa", out.evidence["memory_id"]).provenance
+        self.assertNotIn("quote", prov)
+        self.assertEqual(len(prov["message_sha256"]), 16)
+        self.assertEqual(prov["content_from"], "palavras do utilizador")
+
+
 class Recall(Base):
     def test_only_relevant_memories_plus_few_preferences(self):
         m = self.mem()
@@ -190,7 +237,7 @@ class AdapterIntegration(Base):
         return a, eng
 
     def test_teach_restart_recall_correct_forget_isolation(self):
-        a, _ = self.adapter([step("memory_save", content="Prefere relatórios em meticais", category="preferencia",
+        a, _ = self.adapter([step("memory_save", category="preferencia",
                                   topic="moeda dos relatórios"), say("Fica guardado.")])
         out = a.reply("JARVIS, prefiro que os meus relatórios sejam apresentados em meticais.", ())
         self.assertIn("✓ Verificação do anfitrião (memória): guardada", out)
@@ -199,9 +246,9 @@ class AdapterIntegration(Base):
         b, eng = self.adapter([say("Em meticais.")])
         b.reply("Em que moeda devo apresentar o relatório de vendas?", ())
         system = eng.seen[0][0][1]
-        self.assertIn("Prefere relatórios em meticais", system)
+        self.assertIn("Prefiro que os meus relatórios sejam apresentados em meticais", system)
         self.assertIn(mid, system)
-        c, _ = self.adapter([step("memory_update", memory_id=mid, content="Prefere relatórios em dólares"),
+        c, _ = self.adapter([step("memory_update", memory_id=mid),
                              say("Corrigido.")])
         self.assertIn("corrigida", c.reply("Corrige isso: afinal prefiro os relatórios em dólares.", ()))
         d, _ = self.adapter([step("memory_forget", memory_id=mid), say("Esquecido.")])
@@ -211,7 +258,7 @@ class AdapterIntegration(Base):
         self.assertNotIn("dólares", eng.seen[0][0][1])
         self.assertIn("não há memórias guardadas", eng.seen[0][0][1])
         # isolation: beta never sees alfa's memories
-        f, _ = self.adapter([step("memory_save", content="Gosta de chá verde", category="preferencia", topic="bebida"),
+        f, _ = self.adapter([step("memory_save", category="preferencia", topic="bebida"),
                              say("Ok.")])
         f.reply("Lembra-te que gosto de chá verde.", ())
         g, eng = self.adapter([say("Nada.")], owner="lab:beta")
@@ -261,8 +308,7 @@ class AdapterIntegration(Base):
         routed = []
         a = ToolChatAdapter("fake", sites=(), persona="P", allow=(), memory=m,
                             router=lambda t, h: routed.append(t) or "conversa", direct=object(),
-                            engine_factory=lambda: Scripted([step("memory_save", content="Prefere chá",
-                                                                  category="preferencia", topic="bebida"),
+                            engine_factory=lambda: Scripted([step("memory_save", category="preferencia", topic="bebida"),
                                                              say("Ok.")]))
         a.reply("Lembra-te que prefiro chá.", ())
         self.assertEqual(routed, [])
