@@ -61,10 +61,18 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
               public_minutes: float | None = None, environment: str = "unknown", tool_sites: tuple[str, ...] = (),
               browser_fetcher=None, tool_label: str = "", tool_search_template: str = "",
               tool_entry_urls: tuple[str, ...] = (), voice: bool = False, owners: dict | None = None,
-              memory=None, documents=None, link_ttl_minutes: float = 15.0):
+              memory=None, documents=None, link_ttl_minutes: float = 15.0,
+              public_deadline: float | None = None):
     """INT01: ``owners`` = {label: owner_id} declared by the operator; the launch link belongs to the FIRST label,
     further links (e.g. "issa") are minted on demand (``app.issue_link(label)``) and never consumed by GET.
     ``memory``/``documents``: their routes exist only when given."""
+    if public_deadline is not None and public_origin is None:
+        raise ValueError("absolute deadline requires private-access origin")
+    if public_origin is not None:
+        from rightware.gui.recovery import absolute_expiry
+        public_until = absolute_expiry(public_minutes or 0, public_deadline)
+    else:
+        public_until = None
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
     adapters: dict = {}
@@ -103,12 +111,10 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
             raise RuntimeError(f"VOZ_INDISPONIVEL: {why}")
     inner = inner if inner is not None else build_inner(models[0], p["home"], voice=voice)
     bridge.voice = voice
-    public_until = None
     if public_origin is not None:                 # B6 private access: single-use link, expiring sessions and access
-        if not (public_minutes and 1 <= public_minutes <= 60):
-            raise ValueError("private access needs 1..60 minutes")
         import time as _time
-        public_until = _time.time() + public_minutes * 60
+        if public_until <= _time.time():
+            raise ValueError("private access expired during startup")
         first = next(iter(owners.items())) if owners else ("principal", None)
         auth = auth or LocalAuth(single_use=True, token_ttl=link_ttl_minutes * 60, session_ttl=public_minutes * 60,
                                  max_failures=20, owner=first[1], label=first[0])

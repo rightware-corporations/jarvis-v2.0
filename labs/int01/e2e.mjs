@@ -109,6 +109,50 @@ try {
   const a4 = await ask(page, 'No relatório anual 2025, qual foi o resultado líquido e em que página aparece?');
   step('consultar informação e página', /96/.test(a4) && /página 2/.test(a4), a4.slice(0, 260).replace(/\n/g, ' '));
 
+  // LIVE01-R02: simulate an analyser which never detects physical speech; manual recording must still work.
+  // Synthetic microphone only. First response intentionally mocked to exercise a successful HTTP status with no text.
+  await page.evaluate(() => {
+    globalThis.__rwOriginalAnalyser = AnalyserNode.prototype.getFloatTimeDomainData;
+    AnalyserNode.prototype.getFloatTimeDomainData = function (buffer) { buffer.fill(0); };
+  });
+  const speechRoute = '**/v1/speech/transcribe';
+  try {
+    await page.route(speechRoute, (route) => route.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify({ text: '', language: null, confidence: null, duration_seconds: 3 }) }));
+    await page.locator('[data-rw="conv-toggle-off"]').click();
+    await page.waitForSelector('[data-rw="conv-manual"]');
+    await page.waitForTimeout(1000);
+    step('R02: no automatic recording with silent analyser', await page.locator('[data-rw="conv-listening"]').count() === 1);
+    await page.locator('[data-rw="conv-manual"]').click();
+    await page.waitForSelector('[data-rw="conv-recording"]');
+    await page.waitForTimeout(3000);
+    const blankResponse = page.waitForResponse((r) => r.url().endsWith('/v1/speech/transcribe'));
+    await page.locator('[data-rw="conv-manual"]').click();
+    await blankResponse;
+    await page.waitForFunction(() => document.querySelector('[data-rw="conv-listening"]')?.textContent?.includes('Nenhuma fala reconhecida'));
+    step('R02: blank HTTP 200 gives visible error and returns to listening', true);
+    await page.unroute(speechRoute);
+    // Repeat without reload; this time use the real synthetic audio and actual backend.
+    await page.locator('[data-rw="conv-manual"]').click();
+    await page.waitForSelector('[data-rw="conv-recording"]');
+    await page.waitForTimeout(7000);
+    const manualResponse = page.waitForResponse((r) => r.url().endsWith('/v1/speech/transcribe'), { timeout: 60000 });
+    await page.locator('[data-rw="conv-manual"]').click();
+    const response = await manualResponse;
+    const decoded = await response.json();
+    step('R02: manual fallback bypasses VAD and reaches real STT after retry',
+      response.status() === 200 && typeof decoded.text === 'string' && decoded.text.trim().length > 0,
+      'status=' + response.status() + '; text_chars=' + (decoded.text?.length ?? 0));
+    await page.waitForSelector('[data-rw="conv-speaking"]', { timeout: 300000 });
+    await page.locator('[data-rw="conv-off"]').click();
+  } finally {
+    await page.unroute(speechRoute);
+    await page.evaluate(() => {
+      AnalyserNode.prototype.getFloatTimeDomainData = globalThis.__rwOriginalAnalyser;
+      delete globalThis.__rwOriginalAnalyser;
+    });
+  }
+
   // continuous conversation (opt-in): VAD → recording → transcription → same chat → reply → speech
   await page.locator('[data-rw="conv-toggle-off"]').click();
   const phases = new Set();
