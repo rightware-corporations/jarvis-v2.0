@@ -4702,3 +4702,8 @@ Local mode is unchanged.
 ## CHECKPOINT — 26/11/2026: DB01-H migration acceptance preparation (ChatGPT)
 - Added sixth opt-in PostgreSQL contract test: two synthetic owners, injected read-back mismatch after inserts, actual transaction rollback check, successful import, original IDs/history and document retrieval, duplicate import refusal. No actual execution here (postgres/psql/psycopg absent from execution environment).
 - DB01-G and DB01-H test source committed; acceptance remains BLOCKED until dedicated TLS PostgreSQL database and driver exist. No actual migration or service activation; no production data used.
+
+## CHECKPOINT — 26/11/2026: JRV-INFRA01-A — cloud candidate research (ChatGPT)
+- Official provider documentation reviewed. Proposed Neon Free independent PostgreSQL + OCI Always Free A1 candidate (current 2 OCPU/12 GB RAM, idle reclamation risk); paid x86 VPS fallback only if approved. No provider decision finalised, no account created, no charges, no tunnel or new network grant.
+- Runbook: `docs/engineering/JRV_INFRA01_CLOUD.md`. Sequential gates include disposable PG DB01-H acceptance, ARM64 runtime compatibility and benchmark, encrypted backup/restore, then approved migration and physical acceptance.
+- No real infrastructure or performance validated. Current sandbox lacks postgres/psql/psycopg. Next gate: operator approves candidate/region/budget before provisioning; no production data.
