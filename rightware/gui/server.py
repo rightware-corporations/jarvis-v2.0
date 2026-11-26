@@ -121,6 +121,11 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
     app = PolicyApp(inner=inner, bridge=bridge, static_dir=static_dir or p["static"], port=port, audit=audit,
                     auth=auth, public_origin=public_origin, public_until=public_until, allow=allow)
     bridge.memory, bridge.documents = memory, documents
+    try:
+        from rightware.gui import runtime as RT
+        bridge.build = RT.build_stamp(runtime) if runtime is not None else RT.build_stamp()
+    except Exception:
+        bridge.build = None
     app.public_until = public_until
     app.session_url = auth.write_url(p["runtime"] / "session-url", port, base=public_origin)
     declared = dict(owners or {})

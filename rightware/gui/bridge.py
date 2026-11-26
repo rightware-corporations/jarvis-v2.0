@@ -490,6 +490,9 @@ class ChatBridge:
             "engine": {"healthy": installed is not None, "models": self.models() if installed is not None else [],
                        "default_model": self.default_model},
             "model_busy": busy,
+            "build": getattr(self, "build", None),          # INT01: bundle ↔ backend ↔ revision correspondence
+            "features": {"documents": getattr(self, "documents", None) is not None,
+                         "memory": getattr(self, "memory", None) is not None},
             "capabilities": self.capabilities(),
             "pending": ({"capability": pending["capability"],
                          "expires_in": max(0, round(pending["expires"] - control._clock()))} if pending else None),

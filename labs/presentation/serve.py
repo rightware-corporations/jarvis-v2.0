@@ -117,6 +117,7 @@ if __name__ == "__main__":
                                                "seguem o dono da sessão autenticada")
     a.add_argument("--documentos", action="store_true", help="JRV-K01: biblioteca documental do mesmo dono "
                                                               "(exige --memoria-dono)")
+    a.add_argument("--documentos-ficheiro", default=None, help="SQLite dos documentos (por omissão .runtime/knowledge/…)")
     a.add_argument("--memoria-ficheiro", default=None, help="SQLite (por omissão .runtime/memory/jarvis-memory.sqlite3)")
     x = a.parse_args()
     if x.proxy:
@@ -209,7 +210,8 @@ if __name__ == "__main__":
             a.error("--documentos exige --donos ou --memoria-dono (o dono dos documentos)")
         from rightware.knowledge.library import DocumentLibrary
         from rightware.knowledge.store import KnowledgeStore
-        documents = DocumentLibrary(KnowledgeStore(), memory.owner_provider)
+        documents = DocumentLibrary(KnowledgeStore(x.documentos_ficheiro) if x.documentos_ficheiro else KnowledgeStore(),
+                                    memory.owner_provider)
     adapter = ToolChatAdapter(x.model, sites=(), persona=persona, allow=("fx", "research", "calc"),
                               extra_tools_factory=tools, post_check=annotate, timeout_seconds=240,
                               browser_fetcher=fetcher, router=router, direct=direct, memory=memory,

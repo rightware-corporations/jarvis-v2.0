@@ -1,233 +1,244 @@
 {
-  "pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
-  "replacements": [
-    {
-      "upstream": "src/main.tsx",
-      "sha256": "df88421e94d95f7a86b8ed0f13227657d5f405f1a9ed50563513303aba5bf072",
-      "replacement": "src/overrides/main.tsx",
-      "reason": "RIGHTWARE theme/i18n, HUD poller, CPU budget; no analytics init"
-    },
-    {
-      "upstream": "src/components/Chat/SystemPanel.tsx",
-      "sha256": "404b54e39dac96930819da96a795542a6c360d0b0cb886533f03b72b096c2aac",
-      "replacement": "src/overrides/SystemPanel.tsx",
-      "reason": "HUD side panel (core, missions, last result) instead of cost/leaderboard"
-    },
-    {
-      "upstream": "src/components/OptInModal.tsx",
-      "sha256": "9e0afa3f480428a6d91ec6cd8e93a173b37b08e4cb8c12e7a0bd7abe2a4a2f12",
-      "replacement": "src/overrides/OptInModal.tsx",
-      "reason": "no analytics/giveaway dialog (R-8)"
-    },
-    {
-      "upstream": "src/lib/analytics-invitation.ts",
-      "sha256": "d1595b24918369127d16bfb587a1eb65f92c5366e3b68d262fdd16d6178bc9d6",
-      "replacement": "src/overrides/analytics-invitation.ts",
-      "reason": "never offer analytics"
-    },
-    {
-      "upstream": "src/components/Chat/MicButton.tsx",
-      "sha256": "d6beeb361f770b55449bc389d9a5c6684ff22c76071afa86c0f17d4eff09e394",
-      "replacement": "src/overrides/MicButton.tsx",
-      "reason": "RIGHTWARE voice: PT/EN labels; active only with --voz (upstream speech health), else 'Voz não integrada'"
-    },
-    {
-      "upstream": "src/pages/AgentsPage.tsx",
-      "sha256": "6a61edc5b1821eecf6abd95462cbf936f7fc6678931f8a7058b9f02e585cf2ba",
-      "replacement": "src/overrides/AgentsPage.tsx",
-      "reason": "/agents shows supervised Missions"
-    },
-    {
-      "upstream": "src/pages/DataSourcesPage.tsx",
-      "sha256": "4ae97b561a8fdf1fee05847d2d6ba75c18d79eae7a0850e712ee8a95cc6378eb",
-      "replacement": "src/overrides/DataSourcesPage.tsx",
-      "reason": "/data-sources shows real capability status"
-    },
-    {
-      "upstream": "src/pages/DashboardPage.tsx",
-      "sha256": "332fd0a8f7965f0bd2379f4b4c25282ad5243423583ad5631bcc27152834b2c3",
-      "replacement": "src/overrides/DashboardPage.tsx",
-      "reason": "/dashboard is the full HUD"
-    },
-    {
-      "upstream": "src/components/Sidebar/Sidebar.tsx",
-      "sha256": "f4871004311825cc6dc3a4ff120c4667cde840d13089a1dd14c51abe997f357a",
-      "replacement": "src/overrides/Sidebar.tsx",
-      "reason": "PT-MZ navigation, language switch, no backdrop blur"
-    },
-    {
-      "upstream": "src/lib/sse.ts",
-      "sha256": "6f8f8bfb5425e60b4379dd798239fb3a4a1b5bfbf8365f08d8971ba0a226e2bc",
-      "replacement": "src/overrides/sse.ts",
-      "reason": "explicit conversation id header (R-5)"
-    }
-  ],
-  "strings": [
-    {
-      "file": "src/components/Chat/ChatArea.tsx",
-      "sha256": "e2cf9b77f5bd4fcc303149c8b17eebd753b91db445cb7de0df73091bfb645830",
-      "items": [
-        {
-          "find": "'Good morning'",
-          "replace": "__rwT('chat.greeting.morning')",
-          "count": 1
-        },
-        {
-          "find": "'Good afternoon'",
-          "replace": "__rwT('chat.greeting.afternoon')",
-          "count": 1
-        },
-        {
-          "find": "'Good evening'",
-          "replace": "__rwT('chat.greeting.evening')",
-          "count": 1
-        },
-        {
-          "find": "Ask anything. Your AI runs locally — private, fast, and always available.",
-          "replace": "{__rwT('chat.subtitle')}",
-          "count": 1
-        },
-        {
-          "find": "Connect Data Sources",
-          "replace": "{__rwT('chat.connectSources')}",
-          "count": 1
-        },
-        {
-          "find": "Set Up Messaging Channels",
-          "replace": "{__rwT('chat.channels')}",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "file": "src/components/Chat/InputArea.tsx",
-      "sha256": "23b63cb7e490f3f946f865a0d4f600c38bb4a0161212d19091d746801d6e1fe8",
-      "items": [
-        {
-          "find": "'Generating...'",
-          "replace": "__rwT('chat.generating')",
-          "count": 3
-        },
-        {
-          "find": "'Researching...'",
-          "replace": "__rwT('chat.researching')",
-          "count": 1
-        },
-        {
-          "find": "'No response was generated. Please try again.'",
-          "replace": "__rwT('chat.noResponse')",
-          "count": 1
-        },
-        {
-          "find": "onClick={() => setDeepResearch(!deepResearch)}",
-          "replace": "onClick={() => undefined}",
-          "count": 1
-        },
-        {
-          "find": "            Deep Research\n",
-          "replace": "            {__rwT('chat.deepResearch')}\n",
-          "count": 1
-        },
-        {
-          "find": "'Deep Research: on'",
-          "replace": "__rwT('chat.deepResearch')",
-          "count": 1
-        },
-        {
-          "find": "'Deep Research: off'",
-          "replace": "__rwT('chat.deepResearch')",
-          "count": 1
-        },
-        {
-          "find": "'Message OpenJarvis...'",
-          "replace": "__rwT('chat.placeholder')",
-          "count": 1
-        },
-        {
-          "find": "'Pick a model first (⌘K)...'",
-          "replace": "__rwT('chat.pickModel')",
-          "count": 1
-        },
-        {
-          "find": "<kbd className=\"font-mono\">Enter</kbd> to send &middot;",
-          "replace": "<kbd className=\"font-mono\">Enter</kbd> {__rwT('chat.toSend')} &middot;",
-          "count": 1
-        },
-        {
-          "find": "</kbd> for new line",
-          "replace": "</kbd> {__rwT('chat.newLine')}",
-          "count": 1
-        },
-        {
-          "find": "title=\"Stop generating\"",
-          "replace": "title={__rwT('chat.stop')}",
-          "count": 1
-        },
-        {
-          "find": "title={selectedModel ? 'Send message' : 'Pick a model first (⌘K)'}",
-          "replace": "title={__rwT('chat.send')}",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "file": "src/components/Sidebar/ConversationList.tsx",
-      "sha256": "ef0a5b621c53bec711ad13991b6342234ef2908be6aa43adeeedea709126a2c7",
-      "items": [
-        {
-          "find": "'No matching chats'",
-          "replace": "__rwT('sidebar.noMatch')",
-          "count": 1
-        },
-        {
-          "find": "'No conversations yet'",
-          "replace": "__rwT('sidebar.empty')",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "file": "src/lib/store.ts",
-      "sha256": "e84a053de2c06c5d9af7d5f25de76f74df4997ce9f40cbe2e5cb44437b87b97b",
-      "items": [
-        {
-          "find": "    speechEnabled: false,\n",
-          "replace": "    speechEnabled: true,\n",
-          "count": 1
-        },
-        {
-          "find": "    voiceOutputEnabled: false,\n",
-          "replace": "    voiceOutputEnabled: true,\n",
-          "count": 1
-        }
-      ]
-    },
-    {
-      "file": "src/lib/message-text.ts",
-      "sha256": "dd7e7061cdc7537efe1972919f5c9891c7aa57f3e39fc0d4adf650c0eb9c77ae",
-      "items": [
-        {
-          "find": "  let t = stripThinkTags(text);\n",
-          "replace": "  let t = (globalThis.__rwSpeakable ? globalThis.__rwSpeakable(stripThinkTags(text)) : stripThinkTags(text));\n",
-          "count": 1
-        }
-      ]
-    }
-  ],
-  "html": {
-    "file": "index.html",
-    "sha256": "67af018da40a4ed4e2523c515d9edf5d726a71a3acc16e0c46311f93d1d32d91",
-    "items": [
-      {
-        "find": "<title>OpenJarvis</title>",
-        "replace": "<title>JARVIS</title>",
-        "count": 1
-      }
-    ]
+ "pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+ "replacements": [
+  {
+   "upstream": "src/main.tsx",
+   "sha256": "df88421e94d95f7a86b8ed0f13227657d5f405f1a9ed50563513303aba5bf072",
+   "replacement": "src/overrides/main.tsx",
+   "reason": "RIGHTWARE theme/i18n, HUD poller, CPU budget; no analytics init"
   },
-  "replacedTests": [
-    "src/components/OptInModal.test.tsx",
-    "src/lib/analytics-invitation.test.ts",
-    "src/pages/DataSourcesPage.lifecycle.test.tsx"
+  {
+   "upstream": "src/components/Chat/SystemPanel.tsx",
+   "sha256": "404b54e39dac96930819da96a795542a6c360d0b0cb886533f03b72b096c2aac",
+   "replacement": "src/overrides/SystemPanel.tsx",
+   "reason": "HUD side panel (core, missions, last result) instead of cost/leaderboard"
+  },
+  {
+   "upstream": "src/components/OptInModal.tsx",
+   "sha256": "9e0afa3f480428a6d91ec6cd8e93a173b37b08e4cb8c12e7a0bd7abe2a4a2f12",
+   "replacement": "src/overrides/OptInModal.tsx",
+   "reason": "no analytics/giveaway dialog (R-8)"
+  },
+  {
+   "upstream": "src/lib/analytics-invitation.ts",
+   "sha256": "d1595b24918369127d16bfb587a1eb65f92c5366e3b68d262fdd16d6178bc9d6",
+   "replacement": "src/overrides/analytics-invitation.ts",
+   "reason": "never offer analytics"
+  },
+  {
+   "upstream": "src/components/Chat/MicButton.tsx",
+   "sha256": "d6beeb361f770b55449bc389d9a5c6684ff22c76071afa86c0f17d4eff09e394",
+   "replacement": "src/overrides/MicButton.tsx",
+   "reason": "RIGHTWARE voice: PT/EN labels; active only with --voz (upstream speech health), else 'Voz não integrada'"
+  },
+  {
+   "upstream": "src/pages/AgentsPage.tsx",
+   "sha256": "6a61edc5b1821eecf6abd95462cbf936f7fc6678931f8a7058b9f02e585cf2ba",
+   "replacement": "src/overrides/AgentsPage.tsx",
+   "reason": "/agents shows supervised Missions"
+  },
+  {
+   "upstream": "src/pages/DataSourcesPage.tsx",
+   "sha256": "4ae97b561a8fdf1fee05847d2d6ba75c18d79eae7a0850e712ee8a95cc6378eb",
+   "replacement": "src/overrides/DataSourcesPage.tsx",
+   "reason": "/data-sources shows real capability status"
+  },
+  {
+   "upstream": "src/pages/DashboardPage.tsx",
+   "sha256": "332fd0a8f7965f0bd2379f4b4c25282ad5243423583ad5631bcc27152834b2c3",
+   "replacement": "src/overrides/DashboardPage.tsx",
+   "reason": "/dashboard is the full HUD"
+  },
+  {
+   "upstream": "src/components/Sidebar/Sidebar.tsx",
+   "sha256": "f4871004311825cc6dc3a4ff120c4667cde840d13089a1dd14c51abe997f357a",
+   "replacement": "src/overrides/Sidebar.tsx",
+   "reason": "PT-MZ navigation, language switch, no backdrop blur"
+  },
+  {
+   "upstream": "src/lib/sse.ts",
+   "sha256": "6f8f8bfb5425e60b4379dd798239fb3a4a1b5bfbf8365f08d8971ba0a226e2bc",
+   "replacement": "src/overrides/sse.ts",
+   "reason": "explicit conversation id header (R-5)"
+  }
+ ],
+ "strings": [
+  {
+   "file": "src/components/Chat/ChatArea.tsx",
+   "sha256": "e2cf9b77f5bd4fcc303149c8b17eebd753b91db445cb7de0df73091bfb645830",
+   "items": [
+    {
+     "find": "'Good morning'",
+     "replace": "__rwT('chat.greeting.morning')",
+     "count": 1
+    },
+    {
+     "find": "'Good afternoon'",
+     "replace": "__rwT('chat.greeting.afternoon')",
+     "count": 1
+    },
+    {
+     "find": "'Good evening'",
+     "replace": "__rwT('chat.greeting.evening')",
+     "count": 1
+    },
+    {
+     "find": "Ask anything. Your AI runs locally — private, fast, and always available.",
+     "replace": "{__rwT('chat.subtitle')}",
+     "count": 1
+    },
+    {
+     "find": "Connect Data Sources",
+     "replace": "{__rwT('chat.connectSources')}",
+     "count": 1
+    },
+    {
+     "find": "Set Up Messaging Channels",
+     "replace": "{__rwT('chat.channels')}",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "file": "src/components/Chat/InputArea.tsx",
+   "sha256": "23b63cb7e490f3f946f865a0d4f600c38bb4a0161212d19091d746801d6e1fe8",
+   "items": [
+    {
+     "find": "'Generating...'",
+     "replace": "__rwT('chat.generating')",
+     "count": 3
+    },
+    {
+     "find": "'Researching...'",
+     "replace": "__rwT('chat.researching')",
+     "count": 1
+    },
+    {
+     "find": "'No response was generated. Please try again.'",
+     "replace": "__rwT('chat.noResponse')",
+     "count": 1
+    },
+    {
+     "find": "onClick={() => setDeepResearch(!deepResearch)}",
+     "replace": "onClick={() => undefined}",
+     "count": 1
+    },
+    {
+     "find": "            Deep Research\n",
+     "replace": "            {__rwT('chat.deepResearch')}\n",
+     "count": 1
+    },
+    {
+     "find": "'Deep Research: on'",
+     "replace": "__rwT('chat.deepResearch')",
+     "count": 1
+    },
+    {
+     "find": "'Deep Research: off'",
+     "replace": "__rwT('chat.deepResearch')",
+     "count": 1
+    },
+    {
+     "find": "'Message OpenJarvis...'",
+     "replace": "__rwT('chat.placeholder')",
+     "count": 1
+    },
+    {
+     "find": "'Pick a model first (⌘K)...'",
+     "replace": "__rwT('chat.pickModel')",
+     "count": 1
+    },
+    {
+     "find": "<kbd className=\"font-mono\">Enter</kbd> to send &middot;",
+     "replace": "<kbd className=\"font-mono\">Enter</kbd> {__rwT('chat.toSend')} &middot;",
+     "count": 1
+    },
+    {
+     "find": "</kbd> for new line",
+     "replace": "</kbd> {__rwT('chat.newLine')}",
+     "count": 1
+    },
+    {
+     "find": "title=\"Stop generating\"",
+     "replace": "title={__rwT('chat.stop')}",
+     "count": 1
+    },
+    {
+     "find": "title={selectedModel ? 'Send message' : 'Pick a model first (⌘K)'}",
+     "replace": "title={__rwT('chat.send')}",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "file": "src/components/Sidebar/ConversationList.tsx",
+   "sha256": "ef0a5b621c53bec711ad13991b6342234ef2908be6aa43adeeedea709126a2c7",
+   "items": [
+    {
+     "find": "'No matching chats'",
+     "replace": "__rwT('sidebar.noMatch')",
+     "count": 1
+    },
+    {
+     "find": "'No conversations yet'",
+     "replace": "__rwT('sidebar.empty')",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "file": "src/lib/store.ts",
+   "sha256": "e84a053de2c06c5d9af7d5f25de76f74df4997ce9f40cbe2e5cb44437b87b97b",
+   "items": [
+    {
+     "find": "    speechEnabled: false,\n",
+     "replace": "    speechEnabled: true,\n",
+     "count": 1
+    },
+    {
+     "find": "    voiceOutputEnabled: false,\n",
+     "replace": "    voiceOutputEnabled: true,\n",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "file": "src/lib/message-text.ts",
+   "sha256": "dd7e7061cdc7537efe1972919f5c9891c7aa57f3e39fc0d4adf650c0eb9c77ae",
+   "items": [
+    {
+     "find": "  let t = stripThinkTags(text);\n",
+     "replace": "  let t = (globalThis.__rwSpeakable ? globalThis.__rwSpeakable(stripThinkTags(text)) : stripThinkTags(text));\n",
+     "count": 1
+    }
+   ]
+  },
+  {
+   "file": "src/lib/api.ts",
+   "sha256": "cbd73dca964d06fe90d1fd39bf5b04b94516227a69aa498a1b5c0bc0e1af6342",
+   "items": [
+    {
+     "find": "  const res = await apiFetch(`/v1/speech/transcribe`, {\n    method: 'POST',\n    body: formData,\n  });",
+     "replace": "  const res = await apiFetch(`/v1/speech/transcribe`, {\n    method: 'POST',\n    body: formData,\n    signal: AbortSignal.timeout(45000), // RIGHTWARE INT01: never stay 'transcribing' forever\n  });",
+     "count": 1
+    }
+   ]
+  }
+ ],
+ "html": {
+  "file": "index.html",
+  "sha256": "67af018da40a4ed4e2523c515d9edf5d726a71a3acc16e0c46311f93d1d32d91",
+  "items": [
+   {
+    "find": "<title>OpenJarvis</title>",
+    "replace": "<title>JARVIS</title>",
+    "count": 1
+   }
   ]
+ },
+ "replacedTests": [
+  "src/components/OptInModal.test.tsx",
+  "src/lib/analytics-invitation.test.ts",
+  "src/pages/DataSourcesPage.lifecycle.test.tsx"
+ ]
 }
