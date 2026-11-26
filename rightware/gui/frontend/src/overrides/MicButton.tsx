@@ -24,7 +24,8 @@ export function micTitle(state: string, reason?: string): string {
 
 export function MicButton({ state, onClick, disabled, reason }: MicButtonProps) {
   useLang();
-  const title = micTitle(state, reason);
+  const continuous = useConversation((s) => s.enabled);
+  const title = continuous ? t('conv.useManual') : micTitle(state, reason);
   if (reason === 'no-backend') {
     return (
       <span className="flex items-center gap-1">
@@ -36,7 +37,7 @@ export function MicButton({ state, onClick, disabled, reason }: MicButtonProps) 
       </span>
     );
   }
-  const inactive = !!disabled || state === 'transcribing';
+  const inactive = !!disabled || state === 'transcribing' || continuous;
   return (
     <span className="flex items-center gap-1">
       <AttachButton />
