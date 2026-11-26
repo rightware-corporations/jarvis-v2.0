@@ -91,3 +91,44 @@ Verificar: o URL antigo deixa de responder (404 ou erro de túnel inexistente), 
   7. `timeout --kill-after=10 3540 devtunnel host <id>`
   8. validação em 2 fases (URL base → "Sessão local necessária"; depois a ligação de uso único)
   9. no fim: fechar e revogar
+
+## INT01 — Aplicação integrada (26/11/2026) — PREPARADO, túnel NÃO aberto
+**Pré-requisito:** nova autorização explícita do operador para a rede e para o túnel.
+
+**Recursos verificados:**
+- 4 vCPU e 16 GB de RAM (cerca de 15 GB livres sem modelo carregado).
+- Disco: cerca de 2,7 GB livres, depois de removidas as cópias temporárias que um teste deixava. As imagens Docker do Goose e os modelos foram mantidos.
+- Ollama só em 127.0.0.1, com `qwen3.5:2b`.
+- Voz: Kokoro e Whisper (`.runtime/voice`), `pf_dora` a 1,15.
+
+**Arranque** (a origem pública é o URL real indicado pelo `devtunnel host`):
+```bash
+.runtime/gui/venv/bin/python -m labs.presentation.serve --proxy --autorizacao <ID> --janela-inicio <epoch> \
+  --janela-minutos <≤90> --hoje <AAAA-MM-DD> --voz --port 8000 \
+  --public-origin https://<id>-8000.<cluster>.devtunnels.ms --public-minutes 59 \
+  --donos operador=lab:operador,issa=lab:issa --documentos
+```
+(usar `--offline` em vez de `--proxy` se não houver autorização de rede).
+
+**Entrada (ID01-A):**
+- O link é de uso único e pertence ao dono "operador".
+- Abrir o link mostra **"Entrar no JARVIS"**. A pré-visualização ou repetições do GET **não** gastam o link; só o clique (POST) o consome.
+
+**Fase B — Issa:**
+- Depois da confirmação do operador:
+  ```bash
+  .runtime/gui/venv/bin/python -m rightware.gui emitir-ligacao issa
+  ```
+  O link novo fica em `.runtime/gui/session-url-issa` (0600) e nunca é impresso.
+- A sessão do Issa tem dono próprio: não vê memórias nem documentos do operador. O histórico de conversa é de cada browser.
+- **Acesso ao túnel:** o túnel privado só aceita a conta Microsoft do dono. Para o Issa entrar pelo seu computador, é preciso uma das opções já apresentadas:
+  - (a) acesso anónimo à camada do túnel, protegido pelo link de uso único com confirmação, só com aprovação explícita;
+  - (b) uma organização GitHub;
+  - (c) o mesmo inquilino Entra.
+
+**Lição de 25/11 (OBRIGATÓRIO):**
+- Os registos param no mesmo minuto em que o contentor desta sessão parece ter sido parado, cerca de 7 minutos depois de a sessão Claude ficar inactiva.
+- Durante uma janela ao vivo, a sessão tem de se manter activa. Por exemplo: verificações agendadas a cada 4–5 minutos, ou o operador a trocar mensagens.
+- Se a sessão parar, o acesso termina. O JARVIS e o túnel também têm limites automáticos.
+
+**Fecho:** igual ao procedimento base (apagar o túnel, terminar a sessão Microsoft, apagar `session-url*`).

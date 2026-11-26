@@ -10,10 +10,12 @@ import { execSync } from 'node:child_process';
 const [ORIGIN, WAV, PDF, OUT, ISSUE] = process.argv.slice(2);
 const host = new URL(ORIGIN).hostname;
 const log = { steps: [], network: [], origins: [], started: new Date().toISOString() };
-const step = (n, ok, detail) => { log.steps.push({ n, ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'} ${n} ${detail ?? ''}`); };
+const redact = (x) => String(x ?? '').replace(/([?&]t=)[A-Za-z0-9_-]+/g, '$1<redigido>');   // never log link tokens
+const step = (n, ok, detail) => { const d = redact(detail); log.steps.push({ n, ok, detail: d }); console.log(`${ok ? 'PASS' : 'FAIL'} ${n} ${d}`); };
 const linkOf = (f) => readFileSync(f, 'utf8').trim();
 
-const browser = await chromium.launch({ args: [
+const noProxy = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(https?|all|no)_proxy$/i.test(k)));
+const browser = await chromium.launch({ env: noProxy, args: [
   `--host-resolver-rules=MAP ${host} 127.0.0.1`, '--ignore-certificate-errors', '--no-proxy-server',
   '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', `--use-file-for-fake-audio-capture=${WAV}`,
   '--autoplay-policy=no-user-gesture-required'] });
@@ -137,6 +139,7 @@ try {
 } catch (e) {
   step('excepção', false, String(e).slice(0, 400));
 } finally {
+  log.network = log.network.map((n) => ({ ...n, p: redact(n.p) }));
   log.finished = new Date().toISOString();
   log.pass = log.steps.filter((s) => s.ok).length; log.total = log.steps.length;
   writeFileSync(OUT, JSON.stringify(log, null, 1));
