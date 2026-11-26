@@ -41,7 +41,7 @@ export function MicButton({ state, onClick, disabled, reason }: MicButtonProps) 
   return (
     <span className="flex items-center gap-1">
       <AttachButton />
-      <ContinuousToggle disabled={reason === 'not-enabled'} />
+      <ContinuousToggle disabled={reason === 'not-enabled' || (!continuous && (state !== 'idle' || !!disabled))} />
       <button type="button" onClick={onClick} disabled={inactive} title={title} aria-label={title}
               data-rw={`voice-${state}`} className="p-2 rounded-xl shrink-0"
               style={{ background: state === 'recording' ? 'var(--color-error)' : 'transparent',

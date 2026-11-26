@@ -83,8 +83,9 @@ export function ConversationController() {
         sentAt = performance.now();
         if (!sendToChat(text)) { recover('conv.noInput'); return; }
         conv.setPhase('thinking');
-      } catch {
-        recover('conv.transcriptionFailed');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : '';
+        recover(message.startsWith('RW_NO_SPEECH:') ? 'conv.noSpeech' : 'conv.transcriptionFailed');
       }
     };
 
