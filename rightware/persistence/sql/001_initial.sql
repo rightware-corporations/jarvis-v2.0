@@ -48,14 +48,30 @@ CREATE TABLE jarvis.document_events (
     at double precision NOT NULL, owner text NOT NULL, doc_id text NOT NULL, action text NOT NULL
 );
 CREATE INDEX document_events_owner ON jarvis.document_events(owner,at);
-DO $$
-DECLARE t text;
-BEGIN
-    FOREACH t IN ARRAY ARRAY['memories','memory_events','documents','segments','document_events'] LOOP
-        EXECUTE format('ALTER TABLE jarvis.%I ENABLE ROW LEVEL SECURITY', t);
-        EXECUTE format('ALTER TABLE jarvis.%I FORCE ROW LEVEL SECURITY', t);
-        EXECUTE format('CREATE POLICY owner_only ON jarvis.%I USING (owner = nullif(current_setting(''jarvis.owner'', true), '''')) WITH CHECK (owner = nullif(current_setting(''jarvis.owner'', true), ''''))', t);
-    END LOOP;
-END $$;
+ALTER TABLE jarvis.memories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jarvis.memories FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner_only ON jarvis.memories
+    USING (owner = nullif(current_setting('jarvis.owner', true), ''))
+    WITH CHECK (owner = nullif(current_setting('jarvis.owner', true), ''));
+ALTER TABLE jarvis.memory_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jarvis.memory_events FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner_only ON jarvis.memory_events
+    USING (owner = nullif(current_setting('jarvis.owner', true), ''))
+    WITH CHECK (owner = nullif(current_setting('jarvis.owner', true), ''));
+ALTER TABLE jarvis.documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jarvis.documents FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner_only ON jarvis.documents
+    USING (owner = nullif(current_setting('jarvis.owner', true), ''))
+    WITH CHECK (owner = nullif(current_setting('jarvis.owner', true), ''));
+ALTER TABLE jarvis.segments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jarvis.segments FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner_only ON jarvis.segments
+    USING (owner = nullif(current_setting('jarvis.owner', true), ''))
+    WITH CHECK (owner = nullif(current_setting('jarvis.owner', true), ''));
+ALTER TABLE jarvis.document_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jarvis.document_events FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner_only ON jarvis.document_events
+    USING (owner = nullif(current_setting('jarvis.owner', true), ''))
+    WITH CHECK (owner = nullif(current_setting('jarvis.owner', true), ''));
 REVOKE ALL ON ALL TABLES IN SCHEMA jarvis FROM PUBLIC;
 COMMIT;

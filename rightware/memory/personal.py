@@ -116,7 +116,7 @@ class PersonalMemory:
 
         def resolve(ref: str) -> tuple[Memory | None, str | None]:
             ref = (ref or "").strip()
-            m = re.search(r"\bm-[0-9a-f]{8}\b", ref)
+            m = re.search(r"\bm-(?:[0-9a-f]{32}|[0-9a-f]{8})\b", ref)
             active = self.store.active(owner)
             if m:
                 hit = next((x for x in active if x.id == m.group(0)), None)

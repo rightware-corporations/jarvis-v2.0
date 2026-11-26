@@ -32,6 +32,9 @@ class PostgresDatabase:
                 not config.get("dbname") or not config.get("user") or
                 any(k in config for k in ("service", "hostaddr", "options"))):
             raise ValueError("PostgreSQL requires explicit host/database/user and sslmode=verify-full")
+        if (any(os.environ.get(k) for k in ("PGSERVICE", "PGHOSTADDR", "PGOPTIONS")) or
+                "/" in config["host"] or "," in config["host"]):
+            raise ValueError("PostgreSQL requires a single explicit TCP host and no ambient service overrides")
         self._driver = psycopg
         self.check()
 
@@ -57,6 +60,14 @@ class PostgresDatabase:
             "('memories','memory_events','documents','segments','document_events')").fetchall()
         if len(rows) != 5 or any(not enabled or owns for _, enabled, owns in rows):
             raise DatabaseUnavailable("PostgreSQL owner isolation is not configured")
+        policies = con.execute(
+            "SELECT tablename, policyname, cmd, qual, with_check FROM pg_catalog.pg_policies "
+            "WHERE schemaname='jarvis' AND tablename IN "
+            "('memories','memory_events','documents','segments','document_events')").fetchall()
+        if (len(policies) != 5 or len({r[0] for r in policies}) != 5 or
+                any(r[1] != "owner_only" or r[2] != "ALL" or not r[3] or not r[4] or
+                    "jarvis.owner" not in r[3] or "jarvis.owner" not in r[4] for r in policies)):
+            raise DatabaseUnavailable("PostgreSQL owner policies missing or unexpected")
         if con.execute("SELECT count(*) FROM jarvis.memories").fetchone() != (0,):
             raise DatabaseUnavailable("PostgreSQL ownerless query was not isolated")
         if con.execute("SELECT count(*) FROM jarvis.documents").fetchone() != (0,):
