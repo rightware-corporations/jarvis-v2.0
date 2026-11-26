@@ -56,15 +56,17 @@ async function login(page, link, label) {
        s ? `secure=${s.secure}` : 'sem cookie');
   const loginPost = log.origins.find((o) => o.path === '/rw-login');
   step(`${label}: Origin real no POST do formulário (não null)`, loginPost?.origin === ORIGIN, `Origin=${loginPost?.origin}`);
-  const replay = await page.context().request.get(link);
+  const probe = await page.context().newPage();
+  const replay = await probe.goto(link);
   step(`${label}: link usado já não serve`, replay.status() === 403, `status=${replay.status()}`);
+  await probe.close();
 }
 
 try {
   // ---------------- operator ----------------
   const { page } = await newPage();
   await login(page, linkOf('.runtime/gui/session-url'), 'operador');
-  const st = await (await page.context().request.get(`${ORIGIN}/v1/rightware/state`)).json();
+  const st = await page.evaluate(async () => (await fetch('/v1/rightware/state')).json());
   step('build: bundle corresponde ao código (overlay) e revisão registada', st.build?.match === true,
        JSON.stringify(st.build));
   await page.locator('[data-rw="session-activate"]').click();
