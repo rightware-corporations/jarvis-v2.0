@@ -112,6 +112,9 @@ if __name__ == "__main__":
     a.add_argument("--voz", action="store_true")
     a.add_argument("--memoria-dono", help="JRV-M01: activa a memória pessoal persistente deste dono (ex.: lab:alfa, "
                                           "local:issa). Um dono por processo; nunca a sessão B6.")
+    a.add_argument("--donos", default="", help="INT01: rótulo=dono separados por vírgula (ex.: operador=lab:operador,"
+                                               "issa=lab:issa); a 1.ª ligação é do 1.º rótulo; memória e documentos "
+                                               "seguem o dono da sessão autenticada")
     a.add_argument("--documentos", action="store_true", help="JRV-K01: biblioteca documental do mesmo dono "
                                                               "(exige --memoria-dono)")
     a.add_argument("--memoria-ficheiro", default=None, help="SQLite (por omissão .runtime/memory/jarvis-memory.sqlite3)")
@@ -171,7 +174,7 @@ if __name__ == "__main__":
                  "ouro XAU/USD; BCE — EUR/USD, GBP/USD)", "pesquisa geral numa enciclopédia autorizada "
                  "(web_research)")
     unavailable = RuntimeFacts.__dataclass_fields__["unavailable"].default
-    if x.memoria_dono:
+    if x.memoria_dono or x.donos:
         tool_list += ("memória pessoal permanente (memory_save, memory_update, memory_forget, memory_list) — só "
                       "quando o utilizador pedir para lembrar, corrigir ou esquecer",)
         unavailable = tuple(u for u in unavailable if "memória" not in u)
@@ -186,17 +189,24 @@ if __name__ == "__main__":
     direct = LocalSimpleTextAdapter(x.model, timeout_seconds=240, max_tokens=768, system_prompt=persona)
     annotate.clean = strip_imitated
     memory = None
-    if x.memoria_dono:
-        from rightware.memory.identity import StaticOwner
+    owners = {}
+    if x.donos:
+        from rightware.memory.identity import Owner
+        for item in x.donos.split(","):
+            label, _, oid = item.partition("=")
+            Owner(oid.strip(), "operator-config")                          # validates the id format
+            owners[label.strip()] = oid.strip()
+    if x.memoria_dono or owners:
+        from rightware.memory.identity import SessionOwner, StaticOwner
         from rightware.memory.personal import PersonalMemory
         from rightware.memory.store import DEFAULT_PATH, MemoryStore
-        memory = PersonalMemory(MemoryStore(x.memoria_ficheiro or DEFAULT_PATH),
-                                StaticOwner(x.memoria_dono, "lab-synthetic" if x.memoria_dono.startswith("lab:")
-                                            else "operator-config"))
+        fallback = (StaticOwner(x.memoria_dono, "lab-synthetic" if x.memoria_dono.startswith("lab:")
+                                else "operator-config") if x.memoria_dono and not owners else None)
+        memory = PersonalMemory(MemoryStore(x.memoria_ficheiro or DEFAULT_PATH), SessionOwner(fallback))
     documents = None
     if x.documentos:
         if memory is None:
-            a.error("--documentos exige --memoria-dono (o dono dos documentos)")
+            a.error("--documentos exige --donos ou --memoria-dono (o dono dos documentos)")
         from rightware.knowledge.library import DocumentLibrary
         from rightware.knowledge.store import KnowledgeStore
         documents = DocumentLibrary(KnowledgeStore(), memory.owner_provider)
@@ -206,7 +216,8 @@ if __name__ == "__main__":
                               documents=documents,
                               channel="texto/voz")
     app, bridge = build_app(port=x.port, models=[x.model], deadline=240.0, adapter_factory=lambda m: adapter,
-                            public_origin=x.public_origin, public_minutes=x.public_minutes, voice=x.voz)
+                            public_origin=x.public_origin, public_minutes=x.public_minutes, voice=x.voz,
+                            owners=owners or None, memory=memory, documents=documents)
     bridge.adapters = {x.model: adapter}
     bridge.tools_label = lambda m: f"ferramentas: cotações oficiais e pesquisa ({label})"
     print(f"JARVIS — apresentação ({label}).", flush=True)

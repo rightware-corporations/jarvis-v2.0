@@ -22,6 +22,7 @@ class SuiteOnARequestCommit(unittest.TestCase):
     def test_full_suite_passes_with_every_work07_request_file_present(self):
         from labs.work07_rfc_gate import gate as G
         tmp = Path(tempfile.mkdtemp()) / "repo"
+        self.addCleanup(shutil.rmtree, tmp.parent, ignore_errors=True)   # INT01: the copy used to leak (29 MB/run)
         shutil.copytree(ROOT, tmp, ignore=shutil.ignore_patterns(".git", "vendor", ".runtime", "__pycache__"))
         for op, spec in G.OPS.items():
             (tmp / spec["request"]).write_text(json.dumps(

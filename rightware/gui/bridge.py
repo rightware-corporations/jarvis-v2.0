@@ -132,6 +132,16 @@ class ChatBridge:
 
     # ------------------------------------------------------------------ ASGI
     async def __call__(self, scope, receive, send):
+        from rightware.memory.identity import CURRENT_OWNER
+        CURRENT_OWNER.set(scope.get("rightware.owner"))       # INT01: owner from the authenticated session only
+        if getattr(self, "documents", None) is not None:
+            from rightware.knowledge import http_api as KA
+            if await KA.handle(self.documents, scope, receive, send):
+                return None
+        if getattr(self, "memory", None) is not None:
+            from rightware.memory import http_api as MA
+            if await MA.handle(self.memory, scope, receive, send):
+                return None
         if scope["path"] == "/v1/models":
             models = await asyncio.to_thread(self.models)
             return await send_json(send, 200, {"object": "list", "data": [

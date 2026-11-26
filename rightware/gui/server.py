@@ -60,7 +60,11 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
               auth: LocalAuth | None = None, static_dir: Path | None = None, public_origin: str | None = None,
               public_minutes: float | None = None, environment: str = "unknown", tool_sites: tuple[str, ...] = (),
               browser_fetcher=None, tool_label: str = "", tool_search_template: str = "",
-              tool_entry_urls: tuple[str, ...] = (), voice: bool = False):
+              tool_entry_urls: tuple[str, ...] = (), voice: bool = False, owners: dict | None = None,
+              memory=None, documents=None, link_ttl_minutes: float = 15.0):
+    """INT01: ``owners`` = {label: owner_id} declared by the operator; the launch link belongs to the FIRST label,
+    further links (e.g. "issa") are minted on demand (``app.issue_link(label)``) and never consumed by GET.
+    ``memory``/``documents``: their routes exist only when given."""
     p = paths(runtime) if runtime is not None else paths()
     audit = AuditLog(p["audit"])
     adapters: dict = {}
@@ -105,19 +109,60 @@ def build_app(*, port: int, models: list[str], deadline: float = 240.0, trial: b
             raise ValueError("private access needs 1..60 minutes")
         import time as _time
         public_until = _time.time() + public_minutes * 60
-        auth = auth or LocalAuth(single_use=True, token_ttl=15 * 60, session_ttl=public_minutes * 60,
-                                 max_failures=20)
-    auth = auth or LocalAuth()
-    from rightware.gui.policy import ALLOW, VOICE_ALLOW
+        first = next(iter(owners.items())) if owners else ("principal", None)
+        auth = auth or LocalAuth(single_use=True, token_ttl=link_ttl_minutes * 60, session_ttl=public_minutes * 60,
+                                 max_failures=20, owner=first[1], label=first[0])
+    if auth is None:
+        first = next(iter(owners.items())) if owners else ("principal", None)
+        auth = LocalAuth(owner=first[1], label=first[0])
+    from rightware.gui.policy import ALLOW, DOCUMENT_ALLOW, MEMORY_ALLOW, VOICE_ALLOW
+    allow = {**ALLOW, **(VOICE_ALLOW if voice else {}), **(DOCUMENT_ALLOW if documents is not None else {}),
+             **(MEMORY_ALLOW if memory is not None else {})}
     app = PolicyApp(inner=inner, bridge=bridge, static_dir=static_dir or p["static"], port=port, audit=audit,
-                    auth=auth, public_origin=public_origin, public_until=public_until,
-                    allow={**ALLOW, **VOICE_ALLOW} if voice else None)
+                    auth=auth, public_origin=public_origin, public_until=public_until, allow=allow)
+    bridge.memory, bridge.documents = memory, documents
     app.public_until = public_until
     app.session_url = auth.write_url(p["runtime"] / "session-url", port, base=public_origin)
+    declared = dict(owners or {})
+
+    def issue_link(label: str) -> str | None:
+        """Mint a NEW single-use link for a declared owner label; written only to a 0600 file, never printed."""
+        if label not in declared:
+            return None
+        tok = auth.issue(declared[label], label)
+        return auth.write_url(p["runtime"] / f"session-url-{label}", port, base=public_origin, token=tok)
+    app.issue_link = issue_link
     return app, bridge
+
+
+def install_link_issuer(app, runtime: Path) -> None:
+    """INT01: mint an additional owner link WITHOUT an HTTP admin route: a local operator writes the label to
+    ``.runtime/gui/issue-request`` and sends SIGUSR1 (``python -m rightware.gui emitir-ligacao <label>``). The new link
+    goes to ``.runtime/gui/session-url-<label>`` (0600); nothing is printed."""
+    import os
+    import signal
+    req = runtime / "issue-request"
+    pid = runtime / "server.pid"
+    runtime.mkdir(parents=True, exist_ok=True)
+    pid.write_text(str(os.getpid()))
+
+    def handler(signum, frame):
+        try:
+            label = req.read_text(encoding="utf-8").strip()[:32]
+            req.unlink()
+        except OSError:
+            return
+        issue = getattr(app, "issue_link", None)
+        url = issue(label) if callable(issue) else None
+        (runtime / "issue-result").write_text("OK " + label if url else "RECUSADO " + label)
+    signal.signal(signal.SIGUSR1, handler)
 
 
 def serve(app, port: int) -> None:
     import uvicorn
+    try:
+        install_link_issuer(app, paths()["runtime"])
+    except (ValueError, OSError):            # not the main thread (tests) or read-only runtime: no issuer
+        pass
     uvicorn.run(app, host=LOOPBACK, port=port, log_level="info", access_log=False, proxy_headers=False,
                 server_header=False, ws="none", lifespan="on")

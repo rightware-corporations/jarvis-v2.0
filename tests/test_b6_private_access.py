@@ -22,6 +22,37 @@ ORIGIN = (b"origin", PUB.encode())
 TOKEN = "tok-" + "y" * 30
 
 
+async def confirm_login(app, token, host, origin=(b"origin", PUB.encode())):
+    """ID01-A two-step login used by tests: GET (confirmation, nothing consumed) → explicit POST (consumes).
+    Returns (final status, sent messages of the last step, GET status)."""
+    import re as _re
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+    got = []
+
+    async def send(m):
+        got.append(m)
+    await app({"type": "http", "method": "GET", "path": "/rw-login", "raw_path": b"/rw-login",
+               "query_string": f"t={token}".encode(), "headers": [host]}, receive, send)
+    if got[0]["status"] != 200:
+        return got[0]["status"], got, got[0]["status"]
+    cookie = dict(got[0]["headers"])[b"set-cookie"].split(b";")[0]
+    csrf = _re.search(rb'name="csrf" value="([^"]+)"', got[1]["body"]).group(1)
+    body = b"csrf=" + csrf
+    sent = []
+
+    async def receive2():
+        return {"type": "http.request", "body": body, "more_body": False}
+
+    async def send2(m):
+        sent.append(m)
+    await app({"type": "http", "method": "POST", "path": "/rw-login", "raw_path": b"/rw-login", "query_string": b"",
+               "headers": [host, origin, (b"cookie", cookie), (b"content-type", b"application/x-www-form-urlencoded"),
+                           (b"content-length", str(len(body)).encode())]}, receive2, send2)
+    return sent[0]["status"], sent, 200
+
+
 class Clock:
     def __init__(self):
         self.t = 1_000_000.0
@@ -51,16 +82,8 @@ class PrivateAccess(unittest.TestCase):
         return status, sent
 
     async def _login(self, token, host):
-        sent = []
-
-        async def receive():
-            return {"type": "http.request", "body": b"", "more_body": False}
-
-        async def send(m):
-            sent.append(m)
-        await self.app({"type": "http", "method": "GET", "path": "/rw-login", "raw_path": b"/rw-login",
-                        "query_string": f"t={token}".encode(), "headers": [host]}, receive, send)
-        return sent[0]["status"], None, None, sent
+        status, sent, _ = await confirm_login(self.app, token, host)
+        return status, None, None, sent
 
     def session(self):
         status, sent = self.login()

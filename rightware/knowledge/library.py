@@ -60,11 +60,14 @@ class DocumentLibrary:
         self.store, self.owner_provider = store, owner_provider
         self.begin("")
 
-    def owner(self) -> str:
-        return self.owner_provider().owner_id
+    def owner(self) -> str | None:
+        o = self.owner_provider()
+        return o.owner_id if o is not None else None
 
     # -- host upload API (never called by the model) ------------------------------------------------------------
     def upload(self, name: str, data: bytes) -> dict:
+        if self.owner() is None:
+            return {"status": "REFUSED", "reason": "sessão sem identidade: documentos indisponíveis"}
         try:
             ex: Extracted = extract(name, data)
         except IngestError as exc:

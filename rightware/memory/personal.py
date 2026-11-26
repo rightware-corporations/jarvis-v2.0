@@ -59,8 +59,9 @@ class PersonalMemory:
         self.store, self.owner_provider = store, owner_provider
         self.k, self.max_prefs, self.broad = k, max_prefs, broad
 
-    def owner(self) -> str:
-        return self.owner_provider().owner_id
+    def owner(self) -> str | None:
+        o = self.owner_provider()
+        return o.owner_id if o is not None else None
 
     # -- recall ---------------------------------------------------------------------------------------------------
     def recall(self, text: str) -> list[Memory]:

@@ -16,6 +16,9 @@ def main(argv=None) -> int:
     sub.add_parser("check", help="mostra o manifesto do runtime preparado")
     sub.add_parser("voice-setup", help="VOZ: instala os pacotes de voz fixados no venv do runtime e verifica os modelos")
     sub.add_parser("frontend-check", help="TypeScript + Vitest do overlay HUD sobre o frontend do pin")
+    e = sub.add_parser("emitir-ligacao", help="INT01: pede ao servidor em execução uma NOVA ligação de uso único "
+                                              "para um dono declarado (ex.: issa); fica em .runtime/gui/session-url-<rótulo>")
+    e.add_argument("rotulo")
     s = sub.add_parser("serve", help="arranca a interface em http://127.0.0.1:PORT/")
     s.add_argument("--port", type=int, default=8000)
     s.add_argument("--model", action="append", default=[],
@@ -44,6 +47,32 @@ def main(argv=None) -> int:
     s.add_argument("--pesquisa-autorizacao", default="", help="OP01: referência da autorização de rede do operador")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
+    if a.cmd == "emitir-ligacao":
+        import os
+        import signal
+        import time
+        from rightware.gui.server import paths
+        rt = paths()["runtime"]
+        if not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", a.rotulo):
+            print("rótulo inválido", file=sys.stderr)
+            return 2
+        try:
+            pid = int((rt / "server.pid").read_text())
+        except (OSError, ValueError):
+            print("servidor não encontrado", file=sys.stderr)
+            return 1
+        (rt / "issue-result").unlink(missing_ok=True)
+        fd = os.open(rt / "issue-request", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(a.rotulo)
+        os.kill(pid, signal.SIGUSR1)
+        for _ in range(50):
+            if (rt / "issue-result").exists():
+                print((rt / "issue-result").read_text())      # "OK <label>" or "RECUSADO <label>"; never the link
+                return 0
+            time.sleep(0.1)
+        print("sem resposta do servidor", file=sys.stderr)
+        return 1
     if a.cmd == "setup":
         print(json.dumps(R.setup(), indent=2))
         return 0

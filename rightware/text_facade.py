@@ -5,6 +5,7 @@ durable memory, legacy CLI and A1/A2/A3 completion semantics.
 """
 from __future__ import annotations
 
+import contextvars
 from dataclasses import dataclass, field
 from enum import Enum
 import re
@@ -269,7 +270,9 @@ class TextFacade:
                 except BaseException as exc:
                     box["error"] = exc
 
-            worker = Thread(target=work, daemon=True, name="jarvis-wp04-text")
+            # INT01: the request context (e.g. the authenticated session's owner for personal memory/documents)
+            # follows the request into the worker thread; nothing else is shared.
+            worker = Thread(target=contextvars.copy_context().run, args=(work,), daemon=True, name="jarvis-wp04-text")
             session.worker = worker
             worker.start()
             end = time.monotonic() + self.deadline_seconds

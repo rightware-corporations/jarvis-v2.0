@@ -120,31 +120,33 @@ class ToolChatAdapter:
         with self._lock:
             self._phase, self._since = "A interpretar", self._clock()
             persona, mem_info, mem_intent = self.persona, None, False
-            if self.memory is not None:
+            memory = self.memory if self.memory is not None and self.memory.owner() else None
+            documents = self.documents if self.documents is not None and self.documents.owner() else None
+            if memory is not None:
                 from rightware.memory.policy import intents
-                recalled = self.memory.recall(text)
-                persona = self.persona + self.memory.context_block(recalled)
+                recalled = memory.recall(text)
+                persona = self.persona + memory.context_block(recalled)
                 mem_intent = bool(intents(text))       # policy: explicit memory requests always reach the tools
-                mem_info = {"owner": self.memory.owner(), "recalled": [m.id for m in recalled], "writes": []}
+                mem_info = {"owner": memory.owner(), "recalled": [m.id for m in recalled], "writes": []}
             doc_intent, doc_info = False, None
-            if self.documents is not None:
-                self.documents.begin(text)
-                block = self.documents.context_block(text)
+            if documents is not None:
+                documents.begin(text)
+                block = documents.context_block(text)
                 doc_intent = bool(block)              # policy: document questions go to the tools path
                 persona += block
             if (self.router is not None and self.direct is not None and not mem_intent and not doc_intent
                     and self.router(text, tuple(history)) == "conversa"):
                 base = getattr(self.direct, "system_prompt", None)
-                if self.memory is not None and base is not None:
+                if memory is not None and base is not None:
                     self.direct.system_prompt = persona                 # same persona + this turn's recalled memory
                 try:
                     out = self.direct.reply(text, tuple(history))      # same persona, no tools, no receipts
                 finally:
-                    if self.memory is not None and base is not None:
+                    if memory is not None and base is not None:
                         self.direct.system_prompt = base
-                if self.memory is not None:
-                    out = self.memory.strip_imitated(out)
-                    out += self.memory.annotate(out, [])
+                if memory is not None:
+                    out = memory.strip_imitated(out)
+                    out += memory.annotate(out, [])
                 self._last = {"completion": "ANSWERED_DIRECT", "sources": [], "tools": [], "halted": None, "flags": [],
                               "tool_calls": 0, "route": "conversa", "memory": mem_info,
                               "route_s": getattr(self.router, "last", {}).get("seconds")}
@@ -155,12 +157,12 @@ class ToolChatAdapter:
                 begin()
             extra, records = (self.extra_tools_factory() if self.extra_tools_factory else (None, lambda: []))
             allow, mem_records = set(self.allow), []
-            if self.memory is not None:
-                mem_tools, mem_records = self.memory.tools(text, self.channel)
+            if memory is not None:
+                mem_tools, mem_records = memory.tools(text, self.channel)
                 extra = {**(extra or {}), **mem_tools}
                 allow.add("memory")
-            if self.documents is not None and self.documents.store.list(self.documents.owner()):
-                extra = {**(extra or {}), **self.documents.tools(text)}
+            if documents is not None and documents.store.list(documents.owner()):
+                extra = {**(extra or {}), **documents.tools(text)}
                 allow.add("documents")
             session = AgentSession(self._engine(), self.model, allow=allow, confirm=lambda q: None,
                                    sites=self.sites, browser_fetcher=self.browser_fetcher, budgets=self.budgets,
@@ -190,20 +192,20 @@ class ToolChatAdapter:
                 if callable(clean):                        # remove model lines imitating host labels first
                     out, _ = clean(out)
                 out += self.post_check(out, records(), text)
-            if self.documents is not None:               # document sources/verification from the host only
+            if documents is not None:               # document sources/verification from the host only
                 out = "\n".join(l for l in out.split("\n")
                                 if not re.match(r"^\s*[*_>\-•]*\s*(Fonte: documento|[✓⚠]?\s*Verifica[cç][aã]o do "
                                                 r"anfitri[aã]o \(documentos\))", l))
-                suffix, doc_info = self.documents.finalize(out)
+                suffix, doc_info = documents.finalize(out)
                 out += suffix
                 self._last["documents"] = doc_info
-            if self.memory is not None:                  # confirmations come only from real database writes
+            if memory is not None:                  # confirmations come only from real database writes
                 mem_info["writes"] = [{k: r.get(k) for k in ("tool", "status", "action", "memory_id", "reason", "content")}
                                       for r in mem_records]
-                out = self.memory.strip_imitated(out)
-                doc_effect = self.documents is not None and any(
-                    r.get("tool") == "doc_delete" and r.get("status") == "OK" for r in self.documents.records)
-                out += self.memory.annotate(out, mem_records, other_effects=doc_effect)
+                out = memory.strip_imitated(out)
+                doc_effect = documents is not None and any(
+                    r.get("tool") == "doc_delete" and r.get("status") == "OK" for r in documents.records)
+                out += memory.annotate(out, mem_records, other_effects=doc_effect)
             return out if len(out) <= MAX_REPLY else out[:MAX_REPLY] + "\n(resposta truncada pelo limite da interface)"
 
     def activity(self) -> dict:

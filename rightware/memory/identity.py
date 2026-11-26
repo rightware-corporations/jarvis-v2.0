@@ -8,12 +8,14 @@ possession of a one-time link, not who the person is). Therefore:
   e.g. Issa's own computer). Every session of that process acts for that owner.
 * ``lab:<name>`` owners: synthetic identities for tests and acceptance runs.
 
-PENDING (documented, not done here): binding an authenticated B6 session to a verified owner (e.g. per-person
-one-time links issued for a named owner, or OS-account identity on a local install). That touches ``auth.py``/B6 and
-is coordinated separately; until then a shared server must NOT mix people under one owner.
+INT01 (done): ``SessionOwner`` — each B6 one-time link is issued by the server for a DECLARED owner label (e.g.
+operador → lab:operador, issa → lab:issa); the authenticated session inherits that owner and the bridge sets it for
+the request (``CURRENT_OWNER``). The browser never chooses it. B6 still proves possession of a link, not a person:
+the operator decides to whom each link is delivered.
 """
 from __future__ import annotations
 
+import contextvars
 import dataclasses
 import re
 
@@ -38,3 +40,23 @@ class StaticOwner:
 
     def __call__(self) -> Owner:
         return self.owner
+
+
+# INT01: owner of the CURRENT request, set by the GUI bridge from the authenticated session (never from the
+# browser). Propagated into worker threads with contextvars.copy_context().
+CURRENT_OWNER: contextvars.ContextVar[str | None] = contextvars.ContextVar("rightware_owner", default=None)
+
+
+class SessionOwner:
+    """Owner from the authenticated session of this request (B6 link issued for a server-declared owner).
+    Without a session owner: the optional ``fallback`` (single-person local deployment) or None (no memory and no
+    documents for that request)."""
+
+    def __init__(self, fallback=None):
+        self.fallback = fallback
+
+    def __call__(self) -> Owner | None:
+        oid = CURRENT_OWNER.get()
+        if oid:
+            return Owner(oid, "b6-session-link")
+        return self.fallback() if self.fallback is not None else None

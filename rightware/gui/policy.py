@@ -38,7 +38,22 @@ VOICE_ALLOW: dict[tuple[str, str], str] = {
     ("POST", "/v1/speech/transcribe"): "inner",
     ("POST", "/v1/speech/synthesize"): "inner",
 }
-BODY_LIMITS = {"/v1/speech/transcribe": 5 * 1024 * 1024, "/v1/speech/synthesize": 16 * 1024}
+# JRV-INT01 (K01 gateway contract, approved): document routes, only when the host started with documents enabled.
+DOCUMENT_ALLOW: dict[tuple[str, str], str] = {
+    ("POST", "/v1/rightware/documents/upload"): "bridge",
+    ("GET", "/v1/rightware/documents"): "bridge",
+    ("POST", "/v1/rightware/documents/delete"): "bridge",
+}
+# JRV-INT01: minimal personal-memory screen (list / correct with the user's own typed words / delete), only when the
+# host started with memory enabled.
+MEMORY_ALLOW: dict[tuple[str, str], str] = {
+    ("GET", "/v1/rightware/memory"): "bridge",
+    ("POST", "/v1/rightware/memory/correct"): "bridge",
+    ("POST", "/v1/rightware/memory/delete"): "bridge",
+}
+BODY_LIMITS = {"/v1/speech/transcribe": 5 * 1024 * 1024, "/v1/speech/synthesize": 16 * 1024,
+               "/v1/rightware/documents/upload": 5 * 1024 * 1024, "/v1/rightware/documents/delete": 1024,
+               "/v1/rightware/memory/correct": 2048, "/v1/rightware/memory/delete": 1024, "/rw-login": 1024}
 LOGIN_PATH = "/rw-login"
 LOGIN_REQUIRED_HTML = (
     "<!doctype html><html lang=\"pt\"><head><meta charset=\"utf-8\"><title>JARVIS — sessão local</title></head>"
@@ -46,6 +61,20 @@ LOGIN_REQUIRED_HTML = (
     "<p>Sessão local necessária. Abra a ligação de início de sessão mostrada no terminal do anfitrião "
     "(também em <code>.runtime/gui/session-url</code>).</p><p lang=\"en\">Local session required: open the login "
     "link printed by the host.</p></body></html>").encode()
+# ID01-A: confirmation page for a private-access link (GET never consumes the link). No script, no external resource.
+CONFIRM_HTML = (
+    "<!doctype html><html lang=\"pt\"><head><meta charset=\"utf-8\"><title>JARVIS — confirmar entrada</title>"
+    "</head><body style=\"font-family:system-ui;background:#05070d;color:#cfe8ff;padding:3rem\"><h1>JARVIS</h1>"
+    "<p>Ligação de acesso privado válida. Confirme para entrar; a ligação só pode ser usada uma vez.</p>"
+    "<form method=\"post\" action=\"/rw-login\"><input type=\"hidden\" name=\"csrf\" value=\"{csrf}\">"
+    "<button type=\"submit\" style=\"font-size:1.1rem;padding:.6rem 1.4rem\">Entrar no JARVIS</button></form>"
+    "<p lang=\"en\">Valid private link. Confirm to sign in; the link works once.</p></body></html>")
+# A native form POST is a navigation: with "Referrer-Policy: no-referrer" the browser sends "Origin: null" (Fetch
+# standard, origin serialisation), which the exact-Origin check correctly refuses (the CROSS_ORIGIN seen in the
+# Manus repair). The confirmation page alone uses "strict-origin" (origin only, never path/query/token) so the
+# POST carries the real Origin; "null" is still refused.
+CONFIRM_HEADERS = [(b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"strict-origin"),
+                   (b"x-frame-options", b"DENY"), (b"cache-control", b"no-store")]
 # SPA pages of the original frontend (App.tsx routes). They only serve index.html; their data routes stay denied.
 SPA_PAGES = frozenset({"/", "/dashboard", "/settings", "/get-started", "/data-sources", "/agents", "/logs"})
 _CANONICAL = re.compile(r"^/(?:[A-Za-z0-9_.@~:+-]+(?:/[A-Za-z0-9_.@~:+-]+)*)?$")
@@ -203,6 +232,8 @@ class PolicyApp:
             return "deny", "ORIGIN_REQUIRED"
         if method == "GET" and path == LOGIN_PATH and self.auth is not None:
             return "login", "LOGIN"
+        if method == "POST" and path == LOGIN_PATH and self.auth is not None and self.public:
+            return "login_post", "LOGIN_CONFIRM"
         target = self.allow.get((method, path))
         if not target and method == "GET" and path in self.static and path != "/index.html":
             if not self.public:
@@ -218,6 +249,7 @@ class PolicyApp:
             if sid is None:
                 return ("login_page" if target == "spa" else "unauth"), "AUTH_REQUIRED"
             scope["rightware.session"] = sid
+            scope["rightware.owner"] = self.auth.owner_of(sid) if hasattr(self.auth, "owner_of") else None
         if target == "static":
             return "static", "STATIC_FILE_SESSION"
         return target, ("SPA_PAGE" if target == "spa" else "ALLOWLISTED")
@@ -234,6 +266,8 @@ class PolicyApp:
         except Exception:                          # policy error → fail closed
             target, reason = "deny", "POLICY_ERROR"
         path = scope.get("path", "")
+        if target == "login_post":
+            return await self._login_post(scope, receive, send, kind, method, path)
         if target in ("login", "login_page", "unauth"):
             return await self._auth_response(target, scope, send, kind, method, path)
         if target == "deny":
@@ -264,6 +298,34 @@ class PolicyApp:
         app = self.inner if target == "inner" else self.bridge
         return await app(scope, receive, send)
 
+    async def _login_post(self, scope, receive, send, kind, method, path):
+        """ID01-A explicit confirmation: exact Origin was already enforced by ``decide`` (null is refused there);
+        challenge cookie + CSRF + expiry → atomic one-time consumption of the link."""
+        headers = self._headers(scope)
+        size = headers.get(b"content-length", b"")
+        ctype = headers.get(b"content-type", b"").split(b";")[0].strip()
+        body = b""
+        if size.isdigit() and int(size) <= BODY_LIMITS[LOGIN_PATH] and ctype == b"application/x-www-form-urlencoded":
+            while True:
+                msg = await receive()
+                body += msg.get("body", b"")
+                if len(body) > BODY_LIMITS[LOGIN_PATH] or not msg.get("more_body"):
+                    break
+        from urllib.parse import parse_qs
+        form = parse_qs(body.decode("ascii", "replace")) if len(body) <= BODY_LIMITS[LOGIN_PATH] else {}
+        csrf = form.get("csrf", [None])
+        cid = self.auth.cookie_value(headers.get(b"cookie"), "rw_challenge")
+        sid = self.auth.redeem(cid, csrf[0] if len(csrf) == 1 else None)
+        self.audit.record(kind, method, path, "LOGIN_OK" if sid else "DENY", "LOGIN" if sid else "BAD_CHALLENGE")
+        if sid is None:
+            return await send_json(send, 403, {"error": "LIGACAO_DE_SESSAO_INVALIDA"},
+                                   [(b"set-cookie", self.auth.clear_challenge_cookie(True))])
+        await send({"type": "http.response.start", "status": 303,
+                    "headers": [(b"location", b"/"), (b"set-cookie", self.auth.clear_challenge_cookie(True)),
+                                (b"set-cookie", self.auth.cookie_header(sid, secure=True)),
+                                (b"content-length", b"0"), *SECURITY_HEADERS]})
+        return await send({"type": "http.response.body", "body": b""})
+
     async def _auth_response(self, target, scope, send, kind, method, path):
         if target == "unauth":
             self.audit.record(kind, method, path, "DENY", "AUTH_REQUIRED")
@@ -271,6 +333,20 @@ class PolicyApp:
         if target == "login":
             query = bytes(scope.get("query_string") or b"").decode("ascii", "replace")
             token = [p[2:] for p in query.split("&") if p.startswith("t=")]
+            if self.public and hasattr(self.auth, "challenge"):
+                # ID01-A: GET shows a confirmation; the link is consumed only by the explicit POST.
+                pair = self.auth.challenge(token[0]) if len(token) == 1 else None
+                self.audit.record(kind, method, path, "CONFIRM" if pair else "DENY",
+                                  "LOGIN_CONFIRM_PAGE" if pair else "BAD_TOKEN")
+                if pair is None:
+                    return await send_json(send, 403, {"error": "LIGACAO_DE_SESSAO_INVALIDA"})
+                body = CONFIRM_HTML.replace("{csrf}", pair[1]).encode()
+                await send({"type": "http.response.start", "status": 200,
+                            "headers": [(b"content-type", b"text/html; charset=utf-8"),
+                                        (b"content-length", str(len(body)).encode()),
+                                        (b"set-cookie", self.auth.challenge_cookie(pair[0], secure=True)),
+                                        (b"content-security-policy", CSP), *CONFIRM_HEADERS]})
+                return await send({"type": "http.response.body", "body": body})
             sid = self.auth.login(token[0]) if len(token) == 1 else None
             self.audit.record(kind, method, path, "LOGIN_OK" if sid else "DENY", "LOGIN" if sid else "BAD_TOKEN")
             if sid is None:

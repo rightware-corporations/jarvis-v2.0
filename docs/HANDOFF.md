@@ -4549,3 +4549,25 @@ Local mode is unchanged.
 - **Docs:** `docs/engineering/JRV_K01_DOCUMENT_KNOWLEDGE.md` (reuse, design, security, runs 1–2, limitations); `JRV_K01_GATEWAY_CONTRACT.md` (pending the B6 owner).
 - **Next:** the B6 owner reviews the gateway contract → wire `http_api` in the bridge → attach button → operator UI acceptance.
 - Unchanged: auth.py, gui/policy.py, B6, voice, vendor pin. No network, no paid API, no new model, no merge.
+
+## CHECKPOINT — 26/11/2026: JRV-INT01 (Claude owns engineering; Manus unavailable) — A auth + B identity + C routes (backend)
+- **Authorisation:** operator authorised coordinated edits of auth.py, gui/policy.py and bridge.py for INT01.
+- **Disk incident:** only 34 MB were free.
+  - Cause: `tests/test_request_commit_suite.py` copied the repo (29 MB) on every full-suite run and never deleted it (31 426 temp dirs, 2.7 GB).
+  - Fix: cleanup added; stale /tmp/tmp* removed → 2.7 GB free. Goose images, models and voice kept.
+- **25/11 live failure, evidence re-read:** the audit's last entry was `POST /v1/speech/transcribe ALLOW` at 19:40:57 UTC, and the server log and devtunnel host log stop at the same minute with no traceback. Consistent with the cloud container being stopped about 7 min after this Claude session went idle (operator testing), not with an STT crash. Not provable. Live windows require keeping this session active.
+- **A — ID01-A reproduced (Manus patch unavailable):**
+  - private-mode `GET /rw-login?t=` validates WITHOUT consuming and shows a confirmation page: no script; CSRF in the form; challenge cookie HttpOnly/Secure/SameSite=Strict/Path=/rw-login/Max-Age=300; `Referrer-Policy: strict-origin` only on this page;
+  - `POST /rw-login`: exact Origin (null/missing/foreign refused before the handler), form-urlencoded ≤1 KB, challenge single-use, CSRF compare_digest, 300 s expiry, then atomic one-time link consumption → 303 with a Secure session cookie;
+  - local (non-public) mode keeps the legacy GET login.
+- **CROSS_ORIGIN root cause (analysis, to confirm in a real browser):** a native form POST is a navigation; with `Referrer-Policy: no-referrer` the Fetch standard serialises Origin as `null` → strict check refuses. App fetch() calls (CORS mode) always send the real Origin, which is why chat worked on 25/11. Fix: `strict-origin` on the confirmation page only; null still refused.
+- **B — identity:**
+  - links are issued per server-declared owner (`--donos operador=lab:operador,issa=lab:issa`); the session inherits the owner;
+  - the bridge sets `CURRENT_OWNER` from the session; the TextFacade worker inherits the context;
+  - memory/documents use `SessionOwner`; no owner → no memory/documents;
+  - further links on demand without an HTTP admin route: `python -m rightware.gui emitir-ligacao issa` (file + SIGUSR1 → `.runtime/gui/session-url-issa`, 0600, never printed).
+- **C/D routes (backend):**
+  - `DOCUMENT_ALLOW`/`MEMORY_ALLOW` exist only when the capability is enabled; body limits (upload 5 MB, Content-Length required);
+  - bridge dispatches `knowledge.http_api` and the new `memory.http_api` (list / correct with the user's typed words, screened / delete).
+- **Tests:** 8 new INT01 (confirm flow, Origin null/missing/foreign, CSRF/cookie/expiry/replay, owner per link, isolation via real bridge routes, capability-gated routes, 413); B6/voice tests moved to the two-step login; full suite OK.
+- **Next:** frontend (attach button, documents and memory panel), document intelligence fixes, real-browser voice/auth validation, rebuild, integrated E2E.

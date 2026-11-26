@@ -27,17 +27,8 @@ class VoicePolicy(unittest.TestCase):
         app = P.PolicyApp(inner=Inner(), bridge=Inner(), static_dir=tmp / "static", port=8000,
                           audit=P.AuditLog(tmp / "a.jsonl"), auth=auth, public_origin=PUB, public_until=clock.t + 3600,
                           clock=clock, allow={**P.ALLOW, **P.VOICE_ALLOW} if voice else None)
-        sent = []
-
-        async def login():
-            async def receive():
-                return {"type": "http.request", "body": b"", "more_body": False}
-
-            async def send(m):
-                sent.append(m)
-            await app({"type": "http", "method": "GET", "path": "/rw-login", "raw_path": b"/rw-login",
-                       "query_string": f"t={TOKEN}".encode(), "headers": [PUB_HOST]}, receive, send)
-        run(login())
+        from tests.test_b6_private_access import confirm_login
+        _, sent, _ = run(confirm_login(app, TOKEN, PUB_HOST))
         return app, dict(sent[0]["headers"])[b"set-cookie"].split(b";")[0]
 
     def test_voice_routes_only_with_voz_and_bounded(self):
