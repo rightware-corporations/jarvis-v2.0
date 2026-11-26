@@ -4760,3 +4760,17 @@ Local mode is unchanged.
   Credentials must never go through chat.
 - **Next:** INFRA01-C (Oracle Always Free ARM64) evaluation — read-only compatibility checks, no provisioning.
 - **Concurrent change reconciled:** ChatGPT pushed `c67ca76` (DB01 exact RLS/ACL guards) during this cycle; my unpublished commit was rebased locally on top of it (HANDOFF conflict resolved keeping both entries, no force push). Full suite re-run on the combined tree: 851 tests in 63.296s → OK, skipped 6 (live PG).
+
+## CHECKPOINT — 26/11/2026: INFRA01-C — ARM64 compatibility (read-only) (Claude Code)
+- **Agent:** Claude Code. **Mission:** INFRA01-C. **Start HEAD:** `a4af9d2`. **Environment:** x86_64 cloud container; no OCI access.
+- **Command:** `uv pip compile --python-platform aarch64-manylinux_2_28 --python-version 3.13 --only-binary :all:` (dry resolution; nothing installed).
+  - Voice/DB pins (faster-whisper 1.2.1, ctranslate2 4.7.1, av 16.1.0, kokoro-onnx 0.6.1, onnxruntime 1.32.0, soundfile 0.14.0, psycopg[binary] 3.3.9) → all aarch64 binary wheels: **PASS (resolution only)**.
+  - OpenJarvis `server` extra: 58 packages resolve to aarch64 wheels: **PASS (resolution only; not against uv.lock)**.
+- **Model files:** GGUF/CTranslate2/ONNX are architecture-independent by format.
+- **Not validated:**
+  - Ollama linux-arm64 build: **NOT_VERIFIED** (release API not accessible from this session);
+  - OCI A1 capacity/eligibility: **BLOCKED** (needs the operator's OCI account);
+  - ARM performance (Qwen/Whisper/Kokoro latency, RAM): **NOT_RUN**.
+- **Evidence:** `docs/evidence/infra01/arm64-compat-20261126.json`.
+- **Decision needed:** operator access to OCI (Always Free only) to verify home-region A1 capacity; then a provisioning plan (no paid upgrade).
+- **Still open (priority per ChatGPT 18:54 review):** physical-microphone diagnosis for the operator preview; any new private window needs explicit authorisation.

@@ -1,0 +1,15 @@
+{
+ "mission": "INFRA01-C (read-only compatibility, no provisioning)",
+ "agent": "Claude Code (cloud session)",
+ "host_arch": "x86_64 (Claude container); target candidate OCI VM.Standard.A1.Flex = aarch64",
+ "method": "uv pip compile --python-platform aarch64-manylinux_2_28 --python-version 3.13 --only-binary :all: (dry resolution, nothing installed)",
+ "voice_and_db_pins": {"faster-whisper": "1.2.1", "ctranslate2": "4.7.1", "av": "16.1.0", "kokoro-onnx": "0.6.1",
+                       "onnxruntime": "1.32.0", "soundfile": "0.14.0", "numpy": "2.5.5", "psycopg[binary]": "3.3.9",
+                       "result": "ALL RESOLVE TO aarch64 BINARY WHEELS"},
+ "openjarvis_server_extra": {"result": "58 packages resolve to aarch64 binary wheels (fastapi 0.165.0, uvicorn 0.54.0, httpx 0.28.1, pydantic-core 2.50.5 …)",
+                             "caveat": "resolved against the index, not against vendor uv.lock; the optional openjarvis_rust extension is absent on x86 too"},
+ "model_artifacts": "Qwen GGUF, Whisper CTranslate2 and Kokoro ONNX files are architecture-independent (by format); runtime performance on ARM NOT MEASURED",
+ "ollama_arm64": "NOT_VERIFIED in this session (GitHub release API for ollama/ollama not accessible here)",
+ "oci_capacity_and_eligibility": "BLOCKED: requires the operator's OCI account/console; nothing provisioned",
+ "performance": "NOT_RUN (no ARM host)"
+}
