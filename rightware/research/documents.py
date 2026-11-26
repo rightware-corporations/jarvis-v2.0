@@ -49,3 +49,31 @@ def pdf_to_text(data: bytes, max_pages: int = MAX_PAGES) -> tuple[str, bool]:
     text = proc.stdout.decode("utf-8", errors="replace")
     truncated = len(text) > MAX_TEXT
     return text[:MAX_TEXT], truncated
+
+
+def pdf_pages(data: bytes, max_pages: int = MAX_PAGES) -> list[str]:
+    """JRV-K01: the same bounded conversion, keeping page boundaries (form feeds) for page-level provenance."""
+    if not isinstance(data, (bytes, bytearray)) or not data.startswith(b"%PDF-"):
+        raise DocumentError("o conteúdo não é um PDF")
+    if len(data) > MAX_PDF_BYTES:
+        raise DocumentError("PDF acima do limite de tamanho")
+    if not available():
+        raise DocumentError("conversor de PDF indisponível neste anfitrião")
+    work = tempfile.mkdtemp(prefix="rw-pdf-")
+    try:
+        src = os.path.join(work, "doc.pdf")
+        with open(src, "wb") as fh:
+            fh.write(data)
+        proc = subprocess.run([PDFTOTEXT, "-f", "1", "-l", str(int(max_pages)), "-enc", "UTF-8", "-layout", "-q",
+                               src, "-"], capture_output=True, timeout=TIMEOUT_S, cwd=work, stdin=subprocess.DEVNULL,
+                              env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"}, check=False)
+    except subprocess.TimeoutExpired:
+        raise DocumentError("a conversão do PDF excedeu o tempo limite") from None
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    if proc.returncode != 0:
+        raise DocumentError("o PDF não pôde ser convertido (cifrado ou corrompido)")
+    pages = proc.stdout.decode("utf-8", errors="replace").split("\f")
+    if pages and not pages[-1].strip():
+        pages = pages[:-1]
+    return pages

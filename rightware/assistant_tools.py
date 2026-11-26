@@ -14,6 +14,7 @@ only): A interpretar → A pesquisar (search form) / A consultar fontes (page re
 No network is opened here: real hosts need a host fetcher AND a specific operator authorisation."""
 from __future__ import annotations
 
+import re
 import threading
 import time
 
@@ -72,7 +73,8 @@ class ToolChatAdapter:
     def __init__(self, model: str, *, sites: tuple[str, ...], persona: str, browser_fetcher=None,
                  start_url: str | None = None, search_template: str | None = None,
                  allow: tuple[str, ...] = ("browse",), extra_tools_factory=None, post_check=None,
-                 router=None, direct=None, research_factory=None, memory=None, channel: str = "texto",
+                 router=None, direct=None, research_factory=None, memory=None, documents=None,
+                 channel: str = "texto",
                  engine_factory=None, budgets: Budgets | None = None, max_turns: int = 6, timeout_seconds: float = 180.0,
                  audit_path=None, clock=time.monotonic):
         if "browse" in allow and not sites:
@@ -87,6 +89,9 @@ class ToolChatAdapter:
         # JRV-M01 (optional): persistent personal memory of the host-declared owner (rightware.memory). Recall goes
         # into the prompt of BOTH paths (direct and tools); writes only through policy-checked memory tools.
         self.memory, self.channel = memory, channel
+        # JRV-K01 (optional): the owner's document library (rightware.knowledge); bounded passages for document
+        # questions in the prompt, document tools, host source lines. Documents never change memory.
+        self.documents = documents
         self.model, self.sites, self.persona = model, tuple(sites), persona
         self.start_url = start_url                 # host-declared search/entry page (https, inside the allowlist)
         self.search_template = search_template     # host-declared search URL with {q} → model tool web_search(query)
@@ -121,7 +126,13 @@ class ToolChatAdapter:
                 persona = self.persona + self.memory.context_block(recalled)
                 mem_intent = bool(intents(text))       # policy: explicit memory requests always reach the tools
                 mem_info = {"owner": self.memory.owner(), "recalled": [m.id for m in recalled], "writes": []}
-            if (self.router is not None and self.direct is not None and not mem_intent
+            doc_intent, doc_info = False, None
+            if self.documents is not None:
+                self.documents.begin(text)
+                block = self.documents.context_block(text)
+                doc_intent = bool(block)              # policy: document questions go to the tools path
+                persona += block
+            if (self.router is not None and self.direct is not None and not mem_intent and not doc_intent
                     and self.router(text, tuple(history)) == "conversa"):
                 base = getattr(self.direct, "system_prompt", None)
                 if self.memory is not None and base is not None:
@@ -148,6 +159,9 @@ class ToolChatAdapter:
                 mem_tools, mem_records = self.memory.tools(text, self.channel)
                 extra = {**(extra or {}), **mem_tools}
                 allow.add("memory")
+            if self.documents is not None and self.documents.store.list(self.documents.owner()):
+                extra = {**(extra or {}), **self.documents.tools(text)}
+                allow.add("documents")
             session = AgentSession(self._engine(), self.model, allow=allow, confirm=lambda q: None,
                                    sites=self.sites, browser_fetcher=self.browser_fetcher, budgets=self.budgets,
                                    extra_tools=extra,
@@ -176,6 +190,13 @@ class ToolChatAdapter:
                 if callable(clean):                        # remove model lines imitating host labels first
                     out, _ = clean(out)
                 out += self.post_check(out, records(), text)
+            if self.documents is not None:               # document sources/verification from the host only
+                out = "\n".join(l for l in out.split("\n")
+                                if not re.match(r"^\s*[*_>\-•]*\s*(Fonte: documento|[✓⚠]?\s*Verifica[cç][aã]o do "
+                                                r"anfitri[aã]o \(documentos\))", l))
+                suffix, doc_info = self.documents.finalize(out)
+                out += suffix
+                self._last["documents"] = doc_info
             if self.memory is not None:                  # confirmations come only from real database writes
                 mem_info["writes"] = [{k: r.get(k) for k in ("tool", "status", "action", "memory_id", "reason", "content")}
                                       for r in mem_records]

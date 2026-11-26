@@ -112,6 +112,8 @@ if __name__ == "__main__":
     a.add_argument("--voz", action="store_true")
     a.add_argument("--memoria-dono", help="JRV-M01: activa a memória pessoal persistente deste dono (ex.: lab:alfa, "
                                           "local:issa). Um dono por processo; nunca a sessão B6.")
+    a.add_argument("--documentos", action="store_true", help="JRV-K01: biblioteca documental do mesmo dono "
+                                                              "(exige --memoria-dono)")
     a.add_argument("--memoria-ficheiro", default=None, help="SQLite (por omissão .runtime/memory/jarvis-memory.sqlite3)")
     x = a.parse_args()
     if x.proxy:
@@ -173,6 +175,9 @@ if __name__ == "__main__":
         tool_list += ("memória pessoal permanente (memory_save, memory_update, memory_forget, memory_list) — só "
                       "quando o utilizador pedir para lembrar, corrigir ou esquecer",)
         unavailable = tuple(u for u in unavailable if "memória" not in u)
+    if x.documentos:
+        tool_list += ("documentos carregados pelo utilizador (doc_list, doc_search, doc_open, doc_delete) — responde "
+                      "com as passagens e cita [S#]",)
     facts = RuntimeFacts(model=x.model, environment="cloud", tools=tool_list, unavailable=unavailable)
     from rightware.assistant_tools import ModelRouter
     from rightware.text_adapter import LocalSimpleTextAdapter
@@ -188,9 +193,17 @@ if __name__ == "__main__":
         memory = PersonalMemory(MemoryStore(x.memoria_ficheiro or DEFAULT_PATH),
                                 StaticOwner(x.memoria_dono, "lab-synthetic" if x.memoria_dono.startswith("lab:")
                                             else "operator-config"))
+    documents = None
+    if x.documentos:
+        if memory is None:
+            a.error("--documentos exige --memoria-dono (o dono dos documentos)")
+        from rightware.knowledge.library import DocumentLibrary
+        from rightware.knowledge.store import KnowledgeStore
+        documents = DocumentLibrary(KnowledgeStore(), memory.owner_provider)
     adapter = ToolChatAdapter(x.model, sites=(), persona=persona, allow=("fx", "research", "calc"),
                               extra_tools_factory=tools, post_check=annotate, timeout_seconds=240,
                               browser_fetcher=fetcher, router=router, direct=direct, memory=memory,
+                              documents=documents,
                               channel="texto/voz")
     app, bridge = build_app(port=x.port, models=[x.model], deadline=240.0, adapter_factory=lambda m: adapter,
                             public_origin=x.public_origin, public_minutes=x.public_minutes, voice=x.voz)

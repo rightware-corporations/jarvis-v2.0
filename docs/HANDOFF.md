@@ -4501,3 +4501,21 @@ Local mode is unchanged.
   - the topic is screened (a sensitive topic is dropped).
 - **Tests:** 24 memory tests (+ the 5 meaning cases, schema without content, refused secret absent from reply, `_last`, DB/WAL and events, provenance hash); full suite green.
 - The model-side real acceptance (M01 run 3) used the earlier content parameter; the new schema is covered by UNIT/FAKE and will be exercised by the K01 real acceptance on the same core.
+
+## CHECKPOINT — 26/11/2026: JRV-K01 document knowledge — code + unit tests + gateway contract (real acceptance next)
+- **Reuse audit:**
+  - OpenJarvis `SQLiteMemory` (FTS5) needs the absent Rust module → same design via stdlib SQLite FTS5 (bm25);
+  - R02 `pdftotext` wrapper extended with `pdf_pages` (page provenance);
+  - M01 identity contract for owners;
+  - same ToolChatAdapter/AgentSession core;
+  - R02 citation validator for document answers.
+  - No upload component exists in the pinned frontend.
+- **Built `rightware/knowledge/`:**
+  - `ingest.py`: real format checked against the extension; size limits PDF 5 MB / TXT·CSV 2 MB; binary/NUL/control refused; the name is a sanitised label only (never a path); SHA-256; PDF pages / TXT line ranges / CSV rows with a header; no OCR.
+  - `store.py`: `.runtime/knowledge` SQLite 0600 + FTS5; per-owner isolation; dedup by sha256; quotas 50 docs / 50 MB; delete removes the doc, segments and FTS rows; event log without content.
+  - `library.py`: for document questions only, BOUNDED passages (≤3600 chars; page request, summary opening, balanced comparison) framed as untrusted data S1..Sn with document + page/lines; tools doc_list/doc_search/doc_open/doc_delete (delete only on an explicit user request); host source lines "Fonte: documento «…», página N"; support/⚠ via the R02 validator; cross-document year differences are not reported as conflicts; imitated sources stripped.
+  - `http_api.py`: upload/list/delete handlers READY but NOT routed.
+  - CLI: `python -m rightware.knowledge add|list|delete --owner …`.
+- **Integration:** `ToolChatAdapter(documents=…)`; document questions go to the tools path; launcher `--documentos` (requires `--memoria-dono`). Documents never create or change memories (memory writes need user intent from the user's message).
+- **Gateway:** upload route NOT exposed. `rightware/gui/policy.py`/`auth.py` untouched. Contract for the B6 owner in `docs/engineering/JRV_K01_GATEWAY_CONTRACT.md` (3 ALLOW entries + body limits). The frontend attach button follows once the contract is accepted.
+- **Tests:** 13 new (`tests/test_k01_documents.py`): ingest, store, retrieval, security (disguised formats, path names, injection → no memory/deletion, explicit delete, imitated sources, HTTP owner from host, reserved files); full suite 804 OK.
