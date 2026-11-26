@@ -109,6 +109,8 @@ if __name__ == "__main__":
     a.add_argument("--hoje", default=dt.date.today().isoformat())
     a.add_argument("--public-origin")
     a.add_argument("--public-minutes", type=float)
+    a.add_argument("--public-deadline", type=float, help="LIVE02: original absolute expiry as Unix UTC seconds; never extend on recovery")
+    a.add_argument("--state-dir", help="LIVE02: existing private persistent directory outside checkout; missing/corrupt stores refuse startup")
     a.add_argument("--voz", action="store_true")
     a.add_argument("--memoria-dono", help="JRV-M01: activa a memória pessoal persistente deste dono (ex.: lab:alfa, "
                                           "local:issa). Um dono por processo; nunca a sessão B6.")
@@ -120,6 +122,27 @@ if __name__ == "__main__":
     a.add_argument("--documentos-ficheiro", default=None, help="SQLite dos documentos (por omissão .runtime/knowledge/…)")
     a.add_argument("--memoria-ficheiro", default=None, help="SQLite (por omissão .runtime/memory/jarvis-memory.sqlite3)")
     x = a.parse_args()
+    if x.state_dir:
+        if x.memoria_ficheiro or x.documentos_ficheiro or not x.donos or not x.documentos:
+            a.error("--state-dir requires --donos and --documentos; do not combine with explicit DB files")
+        from rightware.gui.recovery import preflight, state_files
+        report = preflight(x.state_dir, x.model, voice=x.voz)
+        if not report["ready"]:
+            a.error("LIVE02 preflight refused: " + ", ".join(k for k, ok in report["checks"].items() if not ok))
+        files = state_files(x.state_dir)
+        x.memoria_ficheiro, x.documentos_ficheiro = files["memory"], files["documents"]
+        import os
+        os.umask(0o077)  # protect future SQLite sidecars in the dedicated cloud state directory
+        if x.public_origin and x.public_deadline is None:
+            a.error("persistent public recovery requires the original --public-deadline")
+    if x.public_deadline is not None:
+        from rightware.gui.recovery import absolute_expiry
+        if not x.public_origin:
+            a.error("--public-deadline requires --public-origin")
+        try:
+            absolute_expiry(x.public_minutes or 0, x.public_deadline)
+        except ValueError as e:
+            a.error(str(e))
     if x.proxy:
         from labs.op01.proxy_transport import SessionProxyFetcher
         if not x.autorizacao or x.janela_inicio is None:
@@ -194,9 +217,9 @@ if __name__ == "__main__":
     if x.donos:
         from rightware.memory.identity import Owner
         for item in x.donos.split(","):
-            label, _, oid = item.partition("=")
+            owner_label, _, oid = item.partition("=")
             Owner(oid.strip(), "operator-config")                          # validates the id format
-            owners[label.strip()] = oid.strip()
+            owners[owner_label.strip()] = oid.strip()
     if x.memoria_dono or owners:
         from rightware.memory.identity import SessionOwner, StaticOwner
         from rightware.memory.personal import PersonalMemory
@@ -219,7 +242,8 @@ if __name__ == "__main__":
                               channel="texto/voz")
     app, bridge = build_app(port=x.port, models=[x.model], deadline=240.0, adapter_factory=lambda m: adapter,
                             public_origin=x.public_origin, public_minutes=x.public_minutes, voice=x.voz,
-                            owners=owners or None, memory=memory, documents=documents)
+                            owners=owners or None, memory=memory, documents=documents,
+                            public_deadline=x.public_deadline)
     bridge.adapters = {x.model: adapter}
     bridge.tools_label = lambda m: f"ferramentas: cotações oficiais e pesquisa ({label})"
     print(f"JARVIS — apresentação ({label}).", flush=True)
