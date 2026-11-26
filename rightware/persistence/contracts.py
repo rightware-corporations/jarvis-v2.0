@@ -1,4 +1,6 @@
 """Structural interfaces shared by the local SQLite and PostgreSQL stores."""
+from __future__ import annotations   # SYNC-INFRA01: lazy annotations (a method named `list` shadowed `list[...]`)
+
 from typing import Protocol
 from rightware.memory.store import Memory
 from rightware.knowledge.store import Doc, Hit

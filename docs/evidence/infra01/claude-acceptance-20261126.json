@@ -1,0 +1,22 @@
+{
+ "mission": "JRV-SYNC-INFRA01 / INFRA01-B/H",
+ "agent": "Claude Code (cloud session)",
+ "baseline": "6fde176379db1ddae23723b95ee6b05436fc1d12",
+ "environment": "Claude cloud container; Python 3.13 (.runtime/gui/venv); no direct DNS (egress only via HTTPS proxy); psycopg not installed",
+ "commands": [
+  "python -m labs.infra01.acceptance",
+  "python -m labs.infra01.acceptance --live",
+  "python -m unittest discover -s tests",
+  "python -m rightware.gui frontend-check"
+ ],
+ "results": {
+  "sqlite_source": {"status": "PASS", "expected": 9, "executed": 9, "failures": 0, "errors": 0, "skipped": 0},
+  "postgres_live": {"status": "BLOCKED", "reason": "DISPOSABLE_TEST_CONFIGURATION_REQUIRED",
+                    "detail": "JARVIS_DB01_TEST/_DSN/_INSTANCE absent in this session (presence checked, never values); additionally this container has no direct DNS/TCP (only an HTTPS proxy), so psycopg/TLS verify-full to Neon:5432 cannot be exercised from here even with credentials"},
+  "regression_found": "rightware/persistence/contracts.py (DB01) made rightware.memory.personal and rightware.knowledge.* fail to import (TypeError: a Protocol method named `list` shadowed `list[...]` annotations) -> memory/documents broken in the product; fixed with `from __future__ import annotations`",
+  "full_python_suite_after_fix": {"ran": 844, "result": "OK", "skipped": 6, "skipped_are": "tests/test_db01_postgres.py (live PostgreSQL, opt-in)"},
+  "frontend": {"tsc_rc": 0, "vitest": "121/121"}
+ },
+ "not_validated_here": ["psycopg connection", "TLS verify-full", "runtime role permissions via Python", "6 PostgreSQL tests", "synthetic migration to PG", "rollback/recovery/persistence across PG connections"],
+ "credentials_in_this_file": false
+}
