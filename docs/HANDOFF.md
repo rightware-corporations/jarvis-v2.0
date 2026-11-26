@@ -4637,3 +4637,22 @@ Local mode is unchanged.
 - **Impact:** from the browser this is "backend unavailable"; an in-flight transcription would stay pending until the 45 s client timeout.
 - **Voice since 16:38:** NO `POST /v1/speech/transcribe` reached JARVIS (diagnostics active), while chat/upload worked. The physical-mic failure is browser-side or not attempted; the operator's description is still pending.
 - **Restored at 17:01:28 within the authorised window:** same private tunnel `peaceful-chair-tzc42r3.use` (anonymous → 302), Ollama, JARVIS (same config, B6 until 17:18, new operator link). Check-ins every 2 min.
+
+## CHECKPOINT — 26/11/2026: JRV-LIVE01 — window CLOSED and revoked; operator acceptance result
+- **Closure:** the closure check-in scheduled for 17:18 was delivered ~51 min late (the session worker restarted; the container was restarted again, `up 0 min` at 18:09).
+  - JARVIS and the devtunnel host had already stopped (process time limits at 17:17/17:18; last audit 17:18:13 `GET /rw-login DENY` after expiry).
+  - At 18:09: tunnel `peaceful-chair-tzc42r3.use` deleted (`devtunnel list`: none; old URL 404); Dev Tunnels user logged out and token cache removed; all `session-url*` and issue files deleted.
+  - Network authorisation OP01-ISSA-LIVE-20261126 is consumed/closed.
+- **Operator acceptance results (16:20–17:18 Maputo):**
+  - **Two-step auth (ID01-A) through the real Dev Tunnel and the operator's real browser: PASS** (16:22:42 CONFIRM page → 16:22:53 POST LOGIN_OK; again at 16:40:46/16:40:53).
+  - Chat, calculator and documents: chat answered 12 requests (12–86 s); document upload (16:43:50) and document queries worked. Memory was used through chat (content not recorded).
+  - **Real voice: FAIL / REJECTED by the operator.** Only 2 `POST /v1/speech/transcribe` ever reached JARVIS (16:23:45, 16:24:01; outcome unknown, pre-diagnostics). After the diagnostics restart (16:38) NO transcription request reached the server, while chat/upload kept working. A loopback test against the live server (synthetic WebM/Opus 48 kHz mono, session-authenticated) returned 200 in 6.2 s with text. Conclusion: backend STT works; the physical-mic path fails BEFORE the request leaves the browser (or the attempt was not made). The operator's description of the browser behaviour was not received, so the root cause is NOT identified.
+  - **Infrastructure: CRITICAL.** The cloud container restarted during the window (16:55–17:00) and again before 18:09, killing JARVIS, the tunnel and Ollama at once, despite check-ins every 2–4 min. This reproduces the 25/11 failure and makes this cloud session unsuitable as a live host.
+- **Defects open:**
+  1. physical-mic dictation and continuous mode in the operator's browser (needs the browser-side state: recording? spinner? continuous state? browser/OS);
+  2. live hosting must move off this ephemeral container (operator machine or a persistent host);
+  3. cosmetic: the launcher footer label shows "(operador)" (variable reuse in the `--donos` loop).
+- **Next (requires operator decision):**
+  - a persistent host for the live preview;
+  - a browser-side voice diagnostic: on-screen mic level / phase / last transcription status, no audio stored;
+  - then a new authorised window.
