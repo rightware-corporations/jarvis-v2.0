@@ -94,5 +94,39 @@ class DB01(unittest.TestCase):
             PostgresDatabase(os.environ["JARVIS_DB01_TEST_DSN"], str(uuid.uuid4()))
 
 
+    def test_migration_readback_duplicate_and_transaction_rollback(self):
+        from rightware.persistence.migrate import import_snapshot
+        # Two owners, one real synthetic source snapshot with old-format IDs.
+        # Random legacy IDs avoid collisions across disposable runs.
+        first, second = "m-" + secrets.token_hex(4), "m-" + secrets.token_hex(4)
+        did = "d-" + secrets.token_hex(4)
+        data = {
+            "memories": [(first, self.a, "preferencia", "moeda", "Meticais", {"source": "test"}, 1.0, 2.0, "superseded", second),
+                         (second, self.a, "preferencia", "moeda", "Meticais e dólares", {"source": "test"}, 2.0, 2.0, "confirmed", None)],
+            "memory_events": [(1.0, self.a, first, "created"), (2.0, self.a, second, "created")],
+            "documents": [(did, self.b, "test.txt", "txt", "a"*64, 10, 1, 1, 3.0, False)],
+            "segments": [(did, self.b, 0, "página 2", "Resultado líquido 96")],
+            "document_events": [(3.0, self.b, did, "uploaded")],
+        }
+        # Force a read-back mismatch AFTER inserts to exercise actual rollback.
+        from unittest.mock import patch
+        with patch("rightware.persistence.migrate.fingerprint", side_effect=[b"a", b"b"]):
+            with self.assertRaises(ValueError):
+                import_snapshot(self.db, data)
+        self.assertEqual(self.m.active(self.a), [])
+        self.assertEqual(self.m.events(self.a), [])
+        self.assertEqual(self.k.list(self.b), [])
+        result = import_snapshot(self.db, data)
+        self.assertTrue(result["committed"] and result["verified"])
+        self.assertEqual(self.m.get(self.a, second).content, "Meticais e dólares")
+        self.assertEqual(self.m.get(self.a, first).superseded_by, second)
+        self.assertEqual(self.k.search(self.b, "resultado liquido 96")[0].doc_id, did)
+        self.assertEqual(self.k.search(self.a, "resultado liquido 96"), [])
+        with self.assertRaises(ValueError):
+            import_snapshot(self.db, data)
+        self.assertEqual(len(self.m.active(self.a)), 1)
+        self.assertEqual(len(self.k.list(self.b)), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
