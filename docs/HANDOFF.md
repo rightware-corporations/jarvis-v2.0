@@ -4630,3 +4630,10 @@ Local mode is unchanged.
   1. empty transcript from low-level physical audio;
   2. >45 s when competing with chat inference on 4 vCPU;
   3. continuous mode: the energy VAD never triggers with the physical mic (no POST at all).
+
+## CHECKPOINT — 26/11/2026 17:01 Maputo: JRV-LIVE01 — CONTAINER RESTART during the window (root-cause evidence)
+- **Restart:** between 16:55:25 (last successful check-in) and 17:00:50 the cloud container was RESTARTED (`uptime 0 min` at 17:01:02). JARVIS, the devtunnel host and Ollama all stopped; the last audit write was 16:54:24; the host log shows "Connection lost". This happened despite the 4-min check-ins; the session was idle (waiting on a scheduled message) for ~5 min.
+- **Same pattern as 25/11** (all processes stop at once, no traceback).
+- **Impact:** from the browser this is "backend unavailable"; an in-flight transcription would stay pending until the 45 s client timeout.
+- **Voice since 16:38:** NO `POST /v1/speech/transcribe` reached JARVIS (diagnostics active), while chat/upload worked. The physical-mic failure is browser-side or not attempted; the operator's description is still pending.
+- **Restored at 17:01:28 within the authorised window:** same private tunnel `peaceful-chair-tzc42r3.use` (anonymous → 302), Ollama, JARVIS (same config, B6 until 17:18, new operator link). Check-ins every 2 min.
