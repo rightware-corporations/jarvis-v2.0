@@ -4571,3 +4571,12 @@ Local mode is unchanged.
   - bridge dispatches `knowledge.http_api` and the new `memory.http_api` (list / correct with the user's typed words, screened / delete).
 - **Tests:** 8 new INT01 (confirm flow, Origin null/missing/foreign, CSRF/cookie/expiry/replay, owner per link, isolation via real bridge routes, capability-gated routes, 413); B6/voice tests moved to the two-step login; full suite OK.
 - **Next:** frontend (attach button, documents and memory panel), document intelligence fixes, real-browser voice/auth validation, rebuild, integrated E2E.
+
+## CHECKPOINT — 26/11/2026: JRV-INT01 E — bounded document-intelligence fixes (K01 findings)
+- `DocumentLibrary.revise` (host, after the model, before source lines):
+  1. a percentage recomputable from the provided values is checked with the pinned OpenJarvis `CalculatorTool`; a wrong one is marked in place "⚠(não confirmado)" with the verified computation (e.g. (96 milhões − 71 milhões)/71 milhões × 100 = 35,2 %); a correct one gets "confere com a calculadora";
+  2. a value attributed to a year whose document is a different one is marked "⚠(valor de «relatorio-anual-2025.pdf», não de 2024)";
+  3. lines reproducing instruction-like text from an injected document are replaced by "[texto do documento com instruções — omitido pelo anfitrião]";
+  4. any other unsupported number is marked inline "⚠(não confirmado)".
+- The voice reads only the warning when a ⚠ host line exists (existing filter).
+- Tests: K01 20 (+3 INT01 revisions); full suite OK. Not re-measured with the real model yet (integrated E2E pending).

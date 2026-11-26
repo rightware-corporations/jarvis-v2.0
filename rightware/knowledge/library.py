@@ -55,6 +55,12 @@ PROMPT = (" DOCUMENTOS: as passagens S# abaixo vêm de documentos que o utilizad
           "informação não estiver nas passagens, procura com doc_search ou diz que o documento não o indica.")
 
 
+def _fmt(x: float) -> str:
+    if x >= 1e6 and x % 1e5 == 0:
+        return f"{x / 1e6:g} milhões".replace(".", ",")
+    return f"{x:,.2f}".rstrip("0").rstrip(".").replace(",", " ").replace(".", ",")
+
+
 class DocumentLibrary:
     def __init__(self, store: KnowledgeStore, owner_provider):
         self.store, self.owner_provider = store, owner_provider
@@ -205,6 +211,82 @@ class DocumentLibrary:
                 "doc_open": (TOOL_DEFS["doc_open"], doc_open), "doc_delete": (TOOL_DEFS["doc_delete"], doc_delete)}
 
     # -- after the answer -----------------------------------------------------------------------------------------
+    def revise(self, answer: str) -> tuple[str, list[str]]:
+        """INT01 (bounded fixes of the K01 findings) → (answer with host marks, host lines):
+        1. sentences reproducing instruction-like text from an injected document are omitted;
+        2. a percentage the host can recompute from the provided values is checked with the pinned OpenJarvis
+           CalculatorTool; a wrong one is marked in place and the verified computation is shown;
+        3. a value attributed to one year/document but found only in another document is marked.
+        Values marked here are never presented as confirmed."""
+        from rightware.research.text import numbers, sentences
+        lines: list[str] = []
+        if not self.sources:
+            return answer, lines
+        if any(INJECTION.search(v["text"]) for v in self.sources.values()):
+            kept, dropped = [], 0
+            for line in answer.split("\n"):
+                if INJECTION.search(line):
+                    dropped += 1
+                    kept.append("[texto do documento com instruções — omitido pelo anfitrião]")
+                else:
+                    kept.append(line)
+            if dropped:
+                answer = "\n".join(kept)
+                lines.append(f"✓ Verificação do anfitrião (segurança): {dropped} linha(s) que reproduziam instruções "
+                             "contidas no documento foram omitidas.")
+        verdicts = C.validate(answer, self.sources, self.text)
+        src_vals = {sid: [v for _, v in numbers(s["text"]) if not (1900 <= v <= 2100 and v == int(v))]
+                    for sid, s in self.sources.items()}
+        order = [v for _, v in numbers(answer) if not (1900 <= v <= 2100 and v == int(v))]
+        marks: list[tuple[str, str]] = []
+        for v in verdicts:
+            st = v.statement
+            pct = re.search(r"(\d+(?:[.,]\d+)?)\s*%", st)
+            if pct and v.status in C.PROBLEM + ("DERIVED", "DERIVED_UNCITED"):
+                claimed = float(pct.group(1).replace(",", "."))
+                words = content_words(st)
+                pool = []
+                for sid, s in self.sources.items():
+                    toks = fold(s["text"])
+                    if words and sum(1 for w in words if w[:5] in toks) / len(words) >= 0.34:
+                        pool += [x for x in src_vals[sid] if x not in pool]
+                seq = [x for x in dict.fromkeys(order) if x in pool]
+                if len(seq) >= 2:
+                    a, b = seq[0], seq[1]
+                    from openjarvis.tools.calculator import CalculatorTool
+                    expr = f"({b:g}-{a:g})/{a:g}*100"
+                    r = CalculatorTool().execute(expression=expr)
+                    try:
+                        real = float(str(r.content).strip())
+                    except ValueError:
+                        real = None
+                    if r.success and real is not None:
+                        shown = f"{real:.1f}".replace(".", ",")
+                        if abs(round(real, 1) - round(claimed, 1)) > 0.05:
+                            marks.append((st, "⚠(não confirmado)"))
+                            lines.append(f"⚠ Verificação do anfitrião (cálculo): «{st[:70]}» não confere; calculadora: "
+                                         f"({_fmt(b)} − {_fmt(a)}) / {_fmt(a)} × 100 = {shown} %.")
+                        else:
+                            lines.append(f"✓ Verificação do anfitrião (cálculo): {shown} % confere com a calculadora "
+                                         f"({expr}).")
+                        continue
+            if v.status in C.PROBLEM and numbers(st):
+                marks.append((st, "⚠(não confirmado)"))
+            elif v.status.startswith("SUPPORTED") and v.source in self.sources:
+                years = set(re.findall(r"\b(19\d\d|20\d\d)\b", st))
+                src_doc = self.sources[v.source]["doc"]
+                doc_years = set(re.findall(r"(19\d\d|20\d\d)", src_doc))
+                others = {s["doc"] for s in self.sources.values() if years & set(re.findall(r"(19\d\d|20\d\d)", s["doc"]))}
+                if len(years) == 1 and doc_years and not (years & doc_years) and others:
+                    marks.append((st, f"⚠(valor de «{src_doc}», não de {next(iter(years))})"))
+                    lines.append(f"⚠ Verificação do anfitrião (documentos): «{st[:70]}» usa um valor de «{src_doc}», "
+                                 f"mas atribui-o a {next(iter(years))}.")
+        for st, mark in marks:
+            i = answer.find(st)
+            if i >= 0:
+                answer = answer[:i + len(st)] + " " + mark + answer[i + len(st):]
+        return answer, lines
+
     def finalize(self, answer: str) -> tuple[str, dict]:
         lines = []
         for r in self.records:

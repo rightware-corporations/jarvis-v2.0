@@ -196,8 +196,9 @@ class ToolChatAdapter:
                 out = "\n".join(l for l in out.split("\n")
                                 if not re.match(r"^\s*[*_>\-•]*\s*(Fonte: documento|[✓⚠]?\s*Verifica[cç][aã]o do "
                                                 r"anfitri[aã]o \(documentos\))", l))
+                out, revise_lines = documents.revise(out)
                 suffix, doc_info = documents.finalize(out)
-                out += suffix
+                out += suffix + ("\n" + "\n".join(revise_lines) if revise_lines else "")
                 self._last["documents"] = doc_info
             if memory is not None:                  # confirmations come only from real database writes
                 mem_info["writes"] = [{k: r.get(k) for k in ("tool", "status", "action", "memory_id", "reason", "content")}
