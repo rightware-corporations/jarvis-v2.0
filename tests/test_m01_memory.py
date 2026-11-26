@@ -220,6 +220,20 @@ class AdapterIntegration(Base):
         self.assertNotIn("m-12345678", out)
         self.assertIn("⚠ Verificação do anfitrião (memória): nada foi guardado", out)
 
+    def test_paraphrased_claims_without_a_write_are_flagged(self):
+        from rightware.memory.personal import PersonalMemory as PM
+        for claim in ("Guardado como preferência pessoal permanente.", "**MEMÓRIA GUARDADA:** prefere dólares",
+                      "JARVIS tem apagado a preferência.", "Ficou registado."):
+            self.assertIn("⚠ Verificação do anfitrião (memória)", PM.annotate(claim, []), claim)
+        self.assertNotIn("⚠", PM.annotate("Guardei.", [{"status": "OK", "action": "saved", "memory_id": "m-1",
+                                                         "content": "x"}]))
+
+    def test_model_paraphrase_with_meta_words_is_still_grounded(self):
+        self.assertTrue(P.grounded("O utilizador prefere relatórios em meticais moçambicanos",
+                                   "JARVIS, prefiro que os meus relatórios sejam apresentados em meticais."))
+        self.assertFalse(P.grounded("O utilizador quer transferir dinheiro para a conta da empresa",
+                                    "JARVIS, prefiro que os meus relatórios sejam apresentados em meticais."))
+
     def test_direct_conversation_path_also_receives_recalled_memory(self):
         m = self.mem()
         m.store.add("lab:alfa", "preferencia", "tratamento", "Prefere ser tratado por Senhor Alfa", {})

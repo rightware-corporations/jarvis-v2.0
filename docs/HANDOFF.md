@@ -4447,3 +4447,14 @@ Local mode is unchanged.
   - synthetic owners lab:alfa / lab:beta; the Ollama process is restarted mid-run;
   - the SQLite DB lives in the scratchpad (never committed).
 - Results: next checkpoint (`docs/evidence/m01/`).
+
+## CHECKPOINT — 26/11/2026: JRV-M01 real-model acceptance RUN 1 = FAIL → fixes (run 2 in progress)
+- **Run 1** (`docs/evidence/m01/acceptance-qwen2b-run1.jsonl`; Qwen 2B; 9 fresh processes; Ollama restarted mid-run):
+  - **FAIL at step 1:** the model proposed "O utilizador prefere relatórios em meticais moçambicanos"; the host grounding rule REFUSED it (meta word and adjective not in the user's words). Nothing was stored, so steps 2–8 had nothing to recall/correct/delete.
+  - The model nonetheless wrote "Guardado como preferência…" (step 1) and "MEMÓRIA GUARDADA" (step 5). The false-claim detector only knew "guardei", so those claims were NOT flagged with ⚠; the host line did say "pedido recusado".
+  - Isolation (lab:beta) held trivially: nothing stored.
+- **Fixes (UNIT, 20 tests OK):**
+  - grounding ignores meta words (utilizador, pessoa…) with a ratio of 0.5; inventions are still refused;
+  - the refusal tells the model to retry with the user's own words;
+  - the false-claim detector covers participles (guardado/registado/apagado/eliminado/actualizado…);
+  - writes record the proposed content for diagnosis (synthetic data).

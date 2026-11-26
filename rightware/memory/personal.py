@@ -42,9 +42,10 @@ TOOL_DEFS = {
 }
 ABOUT_ME = re.compile(r"(sabes|conheces|lembras|guardaste|memoria|memorias|tens guardad)\w*.{0,25}"
                       r"\b(sobre )?mim\b|o que (e que )?(sabes|lembras)|que memorias|minhas memorias", re.I)
-CLAIM_WRITE = re.compile(r"\b(guardei|memorizei|registei|anotei|vou (lembrar|guardar|memorizar)|fica(ra)? guardad|"
-                         r"ficou registad|aprendi|ja sei que|corrigi|actualizei|atualizei|esqueci|apaguei|eliminei|"
-                         r"removi)\b", re.I)
+CLAIM_WRITE = re.compile(r"\b(guard(ei|ad[oa]s?)|memoriz(ei|ad[oa]s?)|regist(ei|ad[oa]s?)|anot(ei|ad[oa]s?)|"
+                         r"aprend(i|id[oa]s?)|vou (lembrar|guardar|memorizar|registar)|ja sei que|"
+                         r"corrigi|corrigid[oa]s?|actualizei|atualizei|actualizad[oa]s?|atualizad[oa]s?|"
+                         r"esqueci|apag(uei|ad[oa]s?)|elimin(ei|ad[oa]s?)|remov(i|id[oa]s?))\b", re.I)
 IMITATED = re.compile(r"^\s*[*_>\-•]*\s*[✓⚠]?\s*\**\s*Verifica[cç][aã]o do anfitri[aã]o \(mem[oó]ria\)", re.I)
 LABEL = {"preferencia": "preferência", "facto": "facto", "objectivo": "objectivo", "contexto": "contexto"}
 
@@ -127,7 +128,9 @@ class PersonalMemory:
             if why:
                 return refuse("memory_save", why, "SENSITIVE")
             if not P.grounded(content, user_text):
-                return refuse("memory_save", "o conteúdo não corresponde ao que o utilizador disse", "NOT_GROUNDED")
+                records.append({"tool": "memory_save", "status": "PROPOSED", "content": content[:160]})
+                return refuse("memory_save", "o conteúdo não corresponde ao que o utilizador disse; volta a chamar "
+                              "memory_save usando as palavras do próprio utilizador", "NOT_GROUNDED")
             try:
                 mem, old = self.store.add(owner, cat, topic or " ".join(content_words(content)[:3]), content, prov)
             except ValueError as exc:
@@ -147,7 +150,9 @@ class PersonalMemory:
             if why:
                 return refuse("memory_update", why, "SENSITIVE")
             if not P.grounded(content, user_text, 0.5):
-                return refuse("memory_update", "a correcção não corresponde ao que o utilizador disse", "NOT_GROUNDED")
+                records.append({"tool": "memory_update", "status": "PROPOSED", "content": content[:160]})
+                return refuse("memory_update", "a correcção não corresponde ao que o utilizador disse; usa as "
+                              "palavras do próprio utilizador", "NOT_GROUNDED")
             mem = self.store.update(owner, target.id, content, prov)
             if mem is None:
                 return refuse("memory_update", "a memória já não existe", "NOT_FOUND")

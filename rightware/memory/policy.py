@@ -74,9 +74,14 @@ def sensitive_reason(content: str) -> str | None:
     return None
 
 
-def grounded(content: str, user_text: str, min_ratio: float = 0.6) -> bool:
-    """Most content words of the memory must appear in the user's own message (prefix match)."""
-    words = content_words(content)
+META = {"utilizador", "usuario", "user", "pessoa", "cliente", "senhor", "senhora", "issa", "jarvis", "sempre",
+        "preferencia", "memoria", "informacao", "guardar", "lembrar"}
+
+
+def grounded(content: str, user_text: str, min_ratio: float = 0.5) -> bool:
+    """Most content words of the memory (ignoring meta words such as "utilizador") must appear in the user's own
+    message (prefix match tolerant to verb/plural endings)."""
+    words = [w for w in content_words(content) if w not in META]
     if not words:
         return False
     toks = [t for t in re.findall(r"[a-z0-9]+", fold(user_text)) if len(t) >= 3]

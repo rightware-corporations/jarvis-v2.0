@@ -177,7 +177,7 @@ class ToolChatAdapter:
                     out, _ = clean(out)
                 out += self.post_check(out, records(), text)
             if self.memory is not None:                  # confirmations come only from real database writes
-                mem_info["writes"] = [{k: r.get(k) for k in ("tool", "status", "action", "memory_id", "reason")}
+                mem_info["writes"] = [{k: r.get(k) for k in ("tool", "status", "action", "memory_id", "reason", "content")}
                                       for r in mem_records]
                 out = self.memory.strip_imitated(out)
                 out += self.memory.annotate(out, mem_records)
