@@ -4463,3 +4463,14 @@ Local mode is unchanged.
   - the refusal tells the model to retry with the user's own words;
   - the false-claim detector covers participles (guardado/registado/apagado/eliminado/actualizado…);
   - writes record the proposed content for diagnosis (synthetic data).
+
+## CHECKPOINT — 26/11/2026: JRV-M01 run 2 = FAIL → design fix (host keeps the user's own words); run 3 in progress
+- **Run 2** (`docs/evidence/m01/acceptance-qwen2b-run2.jsonl`):
+  - Step 1 REFUSED again: the 2B embellished the content ("relatórios financeiros e de desempenho … em vez de outros moedas") and did not retry after the refusal hint. Nothing stored.
+  - The present tense "Guardo esta preferência" was not caught by the false-claim detector.
+  - **Positive:** step 5 got the ⚠ "nada foi guardado"; beta isolation held; no false DB writes.
+- **Design fix (UNIT, 20 OK):**
+  - the MODEL decides that a save/correction is needed (and the category/topic); if its content is not grounded, the HOST stores the user's own words with the memory command removed (`policy.user_statement`), screened by the same sensitive/injection rules;
+  - provenance records `content_from`; recall shows them as «o utilizador disse: …»;
+  - model inventions are never stored;
+  - the false-claim detector covers present tense (guardo/registo/apago…).

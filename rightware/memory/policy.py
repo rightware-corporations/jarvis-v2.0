@@ -90,3 +90,20 @@ def grounded(content: str, user_text: str, min_ratio: float = 0.5) -> bool:
         k = w[:max(3, min(5, len(w) - 3))]          # tolerate verb/plural endings: prefere/prefiro, vive/vivo
         return any(t.startswith(k) for t in toks)
     return sum(1 for w in words if hit(w)) / len(words) >= min_ratio
+
+
+COMMAND = re.compile(r"(?i)^\s*(jarvis|ola jarvis|olá jarvis)\s*[,:!.-]*\s*|"
+                     r"\b(por favor\s+)?(lembra-te (disto|disso|que|de que)|lembra(-te)?|memoriza( isto| isso| que)?|"
+                     r"aprende (esta|esta informação|isto|que)|toma nota( disto| que)?|guarda (isto|isso|que)|"
+                     r"regista (isto|que)|anota (isto|que)|não te esqueças (disto|que|de que)|"
+                     r"corrige (a informação|isso|o que)( que)?( guardaste| registaste)?( anteriormente)?|"
+                     r"(a )?informação( que guardaste)?( anteriormente)?)\s*[:,.-]*\s*")
+
+
+def user_statement(user_text: str, max_chars: int = 400) -> str:
+    """The user's own words with the memory command removed ("JARVIS, lembra-te disto: X" → "X"). Used when the
+    model's paraphrase is not grounded: the host then stores what the USER said, never the model's version."""
+    t = " ".join((user_text or "").split())
+    t = COMMAND.sub(" ", t)
+    t = re.sub(r"\s+", " ", t).strip(" .,:;-")
+    return (t[:1].upper() + t[1:])[:max_chars] if t else ""
