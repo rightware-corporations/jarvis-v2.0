@@ -4439,3 +4439,11 @@ Local mode is unchanged.
 - **Sequence recommended:** JRV-ID01-A repair and review -> JRV-V02-R01 real operator acceptance -> durable identity/storage and JRV-M01 -> JRV-K01 document knowledge -> JRV-R02-B separately authorized -> reliability and deployment gate. JPE-02, advanced voice, Chromium, terminal, Goose production integration, Virtual Computer, long-running automation and Windows companion retained for later scoped decisions; not deleted or implemented by this checkpoint.
 - **JRV-ML01 — Model Customization & Independent Intelligence (REGISTERED FUTURE RESEARCH; operator explicitly requested recording, no implementation authorization):** investigate configurable local model/runtime abstraction, independent response style, reducing unjustified refusals while retaining operational security, licensed model adaptation/LoRA, authorized datasets and correction-based evaluation, comparative benchmarks and provenance/license review. Distinguish system prompt/Modelfile, retrieval/memory, actual weight adaptation and training from scratch. Current Qwen/Ollama are third-party components, not RIGHTWARE-trained foundation models. Do not fork runtime, train weights, download models, weaken Tool Gateway, or change policy under this record. No claim of a proprietary foundation model or unlimited intelligence. Research after first-delivery priorities are stabilized.
 - **Scope of this checkpoint:** documentation only; no product code, model, deployment, network permission, main/develop merge, or live service change.
+
+## CHECKPOINT — 26/11/2026: JRV-M01 acceptance harness + design doc (real-model run in progress)
+- `docs/engineering/JRV_M01_PERSONAL_MEMORY.md`: reuse audit, design, identity integration pending, tests.
+- `labs/m01/acceptance.py` + `run_acceptance.sh`:
+  - 9 steps, each a NEW process and NEW conversation, through the product chat core (router/direct/tools + PersonalMemory);
+  - synthetic owners lab:alfa / lab:beta; the Ollama process is restarted mid-run;
+  - the SQLite DB lives in the scratchpad (never committed).
+- Results: next checkpoint (`docs/evidence/m01/`).
