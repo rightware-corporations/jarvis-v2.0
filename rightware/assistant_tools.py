@@ -72,7 +72,7 @@ class ToolChatAdapter:
     def __init__(self, model: str, *, sites: tuple[str, ...], persona: str, browser_fetcher=None,
                  start_url: str | None = None, search_template: str | None = None,
                  allow: tuple[str, ...] = ("browse",), extra_tools_factory=None, post_check=None,
-                 router=None, direct=None, research_factory=None,
+                 router=None, direct=None, research_factory=None, memory=None, channel: str = "texto",
                  engine_factory=None, budgets: Budgets | None = None, max_turns: int = 6, timeout_seconds: float = 180.0,
                  audit_path=None, clock=time.monotonic):
         if "browse" in allow and not sites:
@@ -84,6 +84,9 @@ class ToolChatAdapter:
         if research_factory is not None and "websearch" not in allow:
             raise ValueError("research_factory exige a capacidade 'websearch'")
         self.research_factory, self.research = research_factory, None
+        # JRV-M01 (optional): persistent personal memory of the host-declared owner (rightware.memory). Recall goes
+        # into the prompt of BOTH paths (direct and tools); writes only through policy-checked memory tools.
+        self.memory, self.channel = memory, channel
         self.model, self.sites, self.persona = model, tuple(sites), persona
         self.start_url = start_url                 # host-declared search/entry page (https, inside the allowlist)
         self.search_template = search_template     # host-declared search URL with {q} → model tool web_search(query)
@@ -111,21 +114,45 @@ class ToolChatAdapter:
         from rightware.agent.session import AgentSession
         with self._lock:
             self._phase, self._since = "A interpretar", self._clock()
-            if self.router is not None and self.direct is not None and self.router(text, tuple(history)) == "conversa":
-                out = self.direct.reply(text, tuple(history))          # same persona, no tools, no receipts
+            persona, mem_info, mem_intent = self.persona, None, False
+            if self.memory is not None:
+                from rightware.memory.policy import intents
+                recalled = self.memory.recall(text)
+                persona = self.persona + self.memory.context_block(recalled)
+                mem_intent = bool(intents(text))       # policy: explicit memory requests always reach the tools
+                mem_info = {"owner": self.memory.owner(), "recalled": [m.id for m in recalled], "writes": []}
+            if (self.router is not None and self.direct is not None and not mem_intent
+                    and self.router(text, tuple(history)) == "conversa"):
+                base = getattr(self.direct, "system_prompt", None)
+                if self.memory is not None and base is not None:
+                    self.direct.system_prompt = persona                 # same persona + this turn's recalled memory
+                try:
+                    out = self.direct.reply(text, tuple(history))      # same persona, no tools, no receipts
+                finally:
+                    if self.memory is not None and base is not None:
+                        self.direct.system_prompt = base
+                if self.memory is not None:
+                    out = self.memory.strip_imitated(out)
+                    out += self.memory.annotate(out, [])
                 self._last = {"completion": "ANSWERED_DIRECT", "sources": [], "tools": [], "halted": None, "flags": [],
-                              "tool_calls": 0, "route": "conversa", "route_s": getattr(self.router, "last", {}).get("seconds")}
+                              "tool_calls": 0, "route": "conversa", "memory": mem_info,
+                              "route_s": getattr(self.router, "last", {}).get("seconds")}
                 self._phase, self._since = "Resposta concluída", self._clock()
                 return out
             begin = getattr(self.browser_fetcher, "begin_question", None)
             if callable(begin):                       # per-question HTTP budget (experimental proxy transport)
                 begin()
             extra, records = (self.extra_tools_factory() if self.extra_tools_factory else (None, lambda: []))
-            session = AgentSession(self._engine(), self.model, allow=set(self.allow), confirm=lambda q: None,
+            allow, mem_records = set(self.allow), []
+            if self.memory is not None:
+                mem_tools, mem_records = self.memory.tools(text, self.channel)
+                extra = {**(extra or {}), **mem_tools}
+                allow.add("memory")
+            session = AgentSession(self._engine(), self.model, allow=allow, confirm=lambda q: None,
                                    sites=self.sites, browser_fetcher=self.browser_fetcher, budgets=self.budgets,
                                    extra_tools=extra,
                                    max_turns=self.max_turns, audit_path=self.audit_path, receipts=True,
-                                   persona=self.persona, start_url=self.start_url,
+                                   persona=persona, start_url=self.start_url,
                                    search_template=self.search_template,
                                    research=(self.research_factory() if self.research_factory else None))
             self.research = session.research
@@ -140,6 +167,7 @@ class ToolChatAdapter:
                           "tool_calls": len(log), "route": "ferramentas" if self.router is not None else None,
                           "research": result.verification.get("research"),
                           "denials": [(e.get("tool"), e.get("reason")) for e in log if not e.get("allowed")][:10],
+                          "memory": mem_info,
                           "route_s": getattr(self.router, "last", {}).get("seconds") if self.router is not None else None}
             self._phase, self._since = "Resposta concluída", self._clock()
             out = result.text.strip()
@@ -148,6 +176,11 @@ class ToolChatAdapter:
                 if callable(clean):                        # remove model lines imitating host labels first
                     out, _ = clean(out)
                 out += self.post_check(out, records(), text)
+            if self.memory is not None:                  # confirmations come only from real database writes
+                mem_info["writes"] = [{k: r.get(k) for k in ("tool", "status", "action", "memory_id", "reason")}
+                                      for r in mem_records]
+                out = self.memory.strip_imitated(out)
+                out += self.memory.annotate(out, mem_records)
             return out if len(out) <= MAX_REPLY else out[:MAX_REPLY] + "\n(resposta truncada pelo limite da interface)"
 
     def activity(self) -> dict:

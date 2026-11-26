@@ -110,6 +110,9 @@ if __name__ == "__main__":
     a.add_argument("--public-origin")
     a.add_argument("--public-minutes", type=float)
     a.add_argument("--voz", action="store_true")
+    a.add_argument("--memoria-dono", help="JRV-M01: activa a memória pessoal persistente deste dono (ex.: lab:alfa, "
+                                          "local:issa). Um dono por processo; nunca a sessão B6.")
+    a.add_argument("--memoria-ficheiro", default=None, help="SQLite (por omissão .runtime/memory/jarvis-memory.sqlite3)")
     x = a.parse_args()
     if x.proxy:
         from labs.op01.proxy_transport import SessionProxyFetcher
@@ -161,20 +164,34 @@ if __name__ == "__main__":
         return ({"get_exchange_rate": (FX_DEF, run_fx), "web_research": (R_DEF, run_r), "calculator": (C_DEF, run_c)},
                 lambda: fx.records + rt.records)
 
-    facts = RuntimeFacts(model=x.model, environment="cloud",
-                         tools=("calculadora exacta (calculator) para qualquer conta",
-                                "cotações oficiais com data e fonte (get_exchange_rate: Banco de Moçambique — metical e "
-                                "ouro XAU/USD; BCE — EUR/USD, GBP/USD)", "pesquisa geral numa enciclopédia autorizada "
-                                "(web_research)"))
+    tool_list = ("calculadora exacta (calculator) para qualquer conta",
+                 "cotações oficiais com data e fonte (get_exchange_rate: Banco de Moçambique — metical e "
+                 "ouro XAU/USD; BCE — EUR/USD, GBP/USD)", "pesquisa geral numa enciclopédia autorizada "
+                 "(web_research)")
+    unavailable = RuntimeFacts.__dataclass_fields__["unavailable"].default
+    if x.memoria_dono:
+        tool_list += ("memória pessoal permanente (memory_save, memory_update, memory_forget, memory_list) — só "
+                      "quando o utilizador pedir para lembrar, corrigir ou esquecer",)
+        unavailable = tuple(u for u in unavailable if "memória" not in u)
+    facts = RuntimeFacts(model=x.model, environment="cloud", tools=tool_list, unavailable=unavailable)
     from rightware.assistant_tools import ModelRouter
     from rightware.text_adapter import LocalSimpleTextAdapter
     persona = system_prompt(facts)
     router = ModelRouter(x.model, "cotações (câmbio, ouro), pesquisa geral, calculadora")
     direct = LocalSimpleTextAdapter(x.model, timeout_seconds=240, max_tokens=768, system_prompt=persona)
     annotate.clean = strip_imitated
+    memory = None
+    if x.memoria_dono:
+        from rightware.memory.identity import StaticOwner
+        from rightware.memory.personal import PersonalMemory
+        from rightware.memory.store import DEFAULT_PATH, MemoryStore
+        memory = PersonalMemory(MemoryStore(x.memoria_ficheiro or DEFAULT_PATH),
+                                StaticOwner(x.memoria_dono, "lab-synthetic" if x.memoria_dono.startswith("lab:")
+                                            else "operator-config"))
     adapter = ToolChatAdapter(x.model, sites=(), persona=persona, allow=("fx", "research", "calc"),
                               extra_tools_factory=tools, post_check=annotate, timeout_seconds=240,
-                              browser_fetcher=fetcher, router=router, direct=direct)
+                              browser_fetcher=fetcher, router=router, direct=direct, memory=memory,
+                              channel="texto/voz")
     app, bridge = build_app(port=x.port, models=[x.model], deadline=240.0, adapter_factory=lambda m: adapter,
                             public_origin=x.public_origin, public_minutes=x.public_minutes, voice=x.voz)
     bridge.adapters = {x.model: adapter}
