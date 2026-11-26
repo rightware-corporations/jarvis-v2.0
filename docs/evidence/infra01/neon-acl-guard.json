@@ -1,0 +1,31 @@
+{
+  "baseline": "6fde176379db1ddae23723b95ee6b05436fc1d12",
+  "postgres": "17.12",
+  "sql_read_only": true,
+  "checks": {
+    "forced_rls": 5,
+    "policies_exact": 5,
+    "table_privilege_combinations": 42,
+    "allowed": 15,
+    "grant_options": 0,
+    "extra_column_grants": 0,
+    "schema_usage": true,
+    "schema_create": false,
+    "schema_owner": false,
+    "db_owner": false,
+    "elevated": false,
+    "ownerless_counts": {
+      "memories": 0,
+      "documents": 0,
+      "segments": 0,
+      "memory_events": 0,
+      "document_events": 0
+    }
+  },
+  "unit": {
+    "executed": 7,
+    "passed": 7,
+    "scope": "pure guard helper, isolated sandbox"
+  },
+  "python_integrated": "NOT_RUN"
+}

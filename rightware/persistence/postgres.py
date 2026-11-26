@@ -6,6 +6,7 @@ import os
 import uuid
 
 from rightware.memory.identity import Owner
+from rightware.persistence.pg_guard import policies_match, grants_match
 
 
 class DatabaseUnavailable(RuntimeError):
@@ -74,17 +75,38 @@ class PostgresDatabase:
         if len(rows) != 5 or any(not enabled or owns for _, enabled, owns in rows):
             raise DatabaseUnavailable("PostgreSQL owner isolation is not configured")
         policies = con.execute(
-            "SELECT tablename, policyname, cmd, qual, with_check FROM pg_catalog.pg_policies "
-            "WHERE schemaname='jarvis' AND tablename IN "
-            "('memories','memory_events','documents','segments','document_events')").fetchall()
-        if (len(policies) != 5 or len({r[0] for r in policies}) != 5 or
-                any(r[1] != "owner_only" or r[2] != "ALL" or not r[3] or not r[4] or
-                    "jarvis.owner" not in r[3] or "jarvis.owner" not in r[4] for r in policies)):
-            raise DatabaseUnavailable("PostgreSQL owner policies missing or unexpected")
-        if con.execute("SELECT count(*) FROM jarvis.memories").fetchone() != (0,):
-            raise DatabaseUnavailable("PostgreSQL ownerless query was not isolated")
-        if con.execute("SELECT count(*) FROM jarvis.documents").fetchone() != (0,):
-            raise DatabaseUnavailable("PostgreSQL ownerless document query was not isolated")
+            "SELECT tablename,policyname,permissive,roles::text,cmd,qual,with_check "
+            "FROM pg_catalog.pg_policies WHERE schemaname='jarvis'").fetchall()
+        if not policies_match(policies):
+            raise DatabaseUnavailable("PostgreSQL owner policy does not match schema revision 1")
+        schema = con.execute(
+            "SELECT has_schema_privilege(current_user,n.oid,'USAGE'), "
+            "has_schema_privilege(current_user,n.oid,'CREATE'), "
+            "pg_has_role(current_user,n.nspowner,'MEMBER') "
+            "FROM pg_catalog.pg_namespace n WHERE n.nspname='jarvis'").fetchone()
+        if schema != (True, False, False):
+            raise DatabaseUnavailable("PostgreSQL runtime schema privileges mismatch")
+        grants = con.execute(
+            "SELECT c.relname,p.privilege,has_table_privilege(current_user,c.oid,p.privilege), "
+            "has_table_privilege(current_user,c.oid,p.privilege || ' WITH GRANT OPTION') "
+            "FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace "
+            "CROSS JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) p(privilege) "
+            "WHERE n.nspname='jarvis' AND c.relkind='r'").fetchall()
+        if not grants_match(grants):
+            raise DatabaseUnavailable("PostgreSQL runtime table privileges mismatch")
+        extra_columns = con.execute(
+            "SELECT c.relname,p.privilege FROM pg_catalog.pg_class c "
+            "JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace "
+            "CROSS JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','REFERENCES']) p(privilege) "
+            "WHERE n.nspname='jarvis' AND c.relkind='r' AND "
+            "(has_any_column_privilege(current_user,c.oid,p.privilege || ' WITH GRANT OPTION') "
+            "OR (has_any_column_privilege(current_user,c.oid,p.privilege) "
+            "AND NOT has_table_privilege(current_user,c.oid,p.privilege)))").fetchall()
+        if extra_columns:
+            raise DatabaseUnavailable("PostgreSQL runtime column privileges mismatch")
+        for table in ("memories", "documents", "segments", "memory_events", "document_events"):
+            if con.execute(f"SELECT count(*) FROM jarvis.{table}").fetchone() != (0,):
+                raise DatabaseUnavailable("PostgreSQL ownerless query was not isolated")
 
     @contextlib.contextmanager
     def transaction(self, owner: str | None = None, *, write: bool = False):
