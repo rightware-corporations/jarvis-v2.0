@@ -16,7 +16,8 @@ import secrets
 
 from rightware.agent.policy import ToolDef
 from rightware.knowledge.ingest import Extracted, IngestError, extract
-from rightware.knowledge.store import Hit, KnowledgeStore
+from rightware.knowledge.store import Hit
+from rightware.persistence.contracts import KnowledgeRepository
 from rightware.research import citations as C
 from rightware.research.text import content_words, fold
 from rightware.research.toolkit import INJECTION
@@ -62,7 +63,7 @@ def _fmt(x: float) -> str:
 
 
 class DocumentLibrary:
-    def __init__(self, store: KnowledgeStore, owner_provider):
+    def __init__(self, store: KnowledgeRepository, owner_provider):
         self.store, self.owner_provider = store, owner_provider
         self.begin("")
 

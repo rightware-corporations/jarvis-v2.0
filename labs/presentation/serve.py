@@ -110,6 +110,7 @@ if __name__ == "__main__":
     a.add_argument("--public-origin")
     a.add_argument("--public-minutes", type=float)
     a.add_argument("--public-deadline", type=float, help="LIVE02: original absolute expiry as Unix UTC seconds; never extend on recovery")
+    a.add_argument("--storage", choices=("sqlite", "postgres"), default="sqlite", help="DB01: explicit storage selection; never fall back")
     a.add_argument("--state-dir", help="LIVE02: existing private persistent directory outside checkout; missing/corrupt stores refuse startup")
     a.add_argument("--voz", action="store_true")
     a.add_argument("--memoria-dono", help="JRV-M01: activa a memória pessoal persistente deste dono (ex.: lab:alfa, "
@@ -122,6 +123,19 @@ if __name__ == "__main__":
     a.add_argument("--documentos-ficheiro", default=None, help="SQLite dos documentos (por omissão .runtime/knowledge/…)")
     a.add_argument("--memoria-ficheiro", default=None, help="SQLite (por omissão .runtime/memory/jarvis-memory.sqlite3)")
     x = a.parse_args()
+    postgres = None
+    if x.storage == "postgres":
+        if x.state_dir or x.memoria_ficheiro or x.documentos_ficheiro or not x.donos or not x.documentos or x.memoria_dono:
+            a.error("DB01 requires --donos and --documentos, without SQLite paths or static owner")
+        if x.public_origin and x.public_deadline is None:
+            a.error("DB01 private access requires --public-deadline")
+        # DB01 network/storage activation is separate from the presentation web-tool authorization.
+        # No schema creation, no credentials in CLI args, no fallback on failed startup.
+        from rightware.persistence.postgres import PostgresDatabase, DatabaseUnavailable
+        try:
+            postgres = PostgresDatabase.from_env()
+        except (ValueError, DatabaseUnavailable):
+            a.error("DB01 PostgreSQL preflight refused (configuration, identity, role, connection or schema)")
     if x.state_dir:
         if x.memoria_ficheiro or x.documentos_ficheiro or not x.donos or not x.documentos:
             a.error("--state-dir requires --donos and --documentos; do not combine with explicit DB files")
@@ -226,15 +240,24 @@ if __name__ == "__main__":
         from rightware.memory.store import DEFAULT_PATH, MemoryStore
         fallback = (StaticOwner(x.memoria_dono, "lab-synthetic" if x.memoria_dono.startswith("lab:")
                                 else "operator-config") if x.memoria_dono and not owners else None)
-        memory = PersonalMemory(MemoryStore(x.memoria_ficheiro or DEFAULT_PATH), SessionOwner(fallback))
+        if postgres is not None:
+            from rightware.persistence.pg_memory import PostgresMemoryStore
+            store = PostgresMemoryStore(postgres)
+        else:
+            store = MemoryStore(x.memoria_ficheiro or DEFAULT_PATH)
+        memory = PersonalMemory(store, SessionOwner(fallback))
     documents = None
     if x.documentos:
         if memory is None:
             a.error("--documentos exige --donos ou --memoria-dono (o dono dos documentos)")
         from rightware.knowledge.library import DocumentLibrary
         from rightware.knowledge.store import KnowledgeStore
-        documents = DocumentLibrary(KnowledgeStore(x.documentos_ficheiro) if x.documentos_ficheiro else KnowledgeStore(),
-                                    memory.owner_provider)
+        if postgres is not None:
+            from rightware.persistence.pg_knowledge import PostgresKnowledgeStore
+            doc_store = PostgresKnowledgeStore(postgres)
+        else:
+            doc_store = KnowledgeStore(x.documentos_ficheiro) if x.documentos_ficheiro else KnowledgeStore()
+        documents = DocumentLibrary(doc_store, memory.owner_provider)
     adapter = ToolChatAdapter(x.model, sites=(), persona=persona, allow=("fx", "research", "calc"),
                               extra_tools_factory=tools, post_check=annotate, timeout_seconds=240,
                               browser_fetcher=fetcher, router=router, direct=direct, memory=memory,

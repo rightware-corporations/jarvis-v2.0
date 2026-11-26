@@ -4682,3 +4682,9 @@ Local mode is unchanged.
   - a persistent host for the live preview;
   - a browser-side voice diagnostic: on-screen mic level / phase / last transcription status, no audio stored;
   - then a new authorised window.
+
+## CHECKPOINT — 26/11/2026: JRV-DB01 A–F — PostgreSQL candidate (ChatGPT)
+- Operator approved developing PostgreSQL persistence before FINAL01; cloud only, no local installation. Baseline `83c7df9df247e816c21ca1ecf1bbffe3a1fa9cb2`, including Claude's LIVE01 closure; preserve previous work.
+- Added structural M01/K01 store contracts, PostgreSQL schema revision 1 and separate runtime grants, optional psycopg dependency, explicit TLS/instance/schema/role preflight, owner-scoped transactions + forced RLS, per-owner advisory transaction locks, memory JSONB + history/deletion, document metadata/segments + GIN FTS. SQLite remains default laboratory backend; PostgreSQL is opt-in in presentation launcher, no automatic fallback.
+- Code candidate ONLY: no PostgreSQL provisioned, no credentials or real data used, no migration or pgvector, no runtime change/deployment. Native ranking differs from SQLite BM25; real PostgreSQL, migration and full regressions required. Documentation: `docs/engineering/JRV_DB01_POSTGRES.md`.
+- Next DB01-G/H: dedicated disposable DB, contract tests and migration verification; no real-data cutover until explicit approval.

@@ -16,7 +16,8 @@ import re
 
 from rightware.agent.policy import ToolDef
 from rightware.memory import policy as P
-from rightware.memory.store import CATEGORIES, Memory, MemoryStore
+from rightware.memory.store import CATEGORIES, Memory
+from rightware.persistence.contracts import MemoryRepository
 from rightware.research.text import content_words, fold
 
 TOOL_DEFS = {
@@ -55,7 +56,7 @@ def _date(ts: float) -> str:
 
 
 class PersonalMemory:
-    def __init__(self, store: MemoryStore, owner_provider, *, k: int = 6, max_prefs: int = 3, broad: int = 15):
+    def __init__(self, store: MemoryRepository, owner_provider, *, k: int = 6, max_prefs: int = 3, broad: int = 15):
         self.store, self.owner_provider = store, owner_provider
         self.k, self.max_prefs, self.broad = k, max_prefs, broad
 
