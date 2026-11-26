@@ -4601,3 +4601,19 @@ Local mode is unchanged.
   2. Phase B access mode for Issa (a/b/c);
   3. physical microphone/speaker acceptance.
 - No merge, vendor pin unchanged, Goose images kept, R02-B not activated.
+
+## CHECKPOINT — 26/11/2026: JRV-LIVE01 — window OP01-ISSA-LIVE-20261126 OPEN (operator acceptance)
+- **Authorisation:** operator wrote "AUTORIZO OP01-ISSA-LIVE-20261126 e ABRIR_TUNEL para uma janela máxima de 59 minutos".
+  - Network: www.bancomoc.mz, bancomoc.mz, pt.wikipedia.org, en.wikipedia.org, api.frankfurter.dev; HTTPS GET; 8 requests per question, 80 per window, 512 KB, 10 s; via the session proxy; window 59 min.
+  - R02-B not active.
+- **Run:**
+  - `73d7778`; private Dev Tunnel `peaceful-chair-tzc42r3.use`; port 8000 only; Host/Origin unchanged; host hard limit 3540 s;
+  - JARVIS `labs.presentation.serve --proxy --voz --donos operador=lab:operador-live --documentos` with fresh SQLite files in `.runtime/live0126/`;
+  - B6 59 min; two-step login (ID01-A); no Issa link created.
+- **Checks (FACT):**
+  - build.match true (bundle 0bf2c6d overlay = source);
+  - voice available, pf_dora 1.15; Qwen 2B answers (warm 15 s);
+  - JARVIS and Ollama listen only on 127.0.0.1;
+  - anonymous request → tunnel 401 / 302 to Microsoft login; no anonymous request reached JARVIS.
+- **Known cosmetic defect (not fixed, no new implementation in this window):** the launcher prints/labels the tools as "(operador)" because the `--donos` loop reuses the variable `label`; the tool footer may show "(operador)" instead of the network mode. Functionality unaffected.
+- **Monitoring:** decisions only (method/path/decision, no content); keep-alive check-ins every 4 min.
