@@ -4580,3 +4580,24 @@ Local mode is unchanged.
   4. any other unsupported number is marked inline "⚠(não confirmado)".
 - The voice reads only the warning when a ⚠ host line exists (existing filter).
 - Tests: K01 20 (+3 INT01 revisions); full suite OK. Not re-measured with the real model yet (integrated E2E pending).
+
+## CHECKPOINT — 26/11/2026: JRV-INT01 — integrated application validated in a real browser (21/21) — tunnel prepared, NOT opened
+- **Real-browser E2E** (`labs/int01/run_e2e.sh`; Chromium + local TLS front forwarding bytes unchanged; Qwen 2B; Whisper/Kokoro; fake microphone fed with Kokoro Portuguese speech; synthetic owners lab:operador/lab:issa; no tunnel, no network):
+  - **Run 1:** 20/21. The deletion check was asked in the same conversation (the model repeated the chat history) and a locator-only sentence was falsely ⚠. Both fixed.
+  - **Run 2:** 21/21 (`docs/evidence/int01/e2e-run2.json`, tokens redacted):
+    - auth GET×2 without consumption → POST, Secure cookie, real Origin (not null), replay 403;
+    - build.match;
+    - greeting; text 12×7=84; dictation via multipart WebM/Opus → «Quanto a 12 vezes 7.»; playback;
+    - teach + recall in a new conversation;
+    - PDF upload via UI; answer 96 milhões + página 2;
+    - continuous conversation listening→recording→transcribing→thinking→speaking;
+    - delete doc + memory via panel; no longer retrievable in a new conversation;
+    - Issa's own link: same checks, sees nothing of the operator.
+- **Voice F:** the permanent ellipsis cause is that the upstream `transcribeAudio` has no timeout → overlay patch `AbortSignal.timeout(45000)`; errors show a toast and the mic recovers. Multipart, Content-Length, Origin, limits, STT and TTS were verified in the real browser.
+- **Build:** `python -m rightware.gui frontend-build` + `static/rw-build.json`; state exposes `build.match`.
+- **Docs:** `docs/engineering/JRV_INT01_INTEGRATION.md`; tunnel procedure INT01 section (keep the session active during live windows).
+- **Pending operator decisions:**
+  1. authorisation to open the tunnel + network window;
+  2. Phase B access mode for Issa (a/b/c);
+  3. physical microphone/speaker acceptance.
+- No merge, vendor pin unchanged, Goose images kept, R02-B not activated.

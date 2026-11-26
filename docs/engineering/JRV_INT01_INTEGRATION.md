@@ -52,3 +52,31 @@ Classificação: **UNIT/FAKE** · **E2E REAL** (Chromium real, Qwen 2B real, STT
 
 ## H — Túnel
 Preparado em `B6_TUNNEL_PROCEDURE.md` (secção INT01). **Não aberto.**
+
+## Resultados E2E (Chromium real + Qwen 2B real + STT/TTS reais; microfone simulado; sem túnel e sem rede)
+
+| Passo | Execução 1 (`e2e-run1.json`) | Execução 2 (`e2e-run2.json`) |
+|---|---|---|
+| Autenticar: GET 2× sem consumo; POST com cookie Secure; Origin real (não null); link usado → 403 | PASS | PASS |
+| Bundle ↔ código (`build.match`) | PASS | PASS |
+| Activar JARVIS → saudação pf_dora | PASS | PASS |
+| Conversa por texto (12 × 7 = 84) | PASS | PASS |
+| Transcrever áudio (multipart WebM/Opus → texto ditado «Quanto a 12 vezes 7.») | PASS | PASS |
+| Reproduzir resposta | PASS | PASS |
+| Ensinar preferência (escrita real confirmada) | PASS | PASS |
+| Recuperar a preferência numa nova conversa | PASS | PASS |
+| Carregar PDF pela interface | PASS | PASS |
+| Consultar informação e página (96 milhões, página 2) | PASS (com falso ⚠ na frase de localização) | PASS (sem falso ⚠) |
+| Conversa contínua (todas as fases) | PASS | PASS |
+| Eliminar documento e memória pelo painel | PASS | PASS |
+| Documento eliminado deixa de ser recuperado | FAIL (pergunta feita na **mesma** conversa: o modelo repetiu o histórico) | PASS (nova conversa) |
+| Isolamento: a sessão do Issa (link próprio) não vê nada do operador | PASS | PASS |
+| **Total** | **20/21** | **21/21** |
+
+## Limitações e estado real
+- **Microfone e altifalante físicos:** não testados. O microfone foi simulado pelo Chromium com fala sintética. Falta a aceitação do operador com hardware real.
+- **Dev Tunnel real:** não reaberto. A Origin real foi comprovada atrás de uma frente TLS local que reencaminha sem alterar cabeçalhos, como o túnel configurado com `unchanged`.
+- **Acesso do Issa ao túnel:** a camada Microsoft continua a exigir uma das opções (a/b/c) aprovadas pelo operador.
+- **Identidade:** o B6 prova a posse de um link; quem recebe cada link é decisão do operador. A persona continua a dizer "Issa" a qualquer dono (perfil fixo).
+- **Modelo 2B:** respostas por vezes inconsistentes ("Não tenho acesso a dados internos do Issa"). Contas e atribuições são verificadas pelo anfitrião, que não as corrige.
+- **Disco:** cerca de 2,7 GB livres. A fuga de cópias temporárias dos testes foi corrigida.
