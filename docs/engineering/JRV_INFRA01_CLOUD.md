@@ -39,3 +39,6 @@ No cloud availability, region latency, ARM64 dependency compatibility, backup re
 - Test actual ARM64 dependencies, model cache size, cold/warm inference, voice and memory/disk pressure before approving this host. Free compute idle reclamation means no guaranteed permanent availability. No account or VM was created here.
 
 References (official): https://neon.com/docs/manage/roles ; https://neon.com/docs/get-started/connect-neon ; https://neon.com/docs/security/security-overview ; https://www.postgresql.org/docs/17/libpq-connect.html ; https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
+
+## Live Neon SQL checkpoint
+Free lab created and schema applied. Provider now supports scoped read_write roles; this was used instead of administrative default, then explicit revokes narrowed broad DML grants. See `docs/evidence/infra01/neon-sql.json`. SQL-level evidence is not equivalent to Python acceptance; direct TLS and full runtime remain pending. Synthetic rows retained; no destructive cleanup performed.

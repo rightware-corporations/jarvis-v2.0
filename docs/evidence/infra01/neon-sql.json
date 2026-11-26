@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-26",
+  "scope": "Neon connector SQL only; synthetic lab",
+  "plan": "free",
+  "region": "aws-eu-central-1",
+  "postgres": "17.12",
+  "cu": 0.25,
+  "schema_statements": 31,
+  "forced_rls": 5,
+  "policies": 5,
+  "checks": {
+    "runtime_admin": false,
+    "runtime_db_owner": false,
+    "audit_update_after_revoke": false,
+    "audit_delete_after_revoke": false,
+    "instance_update_after_revoke": false,
+    "own_memory": 1,
+    "fts_hits": 1,
+    "foreign_memory": 0,
+    "foreign_segments": 0,
+    "ownerless": 0,
+    "cross_owner_insert_sqlstate": "42501",
+    "duplicate_sqlstate": "23505",
+    "events_after_rollback": 0,
+    "persistent_memory": 1
+  },
+  "python_acceptance": "NOT_RUN",
+  "oracle": "NOT_PROVISIONED"
+}
