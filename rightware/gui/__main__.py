@@ -16,6 +16,8 @@ def main(argv=None) -> int:
     sub.add_parser("check", help="mostra o manifesto do runtime preparado")
     sub.add_parser("voice-setup", help="VOZ: instala os pacotes de voz fixados no venv do runtime e verifica os modelos")
     sub.add_parser("frontend-check", help="TypeScript + Vitest do overlay HUD sobre o frontend do pin")
+    sub.add_parser("frontend-build", help="INT01: recompila só o frontend (overlay) sem recriar o venv; grava o "
+                                          "carimbo static/rw-build.json")
     e = sub.add_parser("emitir-ligacao", help="INT01: pede ao servidor em execução uma NOVA ligação de uso único "
                                               "para um dono declarado (ex.: issa); fica em .runtime/gui/session-url-<rótulo>")
     e.add_argument("rotulo")
@@ -47,6 +49,10 @@ def main(argv=None) -> int:
     s.add_argument("--pesquisa-autorizacao", default="", help="OP01: referência da autorização de rede do operador")
     a = p.parse_args(argv)
     from rightware.gui import runtime as R
+    if a.cmd == "frontend-build":
+        from rightware.gui import runtime as RT
+        print(json.dumps(RT.frontend_build(), indent=2))
+        return 0
     if a.cmd == "emitir-ligacao":
         import os
         import signal

@@ -4,6 +4,7 @@
 import { Mic, MicOff, Loader2, AudioLines } from 'lucide-react';
 import { t, useLang } from '@rw/i18n';
 import { useConversation } from '@rw/lib/conversation';
+import { AttachButton } from '@rw/hud/LibraryPanel';
 
 interface MicButtonProps {
   state: 'idle' | 'recording' | 'transcribing' | string;
@@ -26,15 +27,19 @@ export function MicButton({ state, onClick, disabled, reason }: MicButtonProps) 
   const title = micTitle(state, reason);
   if (reason === 'no-backend') {
     return (
-      <button type="button" disabled className="p-2 rounded-lg opacity-60 cursor-not-allowed" title={title}
-              aria-label={title} data-rw="voice-not-integrated">
-        <MicOff size={16} />
-      </button>
+      <span className="flex items-center gap-1">
+        <AttachButton />
+        <button type="button" disabled className="p-2 rounded-lg opacity-60 cursor-not-allowed" title={title}
+                aria-label={title} data-rw="voice-not-integrated">
+          <MicOff size={16} />
+        </button>
+      </span>
     );
   }
   const inactive = !!disabled || state === 'transcribing';
   return (
     <span className="flex items-center gap-1">
+      <AttachButton />
       <ContinuousToggle disabled={reason === 'not-enabled'} />
       <button type="button" onClick={onClick} disabled={inactive} title={title} aria-label={title}
               data-rw={`voice-${state}`} className="p-2 rounded-xl shrink-0"

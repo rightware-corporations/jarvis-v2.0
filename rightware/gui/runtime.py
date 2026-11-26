@@ -99,6 +99,50 @@ def setup(runtime: Path = RUNTIME) -> dict:
     return manifest
 
 
+def frontend_build(runtime: Path = RUNTIME) -> dict:
+    """INT01: rebuild ONLY the frontend (overlay + pinned frontend, existing node_modules) without touching the venv
+    (``setup`` recreates it and would drop the voice packages). Writes ``static/rw-build.json`` (git commit + overlay
+    tree hash) so the running server can prove bundle ↔ backend ↔ revision correspondence."""
+    p = paths(runtime)
+    fe = p["oj"] / "frontend"
+    if not (fe / "node_modules").is_dir():
+        raise RuntimeError("FRONTEND_NOT_PREPARED: corre primeiro `python -m rightware.gui setup`")
+    npm_version = json.loads((fe / "package.json").read_text())["packageManager"].split("@", 1)[1]
+    npx = shutil.which("npx")
+    if npx is None:
+        raise RuntimeError("NPX_NOT_FOUND")
+    fenv = {**os.environ, "VITE_API_URL": "", "VITE_SUPABASE_ANON_KEY": "", "npm_config_update_notifier": "false"}
+    stage_overlay(fe)
+    shutil.rmtree(p["static"], ignore_errors=True)
+    _run([npx, "-y", f"npm@{npm_version}", "exec", "--", "vite", "build", "--config", "rightware/vite.rightware.ts",
+          "--outDir", str(p["static"]), "--emptyOutDir"], cwd=fe, env=fenv)
+    commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    dirty = bool(subprocess.run(["git", "-C", str(ROOT), "status", "--porcelain", "--", "rightware/gui/frontend"],
+                                capture_output=True, text=True).stdout.strip())
+    stamp = {"commit": commit, "overlay_tree_sha256": _tree_sha(OVERLAY)[1], "overlay_dirty": dirty}
+    (p["static"] / "rw-build.json").write_text(json.dumps(stamp) + "\n")
+    manifest = json.loads(p["manifest"].read_text()) if p["manifest"].exists() else {}
+    n, tree = _tree_sha(p["static"])
+    manifest.update(overlay_tree_sha256=stamp["overlay_tree_sha256"], static_files=n, static_tree_sha256=tree,
+                    frontend_commit=commit)
+    p["manifest"].write_text(json.dumps(manifest, indent=2) + "\n")
+    return {**stamp, "static_files": n}
+
+
+def build_stamp(runtime: Path = RUNTIME) -> dict:
+    """Bundle stamp vs the code that is running now (same commit and same overlay tree → match)."""
+    p = paths(runtime)
+    try:
+        stamp = json.loads((p["static"] / "rw-build.json").read_text())
+    except (OSError, ValueError):
+        stamp = {}
+    commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    overlay = _tree_sha(OVERLAY)[1]
+    return {"backend_commit": commit[:12], "bundle_commit": str(stamp.get("commit", ""))[:12],
+            "bundle_overlay_matches_source": stamp.get("overlay_tree_sha256") == overlay,
+            "match": bool(stamp) and stamp.get("overlay_tree_sha256") == overlay}
+
+
 def stage_overlay(fe: Path) -> None:
     """Copy the RIGHTWARE overlay next to the pinned frontend copy (as ``rightware/``), without node_modules."""
     dest = fe / "rightware"
