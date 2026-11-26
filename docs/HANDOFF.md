@@ -4790,3 +4790,26 @@ Local mode is unchanged.
   - chat "12 × 7" → 84;
   - anonymous request through the tunnel → 302 (Microsoft login).
 - **Monitoring:** audit decisions only + voice RESULT diagnostics (status/seconds/bytes/type/text length, no audio or text). Check-ins every 3 min (container restarts were observed before).
+
+## CHECKPOINT — 26/11/2026 21:49 Maputo: JRV-LIVE03 — window CLOSED and revoked; presentation results (Claude Code)
+- **Window:** 20:56–21:48 Maputo (authorised max 59 min, end 21:55).
+  - Between the 21:42 check (all up, container up 52 min) and 21:48 the container RESTARTED again (`up 0 minutes`); JARVIS and the tunnel host stopped. The last browser request had been at 21:29:51 (tab no longer polling).
+  - With 7 min left and no activity, the service was NOT restored; closure done at 21:48:
+    - tunnel `kind-horse-h3lwdfz.use` deleted (old URL 404; `devtunnel list` none);
+    - Dev Tunnels user logged out and token cache removed; `session-url*` deleted.
+- **Usage (audit decisions only, no content):**
+  - operator login via two-step B6 (CONFIRM 20:58:41 → LOGIN_OK 20:58:43);
+  - 7 chat answers (6 model answers + 1 plan-without-execution, 12–75 s);
+  - 1 document upload (21:00:35); 1 Kokoro synthesis (greeting, 200);
+  - 3 physical-mic transcriptions.
+- **Voice diagnosis (FACT, from the new content-free RESULT audit):**
+  - with the rebuilt bundle (LIVE01-R02) the physical microphone's requests DO reach the server (contrary to LIVE01);
+  - all 3 returned 200 in ~1.0 s, BUT the uploads were only 1 476–2 120 bytes (≈0.3–1 s of near-silence) and the transcripts 3 characters (consistent with Whisper's "..." on silence = the "reticências" the operator sees).
+  - They were spaced ~12 s apart, consistent with continuous mode: the energy VAD ends the utterance almost immediately with the physical mic (AGC/noise suppression), so nearly no speech is captured.
+  - Advised push-to-talk (manual mic button) during the presentation; no further transcription requests arrived, and the presentation continued by text.
+  - **Physical voice acceptance: FAIL** (root cause now localised to capture length / VAD end-of-speech with the physical mic, not to transport/STT).
+- **Infrastructure:** container restarts recurred (LIVE01 twice, LIVE03 once) → this cloud session remains unsuitable as a live host.
+- **Next (no new authorisation implied):**
+  - (1) VAD fix candidates: pre-roll buffer, a minimum utterance length (~1.5 s), a longer end-silence (1.2–1.5 s), a threshold relative to the speech peak, and ignoring recordings < N bytes instead of sending them; physical-mic retest;
+  - (2) persistent host (OCI/other) per INFRA01-C;
+  - (3) the PostgreSQL live acceptance from a host with direct TCP.
