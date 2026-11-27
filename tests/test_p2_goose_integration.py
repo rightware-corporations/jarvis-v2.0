@@ -333,6 +333,35 @@ class MissionCapability(unittest.TestCase):
         self.assertEqual(box["o"].state, CP.State.TAREFA_CANCELADA)
         self.assertFalse(cp.cancel())
 
+    def test_cancel_before_prepare_never_starts_executor(self):
+        r = FakeRunner()
+        r.prepare = mock.Mock(wraps=r.prepare)
+        m = self.mission(r)
+        cp = self.plane(m)
+        _, code = cp.request(G.CAPABILITY)
+        o = cp.authorize_and_run(code, on_start=cp.cancel)
+        self.assertEqual((o.state, o.operational_state, o.verified, o.receipts_count),
+                         (CP.State.TAREFA_CANCELADA, "NOT_STARTED", False, 0))
+        r.prepare.assert_not_called()
+        self.assertEqual((r.started, r.cleaned), (0, 1))
+        self.assertEqual(json.loads((m.last_evidence / "verification.json").read_text())["run"],
+                         {"end": "CANCELLED", "started": False})
+
+    def test_cancel_during_prepare_never_starts_executor(self):
+        r = FakeRunner()
+        m = self.mission(r)
+        cp = self.plane(m)
+        def prepare_and_cancel():
+            self.assertTrue(cp.cancel())
+            return GOOD_PROBE
+        r.prepare = prepare_and_cancel
+        _, code = cp.request(G.CAPABILITY)
+        o = cp.authorize_and_run(code)
+        self.assertEqual((o.state, o.operational_state, o.verified),
+                         (CP.State.TAREFA_CANCELADA, "NOT_STARTED", False))
+        self.assertEqual((r.started, r.cleaned), (0, 1))
+        self.assertFalse(cp.running)
+
     def test_console_renders_a_verified_goose_outcome_without_changes(self):
         cp = self.plane(self.mission(FakeRunner()))
         verified = CP.TaskOutcome(CP.State.RESULTADO_VERIFICADO, G.CAPABILITY, "TASK_VERIFIED_LIMITED", True, None,
@@ -650,7 +679,9 @@ class DockerRunnerR1(unittest.TestCase):
         ev = threading.Event()
         ev.set()
         d.res[r.created[-1][1]]["running"] = True
+        calls_before = len(d.calls)
         self.assertEqual(r.run_goose(ev)["end"], "CANCELLED")
+        self.assertEqual(len(d.calls), calls_before)       # pre-cancelled: no docker start or other dispatch
 
 
 @unittest.skipIf(CP is None, "pinned OpenJarvis venv required")

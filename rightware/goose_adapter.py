@@ -241,6 +241,8 @@ class DockerGooseRunner:
     def run_goose(self, cancelled: threading.Event, timeout: float = TIMEOUT_SECONDS) -> dict:
         """R1 gate 2: the real process outcome is collected (exit code + status), not inferred."""
         t0, name = time.monotonic(), self.name["goose"]
+        if cancelled.is_set():
+            return {"end": "CANCELLED", "exit_code": None, "status": None, "seconds": 0.0, "state_copied": False}
         if not self.goose_ready or sh(["docker", "start", name]).returncode != 0:
             return {"end": "START_FAILED", "exit_code": None, "status": None, "seconds": 0.0, "state_copied": False}
         end = "EXITED"
@@ -500,9 +502,17 @@ class GooseMission:
         out = Path(tempfile.mkdtemp(prefix="p2-", dir=self.evidence_root))
         self.last_evidence = out
         runner = self._runner = self._runner_factory(out)
+
+        def cancelled_before_start():
+            (out / "verification.json").write_text(json.dumps({"run": {"end": "CANCELLED", "started": False}}))
+            return TaskOutcome(State.TAREFA_CANCELADA, CAPABILITY, "NOT_STARTED", False, None, (), 0, (),
+                               "CANCELLED", "NONE", "", round(time.monotonic() - t0, 2))
+
         try:
             if on_start:
                 on_start()
+            if cancelled.is_set():
+                return cancelled_before_start()
             try:
                 prep = runner.prepare()
             except RuntimeError as exc:                     # e.g. GATEWAY_NOT_READY: goose never created/started
@@ -514,6 +524,8 @@ class GooseMission:
                 (out / "verification.json").write_text(json.dumps({"isolation": prep}, default=str))
                 return TaskOutcome(State.EXECUCAO_FALHADA, CAPABILITY, "NOT_STARTED", False, None, (), 0, (), "NONE",
                                    "ISOLATION_OR_INVENTORY_VIOLATION", "", round(time.monotonic() - t0, 2))
+            if cancelled.is_set():
+                return cancelled_before_start()
             run = runner.run_goose(cancelled, self.timeout)
             return evaluate(out, run, prep, cancelled.is_set(), round(time.monotonic() - t0, 2))
         finally:

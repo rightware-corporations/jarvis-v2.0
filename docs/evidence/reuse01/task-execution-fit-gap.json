@@ -1,0 +1,40 @@
+{
+  "mission": "JRV-REUSE01-D",
+  "baseline": "ad00ff7ec17ae0f1cf4e81bc2f3c477d02b6ece9",
+  "parent": "ad00ff7ec17ae0f1cf4e81bc2f3c477d02b6ece9",
+  "upstream_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "upstream_paths": [
+    "src/openjarvis/tools/file_read.py",
+    "src/openjarvis/tools/file_write.py",
+    "src/openjarvis/tools/approval_store.py"
+  ],
+  "decision": "KEEP existing restricted tool/verification path; ADAPT cancellation only",
+  "observed_defects": [
+    "cancel event initialized after running state published",
+    "Goose prepare/start not gated by prior cancellation"
+  ],
+  "executed": {
+    "command": "python /tmp/jrv-reuse01d/probe.py",
+    "python": "3.13.5",
+    "exit": 0,
+    "tests": 3,
+    "passed": 3,
+    "scope": "manually reconstructed minimal mission flow with mock runner, not exact-module test",
+    "cases": [
+      "before prepare: original calls executor, candidate does not prepare/start and cleans up",
+      "during prepare: original calls executor, candidate does not start and cleans up",
+      "normal path: executor and cleanup remain called"
+    ]
+  },
+  "not_run": [
+    "full P1/P2/TE regression",
+    "real Docker/Goose",
+    "real user task acceptance"
+  ],
+  "limits": [
+    "direct git DNS failure",
+    "docker absent",
+    "no atomic external-effect cancellation guarantee",
+    "no new user capability enabled"
+  ]
+}
