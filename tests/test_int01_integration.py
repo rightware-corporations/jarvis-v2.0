@@ -176,6 +176,37 @@ class Identity(Base):
         self.assertEqual(st, 200)
         self.assertEqual(self.memory.store.active("lab:operador"), [])
 
+    def test_long_ids_round_trip_through_bridge(self):
+        from unittest.mock import patch
+        from rightware.knowledge.ingest import extract
+        a = self.session_for()
+        b = self.session_for(self.auth.issue("lab:issa", "issa"))
+        # Synthetic 32-hex IDs in real SQLite fixtures mirror DB01 format, not a live PG test.
+        with patch("rightware.memory.store.secrets.token_hex", return_value="a" * 32):
+            mem, _ = self.memory.store.add("lab:operador", "preferencia", "moeda", "Meticais", {})
+        with patch("rightware.knowledge.store.secrets.token_hex", return_value="b" * 32):
+            doc, _ = self.docs.store.add("lab:operador", extract("synthetic.txt", b"Resultado 96"), False)
+        self.assertEqual((len(mem.id), len(doc.id)), (34, 34))
+
+        def post(path, payload, cookie):
+            req = json.dumps(payload).encode()
+            return run(call(self.app, "POST", path, body=req, headers=[
+                PUB_HOST, ORIGIN, (b"cookie", cookie), (b"content-length", str(len(req)).encode())]))[0]
+
+        correct = "/v1/rightware/memory/correct"
+        forget = "/v1/rightware/memory/delete"
+        delete = "/v1/rightware/documents/delete"
+        self.assertEqual(post(correct, {"memory_id": mem.id, "text": "Dólares"}, b), 404)
+        self.assertEqual(post(delete, {"document_id": doc.id}, b), 404)
+        self.assertEqual(post(correct, {"memory_id": mem.id + "x", "text": "Dólares"}, a), 400)
+        self.assertEqual(post(delete, {"document_id": doc.id + "x"}, a), 400)
+        self.assertEqual(post(correct, {"memory_id": mem.id, "text": "Dólares"}, a), 200)
+        self.assertEqual(self.memory.store.get("lab:operador", mem.id).content, "Dólares")
+        self.assertEqual(post(forget, {"memory_id": mem.id}, a), 200)
+        self.assertEqual(post(delete, {"document_id": doc.id}, a), 200)
+        self.assertIsNone(self.memory.store.get("lab:operador", mem.id))
+        self.assertIsNone(self.docs.store.get("lab:operador", doc.id))
+
     def test_routes_exist_only_with_the_capability_and_need_a_session(self):
         app = P.PolicyApp(inner=Inner(), bridge=self.bridge, static_dir=self.tmp / "static", port=8000,
                           audit=P.AuditLog(None), auth=self.auth, public_origin=PUB,

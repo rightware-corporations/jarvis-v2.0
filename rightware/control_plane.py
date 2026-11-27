@@ -250,9 +250,9 @@ class ControlPlane:
             if self.running:
                 self.audit.append({"event": "refused_busy"})
                 return Refusal(State.TAREFA_NAO_AUTORIZADA, "BUSY")
+            self._cancelled.clear()                        # initialize BEFORE publishing the active task
             self.running, self._active = True, capability
         started = self._clock()
-        self._cancelled.clear()
         try:
             outcome = self._executors[capability](self._cancelled, on_start)
         except PermissionError:

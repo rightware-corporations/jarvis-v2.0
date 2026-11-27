@@ -1,0 +1,40 @@
+{
+  "mission": "JRV-REUSE01-C",
+  "baseline": "f5aed48df69294ba4ec6a15d66a7b2cf60774f92",
+  "parent": "f5aed48df69294ba4ec6a15d66a7b2cf60774f92",
+  "upstream_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "source_paths": [
+    "src/openjarvis/memory/store.py",
+    "src/openjarvis/tools/storage/sqlite.py"
+  ],
+  "decision": "KEEP existing owner-scoped M01/K01 and DB01, ADAPT SQLite to existing PG recursive deletion and repair HTTP ID validation",
+  "defects": [
+    "old SQLite deletion only removes direct predecessor",
+    "HTTP APIs truncate IDs to 20 chars; PG IDs have length 34"
+  ],
+  "executed": {
+    "environment": "Linux sandbox Python 3.13.5 SQLite 3.46.1",
+    "scope": "independent synthetic SQL and regex fixture; not exact-module execution",
+    "old_delete": {
+      "remaining_historical_rows": 2
+    },
+    "new_delete": {
+      "deleted_rows": 4,
+      "foreign_and_unrelated_preserved": true,
+      "missing_id_noop": true,
+      "cycle_terminates": true
+    },
+    "id_formats": {
+      "legacy_8_hex": true,
+      "new_32_hex": true,
+      "malformed_rejected": true
+    }
+  },
+  "not_run": [
+    "full M01/K01",
+    "INT01 bridge regression",
+    "live DB01 PostgreSQL",
+    "full product runtime"
+  ],
+  "limits": "direct GitHub clone DNS blocked; no real data; no claim of forensic deletion"
+}

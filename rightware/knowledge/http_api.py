@@ -16,6 +16,7 @@ The owner always comes from the host (M01 identity contract), never from the req
 from __future__ import annotations
 
 import json
+import re
 from urllib.parse import unquote
 
 from rightware.knowledge.library import DocumentLibrary
@@ -66,9 +67,12 @@ async def handle(library: DocumentLibrary, scope, receive, send) -> bool:
         await _json(send, 200 if r["status"] in ("OK", "DUPLICATE") else 422, r)
         return True
     try:
-        did = str(json.loads(body or b"{}").get("document_id", ""))[:20]
-    except (ValueError, AttributeError):
-        did = ""
-    ok = bool(did) and library.store.delete(library.owner(), did)
+        did = json.loads(body or b"{}").get("document_id", "")
+        if not isinstance(did, str) or not re.fullmatch(r"d-(?:[0-9a-f]{8}|[0-9a-f]{32})", did):
+            raise ValueError("invalid document ID")
+    except (ValueError, AttributeError, TypeError):
+        await _json(send, 400, {"status": "REFUSED", "reason": "pedido inválido"})
+        return True
+    ok = library.store.delete(library.owner(), did)
     await _json(send, 200 if ok else 404, {"status": "OK" if ok else "NOT_FOUND"})
     return True
