@@ -141,7 +141,14 @@ class MemoryStore:
         now = self._clock()
         with self._lock, self._conn() as c:
             c.execute("BEGIN IMMEDIATE")
-            n = c.execute("DELETE FROM memories WHERE owner=? AND (id=? OR superseded_by=?)", (owner, mid, mid)).rowcount
+            # Same recursive predecessor traversal as PostgresMemoryStore; UNION also bounds cycles.
+            c.execute(
+                "WITH RECURSIVE chain(id) AS (SELECT id FROM memories WHERE owner=? AND id=? "
+                "UNION SELECT m.id FROM memories m JOIN chain c ON m.superseded_by=c.id WHERE m.owner=?) "
+                "DELETE FROM memories WHERE owner=? AND id IN (SELECT id FROM chain)",
+                (owner, mid, owner, owner))
+            # sqlite3.rowcount is -1 for CTE statements; changes() reports the actual deleted rows.
+            n = c.execute("SELECT changes()").fetchone()[0]
             if n:
                 c.execute("INSERT INTO memory_events VALUES (?,?,?,?)", (now, owner, mid, "deleted"))
             c.execute("COMMIT")

@@ -10,6 +10,7 @@ No automatic learning: nothing here creates memories from conversations or docum
 from __future__ import annotations
 
 import json
+import re
 
 from rightware.knowledge.http_api import _body, _json
 from rightware.memory import policy as P
@@ -35,7 +36,9 @@ async def handle(memory: PersonalMemory, scope, receive, send) -> bool:
     raw = await _body(receive, 2048)
     try:
         req = json.loads(raw or b"{}")
-        mid = str(req.get("memory_id", ""))[:20]
+        mid = req.get("memory_id", "")
+        if not isinstance(mid, str) or not re.fullmatch(r"m-(?:[0-9a-f]{8}|[0-9a-f]{32})", mid):
+            raise ValueError("invalid memory ID")
     except (ValueError, AttributeError, TypeError):
         await _json(send, 400, {"status": "REFUSED", "reason": "pedido inválido"})
         return True

@@ -80,6 +80,22 @@ class Store(Base):
                                       if self.db.with_name(self.db.name + "-wal").exists() else b"")
         self.assertTrue(all(isinstance(e[2], str) for e in s.events("lab:alfa")))   # events carry no content
 
+    def test_delete_all_predecessors_and_preserve_unrelated_memories(self):
+        s = MemoryStore(self.db)
+        history = [s.add("lab:alfa", "preferencia", "moeda", value, {})[0]
+                   for value in ("Meticais", "Dólares", "Euros", "Rands")]
+        same_owner, _ = s.add("lab:alfa", "facto", "cidade", "Maputo", {})
+        other_owner, _ = s.add("lab:beta", "preferencia", "moeda", "Euros", {})
+        self.assertFalse(s.delete("lab:beta", history[-1].id))
+        self.assertTrue(s.delete("lab:alfa", history[-1].id))
+        self.assertFalse(s.delete("lab:alfa", history[-1].id))
+        reopened = MemoryStore(self.db)
+        for item in history:
+            self.assertIsNone(reopened.get("lab:alfa", item.id))
+        self.assertEqual([m.id for m in reopened.active("lab:alfa")], [same_owner.id])
+        self.assertEqual([m.id for m in reopened.active("lab:beta")], [other_owner.id])
+        self.assertEqual(reopened.events("lab:alfa")[-1][1:], (history[-1].id, "deleted"))
+
     def test_owners_are_isolated(self):
         s = MemoryStore(self.db)
         a, _ = s.add("lab:alfa", "facto", "t", "Gosta de café", {})
