@@ -1,0 +1,55 @@
+{
+ "mission": "JRV-REUSE01-B",
+ "classification": "REAL local inference (lab, synthetic prompts, offline)",
+ "model": "qwen3.5:2b",
+ "machine": {
+  "cpus": 4,
+  "arch": "x86_64"
+ },
+ "started": "2026-11-27T14:32:52Z",
+ "C_rightware_shared": [
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 7.18,
+   "seconds": 14.32,
+   "runner_loads": 1,
+   "reply_chars": 178
+  },
+  {
+   "kind": "ferramenta",
+   "route": "conversa",
+   "router_s": 1.78,
+   "seconds": 8.88,
+   "runner_loads": 0,
+   "reply_chars": 209
+  },
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 1.49,
+   "seconds": 13.48,
+   "runner_loads": 0,
+   "reply_chars": 567
+  },
+  {
+   "kind": "ferramenta",
+   "route": "ferramentas",
+   "router_s": 1.49,
+   "seconds": 19.48,
+   "runner_loads": 0,
+   "reply_chars": 131
+  },
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 1.56,
+   "seconds": 7.48,
+   "runner_loads": 0,
+   "reply_chars": 99
+  }
+ ],
+ "finished": "2026-11-27T14:33:57Z",
+ "configuration": "OLLAMA_NUM_PARALLEL=2 (2 KV slots), shared num_ctx; otherwise identical",
+ "verdict": "REJECTED: no gain (63.6 s vs 59.0 s for the same 5 turns); llama-server forces full prompt re-processing for the hybrid qwen3.5 architecture, so a second slot cannot keep the persona prefix cached"
+}
