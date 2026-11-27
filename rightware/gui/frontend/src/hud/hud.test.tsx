@@ -134,7 +134,12 @@ describe('JRV-V02 continuous conversation helpers', () => {
     const ev: (string | null)[] = [];
     for (let i = 0; i < 20; i++) ev.push(v.push(0.001, 50));                 // room noise
     for (let i = 0; i < 10; i++) ev.push(v.push(0.2, 50));                   // speech 500 ms
-    for (let i = 0; i < 25; i++) ev.push(v.push(0.001, 50));                 // silence 1250 ms
+    for (let i = 0; i < 24; i++) ev.push(v.push(0.001, 50));                 // natural pause 1200 ms
+    expect(ev.filter(Boolean)).toEqual(['start']);
+    for (let i = 0; i < 3; i++) ev.push(v.push(0.2, 50));                    // speech resumes
+    for (let i = 0; i < 29; i++) ev.push(v.push(0.001, 50));                 // silence 1450 ms
+    expect(ev.filter(Boolean)).toEqual(['start']);
+    ev.push(v.push(0.001, 50));                                            // silence 1500 ms
     expect(ev.filter(Boolean)).toEqual(['start', 'end']);
     expect(splitSentences('Olá. A taxa média de referência é 63,91 meticais por dólar. Os dados são do boletim do dia 24 de Novembro.')).toEqual(
       ['Olá. A taxa média de referência é 63,91 meticais por dólar.', 'Os dados são do boletim do dia 24 de Novembro.']);

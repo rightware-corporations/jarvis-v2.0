@@ -1,0 +1,39 @@
+{
+  "baseline": "f8e4717a15ddb0a3883007f3102cb73f3f8fa6be",
+  "upstream_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "use_cases": [
+    "UC-029"
+  ],
+  "upstream": {
+    "manual_hook": "frontend/src/hooks/useSpeech.ts",
+    "api": "frontend/src/lib/api.ts",
+    "native_voice": "src/openjarvis/speech/voice_io.py",
+    "native_end_silence_seconds": 1.5
+  },
+  "decision": "ADAPT existing continuous capture; REUSE pinned manual, speech API and backend",
+  "changes": {
+    "end_silence_ms": [
+      900,
+      1500
+    ],
+    "min_auto_capture_ms": 1500,
+    "transcript_requires_unicode_letter_or_number": true
+  },
+  "observed": {
+    "api_patch_anchor_counts": "PASS",
+    "isolated_node_snippet": {
+      "version": "22.16.0",
+      "groups": 4,
+      "passed": 4,
+      "scope": "manually reconstructed candidate pure logic; not exact-blob or full frontend test"
+    }
+  },
+  "not_run": [
+    "full frontend tsc",
+    "Vitest",
+    "INT01 E2E",
+    "physical microphone",
+    "stock vs RIGHTWARE runtime benchmark"
+  ],
+  "limits": "Physical VAD root cause not proven. Manual capture is not independently validated. No live service started."
+}

@@ -110,15 +110,16 @@ try {
   step('consultar informação e página', /96/.test(a4) && /página 2/.test(a4), a4.slice(0, 260).replace(/\n/g, ' '));
 
   // LIVE01-R02: simulate an analyser which never detects physical speech; manual recording must still work.
-  // Synthetic microphone only. First response intentionally mocked to exercise a successful HTTP status with no text.
+  // Synthetic microphone only. Exercise HTTP 200 with both an empty transcript and LIVE03 punctuation-only output.
   await page.evaluate(() => {
     globalThis.__rwOriginalAnalyser = AnalyserNode.prototype.getFloatTimeDomainData;
     AnalyserNode.prototype.getFloatTimeDomainData = function (buffer) { buffer.fill(0); };
   });
   const speechRoute = '**/v1/speech/transcribe';
   try {
+    let mockedTranscript = '';
     await page.route(speechRoute, (route) => route.fulfill({ status: 200, contentType: 'application/json',
-      body: JSON.stringify({ text: '', language: null, confidence: null, duration_seconds: 3 }) }));
+      body: JSON.stringify({ text: mockedTranscript, language: null, confidence: null, duration_seconds: 3 }) }));
     await page.locator('[data-rw="conv-toggle-off"]').click();
     await page.waitForSelector('[data-rw="conv-manual"]');
     await page.waitForTimeout(1000);
@@ -131,6 +132,15 @@ try {
     await blankResponse;
     await page.waitForFunction(() => document.querySelector('[data-rw="conv-listening"]')?.textContent?.includes('Nenhuma fala reconhecida'));
     step('R02: blank HTTP 200 gives visible error and returns to listening', true);
+    mockedTranscript = '...';
+    await page.locator('[data-rw="conv-manual"]').click();
+    await page.waitForSelector('[data-rw="conv-recording"]');
+    await page.waitForTimeout(3000);
+    const punctuationResponse = page.waitForResponse((r) => r.url().endsWith('/v1/speech/transcribe'));
+    await page.locator('[data-rw="conv-manual"]').click();
+    await punctuationResponse;
+    await page.waitForFunction(() => document.querySelector('[data-rw="conv-listening"]')?.textContent?.includes('Nenhuma fala reconhecida'));
+    step('REUSE01: punctuation-only HTTP 200 is rejected and listening resumes', true);
     await page.unroute(speechRoute);
     // Repeat without reload; this time use the real synthetic audio and actual backend.
     await page.locator('[data-rw="conv-manual"]').click();

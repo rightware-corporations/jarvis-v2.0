@@ -229,7 +229,7 @@
         },
         {
           "find": "    throw new Error(detail || `Transcription failed: ${res.status}`);\n  }\n  return res.json();",
-          "replace": "    throw new Error(detail || `Transcription failed: ${res.status}`);\n  }\n  const result: TranscriptionResult = await res.json();\n  if (typeof result.text !== 'string' || !result.text.trim()) throw new Error('RW_NO_SPEECH: No speech recognised / Nenhuma fala reconhecida');\n  return result;",
+          "replace": "    throw new Error(detail || `Transcription failed: ${res.status}`);\n  }\n  const result: TranscriptionResult = await res.json();\n  if (typeof result.text !== 'string' || !/[\\p{L}\\p{N}]/u.test(result.text)) throw new Error('RW_NO_SPEECH: No speech recognised / Nenhuma fala reconhecida');\n  return result;",
           "count": 1
         }
       ]

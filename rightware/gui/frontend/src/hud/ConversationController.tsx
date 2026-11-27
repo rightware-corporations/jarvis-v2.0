@@ -15,6 +15,8 @@ import { VadDecider, speakProgressive, splitSentences, useConversation } from '.
 
 const FRAME_MS = 50;
 const MAX_RECORDING_MS = 15000;
+// Upstream voice_io.py uses 1.5 s end silence; refuse unexpectedly truncated automatic captures.
+const MIN_AUTO_RECORDING_MS = 1500;
 
 
 function sendToChat(text: string): boolean {
@@ -125,13 +127,17 @@ export function ConversationController() {
         };
         rec.onstop = () => {
           if (!alive || recorder !== rec) return;
+          const byHand = manual;
+          const elapsed = speechEndAt - startedAt;
           recorder = null;
           manual = false;
           vad.reset();
+          if (!byHand && elapsed < MIN_AUTO_RECORDING_MS) { recover('conv.noSpeech'); return; }
           void onUtterance(new Blob(captured, { type: rec.mimeType || captured[0]?.type || 'audio/webm' }));
         };
         rec.start(250);
         startedAt = performance.now();
+        speechEndAt = 0;
         conv.setPhase('recording');
       } catch {
         recorder = null;

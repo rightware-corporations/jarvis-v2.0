@@ -35,7 +35,7 @@ export class VadDecider {
   private silenceMs = 0;
   speaking = false;
 
-  constructor(private readonly opts = { minSpeechMs: 200, endSilenceMs: 900, ratio: 3, absMin: 0.012 }) {}
+  constructor(private readonly opts = { minSpeechMs: 200, endSilenceMs: 1500, ratio: 3, absMin: 0.012 }) {}
 
   threshold(): number {
     return Math.max(this.opts.absMin, this.floor * this.opts.ratio);
