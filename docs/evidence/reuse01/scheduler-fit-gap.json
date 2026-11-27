@@ -1,0 +1,37 @@
+{
+  "mission": "JRV-REUSE01-E",
+  "baseline": "619cf5a58f608db5e8b0afe8e7323466043eccef",
+  "parent": "619cf5a58f608db5e8b0afe8e7323466043eccef",
+  "upstream_pin": "f21d902f4d3bd7f0f3f138f1a4613019a394b549",
+  "verified_git_blobs": {
+    "src/openjarvis/scheduler/store.py": "ef2975261c601f7da5ceacc20d23ce437e216ae3",
+    "src/openjarvis/scheduler/scheduler.py": "76e2c6f3051fe03132e991333aa70d89c62bf6c4"
+  },
+  "probe_expected_blob": "83bfd7d974e6a5eea52a12976795fae6cb5648a2",
+  "executed": {
+    "command": "PYTHONPATH=. python scheduler_probe.py",
+    "exit": 0,
+    "python": "3.13.5",
+    "sqlite": "3.46.1",
+    "scope": "two exact Git blob source files reconstructed in isolated Linux sandbox namespace package, real SQLite and local worker with synthetic in-memory sink",
+    "results": {
+      "persist_restart": "PASS",
+      "once_worker_synthetic_sink": "PASS",
+      "lifecycle_crud": "PASS",
+      "revoked_snapshot_dispatched": "GAP_REPRODUCED",
+      "revoked_once_status_overwritten": "GAP_REPRODUCED",
+      "duplicate_occurrence": "GAP_REPRODUCED",
+      "dry_run_marked_success": "GAP_REPRODUCED",
+      "global_listing_no_owner_boundary": "GAP_REPRODUCED",
+      "once_noncanonical_offset": "GAP_REPRODUCED"
+    }
+  },
+  "not_run": [
+    "cron (croniter absent)",
+    "live recurring external effect",
+    "multi-process claim implementation",
+    "production integration"
+  ],
+  "decision": "Reuse upstream storage and scheduling primitives; adapt authorization/claim/verification boundary before any product activation",
+  "production_enabled": false
+}
