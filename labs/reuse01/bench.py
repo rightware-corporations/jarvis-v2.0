@@ -77,6 +77,7 @@ def part_b():
 def part_c(mode: str, log: Path | None):
     import rightware.assistant_tools as at
     from labs.m01 import acceptance as m01
+    orig_shared = at.shared_num_ctx
     if mode == "legacy":
         at.shared_num_ctx = lambda: None  # type: ignore[assignment]
     # labs.m01.acceptance.build = same ToolChatAdapter + router + direct composition as the launcher (calculator)
@@ -84,7 +85,7 @@ def part_c(mode: str, log: Path | None):
 
     def direct(*a, **k):
         if mode == "shared":
-            k["num_ctx"] = at.shared_num_ctx()
+            k["num_ctx"] = orig_shared()
         return orig_direct(*a, **k)
     m01.LocalSimpleTextAdapter = direct
     if mode == "legacy":
@@ -115,6 +116,7 @@ def part_c(mode: str, log: Path | None):
     if mode == "legacy":
         at.ModelRouter._ollama = orig_call
     m01.LocalSimpleTextAdapter = orig_direct
+    at.shared_num_ctx = orig_shared
     return out
 
 
@@ -128,15 +130,22 @@ def main():
            "model": MODEL, "machine": {"cpus": __import__("os").cpu_count(), "arch": platform.machine()},
            "started": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     parts = x.parts.split(",")
+    Path(x.out).parent.mkdir(parents=True, exist_ok=True)
+
+    def save():
+        Path(x.out).write_text(json.dumps(res, ensure_ascii=False, indent=1))
     if "a" in parts:
         res["A_raw_ollama"] = part_a()
+        save()
     if "b" in parts:
         res["B_stock_openjarvis_engine"] = part_b()
+        save()
     for mode in ("legacy", "shared"):
         if f"c-{mode}" in parts:
             res[f"C_rightware_{mode}"] = part_c(mode, x.ollama_log)
-    Path(x.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(x.out).write_text(json.dumps(res, ensure_ascii=False, indent=1))
+            save()
+    res["finished"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    save()
     print(json.dumps(res, ensure_ascii=False, indent=1))
 
 
