@@ -33,6 +33,21 @@ ROUTER_SYSTEM = (
     "não dependem de dados externos nem de contas exactas. Ferramentas disponíveis: {tools}.")
 
 
+def shared_num_ctx() -> int:
+    """REUSE01-B: the ONE context size every local call on the shared model uses.
+
+    Ollama keeps one runner per model; a request whose ``num_ctx`` differs from the loaded runner forces a full
+    reload (observed 26–27/11: router 4096 ↔ tools 16384, each switch a multi-second-to->60 s reload on 4 vCPU).
+    Reuses the pinned OpenJarvis engine default (``openjarvis.engine.ollama._default_num_ctx``, env JARVIS_NUM_CTX)
+    so router, direct conversation and the tool path all match the engine's own requests.
+    """
+    try:
+        from openjarvis.engine.ollama import _default_num_ctx
+        return int(_default_num_ctx())
+    except Exception:
+        return 16384
+
+
 class ModelRouter:
     """The MODEL decides whether a turn needs tools (no keyword rules). One short JSON call to the local model;
     any failure or unexpected output → "ferramentas" (fail-safe: the tool path has the policy and receipts)."""
@@ -62,7 +77,7 @@ class ModelRouter:
         import urllib.request
         body = _json.dumps({"model": self.model, "stream": False, "format": "json", "think": False,
                             "messages": [{"role": "system", "content": self.system}, {"role": "user", "content": user}],
-                            "options": {"temperature": 0, "num_predict": 20}}).encode()
+                            "options": {"temperature": 0, "num_predict": 20, "num_ctx": shared_num_ctx()}}).encode()
         req = urllib.request.Request("http://127.0.0.1:11434/api/chat", data=body,
                                      headers={"Content-Type": "application/json"})
         with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(req, timeout=60) as r:

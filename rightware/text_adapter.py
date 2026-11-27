@@ -80,7 +80,7 @@ class LocalSimpleTextAdapter:
         chat_command(model)  # runtime's existing local-model/URL guard
         if not (0.0 <= temperature <= 2.0) or not (1 <= max_tokens <= 1024):
             raise ValueError("Invalid local generation limits")
-        if not (256 <= num_ctx <= 4096) or not (0.1 <= timeout_seconds <= 300):
+        if not (256 <= num_ctx <= 32768) or not (0.1 <= timeout_seconds <= 300):
             raise ValueError("Invalid context or timeout limits")
         self.model, self.temperature = model, temperature
         self.max_tokens, self.num_ctx = max_tokens, num_ctx

@@ -220,11 +220,12 @@ if __name__ == "__main__":
         tool_list += ("documentos carregados pelo utilizador (doc_list, doc_search, doc_open, doc_delete) — responde "
                       "com as passagens e cita [S#]",)
     facts = RuntimeFacts(model=x.model, environment="cloud", tools=tool_list, unavailable=unavailable)
-    from rightware.assistant_tools import ModelRouter
+    from rightware.assistant_tools import ModelRouter, shared_num_ctx
     from rightware.text_adapter import LocalSimpleTextAdapter
     persona = system_prompt(facts)
     router = ModelRouter(x.model, "cotações (câmbio, ouro), pesquisa geral, calculadora")
-    direct = LocalSimpleTextAdapter(x.model, timeout_seconds=240, max_tokens=768, system_prompt=persona)
+    direct = LocalSimpleTextAdapter(x.model, timeout_seconds=240, max_tokens=768, system_prompt=persona,
+                                    num_ctx=shared_num_ctx())    # same runner as router + tools (no reloads)
     annotate.clean = strip_imitated
     memory = None
     owners = {}
