@@ -1,0 +1,216 @@
+{
+ "mission": "JRV-REUSE01-B",
+ "classification": "REAL local inference (lab, synthetic prompts, offline)",
+ "model": "qwen3.5:2b",
+ "machine": {
+  "cpus": 4,
+  "arch": "x86_64"
+ },
+ "started": "2026-11-27T14:28:53Z",
+ "A_raw_ollama": {
+  "alternating_num_ctx": [
+   {
+    "num_ctx": 16384,
+    "wall_s": 8.06,
+    "load_s": 5.26,
+    "prompt_tokens": 25,
+    "prompt_s": 0.28,
+    "eval_tokens": 39,
+    "eval_s": 2.51
+   },
+   {
+    "num_ctx": 4096,
+    "wall_s": 8.16,
+    "load_s": 5.28,
+    "prompt_tokens": 25,
+    "prompt_s": 0.27,
+    "eval_tokens": 39,
+    "eval_s": 2.6
+   },
+   {
+    "num_ctx": 16384,
+    "wall_s": 7.68,
+    "load_s": 5.0,
+    "prompt_tokens": 25,
+    "prompt_s": 0.29,
+    "eval_tokens": 39,
+    "eval_s": 2.38
+   },
+   {
+    "num_ctx": 4096,
+    "wall_s": 7.14,
+    "load_s": 4.49,
+    "prompt_tokens": 25,
+    "prompt_s": 0.27,
+    "eval_tokens": 39,
+    "eval_s": 2.37
+   }
+  ],
+  "constant_num_ctx": [
+   {
+    "num_ctx": 16384,
+    "wall_s": 8.29,
+    "load_s": 5.55,
+    "prompt_tokens": 25,
+    "prompt_s": 0.31,
+    "eval_tokens": 39,
+    "eval_s": 2.42
+   },
+   {
+    "num_ctx": 16384,
+    "wall_s": 2.83,
+    "load_s": 0.0,
+    "prompt_tokens": 25,
+    "prompt_s": 0.1,
+    "eval_tokens": 39,
+    "eval_s": 2.69
+   },
+   {
+    "num_ctx": 16384,
+    "wall_s": 2.53,
+    "load_s": 0.0,
+    "prompt_tokens": 25,
+    "prompt_s": 0.12,
+    "eval_tokens": 39,
+    "eval_s": 2.41
+   }
+  ]
+ },
+ "B_stock_openjarvis_engine": [
+  {
+   "kind": "conversa",
+   "seconds": 3.87,
+   "usage": {
+    "prompt_tokens": 22,
+    "prompt_tokens_evaluated": 22,
+    "completion_tokens": 50,
+    "total_tokens": 72
+   }
+  },
+  {
+   "kind": "ferramenta",
+   "seconds": 6.8,
+   "usage": {
+    "prompt_tokens": 22,
+    "prompt_tokens_evaluated": 22,
+    "completion_tokens": 99,
+    "total_tokens": 121
+   }
+  },
+  {
+   "kind": "conversa",
+   "seconds": 0.85,
+   "usage": {
+    "prompt_tokens": 24,
+    "prompt_tokens_evaluated": 24,
+    "completion_tokens": 10,
+    "total_tokens": 34
+   }
+  },
+  {
+   "kind": "ferramenta",
+   "seconds": 11.56,
+   "usage": {
+    "prompt_tokens": 24,
+    "prompt_tokens_evaluated": 24,
+    "completion_tokens": 159,
+    "total_tokens": 183
+   }
+  },
+  {
+   "kind": "conversa",
+   "seconds": 2.48,
+   "usage": {
+    "prompt_tokens": 19,
+    "prompt_tokens_evaluated": 19,
+    "completion_tokens": 37,
+    "total_tokens": 56
+   }
+  }
+ ],
+ "C_rightware_legacy": [
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 6.2,
+   "seconds": 13.03,
+   "runner_loads": 1,
+   "reply_chars": 217
+  },
+  {
+   "kind": "ferramenta",
+   "route": "conversa",
+   "router_s": 1.6,
+   "seconds": 8.21,
+   "runner_loads": 0,
+   "reply_chars": 211
+  },
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 1.59,
+   "seconds": 18.05,
+   "runner_loads": 0,
+   "reply_chars": 830
+  },
+  {
+   "kind": "ferramenta",
+   "route": "ferramentas",
+   "router_s": 1.6,
+   "seconds": 22.18,
+   "runner_loads": 1,
+   "reply_chars": 208
+  },
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 5.85,
+   "seconds": 10.22,
+   "runner_loads": 1,
+   "reply_chars": 76
+  }
+ ],
+ "C_rightware_shared": [
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 5.9,
+   "seconds": 12.18,
+   "runner_loads": 1,
+   "reply_chars": 346
+  },
+  {
+   "kind": "ferramenta",
+   "route": "conversa",
+   "router_s": 1.52,
+   "seconds": 9.09,
+   "runner_loads": 0,
+   "reply_chars": 279
+  },
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 1.51,
+   "seconds": 12.4,
+   "runner_loads": 0,
+   "reply_chars": 458
+  },
+  {
+   "kind": "ferramenta",
+   "route": "ferramentas",
+   "router_s": 1.49,
+   "seconds": 19.23,
+   "runner_loads": 0,
+   "reply_chars": 88
+  },
+  {
+   "kind": "conversa",
+   "route": "conversa",
+   "router_s": 1.48,
+   "seconds": 6.11,
+   "runner_loads": 0,
+   "reply_chars": 79
+  }
+ ],
+ "finished": "2026-11-27T14:32:15Z"
+}
